@@ -1,0 +1,716 @@
+---
+:id: '283'
+:title: 復活
+:comments:
+- :id: '9499'
+  :parent_id: '283'
+  :url: http://ja.doukaku.org/comment/9499
+  :user_name: syat
+  :user_url: /web/20100506131943/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2009/08/20 09:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  現在のプロセスが終了後、一定時間経過したのち再起動するプログラムを作成してください。一時的にスリープするのではなく、プロセスAが一度終了しアンロードされてから別のプロセスA'が動き出す感じです。AとA'が時間的に重ならないことを要件とします。\r<br><br>プロセスが作成できない言語では、スレッドやオブジェクトなど適当に読み替えてください。\r<br><br>以下のどちらでもかまいません。下のほうが難しいと思います。\r<br>　＜レベル１＞　自分から終了して再起動する。\r<br>　＜レベル２＞　タスクマネージャーや kill などでいきなり殺されたのち、再起動する。\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9501'
+  :parent_id: '283'
+  :url: http://ja.doukaku.org/comment/9501
+  :user_name: sumim
+  :user_url: /web/20100506131943/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/08/21 10:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n<p>監視プロセスを fork し、そのプロセスに自分の状態を監視させ、停止が確認できた
+    500ms 後に自分と同じ処理（監視プロセスの fork を含む）を再起動させるコードを書きました。動きが確認できるよう、memo にプロセスの id、状態、ミリ秒クロックを記録し、5
+    サイクル繰り返した後に memo 内容を出力してみました。</p>\n\n\t"
+  :code: |
+    | memo sema block |
+    memo := OrderedCollection new.
+    sema := Semaphore new.
+    block := nil.
+    block := [
+        | process |
+        process := Processor activeProcess.
+        memo add: {process hash. #start. Time millisecondClockValue}.
+        100 milliSeconds asDelay wait.
+        [   [Processor yield. process isTerminated] whileFalse.
+            memo add: {process hash. #end. Time millisecondClockValue}.
+            500 milliSeconds asDelay wait.
+            memo size &lt; 10 ifTrue: [block copy fixTemps fork] ifFalse: [sema signal]
+        ] fork
+    ].
+    block copy fixTemps fork.
+    sema wait.
+    ^memo asArray
+
+    =&gt; #(
+      #(2387 #start 168089292)
+      #(2387 #end 168089395)
+      #(286 #start 168089897)
+      #(286 #end 168090005)
+      #(315 #start 168090505)
+      #(315 #end 168090606)
+      #(2605 #start 168091107)
+      #(2605 #end 168091208)
+      #(3727 #start 168091709)
+      #(3727 #end 168091809))
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '9502'
+  :parent_id: '283'
+  :url: http://ja.doukaku.org/comment/9502
+  :user_name: egtra
+  :user_url: /web/20100506131943/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2009/08/21 15:51 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <p>Windows APIです。CreateRemoteThreadとLoadLibraryによるDLLインジェクションで、別のプロセスへ監視・復活（プロセスA'起動）プログラムを送り込ませました。そのため、ソースコードもDLL部分とメインプログラムの本体EXE部分に分かれます（135行目が境目）。</p>\n<p>メインプログラムの初回起動時には、コマンドラインで「main
+    devenv.exe」のようにDLLインジェクションするプロセスの名前を指定できます。</p>\n<p>なお、お題のレベル2を実装しています。メインプログラムの初回起動時、「Enterキーを押すと終了します。」の表示が出ますが、ここでEnterを叩かずにタスクマネージャで殺しても問題ありません。</p>\n<p>メインプログラムでは、監視プログラムへ監視用に自分のプロセスハンドルを送るため、ファイルマッピングを行っています。また、監視プログラムがプロセスハンドルを読み取る前にファイルマッピングオブジェクトを破棄しないよう、イベントオブジェクトを用いています。メインプログラムのソースのうち、この2つのごちゃごちゃを無視すると、肝心のDLLインジェクションの部分がはっきりと浮かび上がってくると思います。</p>\n<p>参考ページは、CreateRemoteThreadとLoadLibaryによるDLLについてググって上のほうに出てきたページです。なお、ここで用いたもの以外の各種コードインジェクションの方法も含めてAdvanced
+    Windowsに詳しく取り上げられていたと思います。</p>\n\n\t"
+  :code: |
+    #define _WIN32_WINNT 0x0400
+    #define STLSOFT_CF_EXCEPTION_SUPPORT
+
+    #include &lt;iostream&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;memory&gt;
+    #include &lt;boost/bind.hpp&gt;
+    #include &lt;tchar.h&gt;
+    #include &lt;windows.h&gt;
+    #include &lt;winstl/toolhelp/process_sequence.hpp&gt;
+    #include &lt;boost/algorithm/string/predicate.hpp&gt;
+    #include &lt;stlsoft/smartptr/scoped_handle.hpp&gt;
+    #include &lt;winstl/synch/event.hpp&gt;
+
+    const WCHAR LibraryName[] = L"h:\\watcher.dll";
+    const TCHAR MappingObjectName[] = TEXT("Doukaku.org 復活 マッピング");
+    const TCHAR EventObjectName[] = TEXT("Doukaku.org 復活 イベント");
+
+    const DWORD TimeOut = 50000; // 5秒でタイムアウト
+
+    bool MatchExeName(PROCESSENTRY32 const&amp; pe, LPCTSTR exeName)
+    {
+        return boost::algorithm::iequals(exeName, pe.szExeFile);
+    }
+
+    HANDLE FindProcess(LPCTSTR exeName)
+    {
+        using stlsoft::winstl_project::process_sequence;
+        process_sequence s;
+        process_sequence::const_iterator it = std::find_if(
+            s.begin(), s.end(), boost::bind(MatchExeName, _1, exeName));
+        if (it != s.end())
+        {
+            return OpenProcess(
+                PROCESS_QUERY_INFORMATION | PROCESS_CREATE_THREAD
+                | PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_DUP_HANDLE,
+                FALSE, (*it).th32ProcessID);
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    LPCTSTR GetInjectionTargetName(int argc, TCHAR **argv)
+    {
+        return argc &gt; 1
+            ? argv[1]
+            : TEXT("explorer.exe");
+    }
+
+    int _tmain(int argc, TCHAR **argv)
+    {
+        using std::exception;
+        try
+        {
+            if (argc &gt; 1 &amp;&amp; std::strcmp(argv[1], "/restart") == 0)
+            {
+                std::cout &lt;&lt; "2回目の起動です" &lt;&lt; std::endl;
+            }
+            else
+            {
+                stlsoft::scoped_handle&lt;HANDLE&gt; hInjectionTarget(
+                    FindProcess(GetInjectionTargetName(argc, argv)), CloseHandle);
+                if (hInjectionTarget.empty())
+                {
+                    throw exception("侵入先プロセスが見つからなかった");
+                }
+                // 通信用オブジェクトの準備（送信側）
+                stlsoft::scoped_handle&lt;HANDLE&gt; hMapping(
+                    CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE,
+                        0, sizeof (HANDLE), MappingObjectName),
+                    CloseHandle);
+                if (hMapping.empty())
+                {
+                    throw exception("メモリマッピングオブジェクトが作成できなかった");
+                }
+                void* pMap = MapViewOfFile(hMapping.get(), FILE_MAP_WRITE, 0, 0, 0);
+                if (!pMap)
+                {
+                    throw exception("メモリがマップできなかった");
+                }
+                // 自プロセスのハンドルを監視DLLのいるプロセスへ送る。
+                if (!DuplicateHandle(GetCurrentProcess(), GetCurrentProcess(),
+                    hInjectionTarget.get(), static_cast&lt;HANDLE*&gt;(pMap), SYNCHRONIZE, FALSE, 0))
+                {
+                    throw exception("プロセスハンドルの転送ができなかった");
+                }
+                UnmapViewOfFile(pMap);
+                // 挿入に成功したことを伝えるイベントオブジェクト
+                stlsoft::winstl_project::event startNotifyEvent(EventObjectName, TRUE, FALSE, 0);
+                // DLL挿入の準備
+                void* remoteLibraryName = VirtualAllocEx(hInjectionTarget.get(), 0,
+                    sizeof LibraryName, MEM_COMMIT, PAGE_READWRITE);
+                if (!remoteLibraryName)
+                {
+                    throw exception("メモリが確保できなかった");
+                }
+                if (!WriteProcessMemory(hInjectionTarget.get(), remoteLibraryName,
+                    LibraryName, sizeof LibraryName, 0))
+                {
+                    throw exception("対象プロセスのメモリへの書き込みができなかった");
+                }
+                PTHREAD_START_ROUTINE loadLibrary = reinterpret_cast&lt;PTHREAD_START_ROUTINE&gt;(
+                    GetProcAddress(GetModuleHandle(TEXT("kernel32")), "LoadLibraryW"));
+                if (!loadLibrary)
+                {
+                    throw exception("LoadLibaryの読み込みができなかった");
+                }
+                stlsoft::scoped_handle&lt;HANDLE&gt; hRemoteThread(
+                    CreateRemoteThread(hInjectionTarget.get(), 0, 0, loadLibrary,
+                        remoteLibraryName, 0, 0),
+                    CloseHandle);
+                if (hRemoteThread.empty())
+                {
+                    throw exception("リモートスレッドの作成ができなかった");
+                }
+                // ファイルマッピングオブジェクトを解放して構わない状態になるまで待機
+                if (WaitForSingleObject(startNotifyEvent.get(), TimeOut) != WAIT_OBJECT_0)
+                {
+                    throw exception("リモートスレッドから応答がなかった");
+                }
+            }
+            std::cout &lt;&lt; "Enterキーを押すと終了します。" &lt;&lt; std::endl;
+            std::cin.get();
+            return 0;
+        }
+        catch(const exception&amp; e)
+        {
+            std::cerr &lt;&lt; e.what() &lt;&lt; std::endl;
+            return 1;
+        }
+    }
+    // ここまでMain.exeのソース
+    //----------------------------------------------
+    // ここからのWatcher.dllソース
+    #include &lt;exception&gt;
+    #include &lt;cstdlib&gt;
+    #include &lt;windows.h&gt;
+    #include &lt;winstl/synch/event.hpp&gt;
+    #include &lt;stlsoft/smartptr/scoped_handle.hpp&gt;
+
+    const char MainProgramCommandLine[] = "h:\\main.exe /restart";
+    const TCHAR MappingObjectName[] = TEXT("Doukaku.org 復活 マッピング");
+    const TCHAR EventObjectName[] = TEXT("Doukaku.org 復活 イベント");
+
+    __declspec(noreturn)
+    DWORD WINAPI Watch(void* param)
+    {
+        using std::exception;
+        DWORD exitCode = 0;
+        try
+        {
+            stlsoft::winstl_project::event startNotifyEvent(EventObjectName, TRUE, FALSE, 0);
+            startNotifyEvent.set();
+
+            // 通信用オブジェクトの準備（受信側）
+            stlsoft::scoped_handle&lt;HANDLE&gt; hMapping(
+                OpenFileMapping(FILE_MAP_READ, FALSE, MappingObjectName),
+                CloseHandle);
+            if (hMapping.empty())
+            {
+                throw exception();
+            }
+            void* pMap = MapViewOfFile(hMapping.get(), FILE_MAP_READ, 0, 0, 0);
+            if (!pMap)
+            {
+                throw exception();
+            }
+            stlsoft::scoped_handle&lt;HANDLE&gt; hProcess(
+                *static_cast&lt;HANDLE*&gt;(pMap), CloseHandle); // プロセスハンドルの取得
+            UnmapViewOfFile(pMap);
+            // プロセスAの終了待ち
+            if (WaitForSingleObject(hProcess.get(), INFINITE) != WAIT_OBJECT_0)
+            {
+                throw exception();
+            }
+            // 待機
+            Sleep(2000);
+            // プロセスA'の起動
+            std::system(MainProgramCommandLine);
+        }
+        catch(...)
+        {
+            exitCode = 1;
+        }
+        FreeLibraryAndExitThread(static_cast&lt;HMODULE&gt;(param), exitCode);
+    }
+
+    BOOL WINAPI DllMain(HINSTANCE hinstDll, DWORD reason, void*)
+    {
+        if (reason == DLL_PROCESS_ATTACH)
+        {
+            DWORD threadId;
+            CreateThread(0, 0, Watch, hinstDll, 0, &amp;threadId);
+        }
+        return TRUE;
+    }
+  :tags:
+  - Boost
+  - WinSTL
+  - Windows
+  :references:
+    :url: /web/20100506131943/http://ruffnex.oc.to/kenji/text/dll_inj/
+    :title: 常駐プログラム隠蔽テクニック
+- :id: '9503'
+  :parent_id: '283'
+  :url: http://ja.doukaku.org/comment/9503
+  :user_name: sumim
+  :user_url: /web/20100506131943/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/08/21 10:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>監視プロセスを fork するタイミングはダミーの delay の前であるべきでした。</p>\n\n\t"
+  :code: |
+    | memo sema block |
+    memo := OrderedCollection new.
+    sema := Semaphore new.
+    block := nil.
+    block := [
+        | process |
+        process := Processor activeProcess.
+        memo add: {process hash. #start. Time millisecondClockValue}.
+        [   [Processor yield. process isTerminated] whileFalse.
+            memo add: {process hash. #end. Time millisecondClockValue}.
+            500 milliSeconds asDelay wait.
+            memo size &lt; 10 ifTrue: [block copy fixTemps fork] ifFalse: [sema signal]
+        ] fork.
+        100 milliSeconds asDelay wait
+    ].
+    block copy fixTemps fork.
+    sema wait.
+    ^memo asArray
+
+    =&gt; #(
+      #(1557 #start 170533506)
+      #(1557 #end 170533606)
+      #(4003 #start 170534107)
+      #(4003 #end 170534207)
+      #(1921 #start 170534708)
+      #(1921 #end 170534808)
+      #(3790 #start 170535309)
+      #(3790 #end 170535409)
+      #(2020 #start 170535910)
+      #(2020 #end 170536010))
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '9508'
+  :parent_id: '283'
+  :url: http://ja.doukaku.org/comment/9508
+  :user_name: konn
+  :user_url: /web/20100506131943/http://ja.doukaku.org/user/100/
+  :language: Ruby
+  :time: 2009/08/22 10:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>Signal.trap版。Ruby 1.8.x、1.9.x両方で動作します。\r</p>\n<p>コマンドライン引数が指定された場合はその秒数だけ休んでから終了し、forkします。\r</p>\n<p>\r</p>\n<p>あとは
+    SIGINT なり SIGQUIT なりを受けてもforkするようにはしてあります。\r</p>\n<p>が、素朴な実装なので、前のプロセスが死ぬと同時に起動してしまうのが玉に瑕ですが、まあ、0秒も一定時間後ということで、、、。</p>\n</div>\n\t"
+  :code: |
+    class ResurrectionProcess
+
+      def initialize
+        @pid = $$
+      end
+
+      def run(int=nil)
+        Thread.new {
+          p @pid
+          if int &gt; 0
+            sleep int.to_i
+          else
+            sleep
+          end
+        }.join
+      end
+
+      def pid
+        @pid
+      end
+
+    end
+
+    interval = ARGV[0].to_i
+    undead = proc {
+      begin
+        rp = ResurrectionProcess.new
+        rp.run(interval)
+      rescue SignalException
+        fork {undead[]}
+        exit!
+      ensure
+        fork {undead[]}
+      end
+    }
+
+    undead[]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9520'
+  :parent_id: '283'
+  :url: http://ja.doukaku.org/comment/9520
+  :user_name: syat
+  :user_url: /web/20100506131943/http://ja.doukaku.org/user/766/
+  :language: VB
+  :time: 2009/08/26 11:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  VBScript + タスクスケジューラで。\r<br>電卓を終了すると約１分後に再起動します。\r<br>このスクリプト自体＝プロセスAではなく、中で起動するcalc.exeがプロセスAと考えれば、いちおうレベル２です。\r<br>最初はJScriptで挑戦しましたが、JobIDを取得するときに参照渡しする方法がわからず断念。JScriptでは不可能？？？\r<br>"
+  :code: |
+    strScriptName = "d:\rebirth"
+
+    ' アプリを実行する
+    strAppname = "calc.exe"
+    WScript.CreateObject("WScript.Shell").Run strAppname, 1, true
+
+    strComputer = "."
+    Set objWMIService = GetObject("winmgmts:{impersonationLevel=impersonate}!//"+strComputer+"/root/cimv2")
+
+    Set args = WScript.Arguments
+    If args.length = 0 Then
+      ' 引数なしならタスク登録
+      Set objNewJob = objWMIService.Get("Win32_ScheduledJob")
+      commandline = "wscript.exe " &amp; strScriptName &amp; "2.js"
+      dt = DateAdd( "n", 1, Now )
+      oneMinuteLater = Right( 1000000 + Hour(dt)*10000 + Minute(dt)*100 + Second(dt), 6 )
+      starttime = "********" &amp; oneMinuteLater &amp; ".000000+540"
+      errJobCreated = objNewJob.Create( commandline, starttime, False, 127, "", True, JobID )
+      WScript.Echo("タスクを登録しました。" &amp; starttime &amp; "  " &amp; errJobCreated)
+
+      ' サブスクリプト生成
+      Set fso = CreateObject("Scripting.FileSystemObject")
+      Set tfs = fso.CreateTextFile(strScriptName+"2.js")
+      tfs.WriteLine("WScript.CreateObject('WScript.Shell').Run('wscript.exe " &amp; Replace(strScriptName, "\", "\\") &amp; ".vbs " &amp; JobID &amp; "');")
+      tfs.Close()
+      WScript.Echo("サブスクリプトを生成しました。")
+
+    Else
+      ' 引数（＝ジョブID）があればタスク削除
+      JobID = args.Item(0)
+      Set objTask = objWMIService.Get("Win32_ScheduledJob.JobID=" &amp; JobID)
+      If Err.Number = 0 Then
+        objTask.Delete
+        WScript.Echo("タスクを削除しました。")
+      Else
+        WScript.Echo("タスク削除に失敗しました。")
+      End If
+
+    End If
+  :tags:
+  - VBScript
+  - WMI
+  - WSH
+  :references:
+    :url: /web/20100506131943/http://troi.kbc-ehime.ac.jp/kj/?p=1702&amp;page=2
+    :title: WSH入門  第4回：Windowsでの運用の自動化について
+- :id: '9539'
+  :parent_id: '283'
+  :url: http://ja.doukaku.org/comment/9539
+  :user_name: uehaj
+  :user_url: /web/20100506131943/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2009/08/30 10:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>終了して起動すればいいんですよね。\nMacOSで確認。起動してるかどうかを確認できるようにSwingでウィンドウを作ってます。スクリプトは例えば「selfexec.groovy」で保存し、\ngroovy
+    selfexec.groovy start\nで実行してください。</p>\n\n\t"
+  :code: |
+    new javax.swing.JFrame().show()
+    if (args.size() &gt;= 1 &amp;&amp; args[0] == 'start') {
+      cmd = "sleep 3; ${System.getenv('GROOVY_HOME')}/bin/groovy ${this.getClass().name}; echo done"
+      Process p = Runtime.runtime.exec(['sh','-c', cmd] as String[])
+      System.exit(0)
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10383'
+  :parent_id: '283'
+  :url: http://ja.doukaku.org/comment/10383
+  :user_name: 匿名
+  :user_url: /web/20100506131943/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2010/04/08 09:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>プロセスではなく、スレッドで実装。\n「プロセスA」がFenixというイメージ。</p>\n<p>問題の意図が読み取れてない感じがしつつもアップ。</p>\n<p>Fenixを即時終了しないようにして、main()のループ中でFenixを殺すようにすればレベル２？</p>\n\n\t"
+  :code: |
+    /**
+     * プロセス終了後、一定時間経過後に再起動
+     * さくっと作るためにプロセス→スレッドに読み替え
+     */
+
+    // 状態表示と仕組みのキック
+    public class FullLife {
+        public static void main(String[] args) {
+            long duration = 500;
+
+            Thread thWatcher;
+            try {
+                Watcher wat = new Watcher();
+                thWatcher = new Thread(wat);
+                thWatcher.start();
+                while (true) {
+                    // 監視とか復帰はWatcher任せで生きてるよメッセージと生存スレッド数だけ表示(自身を除く)
+                    System.out.println("・・・プログラム実行中 生存スレッド数：" + (Thread.activeCount() - 1));
+                    if (Thread.activeCount() == 1) {
+                        System.exit(-1);
+                    }
+                    Thread.sleep(duration);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            System.out.println(Thread.activeCount());
+        }
+    }
+
+    class Watcher implements Runnable {
+        @Override
+        public void run() {
+            long duration = 2000;
+            Thread thFenix;
+            try{
+                // アンロードではないけど、トゥットゥル後にスレッド終了してるよね？
+                while (true) {
+                    Fenix fen = new Fenix();
+                    thFenix = new Thread(fen);
+                    thFenix.start();
+                    thFenix.join();
+                    if (thFenix.isAlive()) {
+                        Thread.sleep(duration);
+                        if (thFenix.isAlive()) {
+                            // いっきさん
+                            throw new RuntimeException("「 この男…まさしくその名のとおり、不死身だとでも言うのか…！」");
+                        }
+                    }
+                    Thread.sleep(duration);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+    }
+
+    class Fenix implements Runnable {
+        @Override
+        public void run() {
+            System.out.println("Fenix  :「トゥットゥルー」");
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10405'
+  :parent_id: '283'
+  :url: http://ja.doukaku.org/comment/10405
+  :user_name: 匿名
+  :user_url: /web/20100506131943/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2010/04/18 23:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>プロセスを使って挑戦してみました。\nスレッドもプロセスも結局nativeに入っていくので、\nJavaでこの辺りを触るのは不安ですね。\n　・監視プロセス：FullLifeByProc\n　・プロセスA：ProcFenix</p>\n<p>＞題主さま\n結局は「監視プロセスを作る」というのがお題と考えたのですが、\n合っていますでしょうか？</p>\n<p>参考にしたページその２\nJava外部プロセス起動メモ(Hishidama's
+    Java Process Memo)\n<a class=\"reference\" href=\"/web/20100506131943/http://www.ne.jp/asahi/hishidama/home/tech/java/process.html\">http://www.ne.jp/asahi/hishidama/home/tech/java/process.html</a></p>\n<p>最後に、もしも試してみたいという奇特な方のために動かす際の注意点をいくつか\n・C:workに「hoge.txt」というファイルがあった場合は\n　外部プロセスのログが出力される（追記）ので注意下さい\n・FullLifeByProc
+    でProcessBuilderのディレクトリを指定している場所は、\n　クラスファイルの２階層上を指定します（パッケージ切ってるので）\n・「InputStreamThread
+    」は参考その２（Java外部プロセス起動メモ）を参照下さい\n　（そのまま使わせて頂きました）\n　http://www.ne.jp/asahi/hishidama/home/tech/java/process.html\n・動作確認はJDK1.6（ProcessBuilderを使っているので1.4系では動きません）\n・1.4系で動かす場合はRuntime使って下さい</p>\n\n\t"
+  :code: |
+    //===========
+    // 監視プロセス側（起動はこっち）
+    package how;
+
+    import java.io.File;
+    import java.io.IOException;
+    import java.io.InputStream;
+
+    // 外部プロセスをｎ回起動し、一定時間内に処理が戻らなければ終了させます
+    // プロセスAをキックする「監視プロセス」として作成
+    // http://www.02.246.ne.jp/~torutk/javahow2/exec.html
+    // http://www.ne.jp/asahi/hishidama/home/tech/java/process.html
+    public class FullLifeByProc {
+
+        // プロセスAの出力用
+        private static InputStream stdIn = null;
+        private static InputStream errIn = null;
+        private static InputStreamThread inputTh = null;
+        private static InputStreamThread errorTh = null;
+
+        private static final int MAX_COUNT_KICK_TARG_PROC = 3;
+
+        // プロセスAをn回実行する
+        public static void main(String[] args) {
+            String workingDir = System.getProperty("user.dir");
+            ProcessBuilder pb  =new ProcessBuilder("java", "how.ProcFenix");
+            File dir = new File(workingDir + "\\bin");
+            // binをパスに追加するのがスマートだと思うけどとりあえず版で
+            pb.directory(dir);
+            int runCount = 0;
+
+            while(runCount &lt; MAX_COUNT_KICK_TARG_PROC){
+                try {
+                    Process proc = runProc(pb);
+                    if (proc.exitValue() == 0) {
+                        System.out.println("外部プロセスは自ら終了しました。");
+                    } else {
+                        System.out.println("外部プロセスは強制的に終了させられました。");
+                    }
+                    showOuterMessage();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+                // タスクマネージャ等でプロセスAの消滅を確認し易くする為に待ちを入れる
+                try {
+                    Thread.sleep(5000);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                runCount++;
+            }
+        }
+
+        // プロセスAを実行する
+        private static Process runProc(ProcessBuilder pb) throws IOException{
+            Process proc = pb.start();
+
+            try {
+                stdIn = proc.getInputStream();
+                errIn = proc.getErrorStream();
+                inputTh = new InputStreamThread(stdIn, "shift-jis");
+                errorTh = new InputStreamThread(errIn, "shift-jis");
+                inputTh.start();
+                errorTh.start();
+
+                Thread.sleep((int)(Math.random() * 25000));
+                proc.destroy();
+
+                inputTh.join();
+                errorTh.join();
+            } catch (Exception ex) {
+                System.err.println(ex.getMessage());
+                ex.printStackTrace();
+            } finally {
+                try {stdIn.close();} catch (Exception e) {}
+                try {errIn.close();} catch (Exception e) {}
+            }
+
+            return proc;
+        }
+
+        // プロセスAの出力を表示する
+        private static void showOuterMessage() {
+            if (inputTh == null || errorTh == null) {
+                return;
+            }
+            System.out.println("---show message begin---");
+            //標準出力の内容を出力
+            for (String s : inputTh.getStringList()) {
+                System.out.println(s);
+            }
+            //標準エラーの内容を出力
+            for (String s : errorTh.getStringList()) {
+                System.err.println(s);
+            }
+            System.out.println("---show message end---");
+        }
+
+    }
+
+    //===========
+    // プロセスA側
+    package how;
+
+    import java.io.File;
+    import java.io.FileWriter;
+    import java.util.Date;
+
+    // 不定期にｎ回鳴きます（標準出力＋ログファイル）
+    // ※ログファイルへの出力は、ファイルがある場合のみ
+    // FullLifeByProcから起動される「プロセスA」として作成
+    public class ProcFenix {
+
+        private static final int MAX_COUNT_CAW = 5;
+        private static final String LOG_FILE_PATH = "c:\\work\\hoge.txt";
+
+        public static void main(String[] args) {
+            System.out.println("[Start] ProcFenix.main()");
+            int lifeTime = (int)(Math.random() * 5000);
+            Date date = null;
+            int i = 0;
+            File fl = new File(LOG_FILE_PATH);
+            boolean existLogFile = fl.exists();
+            String lineSep = System.getProperty("line.separator");
+
+            while (i &lt; MAX_COUNT_CAW) {
+                date = new Date();
+                // ログファイルの書き込みはファイルがある場合だけ
+                if (existLogFile) {
+                    FileWriter fw = null;
+                    try {
+                        fw = new FileWriter(fl, true);
+                        fw.write(date.toString() + "  「トゥットゥルー」" + lineSep);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    } finally {
+                        try {
+                            fw.close();
+                        } catch(Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+                System.out.println(date.toString() + "  「トゥットゥルー」");
+                try {
+                    Thread.sleep(lifeTime);
+                } catch(Exception ex) {
+                    ex.printStackTrace();
+                }
+                i++;
+            }
+            System.out.println("[Exit] ProcFenix.main()");
+        }
+
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 

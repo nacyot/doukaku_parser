@@ -1,0 +1,503 @@
+---
+:id: '171'
+:title: α置換
+:comments:
+- :id: '6153'
+  :parent_id: '171'
+  :url: http://ja.doukaku.org/comment/6153
+  :user_name: gandalf
+  :user_url: /web/20090512172001/http://ja.doukaku.org/user/780/
+  :language: 
+  :time: 2008/04/07 21:05 GMT
+  :vote_count: '6'
+  :vote_score: '-2'
+  :body: "\r\n\t  <pre class=\"compact\">標準入力から与えられたソースコードの変数名\r\nを置換するプログラムを作ってください。\r\n最近はリファクタリングツールなどの普及でこ\r\nのような需要は少ないかと思われますが、viな\r\nど貧弱なエディタを使っているときに困る\r\nのが変数名の置換です。さすがに以下の例のよ\r\nうなプログラムは例としてしか書きませんが、\r\n置換しようとしている変数名と同じ綴りの他の\r\nものがプログラム中に出てくることはまれにあ\r\nります。そこで、与えられたソースコードに現\r\nれる変数だけを指定された名前に置換してくだ\r\nさい。\r\n置換対象となるソースコードと使用言語は同じ\r\nものを使ってください。与えられるソースコー\r\nドは、完全なコンパイル単位、もしくはパース\r\nして意味が通る範囲のものどちらであってもか\r\nまいません。後者の場合、一番外側の変数だけ\r\n置換できるようにしてください。\r\nC言語での解答例をつけたかったのですが、と\r\nても難しかったためまだ作成できていません。\r\nご容赦ください。\r\n\r\n例\r\n$
+    cat a.c\r\n/* a */\r\nint foo()\r\n{\r\n        struct a {int a;} a;\r\n#if FOO\r\n
+    \       a.a = 1;\r\n#endif\r\n        { int a; }\r\n\treturn 0;\r\n}\r\n$ alpha
+    -DFOO=1 b a &lt; a.c\r\n/* a */\r\nint foo()\r\n{\r\n        struct a {int a;}
+    b;\r\n#if FOO\r\n        b.a = 1;\r\n#endif\r\n        { int a; }\r\n\treturn
+    0;\r\n}\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6155'
+  :parent_id: '171'
+  :url: http://ja.doukaku.org/comment/6155
+  :user_name: sumim
+  :user_url: /web/20090512172001/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/04/08 02:00 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n<p>ふつう、こういうことはしないのですが、リフレクション機能を試す問題として捉え、システム組み込みのパーサに委譲するかたちで実現してみました。</p>\n\n\t"
+  :code: |
+    | code tree old new |
+    code := 'sampleCode
+        | a |
+        a := ''This is a pen''.
+        ^a'.
+    old := 'a'. new := 'b'.
+    tree := Parser new parse: code class: UndefinedObject.
+    (tree instVarNamed: #temporaries) do: [:each |
+        each name = old ifTrue: [each key: new; name: new]].
+    ^tree decompileString  "=&gt; 'sampleCode
+        | b |
+        b := ''This is a pen''.
+        ^ b' "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '6156'
+  :parent_id: '171'
+  :url: http://ja.doukaku.org/comment/6156
+  :user_name: saws
+  :user_url: /web/20090512172001/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/04/08 12:06 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>変数v0を全てv1に置換した後に, 文字列とヒアドキュメント内のv1をv0に戻す処理をしています.</p>\n<p>テストに使用したファイルを生成するコードも添付します.</p>\n\n\t"
+  :code: |
+    def subst_var(file, v0, v1)
+      hdocr = '[-]?[\"\'`]?([A-Z]+)'
+      shared_reg = 's,;&amp;|=+-*/[](){}'
+      former, latter = %w[@$^ .].map{|reg|
+        "#{shared_reg}#{reg}".each_char.inject(''){|a,b| "#{a}\\#{b}"}}
+      gsub, rev_gsub = [:to_a, :reverse].map{|meth|
+        proc{|s| s.gsub(*[v0, v1].__send__(meth))}}
+      open(file, 'r'){|f| f.read}.
+        gsub(/(?:^#{v0})?(?:[#{former}]#{v0})+[#{latter}]/, &amp;gsub).
+        gsub(/".*"/, &amp;rev_gsub).
+        gsub(/&lt;&lt;#{hdocr}(?:.|\s)+[^&lt;]#{hdocr}/, &amp;rev_gsub)
+    end
+    file = 'sample.rb'
+    puts subst_var(file, 'v0', 'v1')
+
+    open(file, 'w'){|f| f.write(&lt;&lt;EOF)}
+    v0+v0=v0
+    @v0 = 0
+    $v00, ^v0
+    "v0 v0 "
+    &lt;&lt;EOS
+    v0 v0
+    EOS
+    $v0, v0, v0
+    v0/v0*v0-v0+v0
+    EOF
+  :tags:
+  - 1.9.0
+  :references:
+    :url: 
+    :title: 
+- :id: '6157'
+  :parent_id: '171'
+  :url: http://ja.doukaku.org/comment/6157
+  :user_name: syat
+  :user_url: /web/20090512172001/http://ja.doukaku.org/user/766/
+  :language: C
+  :time: 2008/04/08 16:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Cのソースを変換します。\r<br>1文字ずつ結構まじめに解析してます。\r<br>お題のソースの変換ができてることを確認しました。\r<br><br>一番外側の変数しか変換しないという仕様を満たすのがしんどかったです。\r<br>よーく見ると実はバグで動いてたりするのは内緒。（正規表現のあたり）\r<br>"
+  :code: "using System;\nusing System.IO;\nusing System.Collections.Generic;\nusing
+    System.Text;\nusing System.Text.RegularExpressions;\n\nclass AlphaReader {\n  public
+    bool IsDebug = false;\n  void DBG(String s, params Object[] args) {\n    if (!IsDebug)
+    return;\n    Console.WriteLine(s, args);\n  }\n  TextReader input;\n  String before;
+    \ //変換前文字列\n  String after;   //変換後文字列\n  enum State {    //状態\n    Global,  Func,
+    \ Struct,      //グローバル, 関数定義, 構造体(共用体・列挙体）\n    Block, Name, Comment, InStr  //ブロック,
+    識別子, コメント, 文字列\n  }\n  String IdDelimiter = \"\\t (){};,=+-*/%&amp;|^!?\";  //識別子分離文字\n
+    \ Stack&lt;State&gt; state;   //現在のReaderの状態\n  int targetDepth;      //変換対象のスコープ（stateの深さ）\n
+    \ int targetHideDepth;  //変換対照が再定義された深さ\n\n  //コンストラクタ\n  public AlphaReader(TextReader
+    input,\n             String before, String after) {\n    this.input = input;\n
+    \   this.before = before;\n    this.after = after;\n    \n    this.state = new
+    Stack&lt;State&gt;();\n    this.state.Push(State.Global);\n    this.targetDepth
+    = int.MaxValue;\n    this.targetHideDepth = int.MaxValue;\n  }\n  //行を読み込んで変換処理するメソッド\n
+    \ public String ReadLine() {\n    String strIn = this.input.ReadLine();\n    if
+    (strIn == null) {\n      return null;\n    }\n DBG(\"## [{0}]\", strIn);\n    \n
+    \   StringBuilder buf = new StringBuilder();  //バッファ\n    StringBuilder name =
+    new StringBuilder();  //識別子バッファ\n\n    /* 変数宣言の判定 */\n    /* この判定は、変数宣言と演算が別の行にわかれていること、\n
+    \      および、変数宣言が比較的シンプルなことを前提としています。 */\n    String decVar = @\".*(\\w+|(struct|union)\\s+\\w+)(\\s+[^;,]+,)*\\s+\"\n
+    \                 + before + @\"\\s*[=,;\\)].*\";  //型＋(変数, ...)＋変換前文字列\n    bool
+    hasDecVar = false;\n    if ((new Regex(decVar)).IsMatch(strIn)) {\n DBG(\"## 変数宣言発見\");\n
+    \     hasDecVar = true;\n    }\n\n    /* 行を1文字ずつ解析 */\n    for (int pos = 0; pos
+    &lt; strIn.Length; pos++) {\n      State st = this.state.Peek();\n      char c
+    = strIn[pos];\n      String cs = strIn.Substring(pos);\n DBG(\"## pos={0} c={1}
+    state={2} depth={3}\", pos, c, st.ToString(), state.Count);\n      \n      switch
+    (st) {\n      case State.InStr:  //文字列リテラルの中\n        if (c == '\\\\') {\n          buf.Append(c);\n
+    \         if (++pos &lt; strIn.Length) {\n            buf.Append(strIn[pos]);\n
+    \         }\n        } else if (c == '\"') {\n          buf.Append(c);\n          this.state.Pop();\n
+    \       }\n        break;\n      case State.Comment:  //コメントの中\n         buf.Append(c);\n
+    \       if (cs.StartsWith(\"*/\")) {\n          buf.Append(strIn[++pos]);\n          this.state.Pop();\n
+    \       }\n        break;\n      case State.Name:    //識別子の中\n        if (IdDelimiter.IndexOf(c)
+    &lt; 0) {\n          name.Append(c);      //識別子続行\n        } else if (cs.StartsWith(\"-&gt;\"))
+    {\n          name.Append(\"-&gt;\");  //識別子続行\n          pos++;\n        } else
+    {\n          //識別子を抽出\n          String id = name.ToString();\n          this.state.Pop();\n
+    \         st = this.state.Peek();\n          switch (st) {\n          case State.Struct:
+    \   //構造体の中は変換対象外\n            buf.Append(id);\n            break;\n          default:
+    \             //変換対象\n            if (hasDecVar &amp;&amp; id == this.before)
+    {        //変数宣言\n              if (this.state.Count &lt; this.targetDepth) {  //新たに宣言の場合\n
+    \               this.targetDepth = this.state.Count;      //targetDepthをセット\n
+    \             } else if (this.state.Count &lt; this.targetHideDepth\n                      &amp;&amp;
+    this.targetDepth &lt; this.state.Count) {  //再宣言した場合\n                this.targetHideDepth
+    = this.state.Count;  //targetHideDepthをセット\n              }\n DBG(\"## set targetDepth:{0}
+    hideDepth:{1}\", targetDepth, targetHideDepth);\n            }\n            if
+    (this.targetDepth &lt;= this.state.Count\n                &amp;&amp; this.state.Count
+    &lt; this.targetHideDepth) {\n              //変換対象スコープの場合\n              if (id
+    == this.before) {\n                buf.Append(this.after);\n              } else
+    if ((new Regex(this.before + @\"[\\.\\-]\")).IsMatch(id)) {\n                                //変換対象変数のメンバを参照してる場合\n
+    \               buf.Append(this.after);\n                buf.Append(id.Substring(this.before.Length));\n
+    \             } else {\n                buf.Append(id);  //変換なし\n              }\n
+    \           } else {\n              buf.Append(id);    //変換なし\n            }\n
+    \           break;\n          }\n          buf.Append(c);\n          if (st ==
+    State.Global &amp;&amp; c == '(') {  //関数宣言の場合\n            this.state.Push(State.Func);\n
+    \         }\n          name = new StringBuilder();\n        }\n        break;\n
+    \     default:  //その他の状態\n        if (cs.StartsWith(\"/*\")) {  //コメント開始\n          buf.Append(\"/*\");\n
+    \         pos++;\n          this.state.Push(State.Comment);\n        } else if
+    (c == '\"') {      //文字列開始\n          buf.Append(c);\n          this.state.Push(State.InStr);\n
+    \       } else if (IdDelimiter.IndexOf(c) &gt;= 0) {  //識別子外文字\n          buf.Append(c);\n
+    \         if (c == '{') {\n            if (st != State.Struct) {\n              this.state.Push(State.Block);\n
+    \           }\n          } else if (c == '(') {\n            if (st == State.Global)
+    {\n              this.state.Push(State.Func);\n            }\n          } else
+    if (c == '}') {\n            if (st == State.Block) {\n              this.state.Pop();\n
+    \             if (this.state.Peek() == State.Func) {\n                this.state.Pop();\n
+    \             }\n            } else if (st == State.Struct) {\n              this.state.Pop();\n
+    \           }\n            if (this.state.Count &lt; this.targetDepth)\n              this.targetDepth
+    = int.MaxValue;\n            if (this.state.Count &lt; this.targetHideDepth)\n
+    \             this.targetHideDepth = int.MaxValue;\n DBG(\"## unset targetDepth:{0}
+    hideDepth:{1}\", targetDepth, targetHideDepth);\n          } else if (c == ';')
+    {\n            if (st == State.Func) {\n              this.state.Pop();\n            }\n
+    \         }\n        } else if (cs.StartsWith(\"struct \")  //構造体・共用体・列挙体のブロック内は\n
+    \                || cs.StartsWith(\"union \")  //変換を行わない\n                 ||
+    cs.StartsWith(\"enum \")) {\n          int index = cs.IndexOf(\" \");\n          pos
+    += index;\n          name.Append(cs.Substring(0, index + 1));\n          this.state.Push(State.Struct);\n
+    \       } else {                    //識別子開始\n          name.Append(c);\n          this.state.Push(State.Name);\n
+    \       }\n        break;\n      }\n    }\n    if (name.Length &gt; 0) {\n      buf.Append(name.ToString());\n
+    \     if (this.state.Peek() == State.Name) {\n        this.state.Pop();\n      }\n
+    \   }\n    return buf.ToString();\n  }\n}\n\nclass Driver {\n  public static int
+    Main(String[] args) {\n    if (args.Length &lt; 2) {\n      Console.WriteLine(\"alpha.exe
+    \ before after [debug]\");\n      return -1;\n    }\n    AlphaReader ar = new
+    AlphaReader(\n        Console.In, args[0], args[1]);\n    if (args.Length &gt;=
+    3 &amp;&amp; args[2] == \"debug\") {\n      ar.IsDebug = true;\n    }\n\n    String
+    line;\n    while ((line = ar.ReadLine()) != null) {\n      Console.WriteLine(line);\n
+    \   }\n    return 0;\n  }\n}\n"
+  :tags:
+  - .NET2.0
+  - Mono
+  :references:
+    :url: 
+    :title: 
+- :id: '6158'
+  :parent_id: '171'
+  :url: http://ja.doukaku.org/comment/6158
+  :user_name: syat
+  :user_url: /web/20090512172001/http://ja.doukaku.org/user/766/
+  :language: Other
+  :time: 2008/04/08 16:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>文字列の処理がうまくいってませんでした。。。</p>\n\n\t"
+  :code: "--- alpha.cs.release1   2008-04-09 01:11:32.000000000 +0900\n+++ alpha.cs.release2
+    \  2008-04-09 01:14:15.000000000 +0900\n@@ -65,13 +65,12 @@\n       \n       switch
+    (st) {\n       case State.InStr:  //文字列リテラルの中\n+        buf.Append(c);\n         if
+    (c == '\\\\') {\n-          buf.Append(c);\n           if (++pos &lt; strIn.Length)
+    {\n             buf.Append(strIn[pos]);\n           }\n         } else if (c ==
+    '\"') {\n-          buf.Append(c);\n           this.state.Pop();\n         }\n
+    \        break;\n"
+  :tags:
+  - diff
+  :references:
+    :url: 
+    :title: 
+- :id: '6164'
+  :parent_id: '171'
+  :url: http://ja.doukaku.org/comment/6164
+  :user_name: あにす
+  :user_url: /web/20090512172001/http://ja.doukaku.org/user/504/
+  :language: 
+  :time: 2008/04/10 10:02 GMT
+  :vote_count: '4'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">　まず、ソースファイルをVisualStudioで開きます。\r\n　エディタにコードをコピペします。\r\n　変更したい変数の宣言部で、変数名を書き替えます。\r\n　変数の上にマウスを置くとアイコンが出るのでクリックします。\r\n　”名前を[変数名]から[変数名]に変更します。\"を選ぶとVisualStudioが全部自動でやってくれます。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6252'
+  :parent_id: '171'
+  :url: http://ja.doukaku.org/comment/6252
+  :user_name: miura1729
+  :user_url: /web/20090512172001/http://ja.doukaku.org/user/799/
+  :language: Ruby
+  :time: 2008/05/02 11:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>Ripperを使ってみました。Ruby 1.9.0以上じゃないと動かないと思います。\r</p>\n<p>AlphaConverter.newの第2引数以降で置換する変数を指定します。</p>\n</div>\n\t"
+  :code: "require 'ripper'\n\nclass AlphaConverter&lt;Ripper::Filter\n  def initialize(src,
+    *vars)\n    super(src)\n    @alpha_dict = {}\n    vars.each do |o, n|\n      @alpha_dict[o]
+    = n\n    end\n  end\n\n  def var_common(token, data)\n    if @alpha_dict[token]
+    then\n      data &lt;&lt; @alpha_dict[token]\n    else\n      data &lt;&lt; token\n
+    \   end\n  end\n\n  def on_default(event, token, data)\n    data &lt;&lt; token\n
+    \ end\n\n  # クラス変数\n  def on_cvar(token, data)\n    var_common(token, data)\n
+    \ end\n\n  # 大域変数\n  def on_gvar(token, data)\n    var_common(token, data)\n  end\n\n
+    \ # インスタンス変数\n  def on_ivar(token, data)\n    var_common(token, data)\n  end \n
+    \n  # ローカル変数\n  def on_ident(token, data)\n    var_common(token, data)\n  end\nend\n\nprint
+    AlphaConverter.new(ARGF, ['event', 'ee'], ['@alpha_dict', '@ad']).parse('')\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6269'
+  :parent_id: '171'
+  :url: http://ja.doukaku.org/comment/6269
+  :user_name: Otter
+  :user_url: /web/20090512172001/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2008/05/08 07:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  GHC6.8.1にパーサーとprettyprintのライブラリがあったのを発見したので、途中まで作ってみました。\r\nppという名前をpopに、popをppに置き換えるようになっています。\r\n\r\nもう少しがんばらなくてはいけないところ：\r\n１．入力ソースがprettyprintされてしまうので、アルファ置換以外の変更が起きてしまう。（改行、インデントが変わってしまう、コメントが保持されない）\r\n２．スコープ管理がされていない。\r\n３．ネームスペースに関する処理が入っていない…（Data.Stack.popは置換されるべきではないけれど、pop,
+    Main.popはされるべき...）\r\n\r\nコメントの問題はパーサーの機能不足なので、解決には違うアプローチが必要です...パーサーがサポートしてくれれば、簡単ですが…\r\n\r\n２，３に関してはパーサーのサポートはあるので、コードを書くだけなんですが...誰かやってください...\n\t"
+  :code: "module Main where\n\nimport Language.Haskell.Syntax\nimport Language.Haskell.Parser\nimport
+    Language.Haskell.Pretty\nimport Data.Generics\n\npp :: ParseResult HsModule -&gt;
+    String\npp (ParseOk hsm) = prettyPrint hsm\npp _ = \"parse failed\"\n\nrepl ::
+    ParseResult HsModule -&gt; ParseResult HsModule\nrepl (ParseOk hsm) = ParseOk
+    $ (everywhere (mkT conversion)) hsm\n    where\n        conversion :: HsName -&gt;
+    HsName\n        conversion (HsIdent \"pp\") = HsIdent \"pop\"\n        conversion
+    (HsIdent \"pop\") = HsIdent \"pp\"\n        conversion pop = pop\nrepl a = a\n\nmain
+    :: IO ()\nmain \n  = do mod &lt;- getContents\n       putStr $ pp $ repl $ parseModule
+    mod\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6804'
+  :parent_id: '171'
+  :url: http://ja.doukaku.org/comment/6804
+  :user_name: leque
+  :user_url: /web/20090512172001/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2008/07/22 18:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>一番外側の変数 = グローバル変数と解釈して書きました。 R5RS の範囲内の構文は網羅しています。入力は一行に置換対象の識別子と置換後の識別子を空白で区切って与えます。</p>\n\n\t"
+  :code: |
+    (use srfi-1)
+    (use gauche.collection)
+    (use util.match)
+
+    (define (alpha-replace sexp maps)
+      (define (remove-map k ms)
+        (remove-first (lambda (p) (eq? k (car p))) ms))
+      (define (remove-maps ks ms)
+        (fold remove-map ms ks))
+      (define (remove-first pred? xs)
+        (let loop ((ys xs)
+                   (zs '()))
+          (cond ((null? ys)
+                 (reverse! zs))
+                ((pred? (car ys))
+                 (append-reverse! zs (cdr ys)))
+                (else
+                 (loop (cdr ys) (cons (car ys) zs))))))
+      (define (replace-symbol key maps)
+        (cond ((assq sexp maps) =&gt; cdr)
+              (else key)))
+      (define (replace-qq exp level maps)
+        (match exp
+          ([? symbol? exp]
+           (if (zero? level)
+               (alpha-replace exp maps)
+               exp))
+          ([? vector?]
+           (map-to &lt;vector&gt; (cut replace-qq &lt;&gt; level maps) exp))
+          (('quasiquote x)
+           (replace-qq x (+ level 1) maps))
+          (([and [or 'unquote 'unquote-splicing] uquote] x)
+           (list uquote (replace-qq x (- level 1) maps)))
+          ((x . y)
+           (cons (replace-qq x level maps)
+                 (replace-qq y level maps)))
+          (_ exp)))
+      (define (improper-list-&gt;list xs)
+        (let loop ((ys xs)
+                   (rs '()))
+          (cond ((null? ys) (reverse rs))
+                ((pair? ys) (cons (car ys) rs))
+                (else (reverse (cons ys rs))))))
+      (define (take-internal-define-syms sexps)
+        (map (lambda (exp)
+               (if (pair? exp)
+                   (caadr exp)
+                   (cadr exp)))
+             (take-while (lambda (exp)
+                           (and (pair? exp)
+                                (or (eq? (car exp) 'define)
+                                    (eq? (car exp) 'define-syntax))))
+                         sexps)))
+      (match sexp
+        ([? symbol?] (replace-symbol sexp maps))
+        ([not [? pair?]] sexp)
+        (('quote exp) sexp)
+        (('quasiquote exp)
+         (list 'quasiquote (replace-qq exp 1 maps)))
+        (('case key clauses)
+         `(case ,(alpha-replace key maps)
+            ,@(map (lambda (c)
+                     `(,(car c) ,@(map (cut alpha-replace &lt;&gt; maps) (cdr c))))
+                   clauses)))
+        (('define name val)
+         `(define ,(replace-symbol name maps)
+            ,(alpha-replace val maps)))
+        (('define (name args ...) body ...)
+         (let ((maps* (remove-maps (take-internal-define-syms body)
+                                   (remove-maps (improper-list-&gt;list args) maps))))
+           `(define (,(replace-symbol name maps) ,@args)
+              ,@(alpha-replace body maps*))))
+        (('do step test body)
+         (let ((maps* (remove-maps (map car step) maps)))
+           `(do ,(map (lambda (c)
+                        `(,(first c)
+                          ,(alpha-replace (second c) maps*)
+                          ,@(if (null? (cddr c))
+                                '()
+                                (list (alpha-replace (third c) maps*))))))
+                ,(alpha-replace step maps*)
+              ,(alpha-replace test maps*)
+              ,(alpha-replace body maps*))))
+        (('lambda args body ...)
+         (let ((maps* (remove-maps (take-internal-define-syms body)
+                                   (remove-maps (improper-list-&gt;list args) maps))))
+           `(lambda ,arg
+              ,@(alpha-replace body maps*))))
+        (('let [? symbol? name] binds body)
+         (let ((maps* (remove-maps (take-internal-define-syms body)
+                                   (remove-maps (map car binds) maps))))
+           `(let ,name (map (lambda (c)
+                              `(,(car c) ,(alpha-replace (cadr c) maps)))
+                            binds)
+                 ,@(alpha-replace body maps*))))
+        (([or 'let 'let-syntax] binds body ...)
+         (let ((maps* (remove-maps (take-internal-define-syms body)
+                                   (remove-maps (map car binds) maps))))
+           `(let ,(map (lambda (c)
+                         `(,(car c) ,(alpha-replace (cadr c) maps)))
+                       binds)
+              ,@(alpha-replace body maps*))))
+        (('let* binds body ...)
+         (receive (cs maps*) (map-accum
+                              (lambda (c knil)
+                                (values `(,(car c) ,(alpha-replace (cadr c) knil))
+                                        (remove-map (car c) knil)))
+                              maps
+                              binds)
+           (let ((maps** (remove-maps (take-internal-define-syms body)
+                                      maps*)))
+             `(let* ,cs
+                ,@(alpha-replace body maps**)))))
+        (([or 'letrec 'letrec-syntax] binds body)
+         (let* ((maps* (remove-maps (map car binds) maps))
+                (maps** (remove-maps (take-internal-define-syms body) maps*)))
+           `(letrec ,(map (lambda (c)
+                            `(,(car c) ,(cadr (alpha-replace (cadr c) maps*))))
+                          binds)
+              ,@(alpha-replace body maps**))))
+        (('syntax-rules keys clauses)
+         `(syntax-rules ,keys
+            (map (lambda (c)
+                   `(,(car c)
+                     (,(alpha-replace (caadr c) maps) ,@(cdadr c))))
+                 clauses)))
+        ((x . y)
+         (cons (alpha-replace x maps)
+               (alpha-replace y maps)))))
+
+    (define (read-maps iport)
+      (port-map (lambda (line)
+                  (let ((ts (map string-&gt;symbol (string-split line #[\s]))))
+                    (cons (car ts) (cadr ts))))
+                (cut read-line iport)))
+
+    (define (main args)
+      (let ((maps (read-maps (standard-input-port))))
+        (call-with-input-file (cadr args)
+          (lambda (iport)
+            (port-for-each
+             (lambda (sexp)
+               (write (alpha-replace sexp maps)))
+             (cut read iport))))
+        0))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '7124'
+  :parent_id: '171'
+  :url: http://ja.doukaku.org/comment/7124
+  :user_name: kkobayashi
+  :user_url: /web/20090512172001/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2008/08/14 08:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>substitute()を使って、Rのparserにお任せします。</p>\n<p>お題の「一番外側の変数」というのは、「スコープ内の変数」という解釈でいいのでしょうか。例えば以下のようなコードでは、xの最終的な値は10になるので、スコープをさしているのであれば「一番外側」にこだわる必要はないと判断しました。</p>\n<p>例では、変数\"x\"を\"aaaa\"に変更しています。リストの項目名である\"x\"や文字列中の\"x\"、別の変数名の一部に含まれる\"x\"など、置換するべきでないものは残されているようです。:</p>\n<pre
+    class=\"literal-block\">\n&gt; alpha.replace(\"x\", \"aaaa\")\n\n(入力)\nx   &lt;-
+    1\ny   &lt;- list(x=10)\nz   &lt;- \"w x y z\"\nxyz &lt;- 1\nzzz &lt;- {\n   x
+    &lt;- 10\n}\nx\n\n(出力)\n{\n   aaaa &lt;- 1\n   y &lt;- list(x = 10)\n   z &lt;-
+    \"w x y z\"\n   xyz &lt;- 1\n   zzz &lt;- {\n       aaaa &lt;- 10\n   }\n   aaaa\n}\n</pre>\n\n\t"
+  :code: |
+    alpha.replace &lt;- function(from, to){
+       script &lt;- c("substitute({",readLines(),"}, list(",from,"=quote(",to,")))")
+       eval(parse(text=script))
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8345'
+  :parent_id: '171'
+  :url: http://ja.doukaku.org/comment/8345
+  :user_name: t_noborio
+  :user_url: /web/20090512172001/http://ja.doukaku.org/user/729/
+  :language: Python
+  :time: 2009/01/16 10:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>標準モジュールのtokenizeを使い実装しました。\nトークンレベルで調べているのでクラス名かどうかの判断をすごく簡単に自前でやっています。</p>\n\n\t"
+  :code: |
+    import tokenize
+    from StringIO import StringIO
+
+    def alpha(s, old_name, new_name):
+        result = []
+        before_tok = ()
+        for toknum, tokval, _, _, _ in tokenize.generate_tokens(StringIO(s).readline):
+            if toknum == tokenize.NAME and tokval == old_name \
+                    and (not (before_tok[0] == tokenize.NAME and before_tok[1] == "class")):
+                result.append((toknum, new_name))
+            else:
+                result.append((toknum, tokval))
+            before_tok = (toknum, tokval)
+        return tokenize.untokenize(result)
+
+    print alpha("""
+    class a:
+        a = 3
+        pass
+
+    def foo():
+        a = 3
+        return 0
+
+    a = 0
+    c = a
+    """, "a", "b")
+  :tags: []
+  :references:
+    :url: 
+    :title: 

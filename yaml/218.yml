@@ -1,0 +1,550 @@
+---
+:id: '218'
+:title: 行列式の計算
+:comments:
+- :id: '8052'
+  :parent_id: '218'
+  :url: http://ja.doukaku.org/comment/8052
+  :user_name: ckbx
+  :user_url: /web/20090103104431/http://ja.doukaku.org/user/893/
+  :language: Python
+  :time: 2008/11/19 18:32 GMT
+  :vote_count: '3'
+  :vote_score: '-1'
+  :body: "\r\n\t  <p>n×nの2次元配列を引数にとり、\nこれを行列とみなして行列式を返す\n関数を作成してください。</p>\n<p>行列・線形代数のライブラリ等を\n使用しないことが条件です。</p>\n<p>参考：http://ja.wikipedia.org/wiki/%E8%A1%8C%E5%88%97%E5%BC%8F</p>\n\r\n\t"
+  :code: |
+    # -*- coding: utf-8 -*-
+
+    #   定義に基づく実装例
+
+
+    #   対称群
+    def symmetric_group(n):
+        #   配列 [0, 1, .., (n-1)] を並び替えてできる
+        #   すべての配列の組み合わせを返します。
+
+    #  置換の符号
+    def signature(sym):
+        #   配列 [0, 1, .., (n-1)] の符号を +1とします。
+        #   互換（2つの要素を交換）すると符合が変わります。
+        #   配列 [0, 1, .., (n-1)] から
+        #   奇数回の互換で得られる配列の符号は -1、
+        #   偶数回の互換で得られる配列の符号は +1 になります。
+
+    #  行列式
+    def determinant(mat):
+        det = 0;
+        deg = len(mat)
+        for s in symmetric_group(deg):
+            term = signature(s)
+            for i in range(deg):
+                term *= mat[i][s[i]]
+            det += term
+        return det
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8084'
+  :parent_id: '218'
+  :url: http://ja.doukaku.org/comment/8084
+  :user_name: 匿名
+  :user_url: /web/20090103104431/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/11/27 01:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>pythonなので、未定義の\nsymmetric_groupとsignatureだけ書きました。\nなんかイマイチ……</p>\n\n\t"
+  :code: |
+    def permutations(xs):
+        if not xs: yield []
+        for i, x in enumerate(xs):
+            for ys in permutations(xs[:i] + xs[i+1:]):
+                yield [x] + ys
+
+    symmetric_group = lambda n: list(permutations(range(n)))
+
+    def signature(sym):
+        v, count = sym[:], 1
+        for i in range(len(sym) - 1):
+            for j in range(len(sym) - 1, i, -1):
+                if v[j] &lt; v[j-1]:
+                    v[j],v[j-1] = v[j-1],v[j]
+                    count *= -1
+        return count
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8085'
+  :parent_id: '218'
+  :url: http://ja.doukaku.org/comment/8085
+  :user_name: sumim
+  :user_url: /web/20090103104431/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/11/27 04:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: "| determinant |\n\ndeterminant := [:mat |\n    | symmetricGroupAndSigPairs
+    deg |\n\n    symmetricGroupAndSigPairs := [:nn |\n        | permutaions pairs
+    |\n        pairs := OrderedCollection new.\n        permutaions := [:ary :pos
+    :sig |\n            pos = ary size ifTrue: [pairs add: {ary copy. sig}] ifFalse:
+    [\n            pos to: ary size do: [:idx |\n                ary swap: pos with:
+    idx.\n                permutaions copy fixTemps \n                    valueWithArguments:
+    {ary. pos + 1. \n                        pos = idx ifTrue: [sig] ifFalse: [sig
+    negated]}.\n                ary swap: pos with: idx]]].\n        permutaions copy
+    fixTemps\n            valueWithArguments: {(1 to: nn) asArray. 1. 1}.\n        pairs
+    asArray].\n\n    deg := mat size.\n    (symmetricGroupAndSigPairs value: deg)\n
+    \           inject: 0\n            into: [:det :pair |\n        det + ((1 to:
+    deg)\n                inject: pair last\n                into: [:term :idx |\n
+    \           term * ((mat at: idx) at: (pair first at: idx))])]].\n\ndeterminant
+    value: #(\n    (1 2 3 4)\n    (2 3 4 1)\n    (3 4 1 2)\n    (4 1 2 3))   \"=&gt;
+    160 \"\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '8086'
+  :parent_id: '218'
+  :url: http://ja.doukaku.org/comment/8086
+  :user_name: 匿名
+  :user_url: /web/20090103104431/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/11/27 08:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+
+    #define SWAP(type, a, b) do { type tmp = a; a = b; b = tmp; } while (0)
+
+    struct matrix_t { int *cell, deg, det; };
+
+    void perm(int *p, int n, int count,
+            void (*cb)(void*, int*, int), void* arg)
+    {
+        if (n == 0) (*cb)(arg, p, count);
+        else {
+            int i;
+            perm(p, n - 1, count, cb, arg);
+            for (i = n - 1; i &gt;= 0; --i) {
+                SWAP(int, p[i], p[n]);
+                perm(p, n - 1, count + 1, cb, arg);
+                SWAP(int, p[i], p[n]);
+            }
+        }
+    }
+    void callback(void *arg, int *p, int count)
+    {
+        struct matrix_t *matrix = arg;
+        int i, deg = matrix-&gt;deg, term = count % 2 ? -1 : 1;
+        for (i = 0; i &lt; deg; ++i)
+            term *= matrix-&gt;cell[deg * i + p[i]];
+        matrix-&gt;det += term;
+    }
+    int main()
+    {
+        int cell[] = { 2,4,0,5, 1,-2,-1,3, 1,2,3,0, 3,3,-4,-4 };
+        struct matrix_t m = { cell, 4, 0 };
+        int p[] = { 0, 1, 2, 3 };
+        perm(p, 4-1, 0, callback, &amp;m);
+        printf("%d\n", m.det);
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8087'
+  :parent_id: '218'
+  :url: http://ja.doukaku.org/comment/8087
+  :user_name: 匿名
+  :user_url: /web/20090103104431/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/11/27 09:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>あ。関数を作らないといけないのですね。しかも「二次元配列」を受け取る。</p>\n<p>Cで要素数の不定な二次元配列を受け取る方法は存在しないので、これで勘弁してください。</p>\n\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+
+    #define SWAP(type, a, b) do { type tmp = a; a = b; b = tmp; } while (0)
+
+    struct matrix_t { int *cell, deg, det; };
+
+    void perm(int *p, int n, int count,
+            void (*cb)(void*, int*, int), void* arg)
+    {
+        if (n == 0) (*cb)(arg, p, count);
+        else {
+            int i;
+            perm(p, n - 1, count, cb, arg);
+            for (i = n - 1; i &gt;= 0; --i) {
+                SWAP(int, p[i], p[n]);
+                perm(p, n - 1, count + 1, cb, arg);
+                SWAP(int, p[i], p[n]);
+            }
+        }
+    }
+    void callback(void *arg, int *p, int count)
+    {
+        struct matrix_t *matrix = arg;
+        int i, deg = matrix-&gt;deg, term = count % 2 ? -1 : 1;
+        for (i = 0; i &lt; deg; ++i)
+            term *= matrix-&gt;cell[deg * i + p[i]];
+        matrix-&gt;det += term;
+    }
+    int determinant(int *cell, int deg)
+    {
+        struct matrix_t matrix = { cell, deg, 0 };
+        int i, *p = malloc(deg * sizeof(int));
+        for (i = 0; i &lt; deg; ++i) p[i] = i;
+        perm(p, deg-1, 0, callback, &amp;matrix);
+        free(p);
+        return matrix.det;
+    }
+    int main()
+    {
+        int cell[][4] = {{2,4,0,5}, {1,-2,-1,3}, {1,2,3,0}, {3,3,-4,-4}};
+        printf("%d\n", determinant((int*)cell, 4));
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8088'
+  :parent_id: '218'
+  :url: http://ja.doukaku.org/comment/8088
+  :user_name: nobsun
+  :user_url: /web/20090103104431/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/11/28 03:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">数値のリストのリストを2次元行列とみなしています。\r\n正方行列であることのチェックはしていません。\r\n\r\n</pre>\n\t"
+  :code: |
+    import Control.Applicative ((&lt;*&gt;))
+    import Data.List (tails)
+
+    det :: Num a =&gt; [[a]] -&gt; a
+    det = flip det' &lt;*&gt; length
+    det' 2 mat = (a0 !! 0) * (a1 !! 1) - (a0 !! 1) * (a1 !! 0)
+      where a0 = mat !! 0; a1 = mat !! 1
+    det' n mat = sum $ zipWith (f n) mat (tail (tails (cycle mat)))
+      where f n xs yss = head xs * det' (n-1) (take (n-1) (map tail yss))
+  :tags:
+  - ghc-6.10.1
+  :references:
+    :url: 
+    :title: 
+- :id: '8090'
+  :parent_id: '218'
+  :url: http://ja.doukaku.org/comment/8090
+  :user_name: syat
+  :user_url: /web/20090103104431/http://ja.doukaku.org/user/766/
+  :language: C
+  :time: 2008/11/28 11:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>余因子展開で。微積より線形代数のほうが好きでした。</p>\n\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+
+    class Matrix {
+        static public float Det(float[,] data) {
+            return Det2(data, new Stack&lt;int&gt;());
+        }
+        static float Det2(float[,] data, Stack&lt;int&gt; except) {
+            int size = data.GetLength(0);
+            int y = except.Count;
+            switch (size - except.Count) {
+                case 0:
+                    return 1;
+                default:
+                    int sign = 1;
+                    float ret = 0;
+                    for (int x = 0 ; x &lt; size ; x++) {
+                        if (!except.Contains(x)) {
+                            except.Push(x);
+                            ret += sign * data[x, y] * Det2(data, except);
+                            except.Pop();
+                            sign *= -1;
+                        }
+                    }
+                    return ret;
+            }
+        }
+    }
+    class Program {
+        static void Main(string[] args) {
+            float det = Matrix.Det(new float[,] {
+                    {1,2,3,4},
+                    {2,3,4,1},
+                    {3,4,1,2},
+                    {4,1,2,3}
+                });
+            Console.WriteLine("行列式は{0}", det);
+            Console.ReadKey();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8097'
+  :parent_id: '218'
+  :url: http://ja.doukaku.org/comment/8097
+  :user_name: nobsun
+  :user_url: /web/20090103104431/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/11/30 07:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">すみません。おおまちがい！！\r\n2次と3次でしか正しくありません。\r\n符号の反転を考慮できていませんでした。\r\nこんどはだいじょうぶかなぁ。。。\r\n\r\n</pre>\n\t"
+  :code: |
+    import Control.Applicative ((&lt;*&gt;))
+    import Data.List (tails)
+
+    det :: Num a =&gt; [[a]] -&gt; a
+    det = flip det' &lt;*&gt; length
+    det' 1 mat = head (head mat)
+    det' n mat = sum $ zipWith3 (f n) (sgns n) mat (tail (tails (cycle mat)))
+      where f n sg xs yss = sg * head xs * det' (n-1) (take (n-1) (map tail yss))
+            sgns n = iterate (* if even n then -1 else 1) 1
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8100'
+  :parent_id: '218'
+  :url: http://ja.doukaku.org/comment/8100
+  :user_name: horiuchi
+  :user_url: /web/20090103104431/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/12/01 03:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>#8090 とまったく同じですが、余因子展開で行列式を求めました。</p>\n\n\t"
+  :code: |
+    import java.util.Stack;
+
+    public class Sample218 {
+        public static double determinant(double[][] matrix) {
+            if (matrix.length == 0) return 0;
+            if (matrix.length != matrix[0].length) {
+                // 他の行の長さはチェックしていない
+                throw new IllegalArgumentException();
+            }
+            return determinant(matrix, new Stack&lt;Integer&gt;());
+        }
+        private static double determinant(double[][] matrix, Stack&lt;Integer&gt; except) {
+            if (matrix.length == except.size()) {
+                return 1.0;
+            }
+            double result = 0.0;
+            int y = except.size();
+            for (int x = 0, sign = 1; x &lt; matrix.length; x++) {
+                if (!except.contains(x)) {
+                    except.push(x);
+                    result += sign * matrix[y][x] * determinant(matrix, except);
+                    except.pop();
+                    sign *= -1;
+                }
+            }
+            return result;
+        }
+
+        public static void main(String[] args) {
+            System.out.println(Sample218.determinant(new double[][] {
+                    {1,2},
+                    {3,4},
+            }));
+            System.out.println(Sample218.determinant(new double[][] {
+                    {1,2,3,4},
+                    {2,3,4,1},
+                    {3,4,1,2},
+                    {4,1,2,3}
+            }));
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '8110'
+  :parent_id: '218'
+  :url: http://ja.doukaku.org/comment/8110
+  :user_name: ika
+  :user_url: /web/20090103104431/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2008/12/03 17:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>メタプログラミングしてみました。determinant_helper1!(2, \"matrix\") は \"matrix[0][0]
+    * (matrix[1][1]) + -matrix[0][1] * (matrix[1][0]) + 0\" という文字列に評価されます。</p>\n<p>コンパイル時に式の展開を行うので、定数畳込みが可能で、determinant!(2)([[1,
+    2], [3, 4]]) のような式はコンパイル時定数として扱えます。</p>\n<p>8x8の行列式を計算するだけでコードサイズ2.5MBくらいなりますが
+    :-)</p>\n\n\t"
+  :code: |
+    import std.stdio : writeln;
+    import std.metastrings : ToString;
+
+    template tuple(T...) {
+        alias T tuple;
+    }
+
+    template range(int lwr, int upr) {
+        static if(lwr &gt; upr) {
+            alias tuple!() range;
+        } else {
+            alias tuple!(lwr, range!(lwr + 1, upr)) range;
+        }
+    }
+
+    template determinant_helper1(int n, string matrix) {
+        alias determinant_helper2!(n, matrix, range!(0, n - 1)) determinant_helper1;
+    }
+
+    template determinant_helper2(int n, string matrix, x...) {
+        static if(x.length == 1) {
+            invariant determinant_helper2 = matrix ~ "[" ~ ToString!(n - x.length) ~ "][" ~ ToString!(x[0]) ~ "]";
+        } else {
+            alias determinant_helper3!(n, matrix, 0, x) determinant_helper2;
+        }
+    }
+
+    template determinant_helper3(int n, string matrix, int idx, x...) {
+        static if(idx &lt; x.length) {
+            invariant determinant_helper3 = (idx % 2 ? "-" : "") ~
+                                            matrix ~ "[" ~ ToString!(n - x.length) ~ "][" ~ ToString!(x[idx]) ~ "] * " ~
+                                            "(" ~ determinant_helper2!(n, matrix, tuple!(x[0 .. idx], x[idx + 1 .. $])) ~ ") + " ~
+                                            determinant_helper3!(n, matrix, idx + 1, x);
+        } else {
+            invariant determinant_helper3 = "0";
+        }
+    }
+
+    auto determinant(int n, T)(T[][] matrix) if(n &gt; 0) {
+        return mixin(determinant_helper1!(n, (matrix.stringof)));
+    }
+
+    void main() {
+        real[][] m2 = [[1, 2],
+                       [3, 4]];
+        real[][] m4 = [[1, 2, 3, 4],
+                       [2, 3, 4, 1],
+                       [3, 4, 1, 2],
+                       [4, 1, 2, 3]];
+        writeln(determinant!(2)(m2));
+        writeln(determinant!(4)(m4));
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8116'
+  :parent_id: '218'
+  :url: http://ja.doukaku.org/comment/8116
+  :user_name: emasaka
+  :user_url: /web/20090103104431/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/12/05 08:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>bashでは「2次元配列を引数に」とる方法がないため、次数を第1引数に指定し、各要素を第2引数以降にべたに並べています。</p>\n<p>処理内容は#8090の写経です。</p>\n\n\t"
+  :code: |
+    #!/bin/bash
+
+    function det() {
+        local deg=$1
+        shift
+        ((deg * deg == $#)) || exit 1
+        det2 $deg '' "$@"
+    }
+
+    function det2() {
+        local -i size=$1
+        local -a except=($2)
+        shift 2
+        local -i y=${#except[@]}
+
+        if ((size == y)); then
+            echo 1
+        else
+            local -i sign=1
+            local -i ret=0
+            local -i x
+            for ((x = 0 ; x &lt; size ; x++)) {
+                if not_contains $x "${except[@]}"; then
+                    local -i val=$(xyref $size $x $y "$@")
+                    local -i d2=$(det2 $size "${except[*]} $x" "$@")
+                    ((ret += sign * val * d2))
+                    ((sign *= -1))
+                fi
+            }
+            echo $ret
+        fi
+    }
+
+    function not_contains() {
+        local x=$1
+        shift
+        local e
+        for e; do
+            [ "$e" = "$x" ] &amp;&amp; return 1
+        done
+        return 0
+    }
+
+    function xyref() {
+        local -i deg=$1
+        local -i x=$2
+        local -i y=$3
+        shift 3
+        local -a ary=("$@")
+
+        echo ${ary[deg * y + x]}
+    }
+
+    det 4 1 2 3 4 2 3 4 1 3 4 1 2 4 1 2 3
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8128'
+  :parent_id: '218'
+  :url: http://ja.doukaku.org/comment/8128
+  :user_name: saws
+  :user_url: /web/20090103104431/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/12/09 05:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>誰も投稿していないので.</p>\n<p>主小行列式に展開して計算しています.</p>\n\n\t"
+  :code: |
+    def pr_minor(mat,pos) # get a principle minor
+      mat.map.with_index{|row,n|
+        n == pos.first ? nil : row.reject.with_index{|a,m| m == pos.last}}.compact
+    end
+    def det(mat)
+      det_aux = proc{|mat,j|
+        mat.size == 1 ? mat[0][0] :
+        mat.each_index.inject(0){|s,i|
+          s + (-1)**(i+j)*mat[i][j]*det_aux.(pr_minor(mat,[i,j]), j)}}
+      det_aux.(mat,0)
+    end
+    mat = Array.new(n=4){Array.new(n){rand(9)}}
+    puts mat.map{|r| r.join("\s")}.join("\n")
+    puts det(mat)
+    #require 'matrix' and puts Matrix[*mat].det
+  :tags:
+  - 1.9.0
+  :references:
+    :url: 
+    :title: 

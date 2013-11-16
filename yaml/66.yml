@@ -1,0 +1,928 @@
+---
+:id: '66'
+:title: ファイル内の重複行削除(後優先)
+:comments:
+- :id: '3422'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3422
+  :user_name: raynstard
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2007/10/15 08:31 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  「<a href=\"/web/20081202041243/http://ja.doukaku.org/16/\">アレイのuniq</a>」の応用編です。\r\n<p>\r\n入力されたテキストデータから重複する行をとりのぞいて、その結果を標準出力へ出力するプログラムを作成してください。\r\n</p>\n<p>\r\n重複行の排除については、以下の仕様を満たしてください。\r\n</p>\n<p>\r\n</p>\n<ol>\n<li>
+    読み込み順序は変更しないこと\r\n</li>\n<li> 重複する行があった場合、以前のデータを削除すること\r\n  (後に読み込んだ方が強い)\r\n</li>\n<li>
+    ファイル全体を一度にメモリに読み込んで処理しないこと\r\n</li>\n<li> 比較は行全体で行うこと\r\n</li>\n</ol>\n<p>\r\n#4.はおまけですがある／なしで作りが変わってくると思われるので追加しました。\r\n</p>\n<hr>\r\nこの問題はraynstardさんにご投稿いただきました。ご協力ありがとうございます。\r\nところで、素朴な実装のしかたをするとメモリ容量の数倍のサイズのすべての行が異なっているファイルを読ませたときに大変なことが起こりそうな気がしますが、そういうシビアなお題設定ではないので素朴に解いてしまって構いません。シビアなのは続編にしたいと思います。\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3319'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3319
+  :user_name: nobsun
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/10/15 09:41 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">ナイーブ。文字エンコードはUTF8。とりあえず、\r\n標準入力 → 標準出力\r\n</pre>\n\t"
+  :code: |
+    module Main where
+
+    import Control.Applicative
+    import qualified Data.Set as S
+    import qualified System.IO.UTF8 as U
+
+    main :: IO ()
+    main = mapM_ (U.putStrLn . snd)
+         . S.toAscList . S.map pair
+         . foldl ((S.insert &lt;*&gt;) . flip S.delete) S.empty
+         . zipWith N [1..] . lines =&lt;&lt; U.getContents
+      where pair (N i s) = (i,s)
+
+    data NL = N Int String
+    instance Eq NL where
+      N _ s == N _ s' = s == s'
+    instance Ord NL where
+      N _ s `compare` N _ s' = s `compare` s'
+  :tags:
+  - Data.Set
+  - System.IO.UTF8
+  :references:
+    :url: 
+    :title: 
+- :id: '3320'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3320
+  :user_name: yohei
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/415/
+  :language: C
+  :time: 2007/10/15 10:07 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">素朴に</pre>\n\t"
+  :code: "#include &lt;list&gt;\n#include &lt;string&gt;\n#include &lt;iostream&gt;\n#include
+    &lt;fstream&gt;\n#include &lt;iterator&gt;\n#include &lt;algorithm&gt;\nusing
+    namespace std;\n\nvoid uniq(const char *fname) {\n\tifstream fin(fname);\n\tif
+    (!fin) return;\n\t\n\tlist&lt;string&gt; lines;\n\tstring s;\n\t\n\twhile (getline(fin,
+    s)) {\n\t\tlines.remove(s);\n\t\tlines.push_back(s);\n\t}\n\n\tcopy(lines.begin(),
+    lines.end(), ostream_iterator&lt;string&gt;(cout, \"\\n\"));\n}\n\nint main(void)
+    {\n\tuniq(\"hoge.txt\");\n\treturn 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3321'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3321
+  :user_name: sumim
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/10/15 10:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk で。\n\t"
+  :code: "| in lines line out |\nin := FileStream oldFileNamed: 'in.txt'.\nlines :=
+    OrderedCollection new.\n\n[(line := in nextLine) notNil] whileTrue: [\n\tlines
+    remove: line ifAbsent: [].\n\tlines add: line].\nin close.\n\nout := FileStream
+    forceNewFileNamed: 'out.txt'.\nlines do: [:each | out nextPutAll: each; cr].\nout
+    edit\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '3322'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3322
+  :user_name: mc
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2007/10/15 11:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">素朴に最初に思い付いたままな感じで…。</pre>\n\t"
+  :code: "(defpackage #:doukaku-66 (:use #:cl #:pg))\n\n(in-package #:doukaku-66)\n\n(defun
+    no-dup (file &amp;optional (output t))\n  (with-open-file (input file :direction
+    :input)\n    (flet ((rl () (read-line input nil 'eof)))\n      (do ((line (rl)
+    (rl))\n\t   result)\n\t  ((eql 'eof line)\n\t   (mapc (lambda (l) (format output
+    \"~&amp;~A~%\" l))\n\t\t (delete nil (nreverse result))))\n\t(aif (member line
+    result :test #'string=)\n\t     (setf (car it) nil))\n\t(push line result)))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3323'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3323
+  :user_name: omoikani
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/374/
+  :language: StandardML
+  :time: 2007/10/15 12:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">思いつくままに。</pre>\n\t"
+  :code: |
+    fun uniq file =
+    let
+      open TextIO
+
+      val fs = openIn file
+
+      fun f a =
+        case inputLine fs of
+            NONE =&gt; app print a
+          | SOME s =&gt; f ((List.filter (fn x =&gt; x &lt;&gt; s) a) @ [s])
+    in
+      f []
+    end;
+
+    uniq "hoge.txt"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3324'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3324
+  :user_name: 匿名
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/10/15 12:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  素朴な疑問ですが。\r\n\r\n仕様２の「重複する行があった場合、以前のデータを削除すること (後に読み込んだ方が強い) 」ですが、まったく同じ内容の行なので、どちらを削除しても結果は同じになるのではないのでしょうか？（メモリの物理領域は違うでしょうが・・・・）\r\n続編に何かあるという事でしょうか？\r\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3325'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3325
+  :user_name: kacchi
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/145/
+  :language: Scheme
+  :time: 2007/10/15 12:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ひさしぶりの投稿。\n\t"
+  :code: |
+    (use srfi-1)
+    (use srfi-42)
+    (define (uniq-file file)
+      (call-with-input-file file
+        (lambda (p)
+          (let1 ls (fold-ec '() (:port ln p read-line)
+                            ln (lambda (x r) (append (delete! x r) (list x))))
+            (do-ec (: ln ls) (print ln))))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '3326'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3326
+  :user_name: 匿名
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/10/15 13:21 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">とりあえず。\r\n</pre>\n\t"
+  :code: |
+    import sys
+
+    l = []
+    for s in file(sys.argv[1], 'r') if len(sys.argv) &gt; 1 else sys.stdin:
+      try:
+        l.remove(s)
+      except:
+        pass
+      l.append(s)
+
+    for s in l:
+      sys.stdout.write(s)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3327'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3327
+  :user_name: katsu
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/117/
+  :language: 
+  :time: 2007/10/15 14:21 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">その重複する行が表れる場所が違うと思います。\r\n後出現優先であれば、\r\nA\r\nB\r\nA\r\nC\r\nA\r\n↓\r\nB\r\nC\r\nA\r\nこれが、先に出てくる方が優先であれば\r\n↓\r\nA\r\nB\r\nC\r\nになるでしょう。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3328'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3328
+  :user_name: kozima
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/10/15 14:44 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">簡潔さ最優先で書きました。</pre>\n\t"
+  :code: |
+    (loop for s = (read-line nil nil) while s collect s into lines
+      finally (mapc #'write-line (delete-duplicates lines :test #'string=)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3330'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3330
+  :user_name: 匿名
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/10/15 15:10 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  LinkedHashSetを使用しました。後の行を優先するために先に読んだ行を消去しています（入力は標準入力から与えます）。\n\t"
+  :code: |
+    import java.io.*;
+    import java.util.*;
+
+    public class Sample {
+        public static void main(String[] args) throws IOException {
+            BufferedReader r=new BufferedReader(new InputStreamReader(System.in));
+            LinkedHashSet&lt;String&gt; uniqLines = new LinkedHashSet&lt;String&gt;();
+            String str;
+            while ((str = r.readLine()) != null) {
+                if (uniqLines.contains(str)) {
+                    uniqLines.remove(str);
+                }
+                uniqLines.add(str);
+            }
+            for (String s : uniqLines) {
+                System.out.println(s);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3331'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3331
+  :user_name: katsu
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/117/
+  :language: Scheme
+  :time: 2007/10/15 15:33 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">冒頭のarglみたいな手続き欲しいです。</pre>\n\t"
+  :code: |
+    (define (argl proc) (lambda arg (proc arg)))
+
+    (let ((h (make-hash-table 'string=?))
+          (c 0))
+      (port-for-each (cut hash-table-put! h &lt;&gt; (inc! c)) read-line)
+      (for-each (compose print car)
+                (sort (hash-table-map h cons)
+                      (compose (apply$ &lt;) (argl (map$ cdr))))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '3332'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3332
+  :user_name: yuin
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/10/15 15:44 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">getLinesで返ってくるのはイテレータです。\r\n念のため。</pre>\n\t"
+  :code: |
+    import scala.collection.mutable.LinkedHashSet
+    import scala.io.Source.fromFile
+
+    (new LinkedHashSet[String] /: fromFile("test.txt").getLines){(set,line) =&gt;
+      set -= line; set += line; set
+    }.foreach(print)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3333'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3333
+  :user_name: にしお
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2007/10/15 16:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">うわー、なるほど、試しに消してみるわけですね。\r\nその発想はなかったです。\r\n\r\n僕なら「前のを消す」じゃなくて「後ので上書き」ってやるかな。\r\n辞書を使って。</pre>\n\t"
+  :code: |
+    import sys
+    in_stream = file(sys.argv[1], 'r') if len(sys.argv) &gt; 1 else sys.stdin
+    d = {}
+    for i, line in enumerate(in_stream):
+        d[line] = i
+
+    for line in sorted(d, key=d.__getitem__):
+        sys.stdout.write(line)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3334'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3334
+  :user_name: 匿名
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/4/
+  :language: Perl
+  :time: 2007/10/15 16:24 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">1.入力文字をキーにして値を配列の位置を記憶。\r\n2.存在してたらその位置にある配列の文字を空白にしておく。\r\n3.ループ抜けたら空白を無視して出力。\r\n\r\n※ちなみに改行コードも含めてキーとなるので、空白行が入力されてもその行はちゃんと空白行として出力されます。</pre>\n\t"
+  :code: |
+    $c=0;
+    while(&lt;&gt;){$b{$_}ne''?$r[$b{$_}]='':0;$b{$_}=$c++;push@r,$_}
+    print grep{$_}@r;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3335'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3335
+  :user_name: kacchi
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/145/
+  :language: Scheme
+  :time: 2007/10/15 16:44 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  port-fold がありました。\n\t"
+  :code: |
+    (use srfi-1)
+    (define (uniq-file file)
+      (define (rp ls) (unless (null? ls) (rp (cdr ls)) (print (car ls))))
+      (with-input-from-file file
+        (lambda () (rp (delete-duplicates (port-fold cons '() read-line))))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '3336'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3336
+  :user_name: shiro
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/10/15 19:00 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">＞ arglみたいな手続き欲しいです\r\n\r\n結局composeするなら\r\n
+    \ (compose (apply$ &lt;) (map$ cdr) list)\r\nでもいけますよ。\r\n\r\nSchemeの場合、そこまでしてポイントフリーにしても\r\nあまり簡潔にならないし、動的型なんでオーバヘッドも\r\n大きくなる
+    (引数の数がわからないから全部いちいち\r\nリストにパックして受け渡すことになる)などメリットが\r\nあまりないとも言えますが。こっちの方が短くなっちゃう：\r\n
+    \ (lambda (a b) (&lt; (cdr a) (cdr b)))\r\n\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3337'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3337
+  :user_name: rucker
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/10/15 19:02 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">素朴?\r\n標準入力→標準出力</pre>\n\t"
+  :code: "&lt;?php\n$a=array();\nfor($i=0;($str=fgets(STDIN))!==false;)\n\t$a[$str]=$i++;\nasort($a);\necho
+    implode(\"\",array_keys($a));\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3338'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3338
+  :user_name: mamamoto
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2007/10/16 00:50 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">仕様をそのまま書いた感じです</pre>\n\t"
+  :code: |
+    a = []
+
+    while line = ARGF.gets
+      a.delete(line)
+      a &lt;&lt; line
+    end
+
+    a.each{|line|
+      print line
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3339'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3339
+  :user_name: katsu
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/117/
+  :language: 
+  :time: 2007/10/16 02:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">&gt;  (lambda (a b) (&lt; (cdr a) (cdr b)))\r\n\r\nそうですね。実行効率を考えても、こちらの方がよいとは思います。文字数も少ないです。わかりやすいとも思います。ただまあ、「両方のcdrを比較する」ってことばで説明できるのに、cdrが二回出てくるのが許せなかっただけなんです。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3340'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3340
+  :user_name: shiro
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/10/16 03:14 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">むしろ比較のキー抽出手続きを別に指定できるようにすべきかなあ。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3341'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3341
+  :user_name: mamamoto
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2007/10/16 03:14 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">上のは見た目は良いのですが\r\n実際走らせるとa.deleteの部分がやばいことになるので\r\n効率を若干考慮したバージョン。</pre>\n\t"
+  :code: |
+    h = {}
+
+    while line = ARGF.gets
+      h[line] = ARGF.lineno
+    end
+
+    h.sort_by{|line, lineno|
+      lineno
+    }.each{|line, lineno|
+      print line
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3343'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3343
+  :user_name: 匿名
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/10/16 04:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  なるほど、検討不足でした。\r\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3345'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3345
+  :user_name: aileron
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/467/
+  :language: Perl
+  :time: 2007/10/16 07:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Perlで書いてみた。</pre>\n\t"
+  :code: |
+    my $file_name = $ARGV[0];
+
+    open IN , '&lt;' , $file_name or die "Can't open $file_name";
+    open CMP, '&lt;' , $file_name or die "Can't open $file_name";
+
+    my $hash = {};
+    my $index= {};
+
+    for (my $n=0; my $line = &lt;IN&gt;; $n++ )
+    {
+        next if (exists $hash-&gt;{$n});
+
+        my @array = ();
+        for ( my $i=0; my $cmp = &lt;CMP&gt; ; $i++ )
+        {
+            if ( $line eq $cmp )
+            {
+                $hash-&gt;{$i} = undef ;
+                push @array , $i;
+            }
+        }
+        seek CMP , 0 , 0 ;
+
+        my $tmp = (sort {$b &lt;=&gt; $a} ( @array ))[0];
+        $index-&gt;{$tmp} = undef ;
+    }
+
+    for (my $i=0; my $line = &lt;CMP&gt;; $i++)
+    {
+        print $line if (exists $index-&gt;{$i});
+    }
+
+    close IN ;
+    close CMP;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3348'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3348
+  :user_name: nskj77
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/375/
+  :language: Haskell
+  :time: 2007/10/16 09:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    import System (getArgs)
+    import System.IO
+    import System.IO.UTF8 as U
+    import Data.List ((\\))
+    import Control.Exception (bracket)
+
+    main = do
+      (file:_) &lt;- getArgs
+      bracket (openFile file ReadMode) hClose exec
+
+    exec :: Handle -&gt; IO ()
+    exec = loop []
+      where loop ret h = do
+              eof &lt;- hIsEOF h
+              if eof then U.print ret
+                     else U.hGetLine h &gt;&gt;= return . (\l -&gt; (ret \\ [l]) ++ [l]) &gt;&gt;= flip loop h
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3349'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3349
+  :user_name: matyr
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/10/16 11:44 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t   join() で未定義属性は空文字列になることを利用。\n\t"
+  :code: |
+    var o = [], l = 0;
+    with(WSH.stdIn) while(!atEndOfStream) o[readLine() +'\n'] = l++;
+    for(l in o) o[o[l]] = l;
+    WSH.stdOut.write(o.join(''));
+  :tags:
+  - WSH
+  :references:
+    :url: 
+    :title: 
+- :id: '3350'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3350
+  :user_name: raynstard
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/127/
+  :language: Perl
+  :time: 2007/10/16 11:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ども、raynstardです。\r<br>ネタばらすと元ネタは.bash_historyの内容整理で\r<br>ええ。イレギュラーなんて考えていませんでした(笑\r<br><br>実際には部分一致での比較にしているのでもう一手間かかっていますが\r<br>こんな感じでつかっています。\r<br><br>大きなファイルきたらどうなるんだろうちょっと怖い作りかも\r<br># 入力ファイルはもちろん「|」で手抜き^^；\n\t"
+  :code: |
+    perl -ne '$h{$_}=++$i; END { print "$_" foreach ( sort { $h{$a} &lt;=&gt; $h{$b};} keys(%h));}'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3351'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3351
+  :user_name: raynstard
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2007/10/16 11:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">&gt; ところで、素朴な実装のしかたをするとメモリ容量の数倍のサイズの\r\n&gt;
+    すべての行が異なっているファイルを\r\n&gt; 読ませたときに大変なことが起こりそうな気がしますが、\r\n&gt; そういうシビアなお題設定ではないので素朴に解いてしまって構いません。\r\n&gt;
+    シビアなのは続編にしたいと思います。 \r\n後編がこわいですなー(笑\r\n2GBファイルとかっすか！\r\nうーん、マージソートが必要になったりして?\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3352'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3352
+  :user_name: Y
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/428/
+  :language: SQL
+  :time: 2007/10/16 12:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">使い方: sh uniq.sh input.txt\r\n\r\n「シビア」な場合に想定される「DBMSの再発名」の準備です。#3のメモリは主記憶と解釈しました。\r\nキャッシュで済んでしまうくらい小さいデータセットの場合にはこの解釈でも問題になるわけですが、\r\nそのことを明示しているわけではないということで\r\n\r\nuniq.shの内容は下に</pre>\n\t"
+  :code: |
+    mysql -uroot -p -N test &lt;&lt; EOF
+
+    DROP TABLE IF EXISTS tmp;
+    CREATE TABLE tmp (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      line LONGTEXT NOT NULL
+    ) CHARACTER SET UTF8;
+
+    LOAD DATA LOCAL INFILE "$1" INTO TABLE tmp FIELDS TERMINATED BY '\n' (line);
+
+    SELECT line FROM tmp GROUP BY line ORDER BY MAX(id);
+
+    EOF
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3354'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3354
+  :user_name: nobsun
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/10/16 14:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ううむ。条件3を満していない気がする。\r\nメモリの全部読み込み終ってから、次の処理をしているわけではないけど、\r\n入力したデータの処理が全部済んでからでないと出力できないわけで、\r\n重複がなければ結局全部メモリに読み込むことになる。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3355'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3355
+  :user_name: にしお
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/10/17 02:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>&gt; 重複がなければ結局全部メモリに読み込むことになる。\n</p>\n<p>「重複が全くないケースにメモリに全部読み込まれないようにせよ」という条件をつけると難易度が跳ね上がりますね。\n
+    \  なので条件3はゆるめに解釈するつもりでした。\n</p>\n\n\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3438'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3438
+  :user_name: 匿名
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/4/
+  :language: Ruby
+  :time: 2007/10/18 03:16 GMT
+  :vote_count: '3'
+  :vote_score: '-3'
+  :body: "\n\t  <pre class=\"compact\">sortは不要かと。</pre>\n\t"
+  :code: |
+    h = {}
+
+    while line = ARGF.gets
+      print line if not h[line]
+      h[line] = 0
+    end
+  :tags:
+  - Ruby1.8.5
+  :references:
+    :url: 
+    :title: 
+- :id: '3445'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3445
+  :user_name: mamamoto
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/437/
+  :language: 
+  :time: 2007/10/18 03:54 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">これ先優先になりますよね。\r\n題意を満たせないと思います。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3454'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3454
+  :user_name: Y
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/428/
+  :language: 
+  :time: 2007/10/18 07:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">mysql -uroot -p -N -r test &lt;&lt; EOF\r\n\r\n「-r」が必要です（エスケープ文字をそのまま出すために）</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3478'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3478
+  :user_name: katsu
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/117/
+  :language: 
+  :time: 2007/10/20 05:57 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">そうですね。group-sequenceみたいに指定できると、ほとんどの場合に対応できそうです。\r\n出来ないケースは、いくつかのキーが内在していて、キーの大小に優先順位があって、\r\nそれを単純な数値や文字列に写像出来ない\r\nような場合でしょうか。\r\n\r\n場違いですみません。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3491'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3491
+  :user_name: matarillo
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/136/
+  :language: C
+  :time: 2007/10/22 06:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">行データをメモリに保持してていいという条件だと理解</pre>\n\t"
+  :code: |
+    Dictionary&lt;string, long&gt; table = new Dictionary&lt;string, long&gt;();
+    long number = 0L;
+    TextReader reader = args.Length &gt; 0 ? new StreamReader(args[0], Encoding.Default) : Console.In;
+    string line = null;
+    while ((line = reader.ReadLine()) != null)
+      table[line] = number++;
+    SortedDictionary&lt;long, string&gt; list = new SortedDictionary&lt;long, string&gt;();
+    foreach (KeyValuePair&lt;string, long&gt; pair in table)
+      list.Add(pair.Value, pair.Key);
+    foreach (KeyValuePair&lt;long, string&gt; pair in list)
+      Console.WriteLine(pair.Value);
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3928'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3928
+  :user_name: dankogai
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/13 07:10 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n<p><a href=\"/web/20081202041243/http://ja.doukaku.org/67/\">続・ファイル内の重複行削除</a>よりも制限が緩いので、これで充分かと。\n</p>\n<p>Dan
+    the One-Liner Monger\n</p>\n\n\n\n\t"
+  :code: |
+    'print reverse do{grep {1&gt;$s{$_}++} reverse &lt;&gt;}' ~/.bash_history
+  :tags:
+  - oneliner
+  :references:
+    :url: 
+    :title: 
+- :id: '3973'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3973
+  :user_name: yappy
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/533/
+  :language: 
+  :time: 2007/11/13 16:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  3.ファイル全体を一度にメモリに読み込んで処理しないこと\r<br><br>これにひっかかっていませんか？\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3974'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/3974
+  :user_name: yappy
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/533/
+  :language: 
+  :time: 2007/11/13 16:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  申し訳ありません。\r<br>全く問題ないと思います。\r<br>(多分続編と間違えてました)\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4033'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/4033
+  :user_name: yappy
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/533/
+  :language: C
+  :time: 2007/11/14 16:47 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  Cでは1行読み込むといったことでさえ満足に行えないため、1行の文字数制限と、行数制限を無くする(もちろんメモリの許す限り)というところで素朴に書くというレベルを超えています。\r<br>そのかわり、行の削除は非常に素朴です。というか、疲れました。\r<br>こればかりは、他の言語に出番を許すしかないのでしょうか。C++でさえあれば・・・！\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;string.h&gt;
+    #define BLOCK_SIZE 1024
+
+    void read_line(char **out){
+        int cnt = 1;
+        *out = (char *)malloc(1);
+        *out[0] = '\0';
+        do{
+            *out = (char *)realloc(*out, BLOCK_SIZE * cnt);
+            fgets((*out) + strlen(*out), BLOCK_SIZE, stdin);
+            cnt++;
+        }while((*out)[strlen(*out)-1] != '\n' &amp;&amp; !feof(stdin));
+        *out = (char *)realloc(*out, strlen(*out) + 1);
+    }
+
+    int main(){
+        int i;
+        int size = 0;
+        char **list = NULL;
+        char *line;
+        while(!feof(stdin)){
+            read_line(&amp;line);
+            for(i=0; i&lt;size; i++){
+                if(list[i] != NULL &amp;&amp; strcmp(line, list[i]) == 0){
+                    free(list[i]);
+                    list[i] = NULL;
+                }
+            }
+            size++;
+            list = (char **)realloc(list, sizeof(char *) * size);
+            list[size - 1] = line;
+        }
+        for(i=0; i&lt;size; i++){
+            if(list[i])
+                fputs(list[i], stdout);
+            free(list[i]);
+        }
+        free(list);
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6308'
+  :parent_id: '66'
+  :url: http://ja.doukaku.org/comment/6308
+  :user_name: susu
+  :user_url: /web/20081202041243/http://ja.doukaku.org/user/218/
+  :language: OCaml
+  :time: 2008/05/20 17:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "let mem s ic =\n  try while s &lt;&gt; input_line ic do () done; true\n
+    \ with End_of_file -&gt; false;;\n\nlet uniq ic oc =\n  try \n    while true do\n
+    \     let s = input_line ic in\n      let current_pos = pos_in ic in\n      if
+    mem s ic then () else output_string oc (s ^ \"\n\n\n\n\n<!--\n     FILE ARCHIVED
+    ON 4:12:43 Dec 2, 2008 AND RETRIEVED FROM THE\n     INTERNET ARCHIVE ON 13:39:37
+    Nov 16, 2013.\n     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET
+    ARCHIVE.\n\n     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.\n
+    \    SECTION 108(a)(3)).\n-->"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

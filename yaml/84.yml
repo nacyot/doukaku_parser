@@ -1,0 +1,990 @@
+---
+:id: '84'
+:title: 文字列リストをTRIE Optimizeされた正規表現に
+:comments:
+- :id: '4038'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4038
+  :user_name: dankogai
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/14 19:23 GMT
+  :vote_count: '3'
+  :vote_score: '1'
+  :body: "\r\n\t  \n<p>これは、実例を見た方が簡単だと思います。\n   CPANに<a href=\"/web/20110214142909/http://search.cpan.org/perldoc?Regexp::Assemble\">Regexp::Assemble</a>というモジュールがあるのですが、要はこれの簡易版を作って欲しいということです。私自身、同様のことを行うモジュールを過去にいくつか作っています(e.g
+    <a href=\"/web/20110214142909/http://search.cpan.org/perldoc?Regexp::Optimizer\">Regexp::Optimizer</a>)。\n</p>\n<p>ここでは、文字列のリストを受け取って、それをTRIE化した正規表現に出来ればOKです。Regexp::AssembleやRegexp::Optimizerは正規表現を受け取ってそれをTrie化することも可能ですし、Perl
+    5.10では内部的にTrie Optimizationを行ったりするのですが、そこまでの機能は求めません。\n</p>\n<p>なお、ここで言う「正規表現」は、必ずしもPerl互換のものである必要はありません。それがTrieになっていることをきちんと示せればOKです。\n</p>\n<p>とはいうものの、Perl5互換になっていた方が、サポートしている環境が多くて有用性は高そうです。可能であればそうして下さい。\n</p>\n<p>Dan
+    the Regexp Assembler\n</p>\n\n\n\r\n\t"
+  :code: "#!/usr/local/bin/perl\nuse strict;\nuse warnings;\nuse Regexp::Assemble;\n\nmy
+    $ra = Regexp::Assemble-&gt;new;\nwhile(&lt;&gt;){\n    chomp;\n    next unless
+    $_;\n    $ra-&gt;add($_);\n}\nprint $ra-&gt;re, \"\\n\"\n__END__\n\n% grep program
+    /usr/share/dict/words \nprogram\nprogramist\nprogramistic\nprogramma\nprogrammar\nprogrammatic\nprogrammatically\nprogrammatist\nprogrammer\n\n%
+    grep program /usr/share/dict/words | perl sample.pl \n(?-xism:program(?:m(?:a(?:ti(?:c(?:ally)?|st)|r)?|er)|ist(?:ic)?)?)\n"
+  :tags: []
+  :references:
+    :url: /web/20110214142909/http://en.wikipedia.org/wiki/Trie
+    :title: Trie (en.wikipedia)
+- :id: '4147'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4147
+  :user_name: dankogai
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/26/
+  :language: 
+  :time: 2007/11/17 07:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \n<p>&gt; お題は要するに「文字列のリストを与えられたときに、それにマッチする正規表現を返せ」ということですね。\n</p>\n<p>出力的にはYesですが、実装的にはNoです。\n
+    \  TRIE Optimizeされた正規表現は、そうでない正規表現と比べてかなりの速度差が出ます。詳しくは\n</p>\n<ul>\n<li>\n     <a
+    href=\"/web/20110214142909/http://search.cpan.org/perldoc?Regexp::List\">Regexp::List</a>\n
+    </li>\n</ul>\n<p>のベンチマークの項をご覧ください。\n</p>\n<p>Dan the Regular Expressionist\n</p>\n\n\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5365'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/5365
+  :user_name: saws
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/01/16 10:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">最適化されてるとはほど遠いですが, 一応Trie構造は作れたと思います. \r\n\r\n出力結果:
+    \r\nprogram(ist(i(c(ally)?)|(st)?)?)|(m(a(t(i(c(ally)?)|(st)?)?)|(r)?)|(er)?)?</pre>\r\n\t"
+  :code: |
+    Words = %w(program programist programistic programma programmar
+               programmatic programmatically programmatist programmer)
+    class Array
+      def index2(&amp;block)
+        j = nil or each_with_index{|x, i| j = i if yield x} and j
+      end
+    end
+    class Trie
+      def initialize(words)
+        @words = words
+        max = 0 and @words.each{|x| max = x.size if x.size &gt; max}
+        @trie = Array.new(max){Array.new}
+      end
+      def run
+        @words.each{|str| add(str)}
+        substitute
+        puts rep(@trie)
+      end
+      def add(str)
+        (ary = str.split(//)).size.times{|i|
+          x, y = ary[i], (i &lt; ary.size-1 ? ary[i+1] : nil)
+          if (j = @trie[i].index2{|strc| strc[0] == x})
+            @trie[i][j][1].index2{|char| char == y} ?
+            next : @trie[i][j][1] &lt;&lt; y
+          else
+            @trie[i] &lt;&lt; [x, [y]]
+          end
+        }
+      end
+      def substitute #文字をインデックスに置換
+        (@trie.size-1).times{|i|
+          @trie[i].size.times{|j|
+            trie = @trie[i][j][1]
+            trie.map!{|x| @trie[i+1].index2{|y| x == y[0]}}.all?{|x| x} ?
+            trie.sort! : trie.compact! &amp;&amp; trie.sort!.unshift(nil)
+          }
+        }
+      end
+      private
+      def rep(ary, i = 0)
+        trie = ary[0][i]
+        if ary.size == 1
+          trie[0]
+        else
+          if trie[1].size != 1
+            trie[0] + trie[1].map{|x|
+              if x
+                suffix = (x == trie[1].compact.max ? '?' : '|')
+                "(#{rep(ary[1..-1], x)})#{suffix}"
+              else
+                ''
+              end
+            }.join
+          else
+            trie[0] + (trie[1][0] ? rep(ary[1..-1], trie[1][0]) : '')
+          end
+        end
+      end
+    end
+    trie = Trie.new(Words)
+    trie.run
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4102'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4102
+  :user_name: odz
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/212/
+  :language: Python
+  :time: 2007/11/16 08:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>あぁ、よく考えれば TRIE そのものをいじらなくてもいいな。</p>\n\r\n\t"
+  :code: |
+    import sys
+    import re
+
+    class Node(dict):
+        def __init__(self, c, acceptable, children = None):
+            if children is not None:
+                super(Node, self).__init__(children)
+            else:
+                super(Node, self).__init__()
+
+            self.c = c
+            self.acceptable = acceptable
+
+        def get_pattern(self):
+            s = re.escape(self.c)
+            if len(self) &gt; 0:
+                if len(self) == 1 and not self.acceptable:
+                    s += self.values()[0].get_pattern()
+                else:
+                    s += '(?:%s)' % '|'.join(c.get_pattern() for c in self.itervalues())
+
+                if self.acceptable:
+                    s += '?'
+            return s
+
+    class Trie(object):
+        def __init__(self, root = None):
+            if root is None:
+                self.root = Node('', False)
+            else:
+                self.root = root
+
+        def add(self, word):
+            node = self.root
+
+            for c in word:
+                if c not in node:
+                    node[c] = Node(c, False)
+                node = node[c]
+            node.acceptable = True
+
+        def get_pattern(self):
+            return self.root.get_pattern()
+
+    def main(args):
+        import fileinput
+
+        trie = Trie()
+        for line in fileinput.input(args):
+            word = line.strip()
+            trie.add(word)
+
+        print trie.get_pattern()
+
+    if __name__ == '__main__':
+        main(sys.argv[1:])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4153'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4153
+  :user_name: kozima
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/11/17 13:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">ごちゃごちゃになってしまいました。\r\n(空文字列の有無 (先頭 残り)...)
+    で trie っぽいものを作ってますが、\r\nデータ構造が適当すぎたかも。</pre>\r\n\t"
+  :code: |
+    (defun classify (strings)
+      (let ((a ()) (empty nil))
+        (dolist (s strings (cons empty a))
+          (if (string= s "")
+              (setf empty t)
+            (let* ((fst (elt s 0)) (rest (subseq s 1))
+                   (x (assoc fst a)))
+              (if x (push rest (cdr x))
+                (push `(,fst . (,rest)) a)))))))
+
+    ;; TRIE ::= (data (char . TRIE)*)
+    (defun make-trie (strings)
+      (let ((x (classify strings)))
+        (cons (car x)
+              (mapcar (lambda (a) (cons (car a) (make-trie (cdr a))))
+                      (cdr x)))))
+
+    (defun make-regexp (trie)
+      (cond ((and (null (car trie)) (null (cddr trie)))
+             ;; (nil (c . subtrie)) =&gt; common prefix がある
+             (format nil "~C~A" (caadr trie) (make-regexp (cdadr trie))))
+            ((cdr trie)
+             ;; (d (c . subtrie) ...) =&gt; common prefix なし
+             (format nil "(?:~{~{~C~A~}~^|~})~@[?~]"
+                     (mapcar (lambda (a) (list (car a) (make-regexp (cdr a))))
+                             (cdr trie))
+                     (car trie)))
+            (t
+             ;; 空文字列しかない
+             "")))
+
+    (defun trie-optimize (strings) (make-regexp (make-trie strings)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5214'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/5214
+  :user_name: ika
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2008/01/07 09:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  連想配列を使って普通に木を作る方法で。\r<br><br>標準ライブラリ(std.regexp)では後方参照なしのグルーピングがサポートされないので、普通の括弧にしました。\r<br><br>program(ist(ic)?|m(a(r|ti(c(ally)?|st))?|er))?\r\n\t"
+  :code: "import std.stdio, std.string, std.utf;\n\nclass Trie {\n    private struct
+    Node {\n        Node*[dchar] nodes;\n        bool matchTail;\n        \n        const
+    string toString() {\n            if(!nodes.length) return \"\";\n            string[]
+    patterns;\n            foreach(c, node; this.nodes) {\n                patterns
+    ~= quotemeta(toUTF8([c])) ~ node.toString();\n            }\n            string
+    pattern = patterns.join(\"|\");\n            if(nodes.length == 1) {\n                return
+    matchTail ? \"(\" ~ pattern ~ \")?\" : pattern;\n            } else {\n                return
+    \"(\" ~ pattern ~ \")\" ~ (matchTail ? \"?\" : \"\");\n            }\n        }\n
+    \   }\n    \n    private Node tree;\n    \n    this() { }\n    \n    this(const(string)[]
+    words) {\n        foreach(word; words) {\n            this.addWord(word);\n        }\n
+    \   }\n    \n    void addWord(string word) {\n        auto node = &amp;this.tree;\n
+    \       foreach(dchar c; word) {\n            if(auto p = c in node.nodes) {\n
+    \               node = *p;\n            } else {\n                node = node.nodes[c]
+    = new Node;\n            }\n        }\n        node.matchTail = true;\n    }\n
+    \   \n    const string toString() {\n        return tree.toString();\n    }\n}\n\nprivate
+    string quotemeta(string str) {\n    string result;\n    foreach(c; str) {\n        switch(c)
+    {\n            case '.': case '*': case '+': case '?':\n            case '^':
+    case '$': case '{': case '}':\n            case '[': case ']': case '(': case
+    ')':\n            case '|':\n                result ~= ['\\\\', c];\n                break;\n
+    \           default:\n                result ~= c;\n        }\n    }\n    return
+    result;\n}\n\nvoid main(){\n    auto words = `program\nprogramist\nprogramistic\nprogramma\nprogrammar\nprogrammatic\nprogrammatically\nprogrammatist\nprogrammer`.splitlines();\n
+    \   writeln(new Trie(words));\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4105'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4105
+  :user_name: SiroKuro
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/540/
+  :language: C
+  :time: 2007/11/16 10:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  とりあえず素朴に。例題データ読ませると「^program(?:|(?:ist(?:|ic)|m(?:a(?:|(?:r|ti(?:c(?:|ally)|st)))|er)))$」を吐きます。\r\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    static class Program {
+        public static void Main(String[] args) {
+            // 行ごとに読み込んで
+            List&lt;string&gt; words = new List&lt;string&gt;();
+            using(StreamReader sr = new StreamReader(args[0])) {
+                foreach(string line in sr.ReadToEnd().Split('\n', '\r')) {
+                    if (line != string.Empty &amp;&amp; !words.Contains(line)) {
+                        words.Add(line);
+                    }
+                }
+                words.Sort();
+            }
+            // 重複文字数をチェックして
+            List&lt;int&gt; indexes = new List&lt;int&gt;(); {
+                int[] itemp = new int[words.Count];
+                for(int i = words.Count - 1; 1 &lt;= i; i--) {
+                    int to = Math.Min(words[i - 1].Length, words[i].Length);
+                    for(int j = 0; j &lt; to &amp;&amp; words[i - 1][j] == words[i][j]; j++) {
+                        itemp[i]++;
+                    }
+                }
+                indexes.AddRange(itemp);
+            }
+            // 重複文字数を多い順に並び替えて
+            List&lt;int&gt; times = new List&lt;int&gt;(); {
+                foreach(int cnt in indexes) {
+                    if (!times.Contains(cnt))
+                        times.Add(cnt);
+                }
+                times.Sort();
+                times.Reverse();
+            }
+            // 重複部分を削っていく
+            foreach(int steps in times) {
+                for(int i = words.Count - 1; 0 &lt; i; i--) {
+                    if (indexes[i] == steps) {
+                        words[i - 1] = string.Format("{0}(?:{1}|{2})",
+                            words[i - 1].Substring(0, steps),
+                            words[i - 1].Substring(steps),
+                            words[i].Substring(steps));
+                        words.RemoveAt(i);
+                        indexes.RemoveAt(i);
+                    }
+                }
+            }
+            string result = "^" + words[0] + "$";
+            Console.WriteLine(result);
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4118'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4118
+  :user_name: kozima
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/164/
+  :language: Emacs
+  :time: 2007/11/16 15:44 GMT
+  :vote_count: '4'
+  :vote_score: '2'
+  :body: "\r\n\t  <pre class=\"compact\">Emacs Lisp だと regexp-opt が要求通り(+α)のことをやってくれるようです。\r\nただ、backslash
+    だらけな elisp の正規表現が返ります。\r\n\r\n実行結果は以下。\r\n\"program\\\\(?:ist\\\\(?:ic\\\\)?\\\\|m\\\\(?:a\\\\(?:r\\\\|ti\\\\(?:c\\\\(?:ally\\\\)?\\\\|st\\\\)\\\\)?\\\r\n\\\\|er\\\\)\\\\)?\"</pre>\r\n\t"
+  :code: |
+    (regexp-opt '("program"
+                  "programist"
+                  "programistic"
+                  "programma"
+                  "programmar"
+                  "programmatic"
+                  "programmatically"
+                  "programmatist"
+                  "programmer"))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4207'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4207
+  :user_name: greentea
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/573/
+  :language: Other
+  :time: 2007/11/18 15:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>1文字ずつのツリーを作って、子を1つしかもたない親に子をくっつけて、参考ページにあるようなTrieツリーにしました。</p>\n\r\n\t"
+  :code: |
+    import sys
+
+    def get_chr_tree(strs, before=""):
+      index = len(before)
+      s = set([str[index] for str in strs if len(str) &gt; index and str[:index]==before])
+      l = [get_chr_tree(strs, before+c) for c in s]
+      return [before[-1]] + l if before else l[0]
+
+    def merge_chr(chr_tree):
+      try:
+        if len(chr_tree) == 2:
+          return merge_chr([chr_tree[0]+chr_tree[1][0]] + chr_tree[1][1:])
+        else: return [chr_tree[0]] + [merge_chr(tree) for tree in chr_tree[1:]]
+      except IndexError:
+        return chr_tree
+
+    def to_regexp(chr_tree):
+      def make_regexp(chr_tree):
+        if len(chr_tree) == 1: return chr_tree[0]
+        else:
+          hatena = "?" if [True for l in chr_tree[1:] if "\n" in l] else ""
+          try:
+            inner = "".join(["|" + make_regexp(tree) for tree in chr_tree[1:]])
+          except IndexError:
+            print "IndexError",chr_tree
+            inner = ""
+          return chr_tree[0] + "(?:" + inner + ")" + hatena
+
+      return "(?-xism:" + make_regexp(chr_tree).replace("|\n", "").replace("\n", "").replace(":|", ":") + ")"
+
+    words = []
+    for line in sys.stdin: words.append(line)
+    chr_tree = get_chr_tree(words)
+    merged_chr_tree = merge_chr(chr_tree)
+    print to_regexp(merged_chr_tree) # =&gt; (?-xism:program(?:m(?:a(?:ti(?:c(?:ally)?|st)|r)?|er)|ist(?:ic)?)?)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4098'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4098
+  :user_name: にしお
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/16 06:08 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <p>お題は要するに「文字列のリストを与えられたときに、それにマッチする正規表現を返せ」ということですね。</p>\n<p>で、(?:foo|bar|baz)なんていうトリビアルな出力を許すと何も面白くないので、単語の頭が一致する場合はくっつけて(?:foo|ba[rz])とかにするということですよね？</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4208'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4208
+  :user_name: greentea
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/573/
+  :language: 
+  :time: 2007/11/18 15:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>しまった。言語の指定忘れてた。Pythonです。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4196'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4196
+  :user_name: 匿名
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/11/18 07:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">内部ではTRIEを使っていませんが、出力はお題でのサンプルと、\r\n少なくともこの入力に関しては、同じになっています。\r\n\r\nお題の解釈が出力だけを要求しているようにも読めるので、\r\nとりあえず投稿します。\r\n\r\nちなみにカッコの中に'-xism'がある正規表現は\r\npythonのreモジュールでは使えないようです。\r\n</pre>\r\n\t"
+  :code: |
+    import sys
+    import re
+
+    def f1(l):
+      if len(l) == 1:
+        return l[0]
+
+      r = '^(?:%s%s)' % ('(?:'.join(list(l[0])), ')?' * (len(l[0])-1))
+      b = []
+      c = []
+      for s in l:
+        s = s.rstrip()
+        m = re.findall(r, s)
+        if m:
+          b.append((m[0], s))
+        else:
+          c.append(s)
+
+      a = min([t[0] for t in b])
+      flg = bool([t[1] for t in b if a == t[1]])
+      b = [t[1][len(a):] for t in b if len(t[1]) != len(a)]
+      if b:
+        a = '%s(?:%s)%s' % (a, f1(b), '?' if flg else '')
+      if c:
+        c = f1(c)
+        a = '%s|%s' % ((a, c) if len(a) &gt; len(c) else (c, a))
+      return a
+
+    def f(l):
+      return '(?-xism:%s)' % f1(l)
+    #  return '(?:%s)' % f1(l)
+
+    if __name__ == '__main__':
+      print f(sys.stdin.readlines())
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4198'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4198
+  :user_name: kozima
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/164/
+  :language: OCaml
+  :time: 2007/11/18 07:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">だいたい同じことを OCaml で。\r\nパターンマッチのおかげで多少は読みやすくなったかも。\r\nリストの破壊的操作ができないので
+    Map を使ってみました。</pre>\r\n\t"
+  :code: |
+    open Printf
+
+    type trie = Node of bool * (char * trie) list
+
+    module M = Map.Make(struct type t = char let compare = Char.compare end)
+
+    let rec classify b map = function
+      | [] -&gt; b, map
+      | ""::rest -&gt; classify true map rest
+      | str::rest -&gt;
+          let c, s = str.[0], String.sub str 1 (String.length str - 1) in
+          let newmap =
+            M.add c (s::try M.find c map with Not_found -&gt; []) map in
+            classify b newmap rest
+
+    let rec make_trie strings =
+      let b, map = classify false M.empty strings in
+        Node(b, M.fold (fun c strs al -&gt; (c, (make_trie strs))::al) map [])
+
+    let rec make_regexp = function
+      | Node(false, [c, trie]) -&gt; sprintf "%c%s" c (make_regexp trie)
+      | Node(b, (_::_ as alist)) -&gt;
+          let res =
+            List.map (fun (c, t) -&gt; sprintf "%c%s" c (make_regexp t)) alist in
+          let re = String.concat "|" res in
+            sprintf "(?:%s)%s" re (if b then "?" else "")
+      | _ -&gt; ""
+
+    let trie_optimize strings = make_regexp (make_trie strings)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4097'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4097
+  :user_name: にしお
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/16 06:03 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <p>参考までに日本語版</p>\n<p>トライ木 - Wikipedia：\n<a class=\"reference\" href=\"/web/20110214142909/http://ja.wikipedia.org/wiki/%E3%83%88%E3%83%A9%E3%82%A4%E6%9C%A8\">http://ja.wikipedia.org/wiki/%E3%83%88%E3%83%A9%E3%82%A4%E6%9C%A8</a></p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4109'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4109
+  :user_name: odz
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/212/
+  :language: Python
+  :time: 2007/11/16 12:15 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  <p>こういうやり方もあるよ、ということで。</p>\n<ol class=\"arabic simple\">\n<li>文字列を辞書順にソート</li>\n<li>隣り合う文字列同士の共通接頭辞長(lcps)を計算</li>\n</ol>\n<p>で、後はある範囲で
+    lcp の最小値が共通接頭辞の長さで、最小値の位置でリストを分割すれば分割統治法でパターンを構築できると。</p>\n\r\n\t"
+  :code: |
+    import sys
+    import re
+
+    SLIM_RE = False
+
+    class RangeError(Exception):
+        pass
+
+    def lcp(a, b):
+        "returns length of longest common prefix"
+        i = 0
+        l = min(len(a), len(b))
+        while i &lt; l and a[i] == b[i]:
+            i += 1
+        return i
+
+    def min_index(l, first, last):
+        "returns index of minimum value in [first:last]"
+        if last - first &lt;= 0:
+            raise RangeError()
+        i = first
+        for j in xrange(first + 1, last):
+            if l[j] &lt; l[i]:
+                i = j
+        return i
+
+    def get_pattern(words, lcps, level, first, last):
+        "get optimized regular expression from list of words which is sorted"
+        if last - first == 1:
+            return re.escape(words[first][level:])
+
+        m = min_index(lcps, first, last - 1)
+        prefix = words[first][level:lcps[m]]
+        sub = (get_pattern(words, lcps, lcps[m], first, m + 1),
+               get_pattern(words, lcps, lcps[m], m + 1, last))
+
+        if SLIM_RE:
+            pattern = '%s(?:%s)' % (re.escape(prefix), '|'.join(filter(bool, sub)))
+            if len(words[m]) == lcps[m]:
+                pattern += '?'
+        else:
+            pattern = '%s(?:%s|%s)' % (re.escape(prefix), sub[0], sub[1])
+        return pattern
+
+    def main(args):
+        import fileinput
+
+        words = []
+        for line in fileinput.input(args):
+            words.append(line.strip())
+
+        words.sort()
+        lcps = [lcp(a, b) for a, b in zip(words[:-1], words[1:])]
+        pattern = get_pattern(words, lcps, 0, 0, len(words))
+        print pattern
+
+        pat = re.compile(pattern)
+        for word in words:
+            if not pat.match(word):
+                print &gt;&gt;sys.stderr, 'not match with %s' % word
+
+    if __name__ == '__main__':
+        main(sys.argv[1:])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4257'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4257
+  :user_name: sumim
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/11/19 15:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  Squeak Smalltalk で。\r<br><br>SiroKuro さんの #4105 を参考にさせて頂きました。最後、たたみ込みながら正規表現を生成するところはたいへん小気味よいですね。\r\n\t"
+  :code: |
+    | assemble |
+    assemble := [:words |
+        | prefixSizes |
+        words := words sort.
+        prefixSizes := words overlappingPairsCollect: [:aa :bb |
+            | shorterSize found |
+            shorterSize := aa size min: bb size.
+            found := (1 to: shorterSize) findFirst: [:idx | (aa at: idx) ~= (bb at: idx)].
+            found isZero ifTrue: [shorterSize] ifFalse: [found - 1]].
+        prefixSizes asSet asArray sort reverseDo: [:idx |
+            | found |
+            [(found := prefixSizes lastIndexOf: idx) &gt; 0] whileTrue: [
+                words at: found put: ('{1}(?:{2}|{3})' format: {
+                    (words at: found) first: idx.
+                    (words at: found) allButFirst: idx.
+                    (words at: found + 1) allButFirst: idx}).
+                words := words copyWithoutIndex: found + 1.
+                prefixSizes := prefixSizes copyWithoutIndex: found]].
+        '^', words first, '$'].
+
+    assemble value: #(
+        program
+        programist
+        programistic
+        programma
+        programmar
+        programmatic
+        programmatically
+        programmatist
+        programmer)
+
+    "=&gt; '^program(?:|(?:ist(?:|ic)|m(?:a(?:|(?:r|ti(?:c(?:|ally)|st)))|er)))$' "
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4272'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4272
+  :user_name: nobsun
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/11/20 10:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">Text.RegexモジュールではデフォルトではPOSIXの正規表現をつかっている．\r\nここではそれにしたがった正規表現文字列を生成する．\r\nメタ文字のエスケープもしたつもり．\r\n\r\n実行結果\r\n*Main&gt;
+    putStrLn $ oregex (unfoldTree phi sample) \"\"\r\nprogram(ist(ic)?|m(a(r|ti(c(ally)?|st))?|er))?\r\n</pre>\r\n\t"
+  :code: "import Data.List\nimport Data.Tree\n\ntype Trie = Tree (Bool,String)\n\neqapp
+    f x y = f x == f y\n\nlcp :: [String] -&gt; (String, [String])\nlcp [] = (\"\",[])\nlcp
+    xxs@(x:xs) \n = if null x \n      then (\"\",xxs)\n      else if all (isPrefixOf
+    [head x]) xs \n              then case lcp (map tail xxs) of\n                     (ps,yys)
+    -&gt; (head x:ps,yys)\n              else (\"\",xxs)\n\n\nphi :: [String] -&gt;
+    ((Bool,String), [[String]])\nphi [x] = ((False,x), [])\nphi xxs  = case lcp xxs
+    of\n (ps,\"\":ys) -&gt; ((True,ps), groupBy (eqapp head) ys)\n (ps,yys)   -&gt;
+    ((False,ps),groupBy (eqapp head) yys)\n\noregex :: Trie -&gt; ShowS\noregex (Node
+    (p,s) [])\n | p         = showString (escape s) . showString \"?\"\n | otherwise
+    = showString (escape s)\noregex (Node (p,s) cs)\n | p         = (showString (escape
+    s) .) $ (. showString \"?\") $ paren $ foldr (.) id (intersperse (showString \"|\")
+    (map oregex cs))\n | otherwise = (showString (escape s) .) $ paren $ foldr (.)
+    id (intersperse (showString \"|\") (map oregex cs))\n\nparen :: ShowS -&gt; ShowS\nparen
+    s = showString \"(\" . s . showString \")\"\n\nmetaChars = \"\\\\|[](){}.*+?^$\"\nescapeMeta
+    c | elem c metaChars = '\\\\':[c]\n             | otherwise        = [c]\n\nescape
+    = concatMap escapeMeta\n\nsample = sort [\"program\"\n              ,\"programist\"\n
+    \             ,\"programistic\"\n              ,\"programma\"\n              ,\"programmar\"\n
+    \             ,\"programmatic\"\n              ,\"programmatically\"\n              ,\"programmatist\"\n
+    \             ,\"programmer\"\n              ]\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4101'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4101
+  :user_name: odz
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/212/
+  :language: Python
+  :time: 2007/11/16 07:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>素朴な方法で</p>\n\r\n\t"
+  :code: |
+    import sys
+    import re
+
+    class Node(dict):
+        def __init__(self, c, acceptable, children = None):
+            if children is not None:
+                super(Node, self).__init__(children)
+            else:
+                super(Node, self).__init__()
+
+            self.c = c
+            self.acceptable = acceptable
+
+        def get_pattern(self):
+            s = re.escape(self.c)
+            trail = '|'.join(child.get_pattern() for child in self.itervalues())
+            if trail:
+                s += '(?:%s)' % trail
+                if self.acceptable:
+                    s += '?'
+            return s
+
+        def optimize(self):
+            children = dict()
+            for child in self.itervalues():
+                optimized = child.optimize()
+                children[optimized.c] = optimized
+
+            if len(children) == 1 and not self.acceptable:
+                child = children.values()[0]
+                c = self.c + child.c
+                acceptable = child.acceptable
+                return Node(c, acceptable, child)
+            else:
+                return Node(self.c, self.acceptable, children)
+
+    class Trie(object):
+        def __init__(self, root = None):
+            if root is None:
+                self.root = Node('', False)
+            else:
+                self.root = root
+
+        def add(self, word):
+            node = self.root
+
+            for c in word:
+                if c not in node:
+                    node[c] = Node(c, False)
+                node = node[c]
+            node.acceptable = True
+
+        def get_pattern(self):
+            return self.root.get_pattern()
+
+        def optimize(self):
+            return Trie(self.root.optimize())
+
+    def main(args):
+        import fileinput
+
+        trie = Trie()
+        for line in fileinput.input(args):
+            word = line.strip()
+            trie.add(word)
+
+        trie = trie.optimize()
+        print trie.get_pattern()
+
+    if __name__ == '__main__':
+        main(sys.argv[1:])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4275'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4275
+  :user_name: kozima
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/164/
+  :language: 
+  :time: 2007/11/20 12:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>気付いていながらエスケープしないコードを投稿してしまった人です。</p>\n<p>単に、まあいいかなと思ってそのままにしました。\nお題の趣旨はどうやって
+    trie を作るかで、問題文が細かいところにはあまり拘らないという感じだったので。</p>\n<p>ただ、改めて考えると一応正規表現を作れという問題ですから、よくなかったかもしれません。少なくとも気付いてたなら投稿時に言及しとくべきでしたね。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4352'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4352
+  :user_name: 匿名
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/11/23 03:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  引数で与えられた文字列（のみ）にマッチする正規表現を生成します。生成される正規表現はPerl互換のはずです（Javaで動作する事は確認してあります）。\r<br><br>program\r<br>programist\r<br>programistic\r<br>programma\r<br>programmar\r<br>programmatic\r<br>programmatically\r<br>programmatist\r<br>programmer\r<br>を与えた場合は、\r<br>program(?:|ist(?:|ic)|m(?:a(?:|r|ti(?:c(?:|ally)|st))|er))\r<br>を生成します。\r<br><br>＃Javaの総称で再帰的なデータ構造を表現する事はできないのでしょうか（この例ではキャストで逃げています）。\r\n\t"
+  :code: |
+    import java.util.*;
+
+    @SuppressWarnings("unckecked")
+    public class Trie {
+        public static final String MUST_ESCAPE = "()[]\\.+*?|";
+        private Map&lt;Character, Map&gt; trie = new TreeMap&lt;Character, Map&gt;();
+        public void add(String str) {
+            Map&lt;Character, Map&gt; t = trie;
+            for (char c : str.toCharArray()) {
+                if (t.containsKey(c)) {
+                    t = (Map&lt;Character, Map&gt;)t.get(c);
+                } else {
+                    Map&lt;Character, Map&gt; t2 = new TreeMap&lt;Character, Map&gt;();
+                    t.put(c, t2);
+                    t = t2;
+                }
+            }
+            t.put('\0', null);
+        }
+        public String toRegex() {
+            return toRegex(trie).toString();
+        }
+        private StringBuilder toRegex(Map&lt;Character, Map&gt; t) {
+            StringBuilder sb = new StringBuilder();
+            Set&lt;Character&gt; keys = t.keySet();
+            if (keys.size() &gt; 1)
+                sb.append("(?:");
+            Iterator&lt;Character&gt; i = keys.iterator();
+            while (i.hasNext()) {
+                char c = i.next();
+                if (c != '\0') {
+                    if (MUST_ESCAPE.indexOf(c) &gt;= 0)
+                        sb.append('\\');
+                    sb.append(c);
+                    sb.append(toRegex(t.get(c)));
+                }
+                if (i.hasNext())
+                    sb.append('|');
+            }
+            if (keys.size() &gt; 1)
+                sb.append(")");
+            return sb;
+        }
+        public static void main(String[] args) {
+            Trie t = new Trie();
+            for (String str : args) {
+                t.add(str);
+            }
+            System.out.println(t.toRegex());
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6757'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/6757
+  :user_name: leque
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2008/07/17 04:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>共通部分文字列を切り出しながら Trie を作っています。もう少しスマートにできないものかしらん。</p>\n<p>出力:</p>\n<pre
+    class=\"literal-block\">\n(?:program(?:ist(?:ic)?|m(?:a(?:r|ti(?:c(?:ally)?|st))?|er))?)\n</pre>\n\r\n\t"
+  :code: |
+    (use srfi-1)
+    (use srfi-13)
+    (use gauche.collection)
+
+    (define (make-trie strs)
+      (define (string-ref* s n)
+        (or (string-null? s) (string-ref s n)))
+      (define (make-node xs)
+        (if (null? (cdr xs))
+            xs
+            (let ((b (apply min
+                            (pair-fold
+                             (lambda (ys knil)
+                               (if (null? (cdr ys))
+                                   knil
+                                   (cons (string-prefix-length (car ys) (cadr ys))
+                                         knil)))
+                             '() xs))))
+              (cons (string-take (car xs) b)
+                    (make-trie* (map (cut string-drop &lt;&gt; b) xs))))))
+      (define (make-trie* ss)
+        (map make-node (group-collection ss :key (cut string-ref* &lt;&gt; 0))))
+      (cons "" (make-trie* strs)))
+
+    (define (trie-&gt;regexp-str tree)
+      (define (null-node? node)
+        (and (pair? node)
+             (string-null? (car node))
+             (null? (cdr node))))
+      (if (null? (cdr tree))
+          (car tree)
+          (format "~A(?:~A)~A"
+                  (car tree)
+                  (string-join (map trie-&gt;regexp-str
+                                    (remove null-node? (cdr tree))) "|")
+                  (if (any null-node? (cdr tree)) "?" ""))))
+
+    (print (trie-&gt;regexp-str
+            (make-trie '("program"
+                         "programist"
+                         "programistic"
+                         "programma"
+                         "programmar"
+                         "programmatic"
+                         "programmatically"
+                         "programmatist"
+                         "programmer"))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4263'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4263
+  :user_name: SiroKuro
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/540/
+  :language: diff
+  :time: 2007/11/19 16:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  #4259 の指摘を受けて、とりあえず Regex.Escape 挟んでみました。\r\n\t"
+  :code: |
+    --- trie.cs.old Tue Nov 20 01:20:52 2007
+    +++ trie.cs     Tue Nov 20 01:21:24 2007
+    @@ -8,7 +8,7 @@
+             using(StreamReader sr = new StreamReader(args[0])) {
+                 foreach(string line in sr.ReadToEnd().Split('\n', '\r')) {
+                     if (line != string.Empty &amp;&amp; !words.Contains(line)) {
+    -                    words.Add(line);
+    +                    words.Add(System.Text.RegularExpressions.Regex.Escape(line)
+    );
+                     }
+                 }
+                 words.Sort();
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4259'
+  :parent_id: '84'
+  :url: http://ja.doukaku.org/comment/4259
+  :user_name: odz
+  :user_url: /web/20110214142909/http://ja.doukaku.org/user/212/
+  :language: 
+  :time: 2007/11/19 15:34 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  <p>なんだかメタキャラクタのエスケープを全くしていないコードが目立つような。\nまずくないですかね？</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 

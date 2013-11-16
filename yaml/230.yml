@@ -1,0 +1,329 @@
+---
+:id: '230'
+:title: '指定ファイル名でフォルダツリーごとコピー '
+:comments:
+- :id: '8365'
+  :parent_id: '230'
+  :url: http://ja.doukaku.org/comment/8365
+  :user_name: fumokmm
+  :user_url: /web/20090201011723/http://ja.doukaku.org/user/856/
+  :language: 
+  :time: 2009/01/19 14:54 GMT
+  :vote_count: '3'
+  :vote_score: '-1'
+  :body: "\r\n\t  <pre class=\"compact\">コピー元フォルダ、コピー先フォルダ、ファイル名(複数)を指定し、\r\nコピー元フォルダ(配下含む)から、指定したファイル名のファイルを探し出し、\r\nコピー先フォルダにツリーごとコピーする処理を実装して下さい。\r\n\r\n[実装に際して]\r\n・複数ファイル名を指定できればどのような形式でも構いません。\r\n　　　(例:
+    コマンド引数, 外部ファイル)\r\n・指定したファイル名が複数見つかった場合、すべてコピー対象として下さい。\r\n・コピー先に既にファイルやフォルダが存在する場合、削除して下さい。\r\n　　　(コピー先が指定したファイルのみとなるようにする)\r\n・コピー先フォルダが存在しない場合、新規作成して下さい。\r\n\r\n[余裕のある方は]\r\n・除外するファイル名、フォルダ名を指定できるようにして下さい。\r\n・GUIでファイル名の指定やコマンド実行を行えるようにして下さい。\r\n\r\n===============================\r\n例)
+    コマンド引数で指定する\r\n(コマンド {コピー元} {コピー先} {コピーファイル名リスト})\r\n&gt;WholeCopy C:\\temp C:\\temp2
+    aaa.txt,ddd.txt,ggg.txt,kkk.txt\r\n\r\n[フォルダツリーの状態]\r\nC:\\temp\r\n|   aaa.txt\r\n|
+    \  bbb.txt\r\n|   ccc.txt\r\n|\r\n\\---dir1\r\n    |   ddd.txt\r\n    |\r\n    +---dir2\r\n
+    \   |   |   eee.txt\r\n    |   |\r\n    |   \\---dir3\r\n    |           fff.txt\r\n
+    \   |           ggg.txt\r\n    |\r\n    \\---dir4\r\n            hhh.txt\r\n            iii.txt\r\n
+    \           jjj.txt\r\n            kkk.txt\r\n\r\nC:\\temp2\r\n|   aaa.txt\r\n|\r\n\\---dir1\r\n
+    \   |   ddd.txt\r\n    |\r\n    +---dir2\r\n    |   \\---dir3\r\n    |           ggg.txt\r\n
+    \   |\r\n    \\---dir4\r\n            kkk.txt\r\n===============================\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8397'
+  :parent_id: '230'
+  :url: http://ja.doukaku.org/comment/8397
+  :user_name: しらたま
+  :user_url: /web/20090201011723/http://ja.doukaku.org/user/607/
+  :language: 
+  :time: 2009/01/25 11:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>こういうお題こそなでしこの出番のはず。</p>\n\n\t"
+  :code: |
+    ●フォルダ階層コピー(コピー元フォルダのファイル群をコピー先フォルダへ|コピー先フォルダに)
+    　コピー元フォルダに終端パス追加
+    　コピー元フォルダはそれ
+    　コピー先フォルダに終端パス追加
+    　コピー先フォルダはそれ
+    　
+    　もしコピー先フォルダが存在するならば
+    　　コピー先フォルダをフォルダ削除
+    　コピー先フォルダにフォルダ作成
+    　
+    　ファイル群を「;」で配列結合
+    　コピー元フォルダ＆それの全ファイル列挙して反復
+    　　対象のコピー元フォルダをコピー先フォルダに単置換
+    　　対象をそれへファイルコピー
+
+    「aaa.txt,ddd.txt,ggg.txt,kkk.txt」を「,」で区切る
+    「C:\temp」のそれを「C:\temp2」にフォルダ階層コピー
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8398'
+  :parent_id: '230'
+  :url: http://ja.doukaku.org/comment/8398
+  :user_name: 割と普通
+  :user_url: /web/20090201011723/http://ja.doukaku.org/user/581/
+  :language: C
+  :time: 2009/01/25 12:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>LINQでばっさりとファイルコピーをば。\r</p>\n<p>Directory.GetFilesのSearchPatternがもうちょっと頑張れればなぁ・・・。</p>\n</div>\n\t"
+  :code: |
+    public static void Main(string[] args)
+    {
+        RunCopy(@"C:\doukaku_temp1", @"C:\doukaku_temp2", @"aaa.txt,ddd.txt,ggg.txt,kkk.txt");
+    }
+
+    public static void RunCopy(string fromDirectory, string toDirectory, string CopyFiles)
+    {
+        List&lt;string&gt; copyFileList = new List&lt;string&gt;(CopyFiles.Split(new char[] { ',' }));
+        foreach (string fromPath in Directory.GetFiles(fromDirectory, @"*", SearchOption.AllDirectories)
+            .Where(path =&gt; copyFileList.Contains(Path.GetFileName(path))))
+        {
+            string toPath = fromPath.Replace(fromDirectory, toDirectory);
+            Directory.CreateDirectory(Path.GetDirectoryName(toPath));
+            File.Copy(fromPath, toPath, true);
+        }
+    }
+  :tags:
+  - LINQ
+  :references:
+    :url: 
+    :title: 
+- :id: '8399'
+  :parent_id: '230'
+  :url: http://ja.doukaku.org/comment/8399
+  :user_name: greentea
+  :user_url: /web/20090201011723/http://ja.doukaku.org/user/573/
+  :language: Bash
+  :time: 2009/01/26 04:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">こういうのはシェルスクリプトでやるものじゃないかなぁ、と思うのです。\r\n下手糞なスクリプトですが。。。</pre>\n\t"
+  :code: |
+    #!/bin/bash
+
+    CURRENT_DIR="$PWD"
+    SRC_DIR="$PWD/$1"
+    shift
+    DST_DIR="$PWD/$1"
+    shift
+    if [ $# == 0 ] ; then
+        echo "USAGE: $0 {コピー元} {コピー先} {コピーファイル名リスト}"
+        exit 1
+    fi
+    # コピー先ディレクトリを空にする(削除して作り直す)
+    rm -rf $DST_DIR 2&gt;/dev/null
+    mkdir -p $DST_DIR
+
+    # $FILE: コピー元にあるファイル $NAME: 指定したファイル名
+    cd "$SRC_DIR"
+    find . | while read FILE ; do
+        for NAME in $* ; do
+            if [ "$(echo $FILE | grep /$NAME\$)" != "" ] ; then
+                mkdir -p $(dirname "$DST_DIR/$FILE")
+                cp "$SRC_DIR/$FILE" "$DST_DIR/$FILE"
+            fi
+        done
+    done
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8401'
+  :parent_id: '230'
+  :url: http://ja.doukaku.org/comment/8401
+  :user_name: 匿名
+  :user_url: /web/20090201011723/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2009/01/26 01:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>書くには書きましたが色々駄目です</p>\n\n\t"
+  :code: |
+    import sys, os, os.path, shutil, errno
+
+    def mkdir(dir):
+        try:
+            os.makedirs(dir)
+        except OSError, e:
+            if e.errno != errno.EEXIST:
+                raise
+
+    def copy(src, dst, spec):
+        mapdir = lambda x, n=len(src)+1: os.path.join(dst, x[n:])
+        candidates = ((os.path.join(d, f), mapdir(d)) for d, ds, fs in os.walk(src)
+                                        for f in fs if f in spec)
+        for f, dst in candidates:
+            mkdir(dst)
+            shutil.copy2(f, dst)
+
+    def main(args):
+        src, dst = map(os.path.normpath, args[:2])
+        shutil.rmtree(dst)
+        copy(src, dst, set(args[2].split(',')))
+
+    if __name__ == '__main__':
+        if len(sys.argv) &lt; 4:
+            print &gt;&gt;sys.stderr, "usage: %s src dst file[,file..]" % sys.argv[0]
+        else:
+            main(sys.argv[1:])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8402'
+  :parent_id: '230'
+  :url: http://ja.doukaku.org/comment/8402
+  :user_name: genzou
+  :user_url: /web/20090201011723/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2009/01/26 02:12 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>チェック処理はしょると簡単</p>\n\n\t"
+  :code: |
+    new AntBuilder().copy(todir:args[1]){
+        fileset(dir:args[0]){
+            args[2..-1].each{
+                include(name:"**/$it")
+            }
+        }
+    }
+  :tags:
+  - Groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '8403'
+  :parent_id: '230'
+  :url: http://ja.doukaku.org/comment/8403
+  :user_name: creeper
+  :user_url: /web/20090201011723/http://ja.doukaku.org/user/994/
+  :language: Python
+  :time: 2009/01/26 06:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">$ ./doukaku230.py temp/ temp2/ aaa.txt,ddd.txt,ggg.txt,kkk.txt;
+    ls -R temp2\r\ntemp2:\r\naaa.txt  dir1/\r\n\r\ntemp2/dir1:\r\nddd.txt  dir2/  dir4/\r\n\r\ntemp2/dir1/dir2:\r\ndir3/\r\n\r\ntemp2/dir1/dir2/dir3:\r\nggg.txt\r\n\r\ntemp2/dir1/dir4:\r\nkkk.txt</pre>\n\t"
+  :code: "import os, shutil, sys\n\ndef copy2(src, dst, name):\n    if not os.path.isdir(dst):\n
+    \       os.makedirs(dst) \n    shutil.copy2(os.path.join(src, name), os.path.join(dst,
+    name))\n\ndef copytree(src, dst, filters):\n    names = os.listdir(src)\n    for
+    file in [a for a in names if a in filters]:\n        copy2(src, dst, file)\n    for
+    dir in [a for a in names if os.path.isdir(os.path.join(src, a))]:\n        copytree(os.path.join(src,
+    dir), os.path.join(dst, dir), filters)\n\nsrc = sys.argv[1]\ndst = sys.argv[2]\nfilters
+    = sys.argv[3].split(',')\n\nif os.path.isdir(dst): shutil.rmtree(dst)\ncopytree(src,
+    dst, filters)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8404'
+  :parent_id: '230'
+  :url: http://ja.doukaku.org/comment/8404
+  :user_name: emasaka
+  :user_url: /web/20090201011723/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2009/01/26 06:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>findとtarでやってみるテスト。</p>\n<p>GNU限定かもしれません。</p>\n\n\t"
+  :code: |
+    #!/bin/sh
+    usage(){ echo "usage: $(basename $0) source dest filename..." &gt;&amp;2; exit 1; }
+
+    [ $# -lt 3 ] &amp;&amp; usage
+    src=$1
+    dst=$2
+    ptn="-name $3"
+    shift 3
+    for f in "$@"; do ptn="$ptn -o -name $f"; done
+
+    files=$(cd "$src"; find -type f $ptn)
+    [ -z "$files" ] &amp;&amp; usage
+
+    rm -rf "$dst"
+    mkdir "$dst" || usage
+
+    tar cf - -C "$src" $files | tar xf - -C "$dst"
+  :tags:
+  - find
+  - tar
+  :references:
+    :url: 
+    :title: 
+- :id: '8407'
+  :parent_id: '230'
+  :url: http://ja.doukaku.org/comment/8407
+  :user_name: 匿名
+  :user_url: /web/20090201011723/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2009/01/27 05:38 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: |
+    import os, shutil, sys
+
+    def whole_copy(src, dst, copy_files):
+        for root, dirs, files in os.walk(src):
+            for file in files:
+                if file in copy_files:
+                    dst_dir = root.replace(src, dst, 1)
+                    if not os.path.isdir(dst_dir): os.makedirs(dst_dir)
+                    shutil.copy2(os.path.join(root, file), os.path.join(dst_dir, file))
+
+    src, dst = sys.argv[1:3]
+    files = sys.argv[3].split(',')
+    if os.path.isdir(dst): shutil.rmtree(dst)
+    whole_copy(src, dst, files)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8412'
+  :parent_id: '230'
+  :url: http://ja.doukaku.org/comment/8412
+  :user_name: matori
+  :user_url: /web/20090201011723/http://ja.doukaku.org/user/1000/
+  :language: Bash
+  :time: 2009/01/29 17:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">borne shellです。エラーチェックしてません。\r\nsedとfindを使ってます。cygwin上で実行確認。</pre>\n\t"
+  :code: "#!/usr/bin/sh\ndir1=$1; shift; dir2=$1; shift\nfor i in $* \ndo \narg1=`find
+    $dir1 -name $i -type f`;\narg2=`echo $arg1 | sed \"s/$dir1/$dir2/\"`\nrdir=`echo
+    $arg2 | sed \"s/\\/$i$//\"`\nif [ ! -d $rdir ]; then mkdir -p $rdir; fi\necho
+    \"cp \" $arg1 $arg2\ndone  | sh\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8427'
+  :parent_id: '230'
+  :url: http://ja.doukaku.org/comment/8427
+  :user_name: sumim
+  :user_url: /web/20090201011723/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/01/31 07:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    | srcDirName dstDirName targetNames directory |
+    srcDirName := 'c:\temp'.
+    dstDirName := 'c:\temp2'.
+    targetNames := #('aaa.txt' 'ddd.txt' 'ggg.txt' 'kkk.txt').
+
+    directory := FileDirectory default.
+    (directory on: srcDirName) withAllFilesDo: [:file |
+        (targetNames includes: file localName) ifTrue: [
+            | dirName copy |
+            dirName := dstDirName, (file directory pathName allButFirst: srcDirName size).
+            copy := (directory on: dirName) assureExistence forceNewFileNamed: file localName.
+            directory copyFile: file toFile: copy]] andDirectoriesDo: [:dir |]
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 

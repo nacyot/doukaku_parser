@@ -1,0 +1,1548 @@
+---
+:id: '253'
+:title: IPv4アドレスのマスクの変換
+:comments:
+- :id: '9039'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9039
+  :user_name: znz
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/341/
+  :language: 
+  :time: 2009/06/03 06:14 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\r\n\t  <div class=\"section\">\n<ul>\n<li>\n \"255.255.255.0\" から 24\r\n</li>\n<li>\n
+    \"255.255.255.128\" から 25\r\n</li>\n<li> \"255.255.255.255\" から 32\r</li>\n</ul>\n<p>などのようにネットマスクの数値への変換を作ってみてください。\r</p>\n<p>出来れば逆変換も作ってみてください。</p>\n</div>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9098'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9098
+  :user_name: tanakahisateru
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/1025/
+  :language: Python
+  :time: 2009/06/10 08:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>ビット演算で基本に忠実に実装しました。どのぐらいの長さになるか心配だったけど、そんなに悪くない行数で収まっています。</p>\n<p>また、できるだけ例外処理をやって、さらにどのぐらい行が増えるかも試しています。</p>\n\r\n\t"
+  :code: |
+    def netmask_num_of(addr):
+        try:
+            addrs = []
+            for a in map(long, addr.split('.')):
+                if a &gt; 255 or a &lt; 0: raise
+                addrs.append(a)
+            if len(addrs) != 4: raise
+        except:
+            raise "%s may not be an address string." % addr
+        n = reduce(lambda a, b: a * 256 + long(b), addrs, 0)
+        num = 0
+        topbit = 1 &lt;&lt; 31
+        allbits = (1 &lt;&lt; 32) - 1
+        while n &amp; topbit:
+            num += 1
+            n = (n &lt;&lt; 1) &amp; allbits
+        if n:
+            raise "%s is not valid for netmask." % addr
+        return num
+
+    print netmask_num_of("255.255.255.0")
+    print netmask_num_of("255.255.255.128")
+    print netmask_num_of("255.255.255.255")
+
+    def netmask_str_of(num):
+        if num &gt; 32 or num &lt; 0:
+            raise "%s is out of range for netmask." % num
+        n = 0L
+        for i in range(32):
+            n = (n &lt;&lt; 1) | ((num &gt; i) and 1 or 0)
+        addrs = []
+        for i in range(4):
+            addrs.insert(0, str(n &amp; 255))
+            n = n &gt;&gt; 8
+        return '.'.join(addrs)
+
+    print netmask_str_of(24)
+    print netmask_str_of(25)
+    print netmask_str_of(32)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9127'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9127
+  :user_name: nobsun
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2009/06/11 20:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">ナイーブに。\r\n\r\n *Main&gt; mask2nbits \"255.255.255.0\"\r\n
+    24\r\n *Main&gt; mask2nbits \"255.255.255.128\"\r\n 25\r\n *Main&gt; mask2nbits
+    \"255.255.255.255\"\r\n 32\r\n *Main&gt; nbits2mask 24\r\n \"255.255.255.0\"\r\n
+    *Main&gt; nbits2mask 25\r\n \"255.255.255.128\"\r\n *Main&gt; nbits2mask 28\r\n
+    \"255.255.255.240\"\r\n *Main&gt; nbits2mask 32\r\n \"255.255.255.255\"\r\n\r\n</pre>\r\n\t"
+  :code: "import Data.List\nimport Data.Word\n\nmask2nbits :: String -&gt; Int\nmask2nbits
+    = length . takeWhile (1==) . toNArry 2 32 . addr2int \n\nnbits2mask :: Int -&gt;
+    String\nnbits2mask n = int2addr $ maxBound - (2^(32-n)-1)\n\nint2addr :: Word32
+    -&gt; String\nint2addr = concat . intersperse \".\" . map show . toNArry 256 4\n\naddr2int
+    :: String -&gt; Word32\naddr2int = foldl ((+) . (256 *)) 0 . unfoldr phi\n  where
+    \n    phi \"\" = Nothing\n    phi s  = case break ('.'==) s of\n               (xs,_:ys)
+    -&gt; Just (read xs,ys)\n               (xs,[])   -&gt; Just (read xs,[])\n\ntoNArry
+    :: (Integral i) =&gt; Int -&gt; Int -&gt; i -&gt; [Int]\ntoNArry n k i \n = map
+    fromInteger \n $ snd \n $ mapAccumR (flip id) (toInteger i) (replicate k (`divMod`
+    (toInteger n)))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9149'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9149
+  :user_name: yamamoto
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/1064/
+  :language: Erlang
+  :time: 2009/06/13 12:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Scala(#9133)をErlangに移植しました。\n効率はともかく、例外処理をしているので・・・</p>\n<p>関数の仕様は、Erlang的で、成功時は\n{ok,****}\nのようなタプルが返ります。失敗時はok以外のアトム。</p>\n\r\n\t"
+  :code: "-module(netmask).\n-export([numbits_of/1,from_numbits/1,test/0]).\n\nnumbits_of(StrMask)
+    -&gt; \n    try\n        {ok,Mask} = inet_parse:address(StrMask) ,\n        {Class,MaskByte}
+    = case Mask of\n                        {255,255,255,X} -&gt; {24,X};\n                        {255,255,
+    \ X,0} -&gt; {16,X};\n                        {255,  X,  0,0} -&gt; { 8,X};\n
+    \                       _ -&gt; throw(\"bad mask\")\n                        end,\n
+    \       {ok,\n        case MaskByte of\n            (256-  1)-&gt; 8;\n            (256-
+    \ 2)-&gt; 7;\n            (256-  4)-&gt; 6;\n            (256-  8)-&gt; 5;\n            (256-
+    16)-&gt; 4;\n            (256- 32)-&gt; 3;\n            (256- 64)-&gt; 2;\n            (256-128)-&gt;
+    1;\n            0        -&gt; 0\n        end + Class }% &lt;--- result\n    catch\n
+    \       throw:E -&gt; {thrown,E};\n        exit :E -&gt; {exited,E};\n        error:E
+    -&gt; {error ,E}\n    end.\n\nfrom_numbits(Numbits)-&gt;\n    try\n        {Class,Maskbits}
+    = \n                        case Numbits of\n                            N when
+    N&gt;=24 -&gt; {24,N-24} ;\n                            N when N&gt;=16 -&gt;
+    {16,N-16} ;\n                            N when N&gt;= 8 -&gt; { 8,N- 8} \n                        end
+    ,\n        Maskbyte = \n                case Maskbits of \n                    8
+    -&gt; (256-  1) ;\n                    7 -&gt; (256-  2) ;\n                    6
+    -&gt; (256-  4) ;\n                    5 -&gt; (256-  8) ;\n                    4
+    -&gt; (256- 16) ;\n                    3 -&gt; (256- 32) ;\n                    2
+    -&gt; (256- 64) ;\n                    1 -&gt; (256-128) ;\n                    0
+    -&gt; 0\n                end ,\n        %\n        {ok , \n        case Class
+    of\n            24 -&gt; inet_parse:ntoa( {255,255,255,Maskbyte} ) ;\n            16
+    -&gt; inet_parse:ntoa( {255,255,Maskbyte  ,0} ) ;\n            8  -&gt; inet_parse:ntoa(
+    {255,Maskbyte    ,0,0} ) \n        end }% &lt;--- result\n    catch\n        throw:E
+    -&gt; {thrown,E};\n        exit :E -&gt; {exited,E};\n        error:E -&gt; {error
+    ,E}\n    end.\n\ntest()-&gt;\n    lists:foreach(fun(I)-&gt;\n                    {ok
+    , M} = from_numbits(I),\n                    {ok , N} = numbits_of(M),\n                    io:format(\"Numbits=~p
+    , Mask=~p , Result=~p~n\",[I,M,(I==N)])\n                  end , lists:seq(8,31)
+    ).\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9084'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9084
+  :user_name: turugina
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/760/
+  :language: Perl
+  :time: 2009/06/10 07:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>ふつーに実装。MASKアドレスじゃない場合のエラー処理とかは特にしてないです。</p>\n<p>逆変換も付けました。</p>\n\r\n\t"
+  :code: |
+    use strict;
+    use warnings;
+
+    sub addr2bits
+    {
+      my ($addr) = @_;
+      my $bits = 0;
+      for (split /\./, $addr) {
+        $_ &amp;= 0xff;
+        if ( 0xff == $_ ) {
+          $bits += 8;
+        }
+        else {
+          my $b = sprintf '%08b', $_;
+          $bits += index($b,'0');
+          last;
+        }
+      }
+      $bits;
+    }
+
+    sub bits2addr
+    {
+      my ($bits) = @_;
+
+      my @addr;
+      for ( 1 .. 4 ) {
+        if ( $bits &gt;= 8 ) {
+          push @addr, 0xff;
+          $bits -= 8;
+        }
+        elsif ( $bits &gt; 0 ) {
+          push @addr, oct('0b' . '1' x $bits . '0' x (8-$bits));
+          $bits = 0;
+        }
+        else {
+          push @addr, 0;
+        }
+      }
+      join('.', @addr);
+    }
+
+    my $addr = $ARGV[0];
+    my $bits = addr2bits($addr);
+    print "$addr =&gt; $bits\n";
+
+    $addr = bits2addr($bits);
+    print "$bits =&gt; $addr\n";
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9819'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9819
+  :user_name: taka_2
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/1132/
+  :language: Other
+  :time: 2010/01/13 19:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\"></pre>\r\n\t"
+  :code: |
+    Option Explicit
+
+    ' 与えられた数値を二進数に変換したときの1の数をカウントして返却する
+    Function countBinaryBits(num)
+        Dim result, currentNum
+
+        result = 0
+        currentNum = num
+        While currentNum &gt; 0
+            result = result + (currentNum Mod 2)
+            currentNum = Int(currentNum / 2)
+        Wend
+
+        countBinaryBits = result
+    End Function
+
+    ' IPv4のネットマスクアドレスを受け取って、マスクビット数を返却する
+    Function IPv4NetMaskToBits(strIpv4NetMask)
+        Dim result, strIpv4NetMaskList, netMask
+
+        result = 0
+        strIpv4NetMaskList = Split(strIpv4NetMask, ".")
+        For Each netMask In strIpv4NetMaskList
+            result = result + countBinaryBits(CInt(netMask))
+        Next
+
+        IPv4NetMaskToBits = result
+    End Function
+
+    ' マスク数を2進数に変換
+    Function getMaskFromBits(bits)
+        Dim result, currentBits, i
+
+        result = 0
+        currentBits = bits
+        For i = 7 to 0 Step - 1
+            If currentBits &gt; 0 Then
+                result = result + 2 ^ i
+                currentBits = currentBits - 1
+            End If
+        Next
+
+        getMaskFromBits = result
+    End Function
+
+    ' マスクビット数を受け取って、IPv4のネットマスクアドレスを返却する
+    Function bitsToIPv4NetMask(bits)
+        Dim currentBits
+        Dim result
+        Dim i
+
+        currentBits = bits
+        result = ""
+        For i = 1 to 4
+            If result &lt;&gt; "" Then
+                result = result &amp; "."
+            End If
+
+            If currentBits &gt;= 8 Then
+                result = result &amp; CStr(getMaskFromBits(8))
+                currentBits = currentBits - 8
+            ElseIf currentBits &gt; 0 Then
+                result = result &amp; CStr(getMaskFromBits(currentBits))
+                currentBits = 0
+            Else
+                result = result &amp; "0"
+            End If
+        Next
+
+        bitsToIPv4NetMask = result
+    End Function
+
+    msgbox IPv4NetMaskToBits("255.255.255.0")
+    msgbox IPv4NetMaskToBits("255.255.255.128")
+    msgbox IPv4NetMaskToBits("255.255.255.255")
+
+    msgbox bitsToIPv4NetMask(24)
+    msgbox bitsToIPv4NetMask(25)
+    msgbox bitsToIPv4NetMask(32)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9112'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9112
+  :user_name: Dubhead
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/785/
+  :language: D
+  :time: 2009/06/11 04:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">x86のBSF命令 (下から数えて何ビット目が立っているか) を使ってみました。\r\nまた、uintは4バイト固定です。\r\n</pre>\r\n\t"
+  :code: |
+    import std.intrinsic: bsf;      // x86's BSF instruction
+    import std.socket;
+
+    immutable ushort DUMMY_PORT = 0;
+
+    uint mask2bits(in string mask)
+    {
+        uint addr = (new InternetAddress(mask, DUMMY_PORT)).addr;
+        return 32 - bsf(addr);
+    }
+
+    string bits2mask(in uint bits)
+    {
+        uint addr = 0xFFFF_FFFF &lt;&lt; (32 - bits);
+        return (new InternetAddress(addr, DUMMY_PORT)).toAddrString;
+    }
+
+    void main()
+    {
+        assert (mask2bits("255.255.255.0") == 24);
+        assert (mask2bits("255.255.255.128") == 25);
+        assert (mask2bits("255.255.255.255") == 32);
+        assert (bits2mask(24) == "255.255.255.0");
+        assert (bits2mask(25) == "255.255.255.128");
+        assert (bits2mask(32) == "255.255.255.255");
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9454'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9454
+  :user_name: uehaj
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2009/08/07 18:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Groovyでの逆変換。</p>\n\r\n\t"
+  :code: |
+    def mask2addr(mask){
+      mask = (-1 &lt;&lt; (32-mask))
+      (3..0).collect{(mask &gt;&gt; it*8) &amp; 0xff}.join('.')
+    }
+
+
+    assert mask2addr(24)=="255.255.255.0"
+    assert mask2addr(25)=="255.255.255.128"
+    assert mask2addr(32)=="255.255.255.255"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9102'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9102
+  :user_name: tanakahisateru
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/1025/
+  :language: OCaml
+  :time: 2009/06/10 12:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>正変換は単に立っているビットの数を数えているだけ、逆変換は頭からビットを立たせているだけです。それだけしか出来ていないのに、ここで息切れしてしまいました。</p>\n\r\n\t"
+  :code: "#load \"str.cma\"\n\nlet ni0 = Nativeint.zero;;\nlet ni1 = Nativeint.one;;\nlet
+    (&lt;&lt;@) = Nativeint.shift_left;;\nlet (&amp;@) = Nativeint.logand;;\nlet (|@)
+    = Nativeint.logor;;\n\nlet netmask_num_of addr =\n    let onbits_of byte = \n
+    \       let rec loop ptr =\n            if ptr &lt; 0 then 0 else\n            let
+    checker = ni1 &lt;&lt;@ ptr in\n            if byte &amp;@ checker = ni0 then
+    0 else\n                1 + (loop (ptr - 1))\n        in\n            loop 7\n
+    \   in\n        let addrs = List.map Nativeint.of_string\n            (Str.split
+    (Str.regexp \"\\\\.\") addr) in\n        List.fold_left (fun a b -&gt; a + (onbits_of
+    b)) 0 addrs \n;;\nprint_string ((string_of_int (\n    netmask_num_of \"255.255.255.0\"))
+    ^ \"\\n\");;\nprint_string ((string_of_int (\n    netmask_num_of \"255.255.255.128\"))
+    ^ \"\\n\");;\nprint_string ((string_of_int (\n    netmask_num_of \"255.255.255.255\"))
+    ^ \"\\n\");;\n\nlet netmask_str_of num =\n    let rec byteloop num n =\n        if
+    n = 0 then [] else\n        let rec bitloop num b =\n            if num = 0 or
+    b &lt; 0 then ni0 else\n            (ni1 &lt;&lt;@ b) |@ (bitloop (num - 1) (b
+    - 1))\n        in\n            [Nativeint.to_string (bitloop num 7)] @\n                (byteloop
+    (num - 8) (n - 1))\n    in\n        String.concat \".\" (byteloop num 4)\n;;\nprint_string
+    ((netmask_str_of 24) ^ \"\\n\");;\nprint_string ((netmask_str_of 25) ^ \"\\n\");;\nprint_string
+    ((netmask_str_of 32) ^ \"\\n\");;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9219'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9219
+  :user_name: matarillo
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/136/
+  :language: C
+  :time: 2009/06/22 02:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>string→intの変換のみ</p>\n\r\n\t"
+  :code: |
+    class P
+    {
+      static int ToI(string mask)
+      {
+        try
+        {
+          string[] a = mask.Split('.');
+          if (a.Length != 4) return -1;
+          long l = a.Aggregate(1L, (x, y) =&gt; (x &lt;&lt; 8) + Convert.ToByte(y));
+          string b = Convert.ToString(l, 2).Substring(1, 32);
+          int p = b.IndexOf('0');
+          return p &lt; 0 ? 32 : b.IndexOf('1', p) &lt; 0 ? p : -1;
+        }
+        catch
+        {
+          return -1;
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9830'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9830
+  :user_name: 匿名
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/4/
+  :language: Haskell
+  :time: 2010/01/17 14:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Lost_dogです。</p>\n<p>wordsByとsplitsAtは自分のユーティリティから引っ張ってきました。あると便利です。</p>\n\r\n\t"
+  :code: |
+    import Numeric
+    import Data.List
+
+    ipMaskToInt = length.takeWhile (=='1').(&gt;&gt;= f).wordsBy (=='.')
+      where f xs = showIntAtBase 2 ("01"!!) (read xs) ""
+
+    intToIpMask x = intercalate "." $ map f $ splitsAt 8 $ ([1..x]&gt;&gt;"1")++([1..32-x]&gt;&gt;"0")
+      where f = show.fst.head.readInt 2 (`elem`"01") (read.(:[]))
+
+    wordsBy p [] = []
+    wordsBy p xs = ys : wordsBy p (drop 1 zs) where (ys,zs) = break p xs
+
+    splitsAt n [] = []
+    splitsAt n xs = ys : splitsAt n zs where (ys,zs) = splitAt n xs
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10448'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/10448
+  :user_name: kom_xxx
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/1157/
+  :language: C
+  :time: 2010/04/20 10:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  unix 限定???\r\n\t"
+  :code: |
+    #include &lt;sys/types.h&gt;
+    #include &lt;sys/socket.h&gt;
+    #include &lt;netinet/in.h&gt;
+    #include &lt;arpa/inet.h&gt;
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;strings.h&gt;
+
+    int
+    mask_bits(char *addr)
+    {
+            in_addr_t a = inet_network(addr);
+            return 33 - ffs(a);
+    }
+
+    char*
+    to_mask(int bits)
+    {
+            struct in_addr a;
+            char *b = malloc(INET_ADDRSTRLEN);
+            a.s_addr = htonl(0xffffffff &lt;&lt; (32 - bits));
+            return inet_ntoa_r(a, b, INET_ADDRSTRLEN);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9339'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9339
+  :user_name: ivoryworks
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/647/
+  :language: PHP
+  :time: 2009/07/10 14:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>無味乾燥。</p>\n\r\n\t"
+  :code: |
+    function mask2bits($ddn_str)
+    {
+        $bits = 0;
+        $decs = explode('.', $ddn_str);
+        foreach ( $decs as $dec ) {
+            $bits += substr_count(decbin($dec), '1');
+        }
+        return $bits;
+    }
+
+    function bits2mask($bits)
+    {
+        $bits_str = strrev(sprintf('%032s', str_repeat("1", $bits)));
+        $bins = str_split($bits_str, 8);
+        foreach ($bins as $bin) {
+            $decs[] = bindec($bin);
+        }
+        return implode('.', $decs);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9133'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9133
+  :user_name: 匿名
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2009/06/12 15:30 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <p>InetAddressを引数にしてネットマスクのbit数を返すメソッドと、bit数からInet4Address を返すメソッドです。ネットマスクが
+    n bit の時、ビットパターンが2の補数表現で -2^(32 - n) になる事を利用しています。</p>\n\r\n\t"
+  :code: "import java.net.*;\nimport java.math.*;\nimport java.io.*;\n\npublic class
+    Sample {\n\n    public static int maskLength(InetAddress adrs) {\n        BigInteger
+    a = new BigInteger(adrs.getAddress());\n        if (a.bitCount() != a.bitLength())\n
+    \           throw new IllegalArgumentException(\"Illegal mask.\");\n        return
+    8 * adrs.getAddress().length - a.bitCount();\n    }\n    \n    public static InetAddress
+    getMask(int n) {\n        try {\n            ByteArrayOutputStream bs = new ByteArrayOutputStream();\n
+    \           DataOutputStream dos = new DataOutputStream(bs);\n            dos.writeInt(-(1
+    &lt;&lt; (32 - n)));\n            return Inet4Address.getByAddress(bs.toByteArray());\n
+    \       } catch (Exception e) {\n            throw new IllegalStateException(e);\n
+    \       }\n    }\n    \n    public static void main(String[] args) throws UnknownHostException
+    {\n        System.out.println(maskLength(InetAddress.getByName(\"255.255.255.0\")));\n
+    \       System.out.println(maskLength(InetAddress.getByName(\"255.255.255.128\")));\n
+    \       System.out.println(maskLength(InetAddress.getByName(\"255.255.255.255\")));\n
+    \       System.out.println(maskLength(InetAddress.getByName(\"ffff:ffff:ffff::\")));\n
+    \       System.out.println(getMask(24));\n        System.out.println(getMask(25));\n
+    \       System.out.println(getMask(32));\n    }\n\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9106'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9106
+  :user_name: 匿名
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/4/
+  :language: OCaml
+  :time: 2009/06/10 21:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">F#で、\r\n実行例\r\n&gt; maskstr2num \"255.255.255.0\";;\r\nval
+    it : int = 24\r\n&gt; maskstr2num \"255.255.255.128\";;\r\nval it : int = 25\r\n&gt;
+    maskstr2num \"255.255.255.255\";;\r\nval it : int = 32\r\n&gt; num2maskstr 24;;\r\nval
+    it : string = \"255.255.255.0\"\r\n&gt; num2maskstr 25;;\r\nval it : string =
+    \"255.255.255.128\"\r\n&gt; num2maskstr 32;;\r\nval it : string = \"255.255.255.255\"</pre>\r\n\t"
+  :code: "let bitcount bits:int =\n  let bits = (bits &amp;&amp;&amp; 0x55555555)
+    + (bits &gt;&gt;&gt; 1 &amp;&amp;&amp; 0x55555555)\n  let bits = (bits &amp;&amp;&amp;
+    0x33333333) + (bits &gt;&gt;&gt; 2 &amp;&amp;&amp; 0x33333333)\n  let bits = (bits
+    &amp;&amp;&amp; 0x0f0f0f0f) + (bits &gt;&gt;&gt; 4 &amp;&amp;&amp; 0x0f0f0f0f)\n
+    \ let bits = (bits &amp;&amp;&amp; 0x00ff00ff) + (bits &gt;&gt;&gt; 8 &amp;&amp;&amp;
+    0x00ff00ff) in \n      (bits &amp;&amp;&amp; 0x0000ffff) + (bits &gt;&gt;&gt;16
+    &amp;&amp;&amp; 0x0000ffff)\n\nlet maskstr2num (mask:string) =\n  bitcount  &lt;|
+    Seq.fold ( fun a b -&gt; a * 256 + int b ) 0 (mask.Split('.'))\n\nlet num2maskstr
+    (num:int) =\n  let unum = uint32 (2.0 ** (float num))-1u &lt;&lt;&lt; (32-num)\n
+    \ System.String.Join(\".\", [|for i=3 downto 0 do yield ((unum &amp;&amp;&amp;
+    (0xFFu &lt;&lt;&lt; i*8) &gt;&gt;&gt; i*8).ToString()) |])\n"
+  :tags: []
+  :references:
+    :url: /web/20110320070546/http://www.nminoru.jp/~nminoru/programming/bitcount.html
+    :title: ビットを数える・探すアルゴリズム
+- :id: '9444'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9444
+  :user_name: ivoryworks
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/647/
+  :language: 
+  :time: 2009/08/05 03:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">・Mask2Bit：\r\n　　ネットマスク(文字型)を渡すとビット値(数値型)を返却します。\r\n・Bit2Mask：\r\n　　ビット値(数値型)を渡すとネットマスク(文字型)を返却します。\r\n\r\n/*
+    ネットマスクをビット値に変換 */\r\ncall Mask2Bit input(\"input netmask.\");\r\nmessage str(##return);\r\n\r\n/*
+    逆変換 */\r\ncall Bit2Mask val(input(\"input value.\"));\r\nmessage $$return;\r\n\r\n*
+    パラメータの妥当性はチェックしてません。\r\n* Bin2DecとDec2Binは2進数⇔10進数のサブルーチンです。\r\n</pre>\r\n\t"
+  :code: |
+    Mask2Bit:
+        ##c=0;
+        ##bit=0;
+        while (strlen($$1)) {
+            $b = leftstr($$1,1);
+            $$1 = rightstr($$1, strlen($$1)-1);
+            if ($b == ".") {
+                ##c = ##c + 1;
+            } else if (val($b) == 0 &amp;&amp; $b != "0") {
+                break;
+            } else {
+                $$aar[##c] = $$aar[##c] + $b;
+            }
+        }
+        while (0 &lt;= ##c) {
+            call Dec2Bin val($$aar[##c]);
+            while (strlen($$return)) {
+                ##bit = ##bit + val(leftstr($$return,1));
+                $$return = rightstr($$return, strlen($$return)-1);
+            }
+            ##c = ##c - 1;
+        }
+        return ##bit;
+
+    Bit2Mask:
+        $$b_str = "";
+        $$mask = "";
+        while (strlen($$b_str) &lt; 32) {
+            if (0&lt;##1) {
+                $$b_str = $$b_str + "1";
+            } else {
+                $$b_str = $$b_str + "0";
+            }
+            ##1 = ##1 - 1;
+        }
+        while (strlen($$b_str)) {
+            call Bin2Dec leftstr($$b_str, 8);
+            $$mask = $$mask + str(##return);
+            $$b_str = rightstr($$b_str, strlen($$b_str)-8);
+            if (strlen($$b_str)) {
+                $$mask = $$mask + ".";
+            }
+        }
+        return $$mask;
+
+    Bin2Dec:
+        ##dec = 0;
+        ##val = 1;
+        while (strlen($$1)) {
+            if (rightstr($$1, 1) == "1") {
+                ##dec = ##dec + ##val;
+            }
+            ##val = ##val*2;
+            $$1 = leftstr($$1, strlen($$1)-1);
+        }
+        return ##dec;
+
+    Dec2Bin:
+        $$str = "";
+        if (##1!=0) {
+            while (##1!=1) {
+                $$str = str(##1%2)+$$str;
+                ##1 = ##1/2;
+            }
+            $$str = "1"+$$str;
+        } else {
+            $$str = "0";
+        }
+        return $$str;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9083'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9083
+  :user_name: bleis-tift
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/732/
+  :language: SQL
+  :time: 2009/06/10 07:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>SQL Server 2008 で確認しました。</p>\n\r\n\t"
+  :code: |
+    WITH
+      Input(id, subnetmask) AS (
+        SELECT 1, '255.255.255.0'
+        UNION ALL SELECT 2, '255.255.255.128'
+        UNION ALL SELECT 3, '255.255.255.255'
+      )
+    , Input_(id, subnetmask) AS (
+        SELECT id, subnetmask + '.' FROM Input
+      )
+    , ToNums(id, i, element, input) AS (
+        SELECT
+            id
+          , 1
+          , CAST(LEFT(subnetmask, CHARINDEX('.', subnetmask, 1) - 1) AS int)
+          , SUBSTRING(subnetmask, CHARINDEX('.', subnetmask, 1) + 1, LEN(subnetmask))
+        FROM
+            Input_
+        UNION ALL
+        SELECT
+            id
+          , i + 1
+          , CAST(LEFT(input, CHARINDEX('.', input, 1) - 1) AS int)
+          , SUBSTRING(input, CHARINDEX('.', input, 1) + 1, LEN(input))
+        FROM
+            ToNums
+        WHERE
+            i &lt; 4
+      )
+    , ToBin(id, i, bin, deci, crnt) AS (
+        SELECT
+            id
+          , i
+          , CAST(CASE
+                 WHEN element &gt;= 128 THEN 10000000
+                                     ELSE 0
+                 END AS bigint)
+          , CASE
+            WHEN element &gt;= 128 THEN element - 128
+                                ELSE element
+            END
+          , 6
+        FROM
+            ToNums
+        UNION ALL
+        SELECT
+            id
+          , i
+          , CASE
+            WHEN deci &gt;= POWER(2, crnt) THEN POWER(10, crnt)
+                                        ELSE 0
+            END + bin
+          , CASE
+            WHEN deci &gt;= POWER(2, crnt) THEN deci - POWER(2, crnt)
+                                        ELSE deci
+            END
+          , crnt - 1
+        FROM
+            ToBin
+        WHERE
+            crnt &gt;= 0
+      )
+    , CountOne(id, result) AS (
+        SELECT
+            id
+          , SUM(LEN(REPLACE(STR(bin, 8), '0', '')))
+        FROM
+            ToBin
+        WHERE
+            crnt = -1
+        GROUP BY
+            id
+      )
+    SELECT id, result FROM CountOne
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9132'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9132
+  :user_name: kozima
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2009/06/12 08:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>PPCRE を使ってみました。逆はビット演算で。</p>\n\r\n\t"
+  :code: |
+    (asdf:operate 'asdf:load-op :cl-ppcre)
+
+    (defun mask-to-bits (s)
+      (position #\0 (format nil "~{~8,'0B~}0"
+                            (mapcar #'parse-integer (ppcre:split "\\." s)))))
+
+    (defun bits-to-mask (n)
+      (let ((m (deposit-field #xffffffff (byte n (- 32 n)) 0)))
+        (format nil "~D.~D.~D.~D"
+                (ldb (byte 8 24) m) (ldb (byte 8 16) m)
+                (ldb (byte 8 8) m) (ldb (byte 8 0) m))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10326'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/10326
+  :user_name: 匿名
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/4/
+  :language: Other
+  :time: 2010/03/06 06:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">もっと美しく書ける気がします。\r\nこれが今の僕の限界です orz</pre>\r\n\t"
+  :code: |
+    namespace Doukakuorg
+
+    open System
+    open System.Text.RegularExpressions
+
+    type C253 public () =
+        member this.MaskToBit ip =
+            if Regex.IsMatch(ip, @"^\d{1,3}\.\d{1,3}\.\d{1,3}.\d{1,3}$") then
+                ip.Split('.')
+                    |&gt; Array.map (fun a -&gt; Convert.ToInt32(a))
+                    |&gt; Array.map (fun a -&gt; Convert.ToString(a, 2))
+                    |&gt; Array.fold (fun s n -&gt; s + n) ""
+                    |&gt; (fun a -&gt; a.Replace("0", "").Length)
+            else
+                0
+
+        member this.BitToMask bit =
+            if 1 &lt;= bit &amp;&amp; bit &lt;= 32 then
+                (new String('1', bit)).PadRight(32, '0')
+                    |&gt; (fun a -&gt; [for i in 0..8..(a.Length-1) do yield a.[i .. (i+7)]])
+                    |&gt; List.map (fun a -&gt; Convert.ToInt32(a, 2))
+                    |&gt; List.fold (fun s n -&gt; String.Format("{0}.{1}", s, n)) ""
+                    |&gt; (fun a -&gt; a.[1..])
+            else
+                "0.0.0.0"
+  :tags: []
+  :references:
+    :url: /web/20110320070546/http://d.hatena.ne.jp/regerege/
+    :title: ''
+- :id: '9100'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9100
+  :user_name: nido
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/589/
+  :language: Ruby
+  :time: 2009/06/10 09:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">エラー処理はしていません。\r\n実行環境がRuby 1.8.6以前の場合\r\nmap(&amp;:to_i)
+    の部分を map{|e| e.to_i} にして下さい。</pre>\r\n\t"
+  :code: |
+    def mask2bits(mask_str)
+      mask_str.split('.').map(&amp;:to_i).inject(0){|r,e| 8.times{r+=(e&amp;1);e&gt;&gt;=1};r}
+    end
+
+    def bits2mask(num)
+      ['1'*num + '0'*(32-num)].pack('B*').unpack('C*')*'.'
+    end
+
+    if $0 == __FILE__
+        puts mask2bits('255.255.255.0')
+        puts mask2bits('255.255.255.128')
+        puts mask2bits('255.255.255.255')
+        puts bits2mask(24)
+        puts bits2mask(25)
+        puts bits2mask(32)
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9135'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9135
+  :user_name: yamamoto
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/1064/
+  :language: Scala
+  :time: 2009/06/12 15:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">#9133の移植です。\r\n便利なクラスがあるんですねえ。\r\n勉強になりました。\r\n</pre>\r\n\t"
+  :code: "// Java版(#9133)の移植です。\nimport java.net._\nimport java.math._\nimport java.io._\n\nobject
+    IPNetMask9133 {\n  def main(args : Array[String]) : Unit = {\n    System.out.println(maskLength(InetAddress.getByName(\"255.255.255.0\")));\n
+    \   System.out.println(maskLength(InetAddress.getByName(\"255.255.255.128\")));\n
+    \   System.out.println(maskLength(InetAddress.getByName(\"255.255.255.255\")));\n
+    \   System.out.println(maskLength(InetAddress.getByName(\"ffff:ffff:ffff::\")));\n
+    \   System.out.println(getMask(24));\n    System.out.println(getMask(25));\n    System.out.println(getMask(32));\n
+    \ }\n  \n  def maskLength(adrs:InetAddress):Int = {\n    val a = new BigInteger(adrs.getAddress());\n
+    \   if (a.bitCount() != a.bitLength())\n       throw new IllegalArgumentException(\"Illegal
+    mask.\")\n    //\n    return 8 * adrs.getAddress().length - a.bitCount();\n  }\n
+    \ \n  def getMask(n:Int) :InetAddress = {\n    try {\n      val bs = new ByteArrayOutputStream();\n
+    \     val dos = new DataOutputStream(bs);\n      dos.writeInt(-(1 &lt;&lt; (32
+    - n)));\n      return InetAddress.getByAddress(bs.toByteArray());\n    } catch
+    {\n      case e:Exception =&gt;throw new IllegalStateException(e);\n    }\n  }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9087'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9087
+  :user_name: Songmu
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/763/
+  :language: Perl
+  :time: 2009/06/10 08:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>もっとpackをかっこよく使いたい。</p>\n\r\n\t"
+  :code: "#!/usr/bin/perl\nuse strict;\nuse warnings;\n\nsub maskstr2num{\n    my
+    $mask = shift;\n    return if $mask !~ /^(\\d{1,3}\\.){3}\\d+$/;\n    my @mask_sections
+    = split /\\./,$mask;\n    my $bit_mask = '';\n    for(@mask_sections){\n        return
+    if $_ &gt; 255;\n        $bit_mask .= unpack(\"B8\",pack(\"C\",$_));\n    }\n
+    \   return if $bit_mask !~ /^1+0+$/;\n    \n    my $cnt = scalar(() = $bit_mask
+    =~ /1/g);\n    return $cnt;\n}\n\nsub num2maskstr{\n    my $mask = shift;\n    return
+    if $mask &gt; 32 || $mask &lt; 0;\n    $mask = '1'x$mask . '0'x(32-$mask);\n    \n
+    \   my @mask_sections = $mask =~ /^(\\d{8})(\\d{8})(\\d{8})(\\d{8})$/;\n    $_
+    = unpack(\"C\", pack(\"B8\",$_)) for @mask_sections;\n    \n    $mask = join '.',@mask_sections;\n
+    \   return $mask;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9103'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9103
+  :user_name: lufia
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/242/
+  :language: Other
+  :time: 2009/06/10 13:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <ul class=\"simple\">\n<li>Limboのキャストはtype exprのように書きます。</li>\n<li>int
+    \"1\"の場合、数値に変換してくれます。</li>\n</ul>\n<p>極力、定数は使わないように書きました。\n8(ビット数)は名前を思いつかなかったので。</p>\n<p>テストコードも含めてみましたが、\nかえって見づらくなっただけかもしれません。</p>\n\r\n\t"
+  :code: |
+    implement Netmask;
+
+    include "sys.m";
+        sys: Sys;
+        fprint, sprint: import sys;
+    include "draw.m";
+
+    Netmask: module
+    {
+        init: fn(nil: ref Draw-&gt;Context, argv: list of string);
+    };
+
+    IPv4len: con 4;
+
+    data := array[] of {
+        ("255.128.0.0", 9),
+        ("255.255.255.0", 24),
+        ("255.255.255.128", 25),
+        ("255.255.255.255", 32),
+    };
+
+    init(nil: ref Draw-&gt;Context, nil: list of string)
+    {
+        sys = load Sys Sys-&gt;PATH;
+        stderr := sys-&gt;fildes(2);
+
+        for(i := 0; i &lt; len data; i++){
+            (addr, expected) := data[i];
+            actual := toint(addr);
+            if(actual != expected)
+                fprint(stderr, "%s %d vs %d\n", addr, actual, expected);
+            r := toaddr(expected);
+            if(addr != r)
+                fprint(stderr, "%d %s vs %s\n", expected, r, addr);
+        }
+    }
+
+    toint(addr: string): int
+    {
+        (n, l) := sys-&gt;tokenize(addr, ".");
+        if(n != IPv4len)
+            return -1;
+
+        sum := 0;
+        for(p := l; p != nil; p = tl p)
+            sum += bitcount(byte hd p);
+        return sum;
+    }
+
+    bitcount(b: byte): int
+    {
+        sum := 0;
+        for(n := int b; n; n &amp;= n-1)
+            sum++;
+        return sum;
+    }
+
+    toaddr(n: int): string
+    {
+        N: con IPv4len*8;
+
+        if(n &lt; 0 || n &gt; N)
+            return nil;
+        t := (big 1 &lt;&lt; n) - big 1;
+        t &lt;&lt;= N-n;
+        s := "";
+        for(i := 0; i &lt; IPv4len; i++)
+            s += sprint(".%d", int byte (t &gt;&gt; (IPv4len-i-1)*8));
+        return s[1:];
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9089'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9089
+  :user_name: pooq
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/606/
+  :language: J
+  :time: 2009/06/10 05:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">   a2m '255.255.255.0'\r\n24\r\n   a2m '255.255.255.128'\r\n25\r\n
+    \  a2m '255.255.255.255'\r\n32\r\n   m2a 24\r\n255.255.255.0\r\n   m2a 25\r\n255.255.255.128\r\n
+    \  m2a 32\r\n255.255.255.255\r\n</pre>\r\n\t"
+  :code: |
+    a2m =: 3 : '+/ , #: ". &gt; ''.'' cutopen y'
+    m2a =: 3 : '}: ; ,&amp;''.'' @ ": each 256 #. inv #. 32 {. y # 1'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9128'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9128
+  :user_name: onoue
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/1066/
+  :language: Haskell
+  :time: 2009/06/11 23:08 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <p>変換・逆変換の過程をたどりやすくしてみました。</p>\n\r\n\t"
+  :code: |
+    import Data.Word        ( Word32, Word8 )
+    import Data.List        ( unfoldr, intersperse )
+
+    -- Int &lt;-&gt; String
+    nbits2mask = str_w8s . w8s_w32 . w32_int
+    mask2nbits = int_w32 . w32_w8s . w8s_str
+
+    -- Int &lt;-&gt; Word32
+    w32_int = (maxBound-) . (-1+) . (2^) . (32-)
+    int_w32 = (32-) . round . logBase 2 . (1+) . fromIntegral . (maxBound-)
+
+    -- Word32 &lt;-&gt; [Word8]
+    w8s_w32 = reverse . take 4 . map w8_w32 . unfoldr (Just . swap . (`divMod`256))
+    w32_w8s = foldl ((+) . (256*)) 0 . map w32_w8
+
+    -- [Word8] &lt;-&gt; String
+    str_w8s = concat . intersperse "." . map show
+    w8s_str = map read . unfoldr phi . ('.':)
+      where
+        phi []     = Nothing
+        phi (_:cs) = Just $ break ('.'==) cs
+
+
+    -- misc
+    swap (x,y) = (y,x)
+
+    w8_w32 = toEnum . fromEnum :: Word32 -&gt; Word8           -- 0 &lt;= arg &lt; 2^8
+    w32_w8 = toEnum . fromEnum :: Word8  -&gt; Word32          -- 0 &lt;= arg &lt; 2^8
+
+    main = mapM_ (print . test) [0..32]
+      where
+        test n = let { m = nbits2mask n; n' = mask2nbits m } in (n, m, n==n')
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9117'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9117
+  :user_name: mattsan
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/833/
+  :language: C
+  :time: 2009/06/11 08:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>結構乱暴。</p>\n\r\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;functional&gt;
+    #include &lt;bitset&gt;
+    #include &lt;string&gt;
+    #include &lt;sstream&gt;
+    #include &lt;cassert&gt;
+
+    int mask2bits(const std::string&amp; s)
+    {
+        int  n[4];
+        char c[3];
+
+        if( (std::istringstream(s) &gt;&gt; n[0] &gt;&gt; c[0] &gt;&gt; n[1] &gt;&gt; c[1] &gt;&gt; n[2] &gt;&gt; c[2] &gt;&gt; n[3]) &amp;&amp;
+            (std::count(c, c + 3, '.') == 3)                                                &amp;&amp;
+            (std::count_if(n, n + 4, std::bind1st(std::less_equal&lt;int&gt;(), 0)) == 4)         &amp;&amp;
+            (std::count_if(n, n + 4, std::bind2nd(std::less_equal&lt;int&gt;(), 255)) == 4)       )
+        {
+            return std::bitset&lt;32&gt;((n[0] &lt;&lt; 24) + (n[1] &lt;&lt; 16) + (n[2] &lt;&lt; 8) + n[3]).count();
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
+    std::string bits2mask(int n)
+    {
+        if((0 &lt;= n) &amp;&amp; (n &lt;= 32))
+        {
+            std::bitset&lt;32&gt; bits;
+            for(int i = 0; i &lt; n; ++i)
+            {
+                bits.set(31 - i);
+            }
+            unsigned long m = bits.to_ulong();
+            std::ostringstream oss;
+            oss &lt;&lt; ((m &gt;&gt; 24) &amp; 0xffu) &lt;&lt; '.' &lt;&lt; ((m &gt;&gt; 16) &amp; 0xffu) &lt;&lt; '.' &lt;&lt; ((m &gt;&gt; 8) &amp; 0xffu) &lt;&lt; '.' &lt;&lt; (m &amp; 0xffu);
+            return oss.str();
+        }
+        else
+        {
+            return "";
+        }
+    }
+
+    int main(int, char* [])
+    {
+        assert (mask2bits("255.255.255.0")   == 24);
+        assert (mask2bits("255.255.255.128") == 25);
+        assert (mask2bits("255.255.255.255") == 32);
+        assert (bits2mask(24) == "255.255.255.0");
+        assert (bits2mask(25) == "255.255.255.128");
+        assert (bits2mask(32) == "255.255.255.255");
+
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9393'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9393
+  :user_name: nattou_curry
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/913/
+  :language: Java
+  :time: 2009/07/19 11:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Javaでシンプルに。</p>\n\r\n\t"
+  :code: "public class SubnetMask {\n    \n    public static void main( String[] args
+    ) {\n        System.out.println( getMaskLength( \"255.255.255.0\" ) );\n        System.out.println(
+    getMaskLength( \"255.255.255.128\" ) );\n        System.out.println( getMaskLength(
+    \"255.255.255.255\" ) );\n        System.out.println( getMask( 24 ) );\n        System.out.println(
+    getMask( 25 ) );\n        System.out.println( getMask( 32 ) );\n    }\n        \n
+    \   // サブネットマスクの長さを求める。\n    public static int getMaskLength( String subnetMask
+    ) {\n        \n        /////////////////////////////////////////////////////////////\n
+    \       // サブネットマスクの妥当性確認\n        /////////////////////////////////////////////////////////////\n\n
+    \       // サブネットマスクが「数値.数値.数値.数値」の形式であることを確認する。\n        if ( ! subnetMask.matches(
+    \"[0-9]+\\\\.[0-9]+\\\\.[0-9]+\\\\.[0-9]+\" ) ) {\n            throw new RuntimeException(
+    \"指定されたサブネットマスクが不正です。\" );\n        }\n\n        // サブネットマスクの数値が以下の順に並んでいることを確認する。\n
+    \       // 1. 255が0個以上\n        // 2. 254と252と248と240と224と192と128のいずれかが0個か1個\n
+    \       // 3. 0が0個以上」\n        String temp = subnetMask + \".\";\n        if (
+    ! temp.matches( \"(255\\\\.)*((254|252|248|240|224|192|128)\\\\.)?(0\\\\.)*\"
+    ) ) {\n            throw new RuntimeException( \"指定されたサブネットマスクが不正です。\" );\n        }\n\n
+    \       /////////////////////////////////////////////////////////////\n        //
+    サブネットマスクを長さに変換\n        /////////////////////////////////////////////////////////////\n\n
+    \       // サブネットマスクを4つの数値に分割する。\n        String[] partsStr = subnetMask.split(
+    \"\\\\.\" );\n        int[] parts = new int[4];\n        for ( int i = 0; i &lt;
+    4; ++i ) {\n            parts[i] = Integer.parseInt( partsStr[i] );\n        }\n
+    \           \n        // 各数値のビット数を求め、ビット数を合計して長さを求める。\n        int result = 0;\n
+    \       for ( int i = 0; i &lt; 4; ++i ) {\n            switch ( parts[i] ) {\n
+    \               case 255:\n                    result += 8;\n                    break;\n
+    \               case 254:\n                    result += 7;\n                    break;\n
+    \               case 252:\n                    result += 6;\n                    break;\n
+    \               case 248:\n                    result += 5;\n                    break;\n
+    \               case 240:\n                    result += 4;\n                    break;\n
+    \               case 224:\n                    result += 3;\n                    break;\n
+    \               case 192:\n                    result += 2;\n                    break;\n
+    \               case 128:\n                    result += 1;\n                    break;\n
+    \               case 0:\n                    result += 0;\n                    break;\n
+    \           }\n        }\n            \n        return result;\n    }\n\n    //
+    長さからサブネットマスクを求める。\n    public static String getMask( final int length ) {\n        \n
+    \       /////////////////////////////////////////////////////////////\n        //
+    長さの妥当性確認\n        /////////////////////////////////////////////////////////////\n
+    \       \n        if ( length &lt; 0 || 32 &lt; length ) {\n            throw
+    new RuntimeException( \"指定された長さが不正です。\" );\n        }\n\n        /////////////////////////////////////////////////////////////\n
+    \       // 長さをサブネットマスクに変換\n        /////////////////////////////////////////////////////////////\n
+    \       \n        // サブネットマスクの4つ数値\n        int[] parts = new int[] { 0, 0, 0,
+    0 };\n        \n        // 4つ数値のうち、先頭から「長さを8で割った商」個の数値を255にする。\n        int q
+    = length / 8;\n        for ( int i = 0; i &lt; q; ++i ) {\n            parts[i]
+    = 255;\n        }\n        \n        // 「長さを8で割った余り」がある場合、\n        // 4つの数値のうち、先頭から「長さを8で割った商
+    + 1」番目の数値を、「余り」から求める。\n        int r = length % 8;\n        switch ( r ) {\n            case
+    7:\n                parts[q] = 254;\n                break;\n            case
+    6:\n                parts[q] = 252;\n                break;\n            case
+    5:\n                parts[q] = 248;\n                break;\n            case
+    4:\n                parts[q] = 240;\n                break;\n            case
+    3:\n                parts[q] = 224;\n                break;\n            case
+    2:\n                parts[q] = 192;\n                break;\n            case
+    1:\n                parts[q] = 128;\n                break;\n        }\n        \n
+    \       // 4つの数値を連結して、サブネットマスクを作成する。\n        return parts[0] + \".\" + parts[1]
+    + \".\" + parts[2] + \".\" + parts[3];\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9120'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9120
+  :user_name: sumim
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/06/11 11:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Squeak Smalltalk で。</p>\n\r\n\t"
+  :code: "| maskStrToBits |\nmaskStrToBits := [:maskStr |\n    ((maskStr subStrings:
+    '.') collect: [:each | each asInteger radix: 2]) \n        concatenation occurrencesOf:
+    $1].\n\nmaskStrToBits value: '255.255.255.0'.     \"=&gt; 24 \"\nmaskStrToBits
+    value: '255.255.255.128'.   \"=&gt; 25 \"\nmaskStrToBits value: '255.255.255.255'.
+    \  \"=&gt; 32 \"\n\n\n| bitsToMaskStr |\nbitsToMaskStr := [:int |\n    String
+    streamContents: [:ss |\n        (((String new: int withAll: $1) forceTo: 32 paddingWith:
+    $0)\n                groupsOf: 8 atATimeCollect: [:each | ('2r', each) asNumber
+    printString])\n            do: [:each | ss nextPutAll: each] separatedBy: [ss
+    nextPut: $.]]].\n\nbitsToMaskStr value: 24.   \"=&gt; '255.255.255.0' \"\nbitsToMaskStr
+    value: 25.   \"=&gt; '255.255.255.128' \"\nbitsToMaskStr value: 32.   \"=&gt;
+    '255.255.255.255' \"\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9122'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9122
+  :user_name: tanakahisateru
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/1025/
+  :language: OCaml
+  :time: 2009/06/11 11:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>すみません、昨日無駄にNativeintを使ったあげく、末尾再帰最適化されないコードを書いてしまいました。同じアルゴリズムをより正しく実装したものがこっちです。</p>\n\r\n\t"
+  :code: "#load \"str.cma\"\n\nlet print_string_nl v = print_string (v ^ \"\\n\")\nlet
+    print_int_nl v = print_string_nl (string_of_int v)\n\nlet netmask_num_of addr
+    =\n    let onbits_of byte = \n        let rec loop ptr v =\n            if ptr
+    &lt; 0 || byte land (1 lsl ptr) = 0 then v\n            else loop (ptr - 1) (v
+    + 1)\n        in loop 7 0\n    in\n    let addrs = List.map int_of_string (Str.split
+    (Str.regexp \"\\\\.\") addr) in\n    List.fold_left (fun a b -&gt; a + (onbits_of
+    b)) 0 addrs \n;;\nprint_int_nl (netmask_num_of \"255.255.255.0\");;\nprint_int_nl
+    (netmask_num_of \"255.255.255.128\");;\nprint_int_nl (netmask_num_of \"255.255.255.255\");;\n\nlet
+    netmask_str_of num =\n    let rec byteloop num n v =\n        if n = 0 then v\n
+    \       else\n            let rec bitloop num b v =\n                if num =
+    0 or b &lt; 0 then v\n                else bitloop (num - 1) (b - 1) ((1 lsl b)
+    lor v)\n            in byteloop (num - 8) (n - 1) (v @ [string_of_int (bitloop
+    num 7 0)])\n    in String.concat \".\" (byteloop num 4 [])\n;;\nprint_string_nl
+    (netmask_str_of 24);;\nprint_string_nl (netmask_str_of 25);;\nprint_string_nl
+    (netmask_str_of 32);;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9086'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9086
+  :user_name: tamanecoplus
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/501/
+  :language: C
+  :time: 2009/06/10 08:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">C言語で。\r\nnetmask_to_prefix() : ネットマスク -&gt;
+    数値\r\nprefix_to_netmask() : 数値 -&gt; ネットマスク\r\nエラーの場合は-1を返却。</pre>\r\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+
+    int netmask_to_prefix(char *s)
+    {
+      unsigned long l;
+      int b1, b2, b3, b4;
+      int n;
+
+      if (sscanf(s, "%d.%d.%d.%d", &amp;b1, &amp;b2, &amp;b3, &amp;b4) == 4 &amp;&amp; (b1 | b2 | b3 | b4) &lt; 256) {
+        l = (b1 &lt;&lt; 24 | b2 &lt;&lt; 16 | b3 &lt;&lt; 8 | b4) ^ 0xffffffffUL;
+        n = 32;
+        while (l &amp; 1) {
+          n--;
+          l &gt;&gt;= 1;
+        }
+        return l ? -1 : n;
+      } else {
+        return -1;
+      }
+    }
+
+    int prefix_to_netmask(int n, char *s)
+    {
+      unsigned long l;
+
+      if (0 &lt; n &amp;&amp; n &lt;= 32) {
+        l = -1L &lt;&lt; (32 - n);
+        sprintf(s, "%d.%d.%d.%d",
+          (int)(l &gt;&gt; 24 &amp; 255), (int)(l &gt;&gt; 16 &amp; 255), (int)(l &gt;&gt; 8 &amp; 255), (int)(l &amp; 255));
+        return 0;
+      } else {
+        return -1;
+      }
+    }
+
+    int main()
+    {
+      char s[100];
+      int n;
+
+      printf("netmask? "); scanf("%s", s);
+      printf("result: %d\n", netmask_to_prefix(s));
+
+      printf("prefix? "); scanf("%d", &amp;n);
+      if (!prefix_to_netmask(n, s)) printf("result: %s\n", s);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9104'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9104
+  :user_name: genzou
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2009/06/10 15:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>ちょっと汚いかな・・・</p>\n\r\n\t"
+  :code: |
+    def toMask(ip){
+        ip.split(/\./).collect{
+            Integer.toBinaryString(it.toInteger())
+        }*.count("1").sum()
+    }
+
+    assert toMask("255.255.255.0") == 24
+    assert toMask("255.255.255.128") == 25
+    assert toMask("255.255.255.255") == 32
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9110'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9110
+  :user_name: athos
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/755/
+  :language: Scheme
+  :time: 2009/06/10 21:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \r\n\t"
+  :code: |
+    (use srfi-1)
+    (use util.list)
+
+    (define (mask-&gt;nbits mask)
+      (count (cut eqv? #¥1 &lt;&gt;)
+             (append-map (lambda (n) (string-&gt;list (format "~b" (string-&gt;number n))))
+                         (string-split mask #¥.))))
+
+    (define (nbits-&gt;mask nbits)
+      (string-join (map (lambda (bits) #`",(string-&gt;number (list-&gt;string bits) 2)")
+                        (slices (take* (make-list nbits #¥1) 32 #t #¥0) 8))
+                   "."))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9111'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9111
+  :user_name: sekia
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/588/
+  :language: Perl
+  :time: 2009/06/11 03:06 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <p>やった、処理が80文字に収まった！</p>\n<p>oct()が2進数文字列を変換できるのはあまり知られていない気がします。</p>\n\r\n\t"
+  :code: |
+    use List::Util qw/sum/;
+    sub mask2bits($) {
+      sum map { split //, sprintf '%b', $_ } split /\./, shift;
+    }
+    sub bits2mask($) {
+      join '.', map { oct "0b$_" } (1 x $_[0] . 0 x (32 - $_[0])) =~ /\d{8}/g;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9113'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9113
+  :user_name: yamamoto
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/1064/
+  :language: Scala
+  :time: 2009/06/11 04:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>とりあえず、InetAddressを使いました。例外処理があるので効率は・・・・</p>\n\r\n\t"
+  :code: "import java.net._\n\nobject IPNetMask {\n  val ipMask2NumBits = Map(\n       (256-
+    \ 1) -&gt; 8 ,\n       (256-  2) -&gt; 7 ,\n       (256-  4) -&gt; 6 ,\n       (256-
+    \ 8) -&gt; 5 ,\n       (256- 16) -&gt; 4 ,\n       (256- 32) -&gt; 3 ,\n       (256-
+    64) -&gt; 2 ,\n       (256-128) -&gt; 1 ,\n               0 -&gt; 0 )\n  var ipNumBits2Mask
+    = Map[Int,Int]()\n  for( (k,v)&lt;-ipMask2NumBits ) ipNumBits2Mask += v-&gt;k\n
+    \ \n  def main(args : Array[String]) : Unit = {\n    //ipMask2NumBits.foreach(println
+    _)\n    //ipNumBits2Mask.foreach(println _)\n    \n    for{ arg &lt;-args\n         ip
+    \ =InetAddress.getByName(arg) }{\n      ip2numbits(ip) match {\n        case Some(n)
+    =&gt;\n          println(ip+\" : \" +n+\"bits\")\n          println(\"reverse
+    : \"+numbits2ip(n))\n        case None =&gt; println(\"error\")\n      }\n    }\n
+    \   \n    ()\n  }\n  def ip2numbits(ip:InetAddress) : Option[Int] = {\n    val
+    rawIP = ip.getAddress.map(0x0FF &amp; _)\n    try{\n      rawIP match{\n        case
+    Seq(255,255,255,a) =&gt; return Some( 24 + ipMask2NumBits(a) )\n        case Seq(255,255,
+    \ a,0) =&gt; return Some( 16 + ipMask2NumBits(a) )\n        case Seq(255,  a,
+    \ 0,0) =&gt; return Some(  8 + ipMask2NumBits(a))\n        case _ =&gt; return
+    None\n      }\n    }catch{\n      case _ =&gt; return None\n    }\n    None\n
+    \ }\n  \n  def numbits2ip(numbits:Int) : Option[InetAddress]={\n    try{\n      numbits
+    match {\n        case n if (n &gt;= 24) =&gt; return Some(InetAddress.getByName(
+    ipNumBits2Mask(n-24).formatted(\"255.255.255.%d\")))\n        case n if (n &gt;=
+    16) =&gt; return Some(InetAddress.getByName( ipNumBits2Mask(n-16).formatted(\"255.255.%d.0\")))\n
+    \       case n if (n &gt;=  8) =&gt; return Some(InetAddress.getByName( ipNumBits2Mask(n-
+    8).formatted(\"255.%d.0.0\")))\n      }\n    }catch{\n      case _ =&gt; return
+    None\n    }\n    None\n  }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9453'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9453
+  :user_name: uehaj
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2009/08/07 18:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>人のを見ないで作ってみた。ドキドキ。</p>\n\r\n\t"
+  :code: |
+    def netMask(addr) {
+      Long.toString(addr.split(/\./).inject(0) {a,b-&gt;a*256+(b as long)},2).chars.grep{it=='1'}.size()
+    }
+
+    assert netMask("255.255.255.0")==24
+    assert netMask("255.255.255.128")==25
+    assert netMask("255.255.255.255")==32
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9370'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9370
+  :user_name: creeper
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/994/
+  :language: Other
+  :time: 2009/07/15 08:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">Squirrel3.0で。\r\nbits2mask()のbits=0の時が美しくない・・・\r\n(1&lt;&lt;32が1になってしまう。64bitなら無視できるかも)\r\n結果：\r\n
+    \       0.0.0.0 =&gt;  0\r\n      128.0.0.0 =&gt;  1\r\n  255.255.255.0 =&gt;
+    24\r\n255.255.255.128 =&gt; 25\r\n255.255.255.255 =&gt; 32\r\n 0 =&gt;         0.0.0.0\r\n
+    1 =&gt;       128.0.0.0\r\n 8 =&gt;       255.0.0.0\r\n32 =&gt; 255.255.255.255</pre>\r\n\t"
+  :code: |
+    function mask2bits(mask)
+    {
+        local addr = split(mask, ".").reduce(@(a,b) (a.tointeger()&lt;&lt;8) + b.tointeger());
+        for(local i=32; addr; i--, addr=addr&gt;&gt;1) if (addr&amp;1) return i;
+        return 0;
+    }
+    function bits2mask(bits)
+    {
+        local addr = bits ? -(1&lt;&lt;(32-bits)) : 0;
+        return format("%d.%d.%d.%d", addr&gt;&gt;24&amp;0xFF, addr&gt;&gt;16&amp;0xFF, addr&gt;&gt;8&amp;0xFF, addr&gt;&gt;0&amp;0xFF);
+    }
+
+    function test_mask2bits(mask)
+    {
+        print(format("%15s =&gt; %2d\n", mask, mask2bits(mask)));
+    }
+    function test_bits2mask(bits)
+    {
+        print(format("%2d =&gt; %15s\n", bits, bits2mask(bits)));
+    }
+
+    test_mask2bits("0.0.0.0");
+    test_mask2bits("128.0.0.0");
+    test_mask2bits("255.255.255.0");
+    test_mask2bits("255.255.255.128");
+    test_mask2bits("255.255.255.255");
+
+    test_bits2mask(0);
+    test_bits2mask(1);
+    test_bits2mask(8);
+    test_bits2mask(32);
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9116'
+  :parent_id: '253'
+  :url: http://ja.doukaku.org/comment/9116
+  :user_name: tkturbo
+  :user_url: /web/20110320070546/http://ja.doukaku.org/user/1056/
+  :language: JavaScript
+  :time: 2009/06/11 08:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>「ipaddr2mask」でアドレス→数値変換。\n「mask2ipaddr」で数値→アドレス変換。</p>\n\r\n\t"
+  :code: |
+    function format(num, dec1, dec2, minlen){
+        var num1 = new Number(parseInt(num, dec1)).toString(dec2);;
+        while(num1.length &lt; minlen) num1 = "0" + num1;
+        return num1;
+    }
+
+    function ipaddr2mask(ipaddr){
+        var ad = ipaddr.split(".");
+        var str = "";
+        for(var i = 0; i &lt; ad.length; i++){
+            str += format(ad[i],10,2,8);
+        }
+        for(var i = str.length-1; i &gt; 0 ; i--){
+            if(str.charAt(i)!=0){return i+1;}
+        }
+        return 0;
+    }
+
+    function mask2ipaddr(mask){
+        var m1 = format(mask,10,10,1);
+        var str = "";
+        while(str.length &lt; 32){ str+= (str.length &lt; m1) ? "1" : "0"; }
+        var ipaddr = "";
+        for(var i = 0; i &lt; 4; i++){
+            if(i &gt; 0){ ipaddr+="."; }
+            ipaddr+=format(str.substr(i*8, 8),2,10,1);
+        }
+        return ipaddr;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 

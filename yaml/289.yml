@@ -1,0 +1,189 @@
+---
+:id: '289'
+:title: 回文日付
+:comments:
+- :id: '9777'
+  :parent_id: '289'
+  :url: http://ja.doukaku.org/comment/9777
+  :user_name: ' U D '
+  :user_url: /web/20100506131947/http://ja.doukaku.org/user/1085/
+  :language: 
+  :time: 2010/01/02 08:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <ol class=\"arabic simple\" start=\"0\">\n<li>YYYYMMDD形式で書き下した日付が回文になる日を探して列挙してください。探すのは西暦4桁の範囲（YYYY年MM月DD日）とします。</li>\n</ol>\n<p>例えば、2010年1月2日をYYYYMMDD形式で書き下すと
+    20100102 となり、逆から読んでも 20100102 になります。</p>\n<p>また、日付を扱うライブラリを利用した場合はそのように明記してください。</p>\n<p>余裕のある方は以下にもチャレンジしてください。</p>\n<ol
+    class=\"arabic simple\">\n<li>他の形式（e.g. DDMMYYYY形式など）で回文になる日付を探せるように改良してください。</li>\n</ol>\n<p>※ちなみに、日本では年月日の順で表記するのが一般的ですが、表記の順番は国によってバラバラのようです。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9778'
+  :parent_id: '289'
+  :url: http://ja.doukaku.org/comment/9778
+  :user_name: seri
+  :user_url: /web/20100506131947/http://ja.doukaku.org/user/641/
+  :language: Ruby
+  :time: 2010/01/02 20:51 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">標準添付ライブラリのDateクラスを利用し、YYYYMMDD形式での日付について\r\nやってみました。結果は下記のようになり、全部で366個見つかりました。\r\n&lt;出力結果の一部&gt;\r\n0101-10-10\r\n0110-01-10\r\n・・・\r\n9280-08-29\r\n9290-09-29\r\n</pre>\n\t"
+  :code: |
+    require 'date'
+
+    from = Date.new(0, 1, 1)
+    to = Date.new(9999, 12, 31)
+    from.upto(to) { |d|
+      s = sprintf("%04d%02d%02d", d.year, d.month, d.day)
+      puts d if s == s.reverse
+    }
+  :tags: []
+  :references:
+    :url: /web/20100506131947/http://www.ruby-lang.org/ja/man/html/Date.html
+    :title: Date - Rubyリファレンスマニュアル
+- :id: '9780'
+  :parent_id: '289'
+  :url: http://ja.doukaku.org/comment/9780
+  :user_name: mr-80b
+  :user_url: /web/20100506131947/http://ja.doukaku.org/user/548/
+  :language: 
+  :time: 2010/01/02 20:36 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">日付の妥当性を判断するスマートな方法が見つからず、\r\nやっつけで、エラーになるかどうかで判定してみた。\r\n\r\n結果\r\n1001/10/01\r\n1010/01/01\r\n1011/11/01\r\n(中略)\r\n9270/07/29\r\n9280/08/29\r\n9290/09/29\r\n\r\n331個\r\n</pre>\n\t"
+  :code: |
+    結果＝「」
+    年月日＝「」
+
+    YYYYで1000から9999まで繰り返す
+      MM=MID(YYYY,4,1)&amp;MID(YYYY,3,1)
+      DD=MID(YYYY,2,1)&amp;MID(YYYY,1,1)
+      エラー監視
+        #「日時形式変換」コマンドがエラーになるかどうかで、日付としての妥当性を判断
+        年月日＝「{YYYY}/{MM}/{DD}」を「yyyy/mm/dd」に日時形式変換
+        結果＝結果＆年月日＆改行
+      エラーならば
+        続ける
+
+    結果をメモ記入
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9783'
+  :parent_id: '289'
+  :url: http://ja.doukaku.org/comment/9783
+  :user_name: hoge
+  :user_url: /web/20100506131947/http://ja.doukaku.org/user/1111/
+  :language: Haskell
+  :time: 2010/01/03 15:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">　ライブラリの使い方がよくわからないのでCチックに数字でやってみました。\r\n”西暦4桁の範囲”の解釈で、0311年のような形式を含むとすれば366個に、\r\n1000年から9999年までとすれば331個になりました。\r\n\r\n＜出力結果＞\r\n1011010\r\n1100110\r\n...\r\n92800829\r\n92900929\r\n331</pre>\n\t"
+  :code: "numberPalindrome = map f [0..9999]\n  where f n = n * 10000 + g n 1000\n
+    \         where g n m = n `mod` 10 * m + (if n' == 0 then 0 else g n' m')\n                  where
+    n' = n `div` 10\n                        m' = m `div` 10\n\nisDate x = f y m d\n
+    \ where y = x `div` 10000\n        m = x `mod` 10000 `div` 100\n        d = x
+    `mod` 100\n        f y m d\n          | y &lt; 1000 || m &lt; 1 || 12 &lt; m ||
+    d &lt; 1 = False\n          | otherwise = g y m d\n          where g 9220 2 d
+    = d == 29 -- 2月29日は9220年のみ考えればよく、閏年\n                g _    2 d = d &lt;= 28\n
+    \               g _    m d \n                  | m == 7 || m `mod` 7 `mod` 2 ==
+    1 = d &lt;= 31\n                  | otherwise = d &lt;= 30\n\ndatePalindrome =
+    filter isDate numberPalindrome\n\nmain = do\n  mapM_ print datePalindrome\n  print
+    $ length datePalindrome\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9784'
+  :parent_id: '289'
+  :url: http://ja.doukaku.org/comment/9784
+  :user_name: hoge
+  :user_url: /web/20100506131947/http://ja.doukaku.org/user/1111/
+  :language: 
+  :time: 2010/01/03 10:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">　すいません。出力結果、張り間違えました。\r\n\r\n＜出力結果＞\r\n*Main&gt;
+    main\r\n10011001\r\n10100101\r\n10111101\r\n10200201\r\n...\r\n92600629\r\n92700729\r\n92800829\r\n92900929\r\n331\r\n*Main&gt;</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9786'
+  :parent_id: '289'
+  :url: http://ja.doukaku.org/comment/9786
+  :user_name: sumim
+  :user_url: /web/20100506131947/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2010/01/03 18:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。組み込みの DateAndTime クラスを使用しました。</p>\n\n\t"
+  :code: |
+    | date limit buffer |
+    date := '0000-01-01T00:00:00' asDateAndTime.
+    limit := '9999-12-31T00:00:00' asDateAndTime.
+    buffer := (Array new: 1000) writeStream.
+    [   | str |
+        str := (date printString copyWithout: $-) first: 8.
+        str = str reversed ifTrue: [buffer nextPut: date].
+        (date := date + 1 day) &lt;= limit] whileTrue.
+    buffer contents inspect; size    "=&gt; 366 "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '9787'
+  :parent_id: '289'
+  :url: http://ja.doukaku.org/comment/9787
+  :user_name: pooq
+  :user_url: /web/20100506131947/http://ja.doukaku.org/user/606/
+  :language: J
+  :time: 2010/01/03 23:45 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: |
+    load 'dates'
+    ,.(#~1e7&amp;&lt;)/:~".1":(,~|.)"1[366 4 $,10 10#:}."1 todate 1460+i.366
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9790'
+  :parent_id: '289'
+  :url: http://ja.doukaku.org/comment/9790
+  :user_name: eo-oe-aaaa
+  :user_url: /web/20100506131947/http://ja.doukaku.org/user/498/
+  :language: C
+  :time: 2010/01/04 11:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>C#4.0です。日付判断用に標準のDatetimeを使用しました。計３６６個でした。</p>\n\n\t"
+  :code: |
+    static void Main(string[] args)
+    {
+        DateTime dummy;
+
+        var list = from r in Enumerable.Range(1, 9999)
+                   let y = string.Format("{0:D4}", r)
+                   let m = string.Format("{0}{1}", y[3], y[2] )
+                   let d = string.Format("{0}{1}", y[1], y[0] )
+                   let ymd = string.Format("{0}/{1}/{2}", y,m,d)
+                   where DateTime.TryParse( ymd, out dummy )
+                   select ymd;
+
+        foreach( var ymd in list )
+        {
+            Console.WriteLine(ymd);
+        }
+        Console.WriteLine(list.Count());
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 

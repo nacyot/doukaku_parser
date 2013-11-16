@@ -1,0 +1,494 @@
+---
+:id: '269'
+:title: 初期設定の読み書き
+:comments:
+- :id: '9190'
+  :parent_id: '269'
+  :url: http://ja.doukaku.org/comment/9190
+  :user_name: lunlumo
+  :user_url: /web/20100506231215/http://ja.doukaku.org/user/813/
+  :language: Java
+  :time: 2009/06/17 10:35 GMT
+  :vote_count: '4'
+  :vote_score: '-2'
+  :body: "\r\n\t  <div class=\"section\">\n<p>　初期設定を読み書きするプログラムを書いてください。\r</p>\n<p>\r</p>\n<p>　保存先や形式は問いませんが，OS，ライブラリ，言語等の環境で標準的なものがあれば，なるべくそちらを用いてください。</p>\n</div>\r\n\t"
+  :code: |
+    package org.doukaku.ja.preference;
+
+    import java.util.prefs.Preferences;
+    import java.util.prefs.BackingStoreException;
+
+    public class HelloPreference {
+        private static final String MESSAGE_KEY = "message";
+        private static final String DEFAULT_MESSAGE = "Hello, Preference.";
+
+        private String message;
+        private Preferences pref;
+
+        public HelloPreference() {
+            loadPreference();
+        }
+
+        public void loadPreference() {
+            setPreference(Preferences.userNodeForPackage(this.getClass()));
+            setMessage(pref.get(MESSAGE_KEY, DEFAULT_MESSAGE));
+        }
+
+        public void setMessage(String message) { this.message = message; }
+        public String getMessage() { return this.message; }
+        public void setPreference(Preferences pref) { this.pref = pref; }
+        public Preferences getPreference() { return this.pref; }
+
+        public void showMessage() {
+            System.out.println(getMessage());
+        }
+        public void storePreference() throws BackingStoreException {
+            Preferences pref = getPreference();
+            pref.put(MESSAGE_KEY, getMessage());
+            pref.flush();
+        }
+
+        public static void main(String[] args) {
+            try {
+                HelloPreference    hello = new HelloPreference();
+                if (args.length &gt; 0) {
+                    hello.setMessage(args[0]);
+                }
+                hello.showMessage();
+                hello.storePreference();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9208'
+  :parent_id: '269'
+  :url: http://ja.doukaku.org/comment/9208
+  :user_name: 匿名
+  :user_url: /web/20100506231215/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/06/20 04:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>「初期設定」というのがなにを想定しているのか全くわからないです。出題の意図も見えません。もうすこし具体的な設定にならないでしょうか。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9210'
+  :parent_id: '269'
+  :url: http://ja.doukaku.org/comment/9210
+  :user_name: egtra
+  :user_url: /web/20100506231215/http://ja.doukaku.org/user/759/
+  :language: BASIC
+  :time: 2009/06/20 14:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>java.util.prefs.Preferencesでググってきました。どうやら、アプリケーション固有の設定情報(httpd.confや.vimrcのような)を読み書きするものらしいと理解しました。</p>\n<p>というわけで、WindowsではINIファイルやレジストリ
+    (\"HKCUSoftware会社名アプリ名\"以下)を専用のAPIで扱えば題意を満たすと考えました。この投稿では、Win16の老害、INIファイルを読み書きするGetPrivateProfileStringとWritePrivateProfileString関数を使っています。言語はActiveBasic
+    4です。</p>\n<p>プログラムの内容は、（保存してある）前回のコマンドライン引数を表示した後、今回のコマンドライン引数を保存するというものです。ただし、初回起動時には(none)と表示されます。このプログラムで、例えばmyapp.exe
+    hoge foo barと実行すると、次のようなMYAPP.INIが作成されます:</p>\n<pre class=\"literal-block\">\n[option]\nLastCommandLineArgs=hoge
+    foo bar\n</pre>\n<p>なお、ファイル名は必ず絶対パスで指定します。そうしないと、Windowsディレクトリを基準とした相対パスになるはずです。NT系だとユーザ別のフォルダ(Document
+    and Settings以下)になったような気もします。</p>\n<p>さらに余談ですが、Program Files以下へインストールされるアプリでは、実行ファイルと同じフォルダにINIを置いてはいけません。それをやると、いかにもVistaでまともに動かない（XPまででも制限ユーザでは使えない）というダメダメなアプリの一丁上がりです。個人的には、アプリと同じフォルダに設定ファイルを置くのはインストーラ無しのフリーソフトの特権だと思っています。長々とした文章ですみませんでした。</p>\n\n\t"
+  :code: |
+    #console
+
+    Declare Function WritePrivateProfileString Lib "kernel32" Alias "WritePrivateProfileStringA" (
+        lpAppName As *Byte,
+        pKeyName As *Byte,
+        lpString As *Byte,
+        lpFileName As *Byte) As BOOL
+    Declare Function GetPrivateProfileString Lib "kernel32" Alias "GetPrivateProfileStringA" (
+        lpAppName As *Byte,
+        lpKeyName As *Byte,
+        lpDefault As *Byte,
+        lpReturnedString As *Byte,
+        nSize As DWord,
+        lpFileName As *Byte) As DWord
+
+    ' PathGetArgsの利用にはIE4以上またはWindows 98/2000以上が必要。
+    Declare Function PathGetArgs Lib "shlwapi" Alias "PathGetArgsA" (pszPath As *Byte) As *Byte
+
+    Const BUF_SIZE = 1024
+
+    Dim lastCmdLine As String
+    lastCmdLine = ZeroString(BUF_SIZE)
+    GetPrivateProfileString("option", "LastCommandLineArgs", "(none)", StrPtr(lastCmdLine), BUF_SIZE , "H:\MYAPP.INI")
+    ' "(none)"はファイル自体や中のエントリが見付からなかったときにlastCmdLineに格納する内容を指定する引数
+
+    Print "Last command line:"; lastCmdLine
+
+    Dim cmdLine As BytePtr
+    ' PathGetArgsでコマンドライン引数から自身の実行ファイル名（Cでいうargv[0]）の部分を取り除いている。
+    cmdLine = PathGetArgs(GetCommandLine())
+
+    WritePrivateProfileString("option", "LastCommandLineArgs", cmdLine, "H:\MYAPP.INI")
+  :tags:
+  - ActiveBasic4
+  - Windows
+  :references:
+    :url: 
+    :title: 
+- :id: '9211'
+  :parent_id: '269'
+  :url: http://ja.doukaku.org/comment/9211
+  :user_name: egtra
+  :user_url: /web/20100506231215/http://ja.doukaku.org/user/759/
+  :language: 
+  :time: 2009/06/20 19:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ああorz、投稿と間違えました。ごめんなさい。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9217'
+  :parent_id: '269'
+  :url: http://ja.doukaku.org/comment/9217
+  :user_name: syat
+  :user_url: /web/20100506231215/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2009/06/21 20:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>設定ファイルを読み込むお題であれば過去に出ていますが、それとは違くて？</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100506231215/http://ja.doukaku.org/186/
+    :title: '設定ファイルから値を取得 - どう書く？org '
+- :id: '9218'
+  :parent_id: '269'
+  :url: http://ja.doukaku.org/comment/9218
+  :user_name: syat
+  :user_url: /web/20100506231215/http://ja.doukaku.org/user/766/
+  :language: Batchfile
+  :time: 2009/06/21 21:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  参考ページを見ると、設定ファイルがなくても設定を読み書きできる方法のことを言っている？\r<br>バッチファイルでレジストリの値を取得するコードを書きました。reg.exe呼んでるだけですが。\n\t"
+  :code: |
+    ===== getreg.bat =====
+    @echo off
+    rem reg.exeの結果を１行ごと%rに格納する
+    for /F "usebackq delims=" %%r in (`reg.exe QUERY %1 /v %2`) do (
+      rem %rをタブ区切りデータとみなし、3列目を%tに格納する
+      for /F "tokens=3 delims=    " %%t in ("%%r%") do (
+        rem %tが空でなければ、レジストリ値だとみなす
+        if not "%%t%" == "" (
+          echo %%t%
+          goto e
+        )
+      )
+    )
+    :e
+
+    ===== 使用例 caller.bat =====
+    @echo off
+    for /F "usebackq delims=" %%v in (`call getreg "HKEY_CURRENT_USER\Control Panel\Desktop" Wallpaper`) do set WALLPAPER=%%v%
+    echo 壁紙=[%WALLPAPER%]
+    for /F "usebackq delims=" %%v in (`call getreg "HKEY_CURRENT_USER\Control Panel\Colors" ActiveTitle`) do set ACTIVETITLE=%%v%
+    echo タイトルバーの色=[%ACTIVETITLE%]
+  :tags: []
+  :references:
+    :url: /web/20100506231215/http://www.javainthebox.net/publication/200209JP26/preferences.html
+    :title: Preferences API 入門
+- :id: '9236'
+  :parent_id: '269'
+  :url: http://ja.doukaku.org/comment/9236
+  :user_name: 匿名
+  :user_url: /web/20100506231215/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2009/06/24 03:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    import pickle
+
+    class Setting: pass
+
+    setting = Setting()
+    setting.message = 'Hello'
+    with open(r'.setting', 'w') as f:
+        pickle.dump(setting, f)
+
+    with open('.setting') as f:
+        s = pickle.load(f)
+        print s.message
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9238'
+  :parent_id: '269'
+  :url: http://ja.doukaku.org/comment/9238
+  :user_name: sumim
+  :user_url: /web/20100506231215/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/06/24 04:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    "設定の作成（真偽値の場合）"
+    Preferences
+        addBooleanPreference: #myBoolPref
+        categories: #(unclassified)
+        default: false
+        balloonHelp: 'This is a sample boolean property.'
+
+
+    "設定値の変更（真偽値の場合）"
+    Preferences enable: #myBoolPref.
+    Preferences disable: #myBoolPref.
+
+
+    "現在の全設定の状態をファイルへ保存"
+    Preferences storePreferencesToDisk
+
+    "ファイルから全設定の状態を読み込み"
+    Preferences restorePreferencesFromDisk
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '9297'
+  :parent_id: '269'
+  :url: http://ja.doukaku.org/comment/9297
+  :user_name: matarillo
+  :user_url: /web/20100506231215/http://ja.doukaku.org/user/136/
+  :language: C
+  :time: 2009/07/07 09:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>お題のJavaを.NETに移植した感じ。\nSystem.Configuration.dllを参照してビルドすること。</p>\n\n\t"
+  :code: |
+    using System;
+    using System.Configuration;
+
+    class HelloPreference
+    {
+      const string MESSAGE_KEY = "message";
+      const string DEFAULT_MESSAGE = "Hello, Preference.";
+
+      public string Message { get; set; }
+      public Configuration Configuration { get; set; }
+
+      public HelloPreference()
+      {
+        LoadPreference();
+      }
+
+      public void LoadPreference()
+      {
+        Configuration conf = ConfigurationManager
+          .OpenExeConfiguration(ConfigurationUserLevel.None);
+        this.Configuration = conf;
+        KeyValueConfigurationElement element
+          = conf.AppSettings.Settings[MESSAGE_KEY];
+        this.Message = element != null
+          ? element.Value
+          : DEFAULT_MESSAGE;
+      }
+
+      public void StorePreference()
+      {
+        Configuration conf = this.Configuration;
+        KeyValueConfigurationCollection settings
+          = conf.AppSettings.Settings;
+        KeyValueConfigurationElement elem
+          = settings[MESSAGE_KEY];
+        if (elem != null)
+        {
+          elem.Value = this.Message;
+        }
+        else
+        {
+          settings.Add(MESSAGE_KEY, this.Message);
+        }
+        conf.Save();
+      }
+
+      public void ShowMessage()
+      {
+        Console.WriteLine(this.Message);
+      }
+
+      static void Main(string[] args)
+      {
+        try
+        {
+          HelloPreference hello = new HelloPreference();
+          if (args.Length &gt; 0)
+          {
+            hello.Message = args[0];
+          }
+          hello.ShowMessage();
+          hello.StorePreference();
+        }
+        catch (Exception ex)
+        {
+          Console.WriteLine(ex);
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9353'
+  :parent_id: '269'
+  :url: http://ja.doukaku.org/comment/9353
+  :user_name: 匿名
+  :user_url: /web/20100506231215/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2009/07/13 14:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>言語標準のやり方ということなので、Python標準添付のini書式設定ファイルのパーサを使った方法を示します。例とインターフェースを揃えるためにラッパを書いてますが、蛇足だったかも。</p>\n\n\t"
+  :code: "import sys, os, ConfigParser\n\nclass HelloPreference:\n    \n    path_cfg
+    = os.path.join(os.path.expanduser('~'),\n        'org.doukaku.ja.preference.HelloPreference')\n
+    \   cfg = ConfigParser.ConfigParser()\n    \n    def __init__(self):\n        self.cfg.read(self.path_cfg)\n
+    \   \n    def __getattr__(self, attr):\n        if self.cfg.has_option('default',
+    attr):\n            return self.cfg.get('default', attr)\n        else:\n            return
+    None\n    \n    def __setattr__(self, attr, value):\n        if not self.cfg.has_section('default'):\n
+    \           cfg.add_section('default')\n        self.cfg.set('default', attr,
+    value)\n    \n    def store(self):\n        f = file(self.path_cfg, 'w')\n        self.cfg.write(f)\n
+    \       f.close()\n\nhello_prefs = HelloPreference()\n\nif len(sys.argv) &gt;
+    1:\n    hello_prefs.message = sys.argv[1]\n\nprint hello_prefs.message\nhello_prefs.store()\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9355'
+  :parent_id: '269'
+  :url: http://ja.doukaku.org/comment/9355
+  :user_name: tanakahisateru
+  :user_url: /web/20100506231215/http://ja.doukaku.org/user/1025/
+  :language: Python
+  :time: 2009/07/13 15:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>すみません、ログインせずに書いたうえ、バグありでした。__setattr__の正しい実装はこうです。</p>\n\n\t"
+  :code: |2
+        def __setattr__(self, attr, value):
+            if not self.cfg.has_section('default'):
+                self.cfg.add_section('default')
+            self.cfg.set('default', attr, value)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9430'
+  :parent_id: '269'
+  :url: http://ja.doukaku.org/comment/9430
+  :user_name: seri
+  :user_url: /web/20100506231215/http://ja.doukaku.org/user/641/
+  :language: Ruby
+  :time: 2009/07/30 18:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">YAML形式の設定ファイルで。\r\n設定をハッシュにして読み込み/保存しています。\r\n</pre>\n\t"
+  :code: |
+    require 'yaml'
+
+    MESSAGE_KEY = 'message'
+    DEFAULT_MESSAGE = 'Hello, Preference.'
+    filename = 'conf.yaml'
+
+    conf = File.exist?(filename) ? YAML.load_file(filename) : { MESSAGE_KEY =&gt; DEFAULT_MESSAGE }
+    conf[MESSAGE_KEY] = ARGV[0] if ARGV.size &gt; 0
+    p conf
+    open(filename, 'w') { |f| f.puts YAML.dump(conf) }
+  :tags:
+  - YAML
+  :references:
+    :url: 
+    :title: 
+- :id: '9463'
+  :parent_id: '269'
+  :url: http://ja.doukaku.org/comment/9463
+  :user_name: uehaj
+  :user_url: /web/20100506231215/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2009/08/09 11:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Groovy標準の設定ファイル形式ConfigSlurperでConfigObjectに読みこんでWriterに書き出してみます。</p>\n<p><a
+    class=\"reference\" href=\"/web/20100506231215/http://groovy.codehaus.org/gapi/groovy/util/ConfigObject.html\">http://groovy.codehaus.org/gapi/groovy/util/ConfigObject.html</a>\n<a
+    class=\"reference\" href=\"/web/20100506231215/http://groovy.codehaus.org/gapi/groovy/util/ConfigSlurper.html\">http://groovy.codehaus.org/gapi/groovy/util/ConfigSlurper.html</a></p>\n<p>正規化されて以下のような出力となります。\n--\n$
+    groovy config.groovy\ngrails {</p>\n<div class=\"system-message\">\n<p class=\"system-message-title\">System
+    Message: ERROR/3 (<tt class=\"docutils\">&lt;string&gt;</tt>, line 10)</p>\nUnexpected
+    indentation.</div>\n<blockquote>\n<dl class=\"docutils\">\n<dt>webflow {</dt>\n<dd>stateless=true\nstateless2=true</dd>\n</dl>\n<div
+    class=\"system-message\">\n<p class=\"system-message-title\">System Message: WARNING/2
+    (<tt class=\"docutils\">&lt;string&gt;</tt>, line 13)</p>\nDefinition list ends
+    without a blank line; unexpected unindent.</div>\n<p>}</p>\n</blockquote>\n<div
+    class=\"system-message\">\n<p class=\"system-message-title\">System Message: WARNING/2
+    (<tt class=\"docutils\">&lt;string&gt;</tt>, line 14)</p>\nBlock quote ends without
+    a blank line; unexpected unindent.</div>\n<p>}\nsmtp {</p>\n<div class=\"system-message\">\n<p
+    class=\"system-message-title\">System Message: ERROR/3 (<tt class=\"docutils\">&lt;string&gt;</tt>,
+    line 16)</p>\nUnexpected indentation.</div>\n<blockquote>\n<dl class=\"docutils\">\n<dt>mail
+    {</dt>\n<dd>host=\"smtp.myisp.com\"\nauth.user=\"server\"</dd>\n</dl>\n<div class=\"system-message\">\n<p
+    class=\"system-message-title\">System Message: WARNING/2 (<tt class=\"docutils\">&lt;string&gt;</tt>,
+    line 19)</p>\nDefinition list ends without a blank line; unexpected unindent.</div>\n<p>}</p>\n</blockquote>\n<div
+    class=\"system-message\">\n<p class=\"system-message-title\">System Message: WARNING/2
+    (<tt class=\"docutils\">&lt;string&gt;</tt>, line 20)</p>\nBlock quote ends without
+    a blank line; unexpected unindent.</div>\n<p>}\nresources.URL=\"<a class=\"reference\"
+    href=\"/web/20100506231215/http://localhost/resources\">http://localhost:80/resources</a>\"</p>\n\n\t"
+  :code: |
+    def config = '''
+       grails.webflow.stateless = true
+       grails.webflow.stateless2 = true
+       smtp {
+           mail.host = 'smtp.myisp.com'
+           mail.auth.user = 'server'
+       }
+       resources.URL = "http://localhost:80/resources"
+    '''
+    sw = new StringWriter()
+    new ConfigSlurper().parse(config).writeTo(sw)
+
+    println sw
+  :tags: []
+  :references:
+    :url: /web/20100506231215/http://groovy.codehaus.org/gapi/groovy/util/ConfigSlurper.html
+    :title: ConfigSlurper
+- :id: '9464'
+  :parent_id: '269'
+  :url: http://ja.doukaku.org/comment/9464
+  :user_name: uehaj
+  :user_url: /web/20100506231215/http://ja.doukaku.org/user/959/
+  :language: Other
+  :time: 2009/08/09 11:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">(出し直し)\r\nGroovy標準の設定ファイル形式ConfigSlurperでConfigObjectに読みこんでWriterに書き出してみます。\r\n正規化されて以下のような出力となります。
+    \r\n\r\n$ groovy config.groovy\r\ngrails {\r\n\twebflow {\r\n\t\tstateless=true\r\n\t\tstateless2=true\r\n\t}\r\n}\r\nsmtp
+    {\r\n\tmail {\r\n\t\thost=\"smtp.myisp.com\"\r\n\t\tauth.user=\"server\"\r\n\t}\r\n}\r\nresources.URL=\"http://localhost:80/resources\"\r\n\r\n\r\n</pre>\n\t"
+  :code: |
+    def config = '''
+       grails.webflow.stateless = true
+       grails.webflow.stateless2 = true
+       smtp {
+           mail.host = 'smtp.myisp.com'
+           mail.auth.user = 'server'
+       }
+       resources.URL = "http://localhost:80/resources"
+    '''
+    sw = new StringWriter()
+    new ConfigSlurper().parse(config).writeTo(sw)
+
+    println sw
+  :tags: []
+  :references:
+    :url: 
+    :title: 

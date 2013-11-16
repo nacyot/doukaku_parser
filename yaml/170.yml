@@ -1,0 +1,2805 @@
+---
+:id: '170'
+:title: 固定長データ
+:comments:
+- :id: '6060'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6060
+  :user_name: Mymelo
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/769/
+  :language: 
+  :time: 2008/03/24 12:19 GMT
+  :vote_count: '8'
+  :vote_score: '6'
+  :body: "\r\n\t  <p>固定長のデータが記載されたファイルを読み込むプログラムを作成してください。読み込んだデータは、複数の値を格納できるデータ型に格納してください。</p>\n<p>ファイルには、すべて
+    ascii 文字で以下のデータが格納されています。デリミタはなく、固定長で格納されています。レコードとレコードのあいだも改行はありません。</p>\n<blockquote>\n<ol
+    class=\"arabic simple\">\n<li>姓 (12文字) 文字数が足りない場合は、後ろを空白で埋めてあります。</li>\n<li>名
+    (12文字) 文字数が足りない場合は、後ろを空白で埋めてあります。</li>\n<li>性別 (F,M,Uの3種類、1文字)</li>\n<li>年齢 (3桁の数字、桁数が足りない場合は、ゼロで埋めず、頭を空白で埋めてあります。</li>\n<li>年
+    2008 固定</li>\n<li>月 03 固定</li>\n<li>さらに以下のデータが日付分くりかえされます。<ol class=\"upperalpha\">\n<li>日付
+    (01 〜 31) 2文字</li>\n<li>朝食のメニュー (500文字)</li>\n<li>昼食のメニュー (500文字)</li>\n<li>夕食のメニュー
+    (500文字)</li>\n</ol>\n</li>\n</ol>\n</blockquote>\n<p>以上の形式のデータ500人分を読みこんで、データを複数の値を格納できるデータ型に格納してください。データに大して何か処理を行う必要はなく、すぐに破棄してかまいません。</p>\n<p>この問題は、このようなファイルをどのように扱うかを知りたくて作成しました。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6079'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6079
+  :user_name: tenka
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/664/
+  :language: C
+  :time: 2008/03/28 13:30 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">投稿速さ重視で</pre>\n\t"
+  :code: "using System;\nusing System.Collections.Generic;\nusing System.IO;\nstruct
+    MenuList\n{\n    public string Day;\n    public string Firstbread;\n    public
+    string Lunch;\n    public string Dinner;\n}\n\nstruct Record\n{\n    public string
+    FirstName;\n    public string SecondName;\n    public string Sex;\n    public
+    string Age;\n    public string Year;\n    public string Month;\n    public List&lt;MenuList&gt;
+    Menu;\n}\n\nclass Program\n{\n    static void Main(string[] args)\n    {\n        List&lt;Record&gt;
+    meibo = new List&lt;Record&gt;();\n\n        //テストデータ作成\n        using (StreamWriter
+    sw = new StreamWriter(@\"C:\\testdata.txt\"))\n        {\n            for (int
+    i = 0; i &lt; 500; i++)\n            {\n                sw.Write(\"{0, -12}\",
+    \"Yamada\");\n                sw.Write(\"{0, -12}\", \"Tarou\");\n                sw.Write(\"{0,
+    \  1}\", \"M\");\n                sw.Write(\"{0,   3}\", \"26\");\n                sw.Write(\"{0,
+    \  4}\", \"2008\");\n                sw.Write(\"{0,   2}\", \"03\");\n                for
+    (int j = 1; j &lt;= 31; j++)\n                {\n                    sw.Write(\"{0:00}\",
+    j);\n                    sw.Write(\"{0,-500}\", \"Yamada\");\n                    sw.Write(\"{0,-500}\",
+    \"Yamada\");\n                    sw.Write(\"{0,-500}\", \"Yamada\");\n                }\n
+    \           }\n            sw.Dispose();\n        }\n\n\n        using (StreamReader
+    sr = new StreamReader(@\"C:\\testdata.txt\"))\n        {\n            Record temp;\n
+    \           while (!sr.EndOfStream)\n            {\n                temp = new
+    Record();\n                char[] buffer;\n                \n                //性\n
+    \               buffer = new char[12];\n                sr.Read(buffer, 0, buffer.Length);\n
+    \               temp.FirstName = string.Format(\"{0:s12}\", new string(buffer));\n\n
+    \               //名\n                buffer = new char[12];\n                sr.Read(buffer,
+    0, buffer.Length);\n                temp.SecondName = string.Format(\"{0:s12}\",
+    new string(buffer));\n\n                //性別\n                buffer = new char[1];\n
+    \               sr.Read(buffer, 0, buffer.Length);\n                temp.Sex =
+    string.Format(\"{0:s1}\", new string(buffer));\n\n                //年齢\n                buffer
+    = new char[3];\n                sr.Read(buffer, 0, buffer.Length);\n                temp.Age
+    = string.Format(\"{0,3:s3}\", new string(buffer));\n                \n                //年\n
+    \               buffer = new char[4];\n                sr.Read(buffer, 0, buffer.Length);\n
+    \               temp.Year = string.Format(\"{0:s4}\", new string(buffer));\n\n
+    \               //月\n                buffer = new char[2];\n                sr.Read(buffer,
+    0, buffer.Length);\n                temp.Month = string.Format(\"{0:s2}\", new
+    string(buffer));\n\n                //ループ\n                temp.Menu = new List&lt;MenuList&gt;();\n
+    \               for (int i = 1; i &lt;= 31; i++)\n                {\n                    MenuList
+    temp2 = new MenuList();\n                    //日\n                    buffer =
+    new char[2];\n                    sr.Read(buffer, 0, buffer.Length);\n                    temp2.Day
+    = string.Format(\"{0:s2}\", new string(buffer));\n\n                    //朝食\n
+    \                   buffer = new char[500];\n                    sr.Read(buffer,
+    0, buffer.Length);\n                    temp2.Firstbread = string.Format(\"{0:s500}\",
+    new string(buffer));\n\n                    //昼食\n                    buffer =
+    new char[500];\n                    sr.Read(buffer, 0, buffer.Length);\n                    temp2.Lunch
+    = string.Format(\"{0:s500}\", new string(buffer));\n\n\n                    //夕食\n
+    \                   buffer = new char[500];\n                    sr.Read(buffer,
+    0, buffer.Length);\n                    temp2.Dinner = string.Format(\"{0:s500}\",
+    new string(buffer));\n\n                    temp.Menu.Add(temp2);\n                }\n\n
+    \               meibo.Add(temp);\n            }\n\n            foreach (Record
+    result in meibo)\n            {\n                Console.WriteLine(\"FirstName
+    : {0}\", result.FirstName);\n                Console.WriteLine(\"SecondName :
+    {0}\", result.SecondName);\n                Console.WriteLine(\"Sex : {0}\", result.Sex);\n
+    \               Console.WriteLine(\"Age : {0}\", result.Age);\n                Console.WriteLine(\"Year
+    : {0}\", result.Year);\n                Console.WriteLine(\"Month : {0}\", result.Month);\n
+    \               foreach (MenuList result2 in result.Menu)\n                {\n
+    \                   Console.WriteLine(\"Day : {0}\", result2.Day);\n                    Console.WriteLine(\"Firstbread
+    : {0}\", result2.Firstbread);\n                    Console.WriteLine(\"Lunch :
+    {0}\", result2.Lunch);\n                    Console.WriteLine(\"Dinner : {0}\",
+    result2.Dinner);\n                }\n            }\n            sr.Dispose();\n
+    \       }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6081'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6081
+  :user_name: sumim
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/03/28 14:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    | stream data |
+    stream := FileStream fileNamed: 'data.txt'.
+    data := OrderedCollection new.
+    500 timesRepeat: [
+        | record |
+        record := OrderedCollection new.
+        #(12 12 1 3 4 2) do: [:size | record add: (stream next: size) withBlanksTrimmed].
+        1 to: 31 do: [:date |
+            record add: (stream next: 2).
+            3 timesRepeat: [record add: (stream next: 500) withBlanksTrimmed]].
+        data add: record].
+    stream close.
+    data inspect
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '6083'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6083
+  :user_name: syat
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/766/
+  :language: C
+  :time: 2008/03/28 15:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ごく普通に。\r<br>しかしC系の人間にしかわからないバウンダリの痛み。\r<br>このデータ仕様わざとやってるでしょ？\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+
+    typedef struct tagDailyMenu {
+        char date[2];
+        char breakfast[500];
+        char lunch[500];
+        char dinnar[500];
+    } DailyMenu;
+
+    typedef struct tagPerson {
+        char family[12];
+        char name[12];
+        char sex;
+        char age[3];
+        char year[4];
+        char month[3];
+    } Person;
+
+    typedef struct tagRecord {
+        Person person;
+        DailyMenu days[31];
+    } Record;
+
+    int main(void)
+    {
+        FILE *fp;
+        char *filename = "data.dat";
+        int readlen = 0;
+        Record rec;
+
+        fp = fopen(filename, "r");
+        if (fp == NULL) {
+            printf("ファイルオープン失敗\n");
+            return 1;
+        }
+
+        memset(&amp;rec, 0x00, sizeof(Record));
+        while ((readlen = fread(&amp;rec.person, 34, 1, fp)) == 1) {
+
+            int readlen2 = 0;
+            int day = 0;
+
+            for (day = 0; day &lt; 31; day++) {
+                int readlen2 = fread(&amp;rec.days[day], 1502, 1, fp);
+                if (readlen2 &lt; 1) {
+                    printf("ファイルがこわれています。\n");
+                    break;
+                }
+            }
+            if (day &lt; 31) {
+                break;
+            }
+            printf("name: [%.12s %.12s] %.4s/%.2s [%.2s/%.10s/%.10s/%.10s]\n",
+                rec.person.family, rec.person.name,
+                rec.person.year, rec.person.month,
+                rec.days[0].date, rec.days[30].breakfast,
+                rec.days[30].lunch, rec.days[30].dinnar
+                );
+
+            memset(&amp;rec, 0x00, sizeof(Record));
+        }
+        fclose(fp);
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6084'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6084
+  :user_name: sekia
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/588/
+  :language: Perl
+  :time: 2008/03/28 15:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>やっつけですがunpackを使った例。</p>\n\n\t"
+  :code: |
+    #!/usr/bin/perl
+
+    use strict;
+    use warnings;
+
+    my $dat;
+    if (@ARGV) {
+      open $dat, shift or die;
+    } else {
+      $dat = \*STDIN;
+    }
+
+    my $bytes;
+    my @records;
+
+    for (1..500) {
+      read $dat, $bytes, 12 + 12 + 1 + 3 + 4 + 2;
+      my ($lname, $fname, $sex, $age, $year, $month) = unpack "A12A12A1A3A4A2", $bytes;
+      $lname =~ s/\s*$//;
+      $fname =~ s/\s*$//;
+      my %record = (last_name =&gt; $lname,
+                 first_name =&gt; $fname,
+             sex =&gt; $sex,
+             age =&gt; $age + 0,
+             year =&gt; $year + 0,
+             month =&gt; $month + 0,
+             menues =&gt; []);
+      for (1..31) {
+        read $dat, $bytes, 2 + 500 + 500 + 500;
+        my ($day, $breakfast, $lunch, $dinner) = unpack "A2A500A500A500", $bytes;
+        $breakfast =~ s/^\s*|\s*$//;
+        $lunch =~ s/^\s*|\s*$//;
+        $dinner =~ s/^\s*|\s*$//;
+        push @{$record{menues}}, {day =&gt; $day + 0,
+                       breakfast =&gt; $breakfast,
+                       lunch =&gt; $lunch,
+                       dinner =&gt; $dinner};
+      }
+      push @records, \%record;
+    }
+
+    #テスト出力
+    use Data::Dumper;
+    print Dumper @records;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6085'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6085
+  :user_name: horiuchi
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/03/28 15:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>とりあえず、こんな感じで。\nちゃんとやるなら、ReadとWriteの処理はRecordとセットのクラスを用意するかも。</p>\n\n\t"
+  :code: "import java.io.BufferedReader;\nimport java.io.BufferedWriter;\nimport java.io.FileInputStream;\nimport
+    java.io.FileOutputStream;\nimport java.io.IOException;\nimport java.io.InputStreamReader;\nimport
+    java.io.OutputStreamWriter;\nimport java.io.Reader;\nimport java.io.Writer;\nimport
+    java.util.ArrayList;\nimport java.util.List;\nimport java.util.Random;\n\npublic
+    class Sample170 {\n    private static final String encoding = \"MS932\";\n    private
+    static final String FILE_NAME = \"record.dat\";\n    \n    public static void
+    main(String[] args) {\n        try {\n            createTestData(FILE_NAME);\n\n
+    \           List&lt;Record&gt; records = readData(FILE_NAME);\n            System.out.println(records.size());\n
+    \       } catch (IOException e) {\n            e.printStackTrace();\n        }\n
+    \   }\n\n    private static List&lt;Record&gt; readData(String fileName) throws
+    IOException {\n        Reader reader = null;\n        try {\n            reader
+    = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), encoding));\n
+    \           List&lt;Record&gt; result = new ArrayList&lt;Record&gt;();\n            char[]
+    smallBuf = new char[12];\n            char[] menuBuf = new char[500];\n            while
+    (true) {\n                Record record = new Record();\n                if (reader.read(smallBuf)
+    &lt; 0) break;\n                record.familyName = String.valueOf(smallBuf).trim();\n
+    \               if (reader.read(smallBuf) &lt; 0) break;\n                record.firstName
+    = String.valueOf(smallBuf).trim();\n                if (reader.read(smallBuf,
+    0 , 1) &lt; 0) break;\n                record.sex = Record.Sex.valueOf(String.valueOf(smallBuf[0]));\n
+    \               if (reader.read(smallBuf, 0 , 3) &lt; 0) break;\n                record.age
+    = Integer.parseInt(String.valueOf(smallBuf, 0, 3).trim());\n                \n
+    \               if (reader.read(smallBuf, 0 , 4) &lt; 0) break;\n                int
+    year = Integer.parseInt(String.valueOf(smallBuf, 0, 4).trim());\n                if
+    (reader.read(smallBuf, 0 , 2) &lt; 0) break;\n                int month = Integer.parseInt(String.valueOf(smallBuf,
+    0, 2).trim());\n                for (int index = 1; index &lt;= 31; index++) {\n
+    \                   MenuData menu = new MenuData();\n                    menu.year
+    = year;\n                    menu.month = month;\n                    \n                    if
+    (reader.read(smallBuf, 0 , 2) &lt; 0) break;\n                    menu.day = Integer.parseInt(String.valueOf(smallBuf,
+    0, 2).trim());\n                    if (reader.read(menuBuf) &lt; 0) break;\n
+    \                   menu.breakfast = String.valueOf(menuBuf).trim();\n                    if
+    (reader.read(menuBuf) &lt; 0) break;\n                    menu.lunch = String.valueOf(menuBuf).trim();\n
+    \                   if (reader.read(menuBuf) &lt; 0) break;\n                    menu.dinner
+    = String.valueOf(menuBuf).trim();\n                }\n                result.add(record);\n
+    \           }\n            return result;\n        } finally {\n            if
+    (reader != null) {\n                reader.close();\n            }\n        }\n
+    \   }\n\n    private static void createTestData(String fileName) throws IOException
+    {\n        Writer writer = null;\n        try {\n            writer = new BufferedWriter(new
+    OutputStreamWriter(new FileOutputStream(fileName), encoding));\n            Random
+    random = new Random();\n            Record.Sex[] sexValues = Record.Sex.values();\n
+    \           for (int index = 0; index &lt; 500; index++) {\n                writer.write(String.format(\"%-12s\",
+    \"FamilyName\"));\n                writer.write(String.format(\"%-12s\", \"FirstName\"));\n
+    \               writer.write(sexValues[random.nextInt(sexValues.length)].toString());\n
+    \               writer.write(String.format(\"%3d\", random.nextInt(120)));\n                writer.write(\"2008\");\n
+    \               writer.write(\"03\");\n                for (int day = 1; day &lt;=
+    31; day++) {\n                    writer.write(String.format(\"%02d\", day));\n
+    \                   writer.write(String.format(\"%-500s\", \"breakfast menu.\"));\n
+    \                   writer.write(String.format(\"%-500s\", \"lunch menu.\"));\n
+    \                   writer.write(String.format(\"%-500s\", \"dinner menu.\"));\n
+    \               }\n            }\n\n        } finally {\n            if (writer
+    != null) {\n                writer.close();\n            }\n        }\n    }\n}\n\nclass
+    Record {\n    public enum Sex {\n        F, M, U,\n    }\n    public String familyName;\n
+    \   public String firstName;\n    public Sex sex;\n    public int age;\n    public
+    final List&lt;MenuData&gt; menuList = new ArrayList&lt;MenuData&gt;();\n}\n\nclass
+    MenuData {\n    public int year;\n    public int month;\n    public int day;\n
+    \   public String breakfast;\n    public String lunch;\n    public String dinner;\n}\n"
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '6086'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6086
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/03/28 15:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>エラー処理をはしょればこんなかんじ?\nあと、31日固定として。</p>\n\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+
+    typedef struct menu_ {
+      char date[2];
+      char breakfast[500];
+      char lunch[500];
+      char supper[500];
+    } menu_t;
+
+    typedef struct fixed_ {
+      char last_name[12];
+      char first_name[12];
+      char gender;
+      char age[3];
+      char year[4];
+      char month[3];
+      menu_t menus[31];
+    } fixed_t;
+
+    int main(int argc, char **argv) {
+      FILE *fp = fopen(argv[1], "r");
+      fixed_t fixed[500];
+      int i;
+
+      for (i=0; i&lt;500; i++) {
+        fread(&amp;fixed[i], sizeof(fixed_t), 1, fp);
+      }
+
+      return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6087'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6087
+  :user_name: mootoh
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/718/
+  :language: 
+  :time: 2008/03/28 15:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>匿名で書いてしまいました。mootohです。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6088'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6088
+  :user_name: sekia
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/588/
+  :language: Perl
+  :time: 2008/03/28 15:47 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>ついでにテストデータ生成スクリプトを貼っておきます。</p>\n\n\t"
+  :code: |
+    #!/usr/bin/perl
+
+    use strict;
+    use warnings;
+
+    my @lnames = map { sprintf "%-12s", $_ } qw/Foo Bar Baz Jim Bob Beth Cathy/;
+    my @fnames =
+      map { sprintf "%-12s", $_ } qw/Hoge Fuga Piyo Jacson Page McDonald Hamond/;
+    my @sexes = qw/F M U/;
+    my @ages = map { sprintf "%03d", $_ } 0 .. 999;
+    my @dishes =
+      map { sprintf "%-500s", $_ }
+      qw/BaconEgg Coffee HamEgg BoiledEgg EggInBasket Udon Steak
+      SunnySideUp Onigiri Ramen/;
+
+    sub randomint { int rand shift }
+
+    for ( 1 .. 500 ) {
+        print $lnames[ randomint( scalar @fnames ) ],
+          $fnames[ randomint( scalar @lnames ) ],
+          $sexes[ randomint( scalar @sexes ) ], $ages[ randomint( scalar @ages ) ],
+          "200803";
+        for my $day ( 1 .. 31 ) {
+            $day = sprintf "%02d", $day;
+            print $day, $dishes[ randomint( scalar @dishes ) ],
+              $dishes[ randomint( scalar @dishes ) ],
+              $dishes[ randomint( scalar @dishes ) ];
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6089'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6089
+  :user_name: syat
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2008/03/28 15:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  dinnerのつづりを素で間違えてる。。。\r<br><br>バウンダリとは、実行効率のためCのコンパイラが自動的に構造体のサイズを４バイトの整数倍にしてしまうことです。\r<br>日毎の部分の本当のサイズは1502バイトですが、構造体のサイズは1504バイトになってしまい、シンプルに書くことができませんでした。\r<br>本当はfreadのサイズ指定で数値ではなくsizeofを使いたかった。\r<br><br>なおRecordとPersonを分離しているのは、最初、日ごとのデータが31個固定ではなく可変数だと思い込んでいたためです。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6090'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6090
+  :user_name: yuin
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/03/28 16:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>COBOLで書くべきお題がついにきましたね（笑</p>\n<p>読み込み処理はfromStringです。テストデータ作成用にtoStringを作成しています。</p>\n<p>matchというのが予約語なので、「match」というメソッドが素直に呼び出せないという･･･</p>\n\n\t"
+  :code: "import java.io._\nimport java.util.Scanner\nimport java.util.regex._\nimport
+    scala.io._\n\nobject Meal {\n  def fromString(text:String) = {\n    val scanner
+    = new Scanner(text)\n    scanner.findInLine(\"^(.{12})(.{12})(.{1})(.{3})(.{4})(.{2})\n
+    \                        (.{2})(.{500})(.{500})(.{500})$\")\n    val data = classOf[Scanner].getMethod(\"match\",null).\n
+    \              invoke(scanner,null).  asInstanceOf[MatchResult].group _:int=&gt;String\n
+    \   new Meal( data(1).trim, data(2).trim, data(3)(0), data(4).trim.toInt,\n              data(5).trim.toInt,
+    data(6).trim.toInt, data(7).trim.toInt, \n              data(8), data(9), data(10))\n
+    \ }\n}\n\nclass Meal \n  (var lastName:String, var firstName:String, var sex:char,
+    \n   var age:int, var year:int, var month:int, var day:int,\n   var breakfast:String,
+    var lunch:String, var dinner:String) {\n\n  def format(template:String, arg:Any*)
+    = {\n    String.format(template, arg.map(_.asInstanceOf[AnyRef]).toArray)\n  }\n\n
+    \ override def toString = {\n    format(\"%-12s%-12s%c%3d%04d%02d%02d%-500s%-500s%-500s\\n\",\n
+    \          lastName, firstName, sex, age, year, month, day,\n           breakfast,
+    lunch, dinner)\n  }\n\n}\n\nSource.fromFile(\"test.txt\").getLines.take(500) foreach
+    Meal.fromString\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6091'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6091
+  :user_name: syat
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2008/03/28 17:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>すみません。バウンダリ関係なかった！\nPersonのmonthの桁数が3になっているのに気づかず混乱してしまった。\n全部charだとバウンダリ関係ないんだっけ。\n落ち着け俺。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6092'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6092
+  :user_name: ところてん
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/166/
+  :language: C
+  :time: 2008/03/29 01:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">今回の問題とは関係ないですが、一応知ってるとは思いますが、知らない人のために。\r\n\r\n#pragmaなのでコンパイラ依存ですが、4byte境界を変更することができます。\r\n\r\n次のような構造体をsizeofすると、5になります。\r\nまた、pragma
+    packを取り除くと、8になります。\r\n\r\n＃BMPのローダーを書くときにお世話になったなぁ。\r\n＃頭の'BM'って文字列のせいで、全部が2byteずつずれて・・・。</pre>\n\t"
+  :code: |
+    #pragma pack(push,1)
+    typedef struct s
+    {
+        char ch1;
+        int i1;
+    } s;
+    #pragma pack(pop)
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://mag.autumn.org/Content.modf?id=20050430014843
+    :title: Visual C++でアラインメントを扱う3つの機能、#pragma pack, __declspec(align(#)), __alignof演算子についてのメモ
+- :id: '6093'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6093
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/03/29 02:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>メモリ上の構造≠ファイル上の構造の前提で書きました。\n予想以上にstreamの扱いに苦戦。streamと固定長データは相性が良くない…というより、わたしがstreamを使い切れていないというのが正解かも。</p>\n\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;iomanip&gt;
+    #include &lt;string&gt;
+    #include &lt;vector&gt;
+    #include &lt;iterator&gt;
+
+    struct Menu
+    {
+        std::string date;
+        std::string breakfast;
+        std::string lunch;
+        std::string dinner;
+    };
+
+    typedef std::vector&lt;Menu&gt; Menus;
+
+    struct Record
+    {
+    public:
+        std::string lastName;
+        std::string firstName;
+        std::string sex;
+        std::string age;
+        std::string year;
+        std::string month;
+        Menus       menus;
+    };
+
+    std::istream&amp; operator &gt;&gt; (std::istream&amp; in, Menu&amp; menu)
+    {
+        char s[500];
+        in.read(s, 2);   menu.date      = std::string(s, 2);
+        in.read(s, 500); menu.breakfast = std::string(s, 500);
+        in.read(s, 500); menu.lunch     = std::string(s, 500);
+        in.read(s, 500); menu.dinner    = std::string(s, 500);
+
+        return in;
+    }
+
+    std::istream&amp; operator &gt;&gt; (std::istream&amp; in, Record&amp; record)
+    {
+        char s[500];
+        in.read(s, 12); record.lastName  = std::string(s, 12);
+        in.read(s, 12); record.firstName = std::string(s, 12);
+        in.read(s,  1); record.sex       = std::string(s,  1);
+        in.read(s,  3); record.age       = std::string(s,  3);
+        in.read(s,  4); record.year      = std::string(s,  4);
+        in.read(s,  2); record.month     = std::string(s,  2);
+
+        std::istream_iterator&lt;Menu&gt; itr(in);
+        for(int i = 0; i &lt; 31; ++i)
+        {
+            record.menus.push_back(*itr++);
+        }
+
+        return in;
+    }
+
+    #include &lt;fstream&gt;
+
+    void read(const std::string&amp; filename, std::vector&lt;Record&gt;&amp; records)
+    {
+        records.clear();
+
+        std::ifstream source(filename.c_str(), std::ios::binary);
+
+        std::istream_iterator&lt;Record&gt; itr(source);
+        for(int i = 0; i &lt; 500; ++i)
+        {
+            records.push_back(*itr++);
+        }
+    }
+
+    // 以下はテストデータを作成するためのコードです。
+
+    std::ostream&amp; operator &lt;&lt; (std::ostream&amp; out, const Menu&amp; menu)
+    {
+        std::ios::fmtflags flags = out.flags();
+        out.setf(std::ios::left);
+        out &lt;&lt; std::setw(2)   &lt;&lt; menu.date;
+        out &lt;&lt; std::setw(500) &lt;&lt; menu.breakfast;
+        out &lt;&lt; std::setw(500) &lt;&lt; menu.lunch;
+        out &lt;&lt; std::setw(500) &lt;&lt; menu.dinner;
+        out.flags(flags);
+
+        return out;
+    }
+
+    std::ostream&amp; operator &lt;&lt; (std::ostream&amp; out, const Record&amp; record)
+    {
+        std::ios::fmtflags flags = out.flags();
+        out.setf(std::ios::left);
+        out &lt;&lt; std::setw(12) &lt;&lt; record.lastName;
+        out &lt;&lt; std::setw(12) &lt;&lt; record.firstName;
+        out &lt;&lt; std::setw(1)  &lt;&lt; record.sex;
+        out &lt;&lt; std::setw(3)  &lt;&lt; record.age;
+        out &lt;&lt; std::setw(4)  &lt;&lt; record.year;
+        out &lt;&lt; std::setw(2)  &lt;&lt; record.month;
+        out.flags(flags);
+
+        for(int i = 0; i &lt; 31; ++i)
+        {
+            out &lt;&lt; record.menus[i];
+        }
+
+        return out;
+    }
+
+    #include &lt;sstream&gt;
+
+    std::string toString(int value, int col)
+    {
+        std::stringstream s;
+        s &lt;&lt; std::setfill('0') &lt;&lt; std::setw(col) &lt;&lt; value;
+        return s.str();
+    }
+
+    void write(const std::string&amp; filename)
+    {
+        Record record;
+
+        record.lastName  = "LASTNAME";
+        record.firstName = "Firstname";
+        record.sex       = "U";
+        record.age       = " 99";
+        record.year      = "2008";
+        record.month     = "03";
+
+        Menu menu;
+
+        menu.breakfast = "breakfast";
+        menu.lunch     = "lunch";
+        menu.dinner    = "dinner";
+
+        for(int i = 0; i &lt; 31; ++i)
+        {
+            menu.date = toString(i + 1, 2);
+            record.menus.push_back(menu);
+        }
+
+        std::ofstream file(filename.c_str(), std::ios::binary);
+
+        for(int i = 0; i &lt; 500; ++i)
+        {
+            file &lt;&lt; record;
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6094'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6094
+  :user_name: Mistfeal
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/153/
+  :language: PHP
+  :time: 2008/03/29 03:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>検証等全く行ってない一発書きですが、とりあえず。\n普通は配列に取込んだ後、DBに格納したりする訳ですが、今回データの加工は要らないそうなので、そのままです。</p>\n\n\t"
+  :code: |
+    &lt;?php
+    $path = "./";
+    $file = "data.txt";
+    $rsz  = 46596;
+
+    $ary["SEI"]      =    12;
+    $ary["MEI"]      =    12;
+    $ary["SEIBETSU"] =     1;
+    $ary["NENREI"]   =     3;
+    $ary["NEN"]      =     4;
+    $ary["TSUKI"]    =     2;
+    $ary{"DATA"]     = 46562;
+
+    $fp = fopen($path.$file,"rb");
+    while ( !feof($fp) ) {
+        $data = array();
+        $stcm = 0;
+        $line = fread($fp,$rsz);
+        foreach ( $ary as $key =&gt; $val ) {
+            $data[$key] = substr($line,$stcm,$val);
+            $stcm += $val;
+            if ( $key == "DATA" ) {
+                for ( $i = 0; $i &lt;= $val; $i += 1502 ) {
+                    $day = substr($data[$key],$i,2);
+                    $data[$day]["ASA"]  = substr($data[$key],$i+2   ,500);
+                    $data[$day]["HIRU"] = substr($data[$key],$i+502 ,500);
+                    $data[$day]["YORU"] = substr($data[$key],$i+1002,500);
+                }
+            }
+        }
+    }
+    fclose($fp);
+    ?&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6095'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6095
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2008/03/29 03:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>固定長で読み込むReaderを実装するアプローチです。文字数ではなく「バイト数」で読むようにしています（Readerを継承させる意味はあまりなかったかもしれません）。</p>\n\n\t"
+  :code: "import java.io.*;\nimport java.util.*;\n\npublic class FixedReader extends
+    Reader {\n    public static final File inputFile = new File(\"test.ascii\");\n
+    \   private InputStream inStream;\n    private String encoding;\n    \n    public
+    FixedReader(InputStream in, String encoding) {\n        this.inStream = in;\n
+    \       this.encoding = encoding;\n    }\n    public String read(int length) throws
+    IOException {\n        byte[] buff = new byte[length];\n        if (inStream.read(buff)
+    &lt; length)\n            throw new EOFException();\n        return new String(buff,
+    encoding).trim();\n    }\n    public int read(char[] buf, int offset, int length)
+    throws IOException {\n        String str = read(length);\n        str.getChars(0,
+    str.length(), buf, offset);\n        return str.length();\n    }\n    public void
+    close() throws IOException {\n        inStream.close();\n    }\n    public static
+    void main(String[] args) throws IOException {\n        FixedReader fr = new FixedReader(new
+    FileInputStream(inputFile), \"US-ASCII\");\n        LinkedHashMap&lt;String, Map&lt;String,
+    Object&gt;&gt; ml = new LinkedHashMap&lt;String, Map&lt;String, Object&gt;&gt;();\n
+    \       for (int i = 0; i &lt; 500; i++) {\n            Map&lt;String, Object&gt;
+    m = new LinkedHashMap&lt;String, Object&gt;();\n            m.put(\"姓\", fr.read(12));\n
+    \           m.put(\"名\", fr.read(12));\n            m.put(\"性別\", fr.read(1));\n
+    \           m.put(\"年齢\", fr.read(3));\n            m.put(\"年\", fr.read(4));\n
+    \           m.put(\"月\", fr.read(2));\n            LinkedHashMap&lt;String, Map&lt;String,
+    String&gt;&gt; l = new LinkedHashMap&lt;String, Map&lt;String, String&gt;&gt;(31);\n
+    \           for (int j = 0; j &lt; 31; j++) {\n                Map&lt;String,
+    String&gt; m2 = new LinkedHashMap&lt;String, String&gt;();\n                m2.put(\"日付\",
+    fr.read(2));\n                m2.put(\"朝食\", fr.read(500));\n                m2.put(\"昼食\",
+    fr.read(500));\n                m2.put(\"夕食\", fr.read(500));\n                l.put(m2.get(\"日付\"),
+    m2);\n            }\n            m.put(\"日毎\", l);\n            ml.put(m.get(\"姓\")
+    + \" \" + m.get(\"名\"), m);\n        }\n        fr.close();\n        for (String
+    key : ml.keySet()) {\n            System.out.println(ml.get(key));\n        }\n
+    \   }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6096'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6096
+  :user_name: raynstard
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/127/
+  :language: C
+  :time: 2008/03/29 04:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">最近はあまり意識しなくなってしまいましたが\r\n固定長のデータを構造体で読み取る場合には\r\n共用体を併用したほうが安全です。\r\nそのままでは、ビックエンディアンのときにおかしくなってしまうと思うので。。。\r\n無名構造体とか使用するともう少し楽にアクセスできた気がするけど\r\n普段しようしないので忘れてしまいました^^;;</pre>\n\t"
+  :code: |
+    union {
+        char stream [35];
+        struct tagDATA
+        {
+            char family[12];
+            char name[12];
+            char sex;
+            char age[3];
+            char year[4];
+            char month[3];
+        } data;
+    } head;
+
+    read_size = read(fd, head.stream, sizeof(head.stream));
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6097'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6097
+  :user_name: いげ太
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/399/
+  :language: Other
+  :time: 2008/03/29 08:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>うーん。もうちょっとキレイに書けるかと思ったけど挫折した。。</p>\n<p>あ、このお題、実用的でいいお題だなと思いました！</p>\n\n\t"
+  :code: "module Doukaku170 =\nstruct\n  open System\n  open System.IO\n  \n  type
+    sex   = F | M | U\n  \n  type meal  = { Morning : string;\n                 Lunch
+    \  : string;\n                 Dinner  : string }\n  \n  type data  = { LastName
+    \ : string;\n                 FirstName : string;\n                 Sex       :
+    sex;\n                 Age       : int;\n                 Year      : int;\n                 Month
+    \    : int;\n                 MealDays  : (int * meal) list }\n  \n  let get_datas
+    file =\n    let (|Sex|) s = if s = \"F\" then F else if s = \"M\" then M else
+    U in\n    let step_read n (r:#TextReader) =\n      let buffer = Array.zero_create
+    n in\n      ignore (r.Read(buffer, 0, n));\n      String.trim [' '] (new string(buffer))\n
+    \   in\n    { use r = new StreamReader(File.OpenRead(file)) in\n      while not
+    r.EndOfStream do\n        yield { LastName  = step_read 12 r;\n                FirstName
+    = step_read 12 r;\n                Sex       = (match step_read 1 r with Sex x
+    -&gt; x);\n                Age       = Int32.Parse(step_read 3 r);\n                Year
+    \     = Int32.Parse(step_read 4 r);\n                Month     = Int32.Parse(step_read
+    2 r);\n                MealDays  = [for _ in 1..31\n                             -&gt;
+    (Int32.Parse(step_read 2 r),\n                                 { Morning = step_read
+    500 r;\n                                   Lunch   = step_read 500 r;\n                                   Dinner
+    \ = step_read 500 r })] }\n      done }\nend;;\n\nlet _ =\n  let datas = @\"C:\\test.txt\"
+    |&gt; Doukaku170.get_datas |&gt; Seq.to_list in\n  printf \"%A\\n\" (List.hd datas);;\n"
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '6098'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6098
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/03/29 11:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>構造体に属する変数が詰まっている保証はないので、例えば4バイトアラインを基本とする処理系だったら、monthとmenusの間に1バイト使われない領域が入ってしまい、入力データのサイズと構造体のsizeofが一致しないかと。\nもちろんこのコンパイラにこのオプション付ければ動く、というのはあるかもしれませんが、それはそれでタグを付けていただきたいところです。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6099'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6099
+  :user_name: vtwntmtn
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/380/
+  :language: 
+  :time: 2008/03/29 12:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>#6098書いた者ですが、これ嘘？charのみを使ってるとアライメントされない？</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6103'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6103
+  :user_name: kozima
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2008/03/29 14:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>とりあえず。うまくマクロを書けばもっときれいになるでしょう。</p>\n\n\t"
+  :code: |
+    (defstruct menu
+      date breakfast lunch dinner)
+
+    (defstruct person
+      family-name first-name sex age year month menus)
+
+    (defun scan-string (stream length &amp;optional string)
+      (let ((s (or string (make-string length))))
+        (read-sequence s stream)
+        s))
+
+    (defun scan-integer (stream n &amp;optional (radix 10))
+      (parse-integer (scan-string stream n) :radix radix :junk-allowed t))
+
+    (defun scan-list (stream length scanner &amp;rest args)
+      (loop repeat length collect (apply scanner stream args)))
+
+    (defun scan-menu (stream)
+      (let ((date (scan-integer stream 2))
+            (breakfast (scan-string stream 500))
+            (lunch (scan-string stream 500))
+            (dinner (scan-string stream 500)))
+        (make-menu :date date :breakfast breakfast :lunch lunch :dinner dinner)))
+
+    (defun scan-person (stream)
+      (let ((family-name (scan-string stream 12))
+            (first-name (scan-string stream 12))
+            (sex (scan-string stream 1))
+            (age (scan-integer stream 3))
+            (year (scan-integer stream 4))
+            (month (scan-integer stream 2))
+            (menus (scan-list stream 31 #'scan-menu)))
+        (make-person :family-name family-name :first-name first-name
+                     :sex sex :age age :year year :month month :menus menus)))
+
+    (defun scan-record (stream)
+      (scan-list stream 500 #'scan-person))
+
+    (defun read-record-from-file (file)
+      (with-open-file (s file) (scan-record s)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6106'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6106
+  :user_name: syat
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/766/
+  :language: Other
+  :time: 2008/03/29 17:41 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  構造体はアライメントの対象になりますが、メンバが全てcharの場合は別です。\r<br><br>自分の理解不足に嘆いて、サンプルを作ってみました。\r<br>＜結果＞*VC2005で確認\r<br>sizeof A = 8\r<br>sizeof B = 5\r<br>sizeof C = 16\r<br>sizeof D = 16\r<br>sizeof E = 10\r<br>sizeof F = 24\r<br><br>いまいち釈然としなかったですが、参考ページの「配列にしたときにバイト境界をまたがないように、最小限のパディングが入れられる」という説明を読んでやっと納得できた気がします。\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+
+    struct A {
+        char c[2];  /* |c c|   | */
+        int n;      /* |n n n n| */
+    };
+    struct B {
+        char c[2];  /* |c c|d d| */
+        char d[3];  /* |d|     | */
+    };
+    struct C { /* AとBの後ろに詰め物 */
+        struct A a;
+        struct B b;
+    };
+    struct D { /* AとBの後ろに詰め物 */
+        struct B b;
+        struct A a;
+    };
+    struct E { /* こいつは10バイトにみっちり詰まる */
+        struct B b1;
+        struct B b2;
+    };
+    struct F {
+        char c[3];  /* |c c c| | */
+        short s;    /* |s s|   | */
+        int n;      /* |n n n n| */
+        short t;    /* |t t|d d| */
+        char d[3];  /* |d|     | */
+        char *p;    /* |p p p p| */
+    };
+
+    int main(void) {
+        printf("sizeof A = %d\n", sizeof(struct A));
+        printf("sizeof B = %d\n", sizeof(struct B));
+        printf("sizeof C = %d\n", sizeof(struct C));
+        printf("sizeof D = %d\n", sizeof(struct D));
+        printf("sizeof E = %d\n", sizeof(struct E));
+        printf("sizeof F = %d\n", sizeof(struct F));
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://www.g-ishihara.com/c_st_01.htm
+    :title: ''
+- :id: '6107'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6107
+  :user_name: syat
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2008/03/29 17:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>またもや参考サイトのリンクに失敗。。。\nもしかしてページタイトル必須なのか？\nつまらないことでレスを伸ばしてすみません。。。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://www.g-ishihara.com/c_st_01.htm
+    :title: 構造体のサイズとアライメント
+- :id: '6109'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6109
+  :user_name: howking
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/744/
+  :language: Erlang
+  :time: 2008/03/30 03:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>なんかもっといい書き方がある気がする。</p>\n\n\t"
+  :code: |
+    -module(scan1).
+    -compile(export_all).
+    -define(SZ,46596).
+    -define(MSZ,1502).
+    -define(CNT,500).
+    -record(person,{fname,sname,sex,age,year,month,menus=[]}).
+    -record(menu,{day,breakfast,lunch,dinner}).
+
+    start() -&gt;
+        {ok,S}=file:open("data.txt",[read,raw]),
+        scan(S,0,0),
+        file:close(S).
+
+    scan(_,_,?CNT) -&gt;
+        ok;
+    scan(S,N,C) -&gt;
+        case file:pread(S,N,?SZ) of
+            eof -&gt;
+                ok;
+            {ok,R} -&gt;
+                P=#person{
+                  fname=string:strip(string:substr(R,1,12),right,$ ),
+                  sname=string:strip(string:substr(R,13,12),right,$ ),
+                  sex=string:substr(R,25,1),
+                  age=string:strip(string:substr(R,26,3),left,$ ),
+                  year=string:substr(R,29,4),
+                  month=string:substr(R,33,2),
+                  menus=scanm(string:substr(R,35))
+                 },
+                erlang:display(P),
+                scan(S,N+?SZ,C+1)
+        end.
+
+    scanm(R)-&gt;
+        scanm(R,[],1).
+    scanm(_,L,31) -&gt;
+        L;
+    scanm(R,L,N)-&gt;
+        M=#menu{
+          day=string:substr(R,1,2),
+          breakfast=string:strip(string:substr(R,3,500),right,$ ),
+          lunch=string:strip(string:substr(R,503,500),right,$ ),
+          dinner=string:strip(string:substr(R,1003,500),right,$ )
+         },
+        scanm(string:substr(R,?MSZ+1),L++[M],N+1).
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6110'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6110
+  :user_name: howking
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/744/
+  :language: Erlang
+  :time: 2008/03/30 03:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>もいっこビット構文式を使った手抜き版</p>\n\n\t"
+  :code: |
+    -module(scan2).
+    -export([start/0]).
+
+    start() -&gt;
+        {ok,S}=file:open("getrec.txt",[read,binary,raw]),
+        erlang:display(binary_to_list(element(1,lists:nth(1,scan(S,[],0,0))))),
+        file:close(S).
+
+    scan(_,L,_,500)-&gt;
+        L;
+    scan(S,L,N,C) -&gt;
+        case file:pread(S,N,46596) of
+            eof -&gt;
+                ok;
+            {ok,&lt;&lt;FName:12/binary,SName:12/binary,Sex:1/binary,
+                 Age:3/binary,Year:4/binary,Month:2/binary,Menus/binary&gt;&gt;} -&gt;
+                scan(S,L++[{FName,SName,Sex,Age,Year,Month,scan_menu(Menus,[],1)}],N+46596,C+1)
+        end.
+
+    scan_menu(_,L,31)-&gt;
+        L;
+    scan_menu(M,L,C) -&gt;
+        {D,R}=split_binary(M,1502),
+        &lt;&lt;Day:2/binary,Breakfast:500/binary,Lunch:500/binary,Dinner:500/binary&gt;&gt; = D,
+        scan_menu(R,L++[Day,Breakfast,Lunch,Dinner],C+1).
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6112'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6112
+  :user_name: あにす
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/03/30 08:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Microsoft.VisualBasic.FileIO.TextFieldParserってとっても便利なんですよ～、と書いてみたら、\r\nTextFieldParserはレコードの区切りに改行がないと駄目なようです。\r\nてことで、とても無理やりなコードになりました。\r\n\r\nテストデータの生成にtenkaさんの#6079のコードの一部を頂きました。</pre>\n\t"
+  :code: "//http://ja.doukaku.org/170/　投稿用\nusing System.Collections.Generic;\nusing
+    System.IO;\nusing System.Text;\nusing Microsoft.VisualBasic.FileIO;\n\nnamespace
+    どう書く_org固定長データ {\n    class Program {\n        static void Main(string[] args)
+    {       \n            ////テストデータ作成\n            //using(StreamWriter sw = new
+    StreamWriter(@\"C:\\testdata.txt\")) {\n            //    for(int i = 0; i &lt;
+    500; i++) {\n            //        sw.Write(\"{0, -12}\", \"Yamada\");\n            //
+    \       sw.Write(\"{0, -12}\", \"Tarou\");\n            //        sw.Write(\"{0,
+    \  1}\", \"M\");\n            //        sw.Write(\"{0,   3}\", \"26\");\n            //
+    \       sw.Write(\"{0,   4}\", \"2008\");\n            //        sw.Write(\"{0,
+    \  2}\", \"03\");\n            //        for(int j = 1; j &lt;= 31; j++) {\n            //
+    \           sw.Write(\"{0:00}\", j);\n            //            sw.Write(\"{0,-500}\",
+    \"Yamada\");\n            //            sw.Write(\"{0,-500}\", \"Yamada\");\n
+    \           //            sw.Write(\"{0,-500}\", \"Yamada\");\n            //
+    \       }\n            //    }\n            //    sw.Dispose();\n            //}\n\n
+    \           //ファイル読み込み\n            StreamReader sr = new StreamReader(@\"C:\\testdata.txt\");\n
+    \           StringBuilder sb = new StringBuilder(sr.ReadToEnd());\n\n            //フィールドの幅の配列を作成\n
+    \           int recordLength = 0;\n            List&lt;int&gt; fieldWidths = new
+    List&lt;int&gt;();\n            fieldWidths.AddRange(new int[] { 12, 12, 1, 3,
+    4, 2 });\n            for(int i = 0; i &lt; 31; i++) {\n                fieldWidths.AddRange(new
+    int[] { 2, 500, 500, 500 });\n            }\n            foreach(int i in fieldWidths)
+    {\n                recordLength += i;\n            }\n\n            TextFieldParser
+    tfp = getTfp(fieldWidths.ToArray(), sb.ToString().Substring(0, recordLength));\n
+    \           List&lt;Record&gt; Table = new List&lt;Record&gt;();\n            \n
+    \           while(!tfp.EndOfData) {\n                string[] fields = tfp.ReadFields();\n
+    \               Record record = new Record() {\n                    LastName =
+    fields[0],\n                    FirstName = fields[1],\n                    Sex
+    = fields[2],\n                    Age = fields[3],\n                    Year =
+    fields[4],\n                    Month = fields[5],\n                    MenuList
+    = new List&lt;DayMenu&gt;()\n                };\n   \n                for(int
+    i = 6; i &lt; fields.Length; i = i + 4) {\n                    record.MenuList.Add(new
+    DayMenu() {\n                        Day = fields[i],\n                        Firstbread
+    = fields[i + 1],\n                        Lunch = fields[i + 2],\n                        Dinner
+    = fields[i + 3],\n                    });\n                }\n                Table.Add(record);\n
+    \               sb.Remove(0, recordLength);\n                if(sb.Length == 0)
+    break;\n                tfp = getTfp(fieldWidths.ToArray(), sb.ToString(0, recordLength));\n
+    \           }\n            tfp.Close();\n        }\n\n        static TextFieldParser
+    getTfp(int[] fieldWidths,string value) {\n            TextFieldParser tfp = new
+    TextFieldParser(new StringReader(value));\n            tfp.TextFieldType = FieldType.FixedWidth;\n
+    \           tfp.FieldWidths = fieldWidths;\n            return tfp;\n        }\n
+    \   }\n\n    class Record {\n        public string LastName { set; get; }\n        public
+    string FirstName { set; get; }\n        public string Sex { set; get; }\n        public
+    string Age { set; get; }\n        public string Year { set; get; }\n        public
+    string Month { set; get; }\n        public List&lt;DayMenu&gt; MenuList { set;
+    get; }\n    }\n\n    class DayMenu {\n        public string Day { set; get; }\n
+    \       public string Firstbread { set; get; }\n        public string Lunch {
+    set; get; }\n        public string Dinner { set; get; }\n    }\n}\n"
+  :tags:
+  - C#3.0
+  :references:
+    :url: 
+    :title: 
+- :id: '6113'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6113
+  :user_name: saws
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/03/30 13:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>レコードの構造を表現するのに, Hashクラスでなく順序が定義されているStructureクラスのオブジェクトを使用しました.\n必要に応じてflattenなりjoinを使用してから出力すれば,
+    使用しやすい形になると思います.</p>\n\n\t"
+  :code: |
+    module StaticRecord
+      def read_record(max_num)
+        rec_struct = Struct.new(:family_name, :last_name, :sex, :age,
+                                :year, :month, :days)
+        days_struct = Struct.new(:day, :breakfast, :lunch, :supper)
+        record = rec_struct.new(12, 12, 1, 3, 4, 3,
+                                days_struct.new(2, 500, 500, 500))
+        max_num.times{record.map{|x|
+            len_ary, range = x.kind_of?(Struct) ? [x, 1..31] : [[x], 1..1]
+            range.map{len_ary.map{|n| read(n)}}}}
+      end
+    end
+    class IO
+      include StaticRecord
+    end
+    #file = 'D:/home/tmp/test.rec'
+    File.open(file, "r"){|f| f.read_record(500)}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6114'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6114
+  :user_name: vtwntmtn
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/380/
+  :language: 
+  :time: 2008/03/30 14:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>わざわざありがとうございます。理解が曖昧なまま投稿してはいけませんねorz</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6115'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6115
+  :user_name: Nemo
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/685/
+  :language: PostScript
+  :time: 2008/03/30 14:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">PostScript で。データ用に名前付きファイルを使用しているので Level2
+    以降限定です。\r\n\r\nレコード単位で読み出し、部分文字列に切り出して配列に格納しています。\r\n切り出した部分文字列はコピーではなく参照なので、文字列データに関しては値を書き\r\n換えるとレコード文字列に反映されます。\r\n%
+    数値データに関しては反映されません。手抜き。\r\n\r\n[[(01breakfast           lunch               dinner
+    \             ) 1 (breakfast           ) (dinner              ) (lunch               )]
+    ... [(31 ...] ]\r\n[(LASTNAME    Firstname   U 99200803) (LASTNAME    ) (Firstname
+    \  ) (U) 99 2008 3]\r\n\r\nテストコードはデータを読み込み、10日の朝食のデータを書き換えて書き出しています。\r\n</pre>\n\t"
+  :code: "%!PS\n\n/MenuLength 500 def\n% /MenuLength 20 def\n\n/ReadHeader {\n    %
+    -file- ReadHeader\n    %   [(RecordString) (FamilyName) (Name) (Sex) Age Year
+    Month] -file-\n    [\n        1 index\n        12 12 add 1 add 3 add 4 add 2 add
+    string readstring pop\n        dup\n        dup 0 12 getinterval exch\n        dup
+    12 12 getinterval exch\n        dup 24 1 getinterval exch\n        dup 25 3 getinterval
+    cvi exch\n        dup 28 4 getinterval cvi exch\n        32 2 getinterval cvi\n
+    \   ]\n    exch\n} bind def\n\n/ReadRecord {\n    % -file- nRecords  ReadRecord
+    \  [[Records]] -file-\n    % [record] : [(RecordString) day (breakfast) (lanch)
+    (dinner)]\n    [ exch 2 index exch\n    % -file [ -file- nRecords\n    {\n        %
+    [ -file-\n        [ 1 index\n        % [ -file- [ -file-\n        2 MenuLength
+    3 mul add string\n        readstring pop\n        % [ -file- [ (record)\n        dup\n
+    \       dup 0 2 getinterval cvi exch\n        dup 2 MenuLength getinterval exch\n
+    \       dup 2 MenuLength add  MenuLength getinterval exch\n        2 MenuLength
+    dup add add MenuLength getinterval\n        ] exch\n    } repeat\n    pop\n    ]\n
+    \   exch\n} bind def\n\n -------- Test Code ----------\n(6093.txt) (r) file\nReadHeader\n31
+    ReadRecord\nclosefile\n\n% Rewrite day 10 breakfast\ndup 9 get 2 get % Pickup
+    Data\n0 (hogehoge fugafuga) putinterval\n\n(===) = ppstack (===) =\n\n% Write
+    Data\n% [Header] [[Records]] \n\n(6093a.txt) (w) file\n% [Header] [[Records]]
+    -file-\ndup 4 -1 roll 0 get writestring\n% [[Records]] -file-\nexch {\n    0 get
+    1 index exch\n    writestring\n} forall\nclosefile\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6118'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6118
+  :user_name: doloop
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/775/
+  :language: Python
+  :time: 2008/03/30 23:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>エラー処理は無しです\n特に面白みは無いですね</p>\n<p>日付などが、文字列ではなくバイナリであれば\nstructが生きてくるかもしれませんが</p>\n\n\t"
+  :code: "#固定長データ\nimport struct\nf = file(\"foo.txt\" , \"rb\")\n\nresult = []\nfmt
+    = \"12s 12s 1s 3s 4s 2s\" + \"2s 500s 500s 500s\"*31\n\nsize = struct.calcsize(fmt)\nwhile(True):\n
+    \   r = f.read(size)\n    if len(r) &lt; size:\n        break\n    \n    data
+    = struct.unpack(fmt , r)\n    \n    d = dict(\n        FirstName  = data[0] ,
+    \n        SecondName = data[1] ,\n        Sex = data[2] ,\n        Age = int(data[3])
+    ,\n        Year= int(data[4]) ,\n        Month=int(data[5])\n        Menu = {}\n
+    \   )\n    \n    for i in range(31):\n        Day = int(data[6+4*i])\n        menu
+    = dict(\n            BreakFirst = data[7+4*i]\n            Lunch = data[8+4*i]\n
+    \           Dinner  = data[8+4*i]\n        )\n        d[\"Menu\"][Day]=menu\n
+    \   \n    result.append(d)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6122'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6122
+  :user_name: lieutar
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/618/
+  :language: Perl
+  :time: 2008/03/31 08:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>どうも encoding まわりの扱いに自信がありません.</p>\n\n\t"
+  :code: |
+    use strict;
+    use warnings;
+    use Data::Dumper;
+    use constant ROWSIZE =&gt; 1536;
+    no encoding;
+    my @cols = qw( family_name four_name gender age year mon date
+                   breakfast lunch dinner );
+    my $i   = 0;
+    my @row = ();
+    print '(';
+    while(!eof STDIN){
+      my ($buf, %rec) = ("",());
+      read  STDIN , $buf , ROWSIZE;
+      printf "do{%s}," ,  Dumper { map{
+        s/^\s+//; s/\s+$//;
+        ( $cols[ $i++ % @cols] , $_ );
+      } unpack "A12A12A1A3A4A2A2A500A500A500" , $buf };
+    }
+    print ')';
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6123'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6123
+  :user_name: M.Suzuki
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/771/
+  :language: Haskell
+  :time: 2008/03/31 09:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  敢えて冗長な書き方でやってみました。\r\nメンテナンス性を考慮したつもりなんですが、見やすいかどうかは微妙です。\n\t"
+  :code: |
+    --
+    --    固定長データを参照する
+    --
+
+    module Main where
+
+    import System
+
+    --
+    --    base length
+    --
+    firstNameLen = 12
+    lastNameLen = 12
+    sexLen = 1
+    ageLen = 3
+    yearLen = 4
+    monthLen = 2
+    dateLen = 2
+    breakFastLen = 500
+    lunchLen = 500
+    dinnerLen = 500
+
+    --
+    --    base position
+    --
+    firstNamePos = 0
+    lastNamePos = firstNamePos + firstNameLen
+    sexPos = lastNamePos + lastNameLen
+    agePos = sexPos + sexLen
+    yearPos = agePos + ageLen
+    monthPos = yearPos + yearLen
+    datePos = 0
+    breakFastPos = datePos + dateLen
+    lunchPos = breakFastPos + breakFastLen
+    dinnerPos = lunchPos + lunchLen
+
+    --
+    --    length
+    --
+    userHeaderLen = firstNameLen + lastNameLen + sexLen + ageLen + yearLen + monthLen
+    userDataLen = dateLen + breakFastLen + lunchLen + dinnerLen
+    userLen = userHeaderLen + userDataLen * 31
+
+    --
+    --    position
+    --
+    userPos n = userLen * n
+    userDataPos n = userHeaderLen + userDataLen * n
+
+    --
+    --    access utility
+    --
+    cut d (pos, len) = take len $ drop pos d
+
+    getUser d n = cut d (userPos n, userLen)
+    getUserData user n = cut user (userDataPos n, userDataLen)
+
+    getFirstName user = cut user (firstNamePos, firstNameLen)
+    getLastName user = cut user (lastNamePos, lastNameLen)
+    getSex user = cut user (sexPos, sexLen)
+    getAge user = cut user (agePos, ageLen)
+    getYear user = cut user (yearPos, yearLen)
+    getMonth user = cut user (monthPos, monthLen)
+    getDate user n = cut (getUserData user n) (datePos, dateLen)
+    getBreakFast user n = cut (getUserData user n) (breakFastPos, breakFastLen)
+    getLunch user n = cut (getUserData user n) (lunchPos, lunchLen)
+    getDinner user n = cut (getUserData user n) (dinnerPos, dinnerLen)
+
+    --
+    --    example
+    --
+    main = do
+        args &lt;- getArgs
+        contents &lt;- if (not.null) args
+            then readFile $ head args
+            else getContents
+        let user = getUser contents 0
+        putStrLn $ show $ getLastName user
+        putStrLn $ show $ getFirstName user
+    --    where
+    --        user n = "Jyunichiro  " ++ "Koizumi     " ++ "F" ++ "66" ++
+    --                "2008" ++ "03" ++ days
+    --        days = show $ map (\x -&gt; (dayNo x) ++ foods) [1..31]
+    --        dayNo n = reverse $ take 2 $ reverse $ "0" ++ (show n)
+    --        foods = concat $ replicate 3 (replicate 500 ' ')
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6126'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6126
+  :user_name: kh
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2008/04/01 03:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>D言語ではalign属性によって構造体やクラスのアライメントを調整することができます。</p>\n\n\t"
+  :code: "private import std.stream;\n\nalign(1) struct Person {\n    char[12] familyName;\n
+    \   char[12] givenName;\n    char     gender;\n    char[3]  age;\n    char[4]
+    \ year;\n    char[2]  month;\n}\n\nalign(1) struct Menu {\n    char[2]   day;\n
+    \   char[500] breakfast;\n    char[500] lunch;\n    char[500] dinner;\n}\n\nconst
+    DATA_FILE = \"test.txt\";\n\nvoid main() {\n    scope data = new File(DATA_FILE,
+    FileMode.In);\n    \n    foreach(i; 0..500) {\n        Person person;\n        data.readExact(&amp;person,
+    person.sizeof);\n        foreach(day; 0..31) {\n            Menu menu;\n            data.readExact(&amp;menu,
+    menu.sizeof);\n        }\n    }\n}\n"
+  :tags:
+  - D2.0
+  :references:
+    :url: 
+    :title: 
+- :id: '6136'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6136
+  :user_name: bamboo
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/778/
+  :language: Other
+  :time: 2008/04/04 13:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>sekiaさんのデータ作成スクリプトを使わせていただきました。</p>\n<p>この結果を tmp.txtとして保存して準備しておきます。</p>\n\n\t"
+  :code: |
+    a &lt;- list();
+    nc &lt;- c(12, 12, 1, 3, 4, 2, rep(c(2,500,500,500),31));
+    z &lt;- file('tmp.txt', 'rb');
+    for(i in c(1:500)){
+      df &lt;- readChar(z, nc);
+      a[[i]] &lt;- df;
+    }
+    close(z);
+
+    a[[1]][c(1:10)];
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://ja.doukaku.org/comment/6084/
+    :title: テストデータ生成スクリプト (perl)
+- :id: '6137'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6137
+  :user_name: bamboo
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/778/
+  :language: R
+  :time: 2008/04/04 14:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>sekiaさんのデータ作成スクリプトを使わせていただきました。</p>\n<p>この結果を tmp.txtとして保存して準備しておきます。</p>\n<p>間違って
+    \"others\"に投稿してしまった orz...</p>\n\n\t"
+  :code: |
+    a &lt;- list();
+    nc &lt;- c(12, 12, 1, 3, 4, 2, rep(c(2,500,500,500),31));
+    z &lt;- file('tmp.txt', 'rb');
+    for(i in c(1:500)){
+      df &lt;- readChar(z, nc);
+      a[[i]] &lt;- df;
+    }
+    close(z);
+
+    a[[1]][c(1:10)];
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://ja.doukaku.org/comment/6084/
+    :title: テストデータ生成スクリプト (perl)
+- :id: '6142'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6142
+  :user_name: syat
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/766/
+  :language: BASIC
+  :time: 2008/04/04 21:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  普通に。\n\t"
+  :code: |
+    100 close #1
+    110 open "c:\固定長.dat" for input as #1
+    120 dim day$(31), breakfast$(31), lunch$(31), dinner$(31)
+    130 for record = 1 to 500
+    140   if eof(1) then goto *LoopEnd
+    150   'データの読み込み
+    160   family$ = input$(12, #1)
+    170   name$   = input$(12, #1)
+    180   sex$    = input$(1, #1)
+    190   age$    = input$(3, #1)
+    200   year$   = input$(4, #1)
+    210   month$  = input$(2, #1)
+    220   '日ごとデータの読み込み
+    230   for d = 1 to 31
+    240     day$(d)       = input$(2, #1)
+    250     breakfast$(d) = input$(500, #1)
+    260     lunch$(d)     = input$(500, #1)
+    270     dinner$(d)    = input$(500, #1)
+    280   next d
+    290   'データ出力
+    300   print "名前：";family$;" ";name$
+    301   print "31日の朝食：";mid$(breakfast$(31),1, 20)
+    310 next record
+    320 *LoopEnd
+    330 close #1
+  :tags:
+  - N88互換BASIC
+  :references:
+    :url: 
+    :title: 
+- :id: '6147'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6147
+  :user_name: JDO
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/257/
+  :language: XSLT
+  :time: 2008/04/06 13:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">単純にデータを読み込んで、XML 形式に転写する\r\nだけですぅ。　こんな簡単なことするだけでも
+    XSLT \r\nだとこんなに長くなるんだろか？ XSLT 初心者の\r\n僕にはわかんないやぁ～\r\n\r\nデータは XML ファイルで与えます。ルートノードの\r\n直下に
+    文字列を書きます。ルートノードの名前 は\r\nSerializedRecords にする。\r\n\r\nそそ、Array っていうオブジェクトを (仮想的に)
+    定\r\n義しました。 Array_push 関数 (ほんとはテンプ\r\nレート) で データ追加するだけ。これ定義するだけ\r\nでも行数つかったぁ。。。\r\n\r\nもっとエレガントなやり方あんのかもしれない。\r\nだれか教えて～</pre>\n\t"
+  :code: |
+    &lt;?xml version="1.0" encoding="Shift_JIS" ?&gt;
+    &lt;xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
+
+    &lt;!-- ==========================================================================
+    定数の設定
+    =========================================================================== --&gt;
+
+    &lt;xsl:variable name="姓_length" select="12" /&gt;
+    &lt;xsl:variable name="名_length" select="12" /&gt;
+    &lt;xsl:variable name="性別_length" select="1" /&gt;
+    &lt;xsl:variable name="年齢_length" select="3" /&gt;
+    &lt;xsl:variable name="年_length" select="4" /&gt;
+    &lt;xsl:variable name="月_length" select="2" /&gt;
+    &lt;xsl:variable name="日付_length" select="2" /&gt;
+    &lt;xsl:variable name="朝食のメニュー_length" select="500" /&gt;
+    &lt;xsl:variable name="昼食のメニュー_length" select="500" /&gt;
+    &lt;xsl:variable name="夕食のメニュー_length" select="500" /&gt;
+
+
+    &lt;xsl:variable name="姓_offset" select="1" /&gt;
+    &lt;xsl:variable name="名_offset" select="$姓_offset + $姓_length" /&gt;
+    &lt;xsl:variable name="性別_offset" select="$名_offset + $名_length" /&gt;
+    &lt;xsl:variable name="年齢_offset" select="$性別_offset + $性別_length" /&gt;
+    &lt;xsl:variable name="年_offset" select="$年齢_offset + $年齢_length" /&gt;
+    &lt;xsl:variable name="月_offset" select="$年_offset + $年_length" /&gt;
+    &lt;xsl:variable name="ヘッダー_length" select="$姓_length + $名_length + $性別_length + $年齢_length + $年_length + $月_length" /&gt;
+
+    &lt;xsl:variable name="日付_offset" select="1" /&gt;
+    &lt;xsl:variable name="朝食のメニュー_offset" select="$日付_offset + $日付_length" /&gt;
+    &lt;xsl:variable name="昼食のメニュー_offset" select="$朝食のメニュー_offset + $朝食のメニュー_length" /&gt;
+    &lt;xsl:variable name="夕食のメニュー_offset" select="$昼食のメニュー_offset + $昼食のメニュー_length" /&gt;
+    &lt;xsl:variable name="一日のメニュー_length" select="$日付_length + $朝食のメニュー_length + $昼食のメニュー_length + $夕食のメニュー_length" /&gt;
+
+
+
+    &lt;!-- ==========================================================================
+    メインルーチン
+    =========================================================================== --&gt;
+
+    &lt;xsl:template match="/"&gt;
+      &lt;xsl:call-template name="stringToRecords"&gt;
+        &lt;xsl:with-param name="string" select="/SerializedRecords/text ()" /&gt;
+        &lt;xsl:with-param name="人数" select="500" /&gt;
+      &lt;/xsl:call-template&gt;
+    &lt;/xsl:template&gt;
+
+
+
+    &lt;!-- ==========================================================================
+    Array オブジェクトの定義
+    (タグの名前はなんでも良かったので HTML にある ol と li にした)
+    =========================================================================== --&gt;
+
+    &lt;xsl:template name="new_Array"&gt;
+      &lt;ol /&gt;
+    &lt;/xsl:template&gt;
+
+    &lt;xsl:template name="Array_push"&gt;
+      &lt;xsl:param name="array" /&gt;
+      &lt;xsl:param name="element" /&gt;
+
+      &lt;ol&gt;
+        &lt;xsl:for-each select="$array/ol/li"&gt;
+          &lt;xsl:copy-of select="." /&gt;
+        &lt;/xsl:for-each&gt;
+        &lt;li&gt;&lt;xsl:copy-of select="$element" /&gt;&lt;/li&gt;
+      &lt;/ol&gt;
+    &lt;/xsl:template&gt;
+
+
+
+    &lt;!-- ==========================================================================
+    stringToRecords: レコードデータの読み込み
+    人数 分だけ レコード を読み込みだけ。ただし、メニューのところは別関数で...
+    =========================================================================== --&gt;
+
+    &lt;xsl:template name="stringToRecords"&gt;
+      &lt;xsl:param name="string" /&gt;
+      &lt;xsl:param name="人数" /&gt;
+
+      &lt;xsl:call-template name="stringToRecords_"&gt;
+        &lt;xsl:with-param name="string" select="$string" /&gt;
+        &lt;xsl:with-param name="records"&gt;
+          &lt;xsl:call-template name="new_Array" /&gt;
+        &lt;/xsl:with-param&gt;
+        &lt;xsl:with-param name="人数" select="$人数" /&gt;
+      &lt;/xsl:call-template&gt;
+    &lt;/xsl:template&gt;
+
+    &lt;xsl:template name="stringToRecords_"&gt;
+      &lt;xsl:param name="string" /&gt;
+      &lt;xsl:param name="records" /&gt;
+      &lt;xsl:param name="人数" /&gt;
+
+      &lt;xsl:choose&gt;
+        &lt;xsl:when test="$人数 = 0"&gt;
+          &lt;xsl:copy-of select="$records" /&gt;
+        &lt;/xsl:when&gt;
+
+        &lt;xsl:otherwise&gt;
+          &lt;!-- 日数 は本来ならその月にあわせて変化させるんだろぉなぁ --&gt;
+          &lt;xsl:variable name="日数" select="31" /&gt;
+
+          &lt;!-- タグの名前は何でも良かったので HTML の table 形式にした。 --&gt;
+          &lt;xsl:variable name="record"&gt;
+            &lt;table&gt;&lt;tbody&gt;
+              &lt;tr&gt;&lt;td&gt;姓&lt;/td&gt;&lt;td&gt;&lt;xsl:value-of select="substring ($string, $姓_offset, $姓_length)" /&gt;&lt;/td&gt;&lt;/tr&gt;
+              &lt;tr&gt;&lt;td&gt;名&lt;/td&gt;&lt;td&gt;&lt;xsl:value-of select="substring ($string, $名_offset, $名_length)" /&gt;&lt;/td&gt;&lt;/tr&gt;
+              &lt;tr&gt;&lt;td&gt;性別&lt;/td&gt;&lt;td&gt;&lt;xsl:value-of select="substring ($string, $性別_offset, $性別_length)" /&gt;&lt;/td&gt;&lt;/tr&gt;
+              &lt;tr&gt;&lt;td&gt;年齢&lt;/td&gt;&lt;td&gt;&lt;xsl:value-of select="substring ($string, $年齢_offset, $年齢_length)" /&gt;&lt;/td&gt;&lt;/tr&gt;
+              &lt;tr&gt;&lt;td&gt;年&lt;/td&gt;&lt;td&gt;&lt;xsl:value-of select="substring ($string, $年_offset, $年_length)" /&gt;&lt;/td&gt;&lt;/tr&gt;
+              &lt;tr&gt;&lt;td&gt;月&lt;/td&gt;&lt;td&gt;&lt;xsl:value-of select="substring ($string, $月_offset, $月_length)" /&gt;&lt;/td&gt;&lt;/tr&gt;
+              &lt;tr&gt;&lt;td&gt;各日のメニュー&lt;/td&gt;
+                &lt;td&gt;
+                &lt;xsl:call-template name="stringToMenues"&gt;
+                  &lt;xsl:with-param name="string" select="substring ($string, $ヘッダー_length + 1)" /&gt;
+                  &lt;xsl:with-param name="日数" select="$日数" /&gt;
+                &lt;/xsl:call-template&gt;
+                &lt;/td&gt;
+              &lt;/tr&gt;
+            &lt;/tbody&gt;&lt;/table&gt;
+          &lt;/xsl:variable&gt;
+
+         &lt;!-- これまで読み込んだデータ $records に 今読み込んだデータ $record を 追加～ --&gt;
+          &lt;xsl:variable name="records_"&gt;
+            &lt;xsl:call-template name="Array_push"&gt;
+              &lt;xsl:with-param name="array" select="$records" /&gt;
+              &lt;xsl:with-param name="element" select="$record" /&gt;
+            &lt;/xsl:call-template&gt;
+          &lt;/xsl:variable&gt;
+
+          &lt;!-- 人数分だけ再帰～。もちろんこれまでのデータ $records_ も渡す... --&gt;
+          &lt;xsl:call-template name="stringToRecords_"&gt;
+            &lt;xsl:with-param name="string" select="substring ($string, $ヘッダー_length + $日数 * $一日のメニュー_length + 1)" /&gt;
+            &lt;xsl:with-param name="records" select="$records_" /&gt;
+            &lt;xsl:with-param name="人数" select="$人数 - 1" /&gt;
+          &lt;/xsl:call-template&gt;
+        &lt;/xsl:otherwise&gt;
+      &lt;/xsl:choose&gt;
+    &lt;/xsl:template&gt;
+
+
+
+    &lt;!-- ==========================================================================
+    stringToMenues: 一日のメニューの読み込み
+    固定長のものを 日数 回数 単純に 繰り返し読み込むだけ...
+    =========================================================================== --&gt;
+
+    &lt;xsl:template name="stringToMenues"&gt;
+      &lt;xsl:param name="string" /&gt;
+      &lt;xsl:param name="日数" /&gt;
+
+      &lt;xsl:call-template name="stringToMenues_"&gt;
+        &lt;xsl:with-param name="string" select="$string" /&gt;
+        &lt;xsl:with-param name="日数" select="$日数" /&gt;
+        &lt;xsl:with-param name="menues"&gt;
+          &lt;xsl:call-template name="new_Array" /&gt;
+        &lt;/xsl:with-param&gt;
+      &lt;/xsl:call-template&gt;
+    &lt;/xsl:template&gt;
+
+    &lt;xsl:template name="stringToMenues_"&gt;
+      &lt;xsl:param name="string" /&gt;
+      &lt;xsl:param name="日数" /&gt;
+      &lt;xsl:param name="menues" /&gt;
+
+      &lt;xsl:choose&gt;
+        &lt;xsl:when test="$日数 = 0"&gt;
+          &lt;xsl:copy-of select="$menues" /&gt;
+        &lt;/xsl:when&gt;
+
+        &lt;xsl:otherwise&gt;
+          &lt;!-- タグの名前は何でも良かったので HTML の table 形式にした。 --&gt;
+          &lt;xsl:variable name="menu"&gt;
+            &lt;table&gt;&lt;tbody&gt;
+              &lt;tr&gt;&lt;td&gt;日付&lt;/td&gt;&lt;td&gt;&lt;xsl:value-of select="substring ($string, $日付_offset, $日付_length)" /&gt;&lt;/td&gt;&lt;/tr&gt;
+              &lt;tr&gt;&lt;td&gt;朝食のメニュー&lt;/td&gt;&lt;td&gt;&lt;xsl:value-of select="substring ($string, $朝食のメニュー_offset, $朝食のメニュー_length)" /&gt;&lt;/td&gt;&lt;/tr&gt;
+              &lt;tr&gt;&lt;td&gt;昼食のメニュー&lt;/td&gt;&lt;td&gt;&lt;xsl:value-of select="substring ($string, $昼食のメニュー_offset, $昼食のメニュー_length)" /&gt;&lt;/td&gt;&lt;/tr&gt;
+              &lt;tr&gt;&lt;td&gt;夕食のメニュー&lt;/td&gt;&lt;td&gt;&lt;xsl:value-of select="substring ($string, $夕食のメニュー_offset, $夕食のメニュー_length)" /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/tbody&gt;&lt;/table&gt;
+          &lt;/xsl:variable&gt;
+
+         &lt;!-- これまで読み込んだデータ $menues に 今読み込んだデータ $menu を 追加～ --&gt;
+          &lt;xsl:variable name="menues_"&gt;
+            &lt;xsl:call-template name="Array_push"&gt;
+              &lt;xsl:with-param name="array" select="$menues" /&gt;
+              &lt;xsl:with-param name="element" select="$menu" /&gt;
+            &lt;/xsl:call-template&gt;
+          &lt;/xsl:variable&gt;
+
+         &lt;!-- 日数分だけ再帰～。もちろんこれまでのデータ $menues_ も渡す... --&gt;
+         &lt;xsl:call-template name="stringToMenues_"&gt;
+            &lt;xsl:with-param name="string" select="substring ($string, $一日のメニュー_length + 1)" /&gt;
+            &lt;xsl:with-param name="日数" select="$日数 - 1" /&gt;
+            &lt;xsl:with-param name="menues" select="$menues_" /&gt;
+          &lt;/xsl:call-template&gt;
+        &lt;/xsl:otherwise&gt;
+      &lt;/xsl:choose&gt;
+    &lt;/xsl:template&gt;
+
+    &lt;/xsl:stylesheet&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6187'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6187
+  :user_name: s-n-k
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/789/
+  :language: Python
+  :time: 2008/04/20 12:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>サクッと書いてみました。</p>\n\n\t"
+  :code: |
+    dat = open('data.txt').read()
+    day_count = 31
+    person_count = 500
+
+    pat = [12, 12, 1, 3, 4, 2]
+    for i in range(day_count):
+        pat += [2, 500, 500, 500]
+
+    start = 0
+    end = 0
+    person = []
+    persons = []
+
+    for i, length in enumerate(pat * person_count):
+        end += length
+        person.append(dat[start:end])
+        start += length
+        if i % len(pat) == len(pat) - 1:
+            persons.append(person)
+            person = []
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6226'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6226
+  :user_name: gemma
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/461/
+  :language: Scheme
+  :time: 2008/04/27 09:48 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Gaucheにもperlのようなpack、unpackがあります。\n\t"
+  :code: |
+    (use srfi-1)
+    (use binary.pack)
+
+    (with-input-from-file "./d" (lambda ()
+                                  (map-in-order (lambda _
+                                                  (receive (lname fname sex age year month) (apply values (unpack "Z12Z12AA3A4A2"))
+                                                    (list ((#/(\s+)$/ lname) 'before)
+                                                          ((#/(\s+)$/ fname) 'before)
+                                                          sex
+                                                          (x-&gt;integer ((#/^(\s*)/ age) 'after))
+                                                          year
+                                                          month
+                                                          (map-in-order (lambda _
+                                                                          (unpack "A2Z500Z500Z500"))
+                                                                        (iota 31)))))
+                                                (iota 500))))
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '6249'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6249
+  :user_name: 虹原いんく
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/787/
+  :language: C
+  :time: 2008/05/02 06:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">全部文字として扱い、領域解放、エラー処理を無視して書くとこんな感じになりました。\r\n\r\n\r\ncat
+    &gt; makedata.pl&lt;&lt;EOF\r\nfor(1..500)\r\n{\r\nprint \"666666666666\";\r\nprint
+    \"555555555555\";\r\nprint \"F\";\r\nprint \"333\";\r\nprint \"4444\";\r\nprint
+    \"11\";\r\nprint \"22\";\r\n\r\nprint \"9\" for(1..500);\r\nprint \"8\" for(1..500);\r\nprint
+    \"7\" for(1..500);\r\n}\r\nEOF\r\nperl makedata.pl&gt;data\r\n\r\ngcc main.c\r\n./a.out\r\n4444\r\n\r\n</pre>\n\t"
+  :code: |
+    #include "stdio.h"
+    #include "string.h"
+    int main()
+    {
+        struct {
+            char *family;
+            char *name;
+            char *sex;
+            char *age;
+            char *year;
+            char *month;
+
+            char *date;
+            char *breakfast;
+            char *lunch;
+            char *dinnar;
+        } strdata[500];
+
+        int i;
+        char buff[501];
+        FILE *fp;
+
+        fp = fopen("data", "r");
+
+        for(i =0; i &lt; 500; i++) {
+        /* fgets: \n か 読み込んだ文字列の最後に、\0を付加します
+                  \0 付加分だけ余分に +1  */
+            fgets(buff, 12 + 1, fp);
+            strdata[i].family = strdup(buff);
+
+            fgets(buff, 12 + 1, fp);
+            strdata[i].name = strdup(buff);
+
+            fgets(buff, 1 + 1, fp);
+            strdata[i].sex = strdup(buff);
+
+            fgets(buff, 3 + 1, fp);
+            strdata[i].age = strdup(buff);
+
+            fgets(buff, 4 + 1, fp);
+            strdata[i].year = strdup(buff);
+
+            fgets(buff, 2 + 1, fp);
+            strdata[i].month = strdup(buff);
+
+            fgets(buff, 2 + 1, fp);
+            strdata[i].date = strdup(buff);
+
+            fgets(buff, 500 + 1, fp);
+            strdata[i].breakfast = strdup(buff);
+
+            fgets(buff, 500 + 1, fp);
+            strdata[i].lunch = strdup(buff);
+
+            fgets(buff, 500 + 1, fp);
+            strdata[i].dinnar = strdup(buff);
+        }
+
+    /* 34 番目 のとし */
+        printf("%s", strdata[33].year);
+
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6270'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6270
+  :user_name: susu
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/218/
+  :language: OCaml
+  :time: 2008/05/08 08:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  処理順依存です。値を作るとき、レコード型定義で後ろにあるものから\r<br>先に評価されてしまうので、typeの項目を逆さにしました。\r<br>"
+  :code: "type daily_menu =\n  { dinnar : string;\n    lunch : string;\n    breakfast
+    : string;\n    date : int;\n  }\n\ntype person = \n  { menus : daily_menu array;\n
+    \   month : int;\n    year : int;\n    age : int;\n    sex : char;\n    name :
+    string;\n    family : string;\n  }\n\n\nlet main filepath =\n  let in_file = open_in
+    filepath in\n\n  let create len (*in_file*) = \n    let s = String.create len
+    in\n    really_input in_file s 0 len; s\n  in\n\n  Array.init 500 (fun _ -&gt;
+    \n    { family = create 12;\n      name = create 12;\n      sex = (create 1).[0];\n
+    \     age = int_of_string (create 3);\n      year = int_of_string (create 4);\n
+    \     month = int_of_string (create 2);\n      menus = Array.init 31 (fun _ -&gt;\n
+    \       { date = int_of_string (create 2);\n          breakfast = create 500;\n
+    \         lunch = create 500;\n          dinnar = create 500;\n        } )\n    }
+    );;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6274'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6274
+  :user_name: Otter
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2008/05/09 07:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>こんなのはどうでしょう？Parsecとか、Genericsを使って、もっとかっこよくレコード定義を書くとそれがそのまま読み込み関数にならないかと思ったのですが、結局割りと基本的なHaskellのコードになってしまったのですが、ほかの言語のバージョンと張り合うために簡潔さを追求してみました。</p>\n\n\t"
+  :code: |
+    module Main where
+
+    rdStr len = sequence $ replicate len getChar
+
+    chomp = reverse.((dropWhile (== ' ')).reverse)
+
+    rdMenu = do
+        [day, b, l, d] &lt;- mapM (rdStr) [2, 500, 500, 500]
+        return $ ((read day)::Int, chomp b, chomp l, chomp d)
+
+    rdRecord = do
+        [lnm, fnm, [gen], ag, yr, mo] &lt;- mapM (rdStr) [12, 12, 1, 3, 4, 2]
+        ms &lt;- sequence $ replicate 31 (rdMenu)
+        return $ (chomp lnm, chomp fnm, gen, (read ag)::Int, (read yr)::Int, (read mo)::Int, ms)
+
+    main = (sequence $ replicate 500 (rdRecord)) &gt;&gt;= print
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6275'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6275
+  :user_name: Otter
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2008/05/09 07:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>あと、テストデータ生成コード...</p>\n\n\t"
+  :code: |
+    module Main where
+
+    import Text.Printf
+
+    putDayMenu :: Int -&gt; IO()
+    putDayMenu d = do
+        printf "%2d" d
+        putMenu
+        putMenu
+        putMenu
+        where
+            menu = "Menu entry"
+            putMenu = putStr $ menu ++ (take (500 - length menu) $ repeat ' ')
+
+    putRecord = do
+        putStr $ take 12 $ drop 1 $ cycle ['0'..'9']
+        putStr $ take 12 $ drop 1 $ cycle ['0'..'9']
+        putStr "M"
+        putStr " 40"
+        putStr "2008"
+        putStr "03"
+        mapM_ (putDayMenu) [1..31]
+
+    main = sequence_ $ replicate 500 (putRecord)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6280'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6280
+  :user_name: Otter
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2008/05/10 12:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Data.Genericsの勉強もかねて、Generics版を作ってみました。最初のイメージどおり、データの定義をfieldとして一箇所にまとめることができました...結果的に、大きくなっちゃいましたけど...</p>\n\n\t"
+  :code: "module Main where\n\nimport Data.Generics\n\nrdStr len = sequence $ replicate
+    len getChar\n\nchomp = reverse.((dropWhile (== ' ')).reverse)\n\ndata Field =
+    Integer Int | Str String | Ch Char\n    deriving (Data, Typeable, Show)\n\nfield
+    = ((12::Int, Str \"\"), -- last name \n    (12::Int, Str \"\"), -- first name\n
+    \   (1::Int, Ch ' '), -- gender\n    (3::Int, Integer 0), -- age\n    (4::Int,
+    Integer 0), -- year\n    (2::Int, Integer 0), -- month\n    replicate 31 ((2::Int,
+    Integer 0), --day\n        (500::Int, Str \"\"), --breakfast\n        (500::Int,
+    Str \"\"), --lulnch\n        (500::Int, Str \"\"))) -- dinner\n\nreadDB = everywhereM
+    (mkM strReader) $ replicate 500 field\n    where\n        strReader :: (Int, Field)
+    -&gt; IO (Int, Field)\n        strReader (cch, Str _) = do \n            str &lt;-
+    rdStr cch\n            return (cch, Str $ chomp str)\n        strReader (cch,
+    Integer _) = do\n            str &lt;- rdStr cch\n            return (cch, Integer
+    $ read str)\n        strReader (cch, Ch _) = do\n            (ch: _) &lt;- rdStr
+    cch\n            return (cch, Ch ch)\n\nmain = readDB &gt;&gt;= print\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6379'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/6379
+  :user_name: tilde
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/446/
+  :language: Objective
+  :time: 2008/05/30 02:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>開発環境：\nMac OS X 10.5.2\nXcode 3.1 (Beta)</p>\n\n\t"
+  :code: "#import &lt;Foundation/Foundation.h&gt;\n\n#define FilePath @\"fixedlengthdata.txt\"\nconst
+    unsigned int RecordSize = 12 + 12 + 1 + 3 + 4 + 2 + 31 * 1502;\nconst unsigned
+    int RecordCount = 500;\n\nint main (int argc, const char * argv[]) {\n    NSAutoreleasePool
+    * pool = [[NSAutoreleasePool alloc] init];\n    \n    NSData* data = [NSData dataWithContentsOfMappedFile:FilePath];\n
+    \   if ( data ) {\n        NSMutableArray* array = [NSMutableArray array];\n        for
+    ( int i = 0; i &lt; RecordCount; i++ )\n            [array addObject:[data subdataWithRange:NSMakeRange(
+    i * RecordSize, RecordSize )]];\n    }\n    \n    [pool drain];\n    return 0;\n}\n"
+  :tags:
+  - Mac
+  - Xcode
+  :references:
+    :url: 
+    :title: 
+- :id: '7576'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/7576
+  :user_name: emasaka
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/09/05 20:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>内蔵コマンドのみのpure bashで。</p>\n\n\t"
+  :code: |
+    shopt -s extglob
+    declare -i age
+
+    function readRecord() {
+        local n=$1
+        local s d
+
+        read -n 12 s
+        family_name[$n]=${s%%+( )}
+
+        read -n 12 s
+        first_name[$n]=${s%%+( )}
+
+        read -n 1 sex[$n]
+        read -n 3 age[$n]
+        read -n 4 year[$n]
+        read -n 2 mon[$n]
+
+        for ((d = 0; d &lt; 31; d++));do
+            eval read -n 2 date_$d[$n]
+
+            read -n 500 s
+            eval "breakfast_$d[$n]='${s%%+( )}'"
+
+            read -n 500 s
+            eval "lunch$d[$n]='${s%%+( )}'"
+
+            read -n 500 s
+            eval "dinner_$d[$n]='${s%%+( )}'"
+        done
+    }
+
+    for ((i = 0; i &lt; 500; i++));do
+        readRecord $i
+    done &lt; data.txt
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8138'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/8138
+  :user_name: taninsw
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/973/
+  :language: Haskell
+  :time: 2008/12/12 13:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>テスト実行はしてないのでバグがあるかもしれませんが……</p>\n<p>(filePathのところにファイル名を入れます。)</p>\n\n\t"
+  :code: "import IO\nimport List\n\ndata Record = Record {familyName::String,\n                      personalName::String,\n
+    \                     sex::Char,\n                      age::Integer,\n                      year::Integer,\n
+    \                     month::Integer,\n                      dayRecord::[DayRecord]}\n\ndata
+    DayRecord = DayRecord {day::Integer,\n                            breakfast::String,\n
+    \                           lunch::String,\n                            dinner::String}\n\nformatOfDayRecord
+    =  [2,500,500,500]\nformatOfRecordHead =  [12,12,1,3,4,2]\n\nsizeOfDayRecord =
+    sum formatOfDayRecord\nsizeOfRecord    = sum formatOfRecordHead + 31 * sizeOfDayRecord
+    \nsizeOfDatabase  = 500 * sizeOfRecord\n\n\nmkDatabase :: String -&gt; [Record]\nmkDatabase
+    str = map mkRecord (every sizeOfRecord str)\n\nmkRecord   :: String -&gt; Record\nmkRecord
+    str = let (str',recordHead) = formatSplit str formatOfRecordHead\n               in
+    \ (Record (recordHead !! 0)       --family name\n                           (recordHead
+    !! 1)       --personal name\n                           (head (recordHead !! 2))
+    \ --sex\n                           (read (recordHead !! 3))  --age\n                           (read
+    (recordHead !! 4))  --year\n                           (read (recordHead !! 5))
+    \ --month\n                           (mkDayRecords str')) --dayRecord\n\nmkDayRecords
+    :: String -&gt; [DayRecord]\nmkDayRecords str = map mkDayRecord (every sizeOfDayRecord
+    str)\n\nmkDayRecord  :: String -&gt; DayRecord\nmkDayRecord str = let (_,dayRecord)
+    = formatSplit str formatOfDayRecord\n                  in (DayRecord (read (dayRecord
+    !! 0)) --day\n                                (dayRecord !! 1)  --breakfast\n
+    \                               (dayRecord !! 2)  --lunch\n                                (dayRecord
+    !! 3)) --dinner\n\n\n\nformatSplit content format = mapAccumL f content format\n
+    \  where f content size  = let (a,b) = splitAt size content\n                           in
+    \ (b,a)\n\nevery n xs = unfoldr f xs \n    where  \n      f [] = Nothing\n      f
+    cs = Just (splitAt n cs)\n\n\nfilePath = \"\"\n\nmain = bracket (openFile filePath
+    ReadMode)\n               hClose\n               (\\h-&gt; \n                 do
+    contents &lt;- hGetContents h\n                    let database = mkDatabase $
+    take sizeOfDatabase contents\n                    putStrLn \"end\"\n               )\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8481'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/8481
+  :user_name: fumokmm
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/856/
+  :language: Groovy
+  :time: 2009/02/10 10:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">今さらですが、\r\nNew I/O の使い方の勉強も兼ねて、\r\n勢いで作成してみました。\r\n\r\nBufferの扱い方があっているか分かりませんが、\r\nひとまず動くと思います。</pre>\n\t"
+  :code: |
+    import java.nio.*
+
+    CharBuffer cb = CharBuffer.wrap(createSampleData(500))
+    def persons = []
+    500.times{ persons &lt;&lt; new Person(cb) }
+    persons.eachWithIndex{ it, idx -&gt; println "(${idx+1}人目) ${it}" }
+
+    /** 人 */
+    class Person {
+       final def _lastName  = new char[12] // 姓 (12文字)
+       final def _firstName = new char[12] // 名 (12文字)
+       final def _sex       = new char[1]  // 性別 (F,M,Uの3種類、1文字)
+       final def _age       = new char[3]  // 年齢 (3桁の数字)
+       final def _year      = new char[4]  // 年 2008 固定
+       final def _month     = new char[2]  // 月 03 固定
+       final def _menus     = []           // メニュー
+       Person(CharBuffer cb) {
+          cb.get(_lastName)
+          cb.get(_firstName)
+          cb.get(_sex)
+          cb.get(_age)
+          cb.get(_year)
+          cb.get(_month)
+          31.times{ _menus &lt;&lt; new Menu(cb) }
+       }
+       String getLastName()  { String.valueOf(_lastName).trim() }
+       String getFirstName() { String.valueOf(_firstName).trim() }
+       String getSex()       { String.valueOf(_sex).trim() }
+       String getAge()       { String.valueOf(_age).trim() }
+       String getYear()      { String.valueOf(_year).trim() }
+       String getMonth()     { String.valueOf(_month).trim() }
+       def getMenus()        { _menus }
+       String toString() {
+          return """\
+    名前: ${lastName} ${firstName} 性別: ${sex} 年齢: ${age}
+    ${year}年${month}月
+    ${menus*.toString().join()}"""
+       }
+    }
+
+    /** メニュー */
+    class Menu {
+       final def _date      = new char[2]   // 日付 (01～31) 2文字
+       final def _breakfast = new char[500] // 朝食のメニュー (500文字)
+       final def _lunch     = new char[500] // 昼食のメニュー (500文字)
+       final def _dinner    = new char[500] // 夕食のメニュー (500文字)
+       Menu(CharBuffer cb) {
+          cb.get(_date)
+          cb.get(_breakfast)
+          cb.get(_lunch)
+          cb.get(_dinner)
+       }
+       String getDate()      { String.valueOf(_date).trim() }
+       String getBreakfast() { String.valueOf(_breakfast).trim() }
+       String getLunch()     { String.valueOf(_lunch).trim() }
+       String getDinner()    { String.valueOf(_dinner).trim() }
+       String toString() {
+          return """\
+    ${date}日
+      朝食: ${breakfast}
+      昼食: ${lunch}
+      夕食: ${dinner}
+    """
+       }
+    }
+
+    /** サンプルデータ作成 */
+    def CharSequence createSampleData(num) throws IOException {
+       Random r = new Random()
+       StringBuilder sb = new StringBuilder()
+       num.times{ n -&gt;
+          sb &lt;&lt; "LastName${n + 1}".padRight(12)
+          sb &lt;&lt; "FirstName${n + 1}".padRight(12)
+          sb &lt;&lt; ['F', 'M', 'U'][r.nextInt(3)]
+          sb &lt;&lt; r.nextInt(120).toString().padLeft(3)
+          sb &lt;&lt; '2008'
+          sb &lt;&lt; '03'
+          for (date in 1..31) {
+             sb &lt;&lt; date.toString().padLeft(2, '0')
+             sb &lt;&lt; "breakfast ${n + 1}".padRight(500)
+             sb &lt;&lt; "lunch     ${n + 1}".padRight(500)
+             sb &lt;&lt; "dinner    ${n + 1}".padRight(500)
+          }
+       }
+       sb
+    }
+  :tags:
+  - Java1.4
+  :references:
+    :url: 
+    :title: 
+- :id: '9657'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9657
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/05 00:24 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>chestnut health sys bloomington il &lt;a href=http://rxdrugs24x7.com/category/birth-control.html&gt;Order
+    birth control&lt;/a&gt; medicine uses <a class=\"reference\" href=\"/web/20100612140153/http://rxdrugs24x7.com/product/super-ed-trial-pack.html\">http://rxdrugs24x7.com/product/super-ed-trial-pack.html</a>
+    university of south florida college of medicine <a class=\"reference\" href=\"/web/20100612140153/http://rxdrugs24x7.com/category/women-s-health.html\">http://rxdrugs24x7.com/category/women-s-health.html</a>\naetmis
+    decision making in health care online course 2008 &lt;a href=http://rxdrugs24x7.com/product/ortholife.html&gt;Order
+    Ortholife&lt;/a&gt; sacred heart reynoldsburg &lt;a href=http://rxdrugs24x7.com/catalogue/w.html&gt;muscle
+    fibre myofibril myofilament&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://rusfilms.com/
+    :title: 'male infertility drugs '
+- :id: '9660'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9660
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/05 18:53 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>medical transcription job prospective &lt;a href=http://rxdrugs24x7.com/product/sumycin.html&gt;Order
+    Sumycin&lt;/a&gt; weight loss shakes <a class=\"reference\" href=\"/web/20100612140153/http://rxdrugs24x7.com/product/glucotrol.html\">http://rxdrugs24x7.com/product/glucotrol.html</a>
+    medical   patella <a class=\"reference\" href=\"/web/20100612140153/http://rxdrugs24x7.com/catalogue/m.html\">http://rxdrugs24x7.com/catalogue/m.html</a>\nuncommon
+    herpes symptoms &lt;a href=http://rxdrugs24x7.com/product/avandia.html&gt;Order
+    Avandia&lt;/a&gt; regulations for oral drug screen &lt;a href=http://rxdrugs24x7.com/product/36-beauty.html&gt;aetna
+    dental ppo&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://rusfilms.com/
+    :title: 'saint lucie medical center florida '
+- :id: '9663'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9663
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/06 21:14 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>medical facility preventive maintenance schedule &lt;a href=http://rxdrugs24x7.com/product/penisole.html&gt;Order
+    Penisole&lt;/a&gt; dental groups in sterling va <a class=\"reference\" href=\"/web/20100612140153/http://rxdrugs24x7.com/product/rogaine-5.html\">http://rxdrugs24x7.com/product/rogaine-5.html</a>
+    in a heart beat <a class=\"reference\" href=\"/web/20100612140153/http://rxdrugs24x7.com/product/feldene.html\">http://rxdrugs24x7.com/product/feldene.html</a>\nhealth
+    insurance coverage fl &lt;a href=http://rxdrugs24x7.com/product/evista.html&gt;Order
+    Evista&lt;/a&gt; aftab medical center dr khatibi  sanleandro &lt;a href=http://rxdrugs24x7.com/product/motrin.html&gt;indigestion
+    and high blood pressure&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://rusfilms.com/
+    :title: 'have a hallucinogenic experience without drugs '
+- :id: '9666'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9666
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/07 11:18 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>i rock by cool kids &lt;a href=http://royalmp3.net/artist12107/rosendo-discography/&gt;Rosendo&lt;/a&gt;
+    uca 360 dance xtreme routine <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist3483/tribes-of-neurot-discography/\">http://royalmp3.net/artist3483/tribes-of-neurot-discography/</a>
+    bdi audio furniture <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist3404/liquid-tension-experiment-discography/\">http://royalmp3.net/artist3404/liquid-tension-experiment-discography/</a>\nthe
+    lions club in rock island &lt;a href=http://royalmp3.net/artist22986/a-certain-ratio-discography/&gt;A
+    Certain Ratio&lt;/a&gt; kinkaids music &lt;a href=http://royalmp3.net/artist4367/sevendust-discography/&gt;eric
+    clapton tears in heaven chords&lt;/a&gt;\ncheap ipod &lt;a href=http://royalmp3.net/artist562/drolls-discography/&gt;Drolls&lt;/a&gt;
+    sara bareilles free mp3 &lt;a href=http://royalmp3.net/artist3239/oophoi-discography/&gt;mp10
+    \  mp3&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://rusfilms.com/
+    :title: darkone trance volume
+- :id: '9672'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9672
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/08 14:28 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>music lyrics mitch mcvicker &lt;a href=http://royalmp3.net/artist33207/jay-tee-discography/&gt;Jay
+    Tee&lt;/a&gt; my little girl music video <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist2419/mgi-discography/\">http://royalmp3.net/artist2419/mgi-discography/</a>
+    claritin music <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist3796/lhasa-discography/\">http://royalmp3.net/artist3796/lhasa-discography/</a>\ngeorgia
+    rule the movie <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_the_road_to_guantanamo/\">http://moviestrawberry.com/films/film_the_road_to_guantanamo/</a>
+    watch hindi movie online &lt;a href=http://moviestrawberry.com/hqmoviesbygenres/download-genre_crime-movies/?page=10&gt;thomas
+    the train movie&lt;/a&gt; cars offical movie site &lt;a href=http://moviestrawberry.com/films/film_the_school_of_rock/&gt;the
+    school of rock&lt;/a&gt;\nmusic instrument recorder manufacturers &lt;a href=http://royalmp3.net/artist19662/schubert--franz-peter-discography/&gt;Schubert,
+    Franz Peter&lt;/a&gt; wood music stand &lt;a href=http://royalmp3.net/artist2184/aidan-baker-discography/&gt;the
+    music of what happens&lt;/a&gt;\nnight shift movie <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_charles_mingus_triumph_of_the_underdog/\">http://moviestrawberry.com/films/film_charles_mingus_triumph_of_the_underdog/</a>
+    sex pictures from the movie &lt;a href=http://moviestrawberry.com/films/film_comedy_now/&gt;movie
+    sexual needs&lt;/a&gt; download melvin purvis g man movie free &lt;a href=http://moviestrawberry.com/films/film_ali_g_bling_bling/&gt;ali
+    g bling bling&lt;/a&gt;\nadorno popular music john storey &lt;a href=http://royalmp3.net/artist32324/frank-rosolino-discography/&gt;Frank
+    Rosolino&lt;/a&gt; music top ten listr &lt;a href=http://royalmp3.net/artist3973/dj-lenin-discography/&gt;christmas
+    music songs you can hear online&lt;/a&gt;\nla grange movie theater <a class=\"reference\"
+    href=\"/web/20100612140153/http://rusfilms.com/\">http://rusfilms.com/</a> drive
+    in movie in tullahoma &lt;a href=http://rusfilms.com/page/3/&gt;jet li new movie&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://rusfilms.com/
+    :title: monkey music file converter
+- :id: '9677'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9677
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/12 14:03 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>lil cuete music &lt;a href=http://royalmp3.net/artist16871/dr.-hook-and-the-medicine-show-discography/&gt;Dr.
+    Hook and The Medicine Show&lt;/a&gt; music smileys people stripper germany <a
+    class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist4457/erben-der-schopfung-discography/\">http://royalmp3.net/artist4457/erben-der-schopfung-discography/</a>
+    music history class assignment <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist2820/end-zone-discography/\">http://royalmp3.net/artist2820/end-zone-discography/</a>\nfargo
+    movie <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/hqmoviesbygenres/download-genre_horror-movies/?page=9\">http://moviestrawberry.com/hqmoviesbygenres/download-genre_horror-movies/?page=9</a>
+    ftp movie avi download &lt;a href=http://moviestrawberry.com/films/film_shao_lin_san_shi_liu_fang/&gt;harrisburg
+    movie&lt;/a&gt; movie theater dunwoody ga &lt;a href=http://moviestrawberry.com/films/film_anaconda_4_trail_of_blood/&gt;anaconda
+    4 trail of blood&lt;/a&gt;\nmusic education children &lt;a href=http://royalmp3.net/artist6958/billy-idol-discography/&gt;Billy
+    Idol&lt;/a&gt; free sheet music for pokmon blue rescue team &lt;a href=http://royalmp3.net/artist1757/bollenberg-experience-discography/&gt;live
+    music clubs&lt;/a&gt;\nbleach movie release <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_a_midsummer_night_s_sex_comedy/\">http://moviestrawberry.com/films/film_a_midsummer_night_s_sex_comedy/</a>
+    david gilmour movie &lt;a href=http://moviestrawberry.com/films/film_fire_birds/&gt;movie
+    listings in clarksville tenn&lt;/a&gt; secretary movie bathroom scene &lt;a href=http://moviestrawberry.com/films/film_sonny/&gt;sonny&lt;/a&gt;\nbeatles
+    dvd cd music &lt;a href=http://royalmp3.net/artist10883/supermen-lovers-discography/&gt;Supermen
+    Lovers&lt;/a&gt; indian music groups in chicago &lt;a href=http://royalmp3.net/artist4336/monkey-mafia-discography/&gt;free
+    rap music video&lt;/a&gt;\nmotorcycle movie 2007 <a class=\"reference\" href=\"/web/20100612140153/http://rusfilms.com/page/4/\">http://rusfilms.com/page/4/</a>
+    lost boys movie &lt;a href=http://rusfilms.com/page/2/&gt;free big sex movie&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://rusfilms.com/page/4/
+    :title: killer clowns from outer space music
+- :id: '9679'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9679
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/12 13:01 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>music playing at the limited &lt;a href=http://royalmp3.net/artist9788/howard-jones-discography/&gt;Howard
+    Jones&lt;/a&gt; flute sheet music california dreamin free  tab  tabs  tablature
+    <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist2675/arch-nemesis-discography/\">http://royalmp3.net/artist2675/arch-nemesis-discography/</a>
+    disney music video <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist3190/brian-eno-and-jah-wobble-discography/\">http://royalmp3.net/artist3190/brian-eno-and-jah-wobble-discography/</a>\ni
+    robot movie <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/hqmoviesbygenres/download-genre_war-movies/?page=8\">http://moviestrawberry.com/hqmoviesbygenres/download-genre_war-movies/?page=8</a>
+    free xvid movie downloads &lt;a href=http://moviestrawberry.com/films/film_comedy_central_roast_of_pamela_anderson/&gt;torrent
+    glastonbury the movie&lt;/a&gt; free movie download of movies in out in theaters
+    &lt;a href=http://moviestrawberry.com/films/film_man_on_fire/&gt;man on fire&lt;/a&gt;\nprintable
+    christian music song lyrics &lt;a href=http://royalmp3.net/artist13592/raising-fear-discography/&gt;Raising
+    Fear&lt;/a&gt; zelda twilight princess sheet music for trumpet &lt;a href=http://royalmp3.net/artist627/claudio-arrau-discography/&gt;free
+    music mixing website&lt;/a&gt;\nreviews of halloween movie 2007 <a class=\"reference\"
+    href=\"/web/20100612140153/http://moviestrawberry.com/films/film_immortel/\">http://moviestrawberry.com/films/film_immortel/</a>
+    idle hands movie trailer &lt;a href=http://moviestrawberry.com/films/film_a_busy_day/&gt;godzilla
+    movie actress&lt;/a&gt; ashley jensen free porn movie &lt;a href=http://moviestrawberry.com/films/film_straight_jacket/&gt;straight
+    jacket&lt;/a&gt;\nthe beatles facts and music &lt;a href=http://royalmp3.net/artist23336/christian-wolz-discography/&gt;Christian
+    Wolz&lt;/a&gt; free internet music radio ads spam &lt;a href=http://royalmp3.net/artist331/barbra-streisand-and-barry-gibb-discography/&gt;music
+    compostition software programs&lt;/a&gt;\nmovie star cosmetic surgery <a class=\"reference\"
+    href=\"/web/20100612140153/http://rusfilms.com/\">http://rusfilms.com/</a> home
+    made orgy movie &lt;a href=http://rusfilms.com/&gt;movie and tv clubs&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://rusfilms.com/page/3/
+    :title: rock glittery music genre
+- :id: '9682'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9682
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/13 07:37 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>suzanne alexander country music &lt;a href=http://royalmp3.net/artist33229/hijak-and-skream-discography/&gt;Hijak
+    and Skream&lt;/a&gt; young music society canberra <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist679/stephane-grappelli-and-jean-luc-ponty-discography/\">http://royalmp3.net/artist679/stephane-grappelli-and-jean-luc-ponty-discography/</a>
+    music sydney forest <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist2336/new-tango-orchestra-discography/\">http://royalmp3.net/artist2336/new-tango-orchestra-discography/</a>\nmarry
+    poppins movie <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_stay_alive/\">http://moviestrawberry.com/films/film_stay_alive/</a>
+    the warriors movie props &lt;a href=http://moviestrawberry.com/films/film_moonstruck/&gt;movie
+    maker windows&lt;/a&gt; free caribean sex movie &lt;a href=http://moviestrawberry.com/films/film_dance_of_the_dead/&gt;dance
+    of the dead&lt;/a&gt;\nfree music for exhibitions &lt;a href=http://royalmp3.net/artist36693/north-mississippi-allstars-discography/&gt;North
+    Mississippi Allstars&lt;/a&gt; bay area music stream &lt;a href=http://royalmp3.net/artist2882/quorthon-discography/&gt;completely
+    legal and free music downloads&lt;/a&gt;\ndownload free full movie 2 fast 2 furious
+    <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_the_comancheros/\">http://moviestrawberry.com/films/film_the_comancheros/</a>
+    rendition movie &lt;a href=http://moviestrawberry.com/films/film_taste_the_blood_of_dracula/&gt;vampire
+    diary the movie&lt;/a&gt; trailor to invasion the movie &lt;a href=http://moviestrawberry.com/films/film_flakes/&gt;flakes&lt;/a&gt;\nultimate
+    music forum &lt;a href=http://royalmp3.net/artist25255/george-jones---tammy-wynette-discography/&gt;George
+    Jones &amp; Tammy Wynette&lt;/a&gt; t pain music codes &lt;a href=http://royalmp3.net/artist1759/rick-wakeman-with-the-english-rock-ensemble-discography/&gt;sample
+    wedding music&lt;/a&gt;\nbest torrent movie encodes <a class=\"reference\" href=\"/web/20100612140153/http://rusfilms.com/page/3/\">http://rusfilms.com/page/3/</a>
+    story of o movie &lt;a href=http://rusfilms.com/page/4/&gt;movie ringtones&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://rusfilms.com/
+    :title: souther gospel music lyrics
+- :id: '9686'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9686
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/14 07:02 GMT
+  :vote_count: '3'
+  :vote_score: '-3'
+  :body: "\n\t  <p>exploitation of women in music videos &lt;a href=http://royalmp3.net/artist37187/zamacona-discography/&gt;Zamacona&lt;/a&gt;
+    manitoba aboriginal music <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist1307/hevia-discography/\">http://royalmp3.net/artist1307/hevia-discography/</a>
+    scary music midi free <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist3846/bamboo-forest-discography/\">http://royalmp3.net/artist3846/bamboo-forest-discography/</a>\nworlds
+    scariest movie <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/countries/?page=131\">http://moviestrawberry.com/countries/?page=131</a>
+    peter north movie download &lt;a href=http://moviestrawberry.com/films/film_bigger_stronger_faster/&gt;free
+    download movie trailer om shanti om&lt;/a&gt; movie queen new zealand &lt;a href=http://moviestrawberry.com/films/film_red_rock_west/&gt;red
+    rock west&lt;/a&gt;\nspanish folklorica music &lt;a href=http://royalmp3.net/artist37797/baustelle-discography/&gt;Baustelle&lt;/a&gt;
+    id still say yes music and lyrics &lt;a href=http://royalmp3.net/artist3065/al-gromer-khan-and-amelia-cuni-discography/&gt;the
+    clash music codes&lt;/a&gt;\nhoyts regal movie <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_bee_on_guard/\">http://moviestrawberry.com/films/film_bee_on_guard/</a>
+    momma knows best movie &lt;a href=http://moviestrawberry.com/films/film_mata_hari/&gt;windham
+    movie theater&lt;/a&gt; somerdale nj movie theaters &lt;a href=http://moviestrawberry.com/films/film_joey/&gt;joey&lt;/a&gt;\nfree
+    insrumental music downloads &lt;a href=http://royalmp3.net/artist33441/stone-the-crows-discography/&gt;Stone
+    the Crows&lt;/a&gt; free vocal duet music online &lt;a href=http://royalmp3.net/artist2568/beastie-boys-discography/&gt;bon
+    jovi music tour&lt;/a&gt;\nmovie trailers high resolution <a class=\"reference\"
+    href=\"/web/20100612140153/http://rusfilms.com/page/3/\">http://rusfilms.com/page/3/</a>
+    movie line wakey wakey eggs and bacy &lt;a href=http://rusfilms.com/page/4/&gt;free
+    sperm travelling in a woman movie&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://rusfilms.com/page/2/
+    :title: sheet music yolanda adams that name
+- :id: '9691'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9691
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/14 20:06 GMT
+  :vote_count: '3'
+  :vote_score: '-3'
+  :body: "\n\t  <p>music production school &lt;a href=http://royalmp3.net/artist501/funker-vogt-discography/&gt;Funker
+    Vogt&lt;/a&gt; tower of london music that we can hear <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist4509/master-s-hammer-discography/\">http://royalmp3.net/artist4509/master-s-hammer-discography/</a>
+    discrimination in music <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist806/def-leppard-discography/\">http://royalmp3.net/artist806/def-leppard-discography/</a>\nmovie
+    development template <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_mulberry_street/\">http://moviestrawberry.com/films/film_mulberry_street/</a>
+    free gay cartoon movie clips &lt;a href=http://moviestrawberry.com/films/film_the_51st_state/&gt;movie
+    theater los angeles&lt;/a&gt; dead or alive 2007 movie torrent &lt;a href=http://moviestrawberry.com/films/film_skins_2002/&gt;skins
+    2002&lt;/a&gt;\nthe creation of techno music dvd &lt;a href=http://royalmp3.net/artist28527/vijay-raghav-rao--flute--and-alla-rakha--tabla--discography/&gt;Vijay
+    Raghav Rao (flute) and Alla Rakha (tabla)&lt;/a&gt; my bofriend is music &lt;a
+    href=http://royalmp3.net/artist2342/amedeo-minghi-discography/&gt;miami music
+    production school&lt;/a&gt;\nnext movie <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_street_kings/\">http://moviestrawberry.com/films/film_street_kings/</a>
+    movie studios las colinas &lt;a href=http://moviestrawberry.com/films/film_taste_the_blood_of_dracula/&gt;cj7
+    movie&lt;/a&gt; western movie stars &lt;a href=http://moviestrawberry.com/films/film_the_sandlot/&gt;the
+    sandlot&lt;/a&gt;\nagainst censorship on music statistics &lt;a href=http://royalmp3.net/artist16964/celia-cruz-and-willie-colon-discography/&gt;Celia
+    Cruz and Willie Colon&lt;/a&gt; swapshop music melbourne &lt;a href=http://royalmp3.net/artist1553/quiet-riot-discography/&gt;ipod
+    music that you dont have to pay for&lt;/a&gt;\nalice in wonderland porn movie
+    <a class=\"reference\" href=\"/web/20100612140153/http://rusfilms.com/page/3/\">http://rusfilms.com/page/3/</a>
+    top rented movie &lt;a href=http://rusfilms.com/page/2/&gt;angus movie&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://rusfilms.com/page/3/
+    :title: russian christmas music alfred reed mp3
+- :id: '9694'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9694
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/15 08:17 GMT
+  :vote_count: '3'
+  :vote_score: '-3'
+  :body: "\n\t  <p>complete music brooklyn &lt;a href=http://royalmp3.net/artist16439/the-hours-discography/&gt;The
+    Hours&lt;/a&gt; myspace   music <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist2115/oliver-serano-alve-discography/\">http://royalmp3.net/artist2115/oliver-serano-alve-discography/</a>
+    funny rock music song lyrics <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist2503/busta-rhymes-and-flipmode-squad-discography/\">http://royalmp3.net/artist2503/busta-rhymes-and-flipmode-squad-discography/</a>\ntop
+    movie downloads <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_the_pillow_book/\">http://moviestrawberry.com/films/film_the_pillow_book/</a>
+    vintage movie wallpapers &lt;a href=http://moviestrawberry.com/films/film_moonstruck/&gt;kate
+    hudson rock groupie movie&lt;/a&gt; tinkerbell movie &lt;a href=http://moviestrawberry.com/films/film_nutcracker_the_motion_picture/&gt;nutcracker
+    the motion picture&lt;/a&gt;\narab pop music torrent &lt;a href=http://royalmp3.net/artist8400/quintana-and-speer-discography/&gt;Quintana
+    and Speer&lt;/a&gt; hawaiian party music &lt;a href=http://royalmp3.net/artist1595/voivod-discography/&gt;appollo
+    music&lt;/a&gt;\ndecatur il movie theatre <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_sympathy/\">http://moviestrawberry.com/films/film_sympathy/</a>
+    song from charlies angels movie &lt;a href=http://moviestrawberry.com/films/film_breakin_2_electric_boogaloo/&gt;port
+    80 parent directory index dvd movie&lt;/a&gt; movie theater popcorn supplies &lt;a
+    href=http://moviestrawberry.com/films/film_secrets_of_an_undercover_wife/&gt;secrets
+    of an undercover wife&lt;/a&gt;\ncountry music awards 2006 pictures &lt;a href=http://royalmp3.net/artist38965/siggi-schwarz-and-the-rock-legends-discography/&gt;Siggi
+    Schwarz and The Rock Legends&lt;/a&gt; where can i find sheet music to print out
+    &lt;a href=http://royalmp3.net/artist3342/casket-discography/&gt;music popular
+    in 1957&lt;/a&gt;\nprint movie dvd jackets <a class=\"reference\" href=\"/web/20100612140153/http://rusfilms.com/page/4/\">http://rusfilms.com/page/4/</a>
+    christian camp movie &lt;a href=http://rusfilms.com/&gt;lifetime movie just breath&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://rusfilms.com/page/3/
+    :title: they said music
+- :id: '9698'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9698
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/16 06:50 GMT
+  :vote_count: '3'
+  :vote_score: '-3'
+  :body: "\n\t  <p>websites you can download music on windows media player &lt;a href=http://royalmp3.net/artist33784/spacecraft-discography/&gt;Spacecraft&lt;/a&gt;
+    music for little people 15th anniversary collection <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist1882/ace-of-base-discography/\">http://royalmp3.net/artist1882/ace-of-base-discography/</a>
+    beatles dvd cd music <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist343/artrosis-discography/\">http://royalmp3.net/artist343/artrosis-discography/</a>\nuk
+    movie release dates <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_pocahontas_ii_journey_to_a_new_world/\">http://moviestrawberry.com/films/film_pocahontas_ii_journey_to_a_new_world/</a>
+    mad bestility japan movie dog &lt;a href=http://moviestrawberry.com/films/film_porsche_victory_by_design/&gt;scary
+    movie 2&lt;/a&gt; endless mountain movie &lt;a href=http://moviestrawberry.com/films/film_an_evening_with_kevin_smith/&gt;an
+    evening with kevin smith&lt;/a&gt;\nlord of the rings violin sheet music &lt;a
+    href=http://royalmp3.net/artist8207/terry-marshall-discography/&gt;Terry Marshall&lt;/a&gt;
+    two a days episode 1 music &lt;a href=http://royalmp3.net/artist2182/steve-tibbetts-discography/&gt;adult
+    music&lt;/a&gt;\nhorney housewife movie trailers <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_cape_fear/\">http://moviestrawberry.com/films/film_cape_fear/</a>
+    songs download from kya love story hey movie &lt;a href=http://moviestrawberry.com/films/film_spicks_and_specks/&gt;watch
+    apocalypto the movie free&lt;/a&gt; george clooney movie michael clayton &lt;a
+    href=http://moviestrawberry.com/films/film_clambake/&gt;clambake&lt;/a&gt;\nhaloween
+    music &lt;a href=http://royalmp3.net/artist3423/negative-format-discography/&gt;Negative
+    Format&lt;/a&gt; capsul music &lt;a href=http://royalmp3.net/artist1930/e-type-discography/&gt;music
+    amplifier schematic&lt;/a&gt;\nfree movie passes <a class=\"reference\" href=\"/web/20100612140153/http://rusfilms.com/\">http://rusfilms.com/</a>
+    hindi movie shakti &lt;a href=http://rusfilms.com/page/2/&gt;mona lisa smile movie
+    interpetation&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://digg.com/users/moxovhyg/history
+    :title: music ringtone downloads music ringtone downloads
+- :id: '9702'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9702
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/17 03:11 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>best hgeadphone for mixing sigital music &lt;a href=http://royalmp3.net/artist2192/david-fiuczynski-discography/&gt;David
+    Fiuczynski&lt;/a&gt; medieval recorder music <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist4343/the-dust-brothers-discography/\">http://royalmp3.net/artist4343/the-dust-brothers-discography/</a>
+    the hills episode 12 music <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist4253/terje-rypdal-and-david-darling-discography/\">http://royalmp3.net/artist4253/terje-rypdal-and-david-darling-discography/</a>\nhousewife
+    snatch movie trailers <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_the_tragedy_of_macbeth/\">http://moviestrawberry.com/films/film_the_tragedy_of_macbeth/</a>
+    north attleboro movie theaters &lt;a href=http://moviestrawberry.com/films/film_brain_story/&gt;movie
+    blue lagoon&lt;/a&gt; lost horizon dvd movie &lt;a href=http://moviestrawberry.com/films/film_a_walk_on_the_moon/&gt;a
+    walk on the moon&lt;/a&gt;\nthe who alternative music &lt;a href=http://royalmp3.net/artist5574/ice-cube-discography/&gt;Ice
+    Cube&lt;/a&gt; linux streaming music &lt;a href=http://royalmp3.net/artist3275/shy-rose-discography/&gt;adkins
+    karaoke music htm&lt;/a&gt;\nadult movie theater abs <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_la_bamba/\">http://moviestrawberry.com/films/film_la_bamba/</a>
+    movie danst pes peak &lt;a href=http://moviestrawberry.com/films/film_pueblo_pluto/&gt;heart
+    of the sea neckless from the titanic movie&lt;/a&gt; regal movie theaters in new
+    york &lt;a href=http://moviestrawberry.com/films/film_phenomenon/&gt;phenomenon&lt;/a&gt;\ndownloadable
+    music mixers &lt;a href=http://royalmp3.net/artist28712/ann-wilson-discography/&gt;Ann
+    Wilson&lt;/a&gt; music lyrics the rose conway twitty &lt;a href=http://royalmp3.net/artist1338/tujiko-noriko-discography/&gt;the
+    promise 80 music&lt;/a&gt;\nmovie theater in garner nc <a class=\"reference\"
+    href=\"/web/20100612140153/http://rusfilms.com/page/3/\">http://rusfilms.com/page/3/</a>
+    movie rentals &lt;a href=http://rusfilms.com/page/3/&gt;watch simpsons movie times&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://digg.com/users/moxovhyg/history
+    :title: miss potter   movie
+- :id: '9705'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9705
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/17 16:52 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>lamictal affect on vitamin b\n&lt;a href=http://digg.com/food_drink/Need_To_Buy_Levitra_Online_Buy_Levitra_Pills_Here&gt;Buy
+    levitra&lt;/a&gt;\n&lt;a href=http://digg.com/food_drink/Buy_Paxil_at_Drugstore_gd_Brand_and_Generic_Discount_Drugs&gt;Cheap
+    Paxil&lt;/a&gt;\n&lt;a href=http://digg.com/health/Buy_Tamiflu_Where_To_Order_Tamiflu_Purchase_Tamiflu_Online&gt;Tamiflu&lt;/a&gt;\n&lt;a
+    href=http://digg.com/food_drink/Cialis_professional_Buy_Drugs_Online_without_prescription&gt;Cheap
+    Cialis&lt;/a&gt;\n&lt;a href=http://digg.com/health/Viagra_professional_Buy_Drugs_Online_without_prescription&gt;buy
+    Viagra&lt;/a&gt;\n<a class=\"reference\" href=\"/web/20100612140153/http://digg.com/food_drink/Need_To_Buy_Levitra_Online_Buy_Levitra_Pills_Here\">http://digg.com/food_drink/Need_To_Buy_Levitra_Online_Buy_Levitra_Pills_Here</a>\n<a
+    class=\"reference\" href=\"/web/20100612140153/http://digg.com/food_drink/Buy_Paxil_at_Drugstore_gd_Brand_and_Generic_Discount_Drugs\">http://digg.com/food_drink/Buy_Paxil_at_Drugstore_gd_Brand_and_Generic_Discount_Drugs</a>\n<a
+    class=\"reference\" href=\"/web/20100612140153/http://digg.com/health/Buy_Tamiflu_Where_To_Order_Tamiflu_Purchase_Tamiflu_Online\">http://digg.com/health/Buy_Tamiflu_Where_To_Order_Tamiflu_Purchase_Tamiflu_Online</a>\n<a
+    class=\"reference\" href=\"/web/20100612140153/http://digg.com/food_drink/Cialis_professional_Buy_Drugs_Online_without_prescription\">http://digg.com/food_drink/Cialis_professional_Buy_Drugs_Online_without_prescription</a>\n<a
+    class=\"reference\" href=\"/web/20100612140153/http://digg.com/health/Viagra_professional_Buy_Drugs_Online_without_prescription\">http://digg.com/health/Viagra_professional_Buy_Drugs_Online_without_prescription</a></p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://digg.com/health/Buy_Tamiflu_Where_To_Order_Tamiflu_Purchase_Tamiflu_Online
+    :title: 'string into penis '
+- :id: '9708'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9708
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/18 01:18 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>queen music picture disc &lt;a href=http://royalmp3.net/artist21570/datarock-discography/&gt;Datarock&lt;/a&gt;
+    gossip girl   music from <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist1974/dj-dado-discography/\">http://royalmp3.net/artist1974/dj-dado-discography/</a>
+    bluesette sheet music <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist1725/james-asher-discography/\">http://royalmp3.net/artist1725/james-asher-discography/</a>\ncameron
+    diaz new movie releases <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_maybe_logic_the_lives_and_ideas_of_robert_anton_wilson/\">http://moviestrawberry.com/films/film_maybe_logic_the_lives_and_ideas_of_robert_anton_wilson/</a>
+    free gay movie websites &lt;a href=http://moviestrawberry.com/hqmoviesbygenres/download-genre_comedy-movies/?page=26&gt;movie
+    times germantown&lt;/a&gt; children of heaven movie free download &lt;a href=http://moviestrawberry.com/films/film_pure_country/&gt;pure
+    country&lt;/a&gt;\nwhere to post my hmong music &lt;a href=http://royalmp3.net/artist37923/maroon-town-discography/&gt;Maroon
+    Town&lt;/a&gt; download free humps mp3 music &lt;a href=http://royalmp3.net/artist722/garth-brooks-discography/&gt;berks
+    district music&lt;/a&gt;\nhp dvd movie writer dc5000 <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_anne_of_green_gables_the_continuing_story/\">http://moviestrawberry.com/films/film_anne_of_green_gables_the_continuing_story/</a>
+    citrus park movie fl &lt;a href=http://moviestrawberry.com/hqmoviesbyyear/year_1999_high-quality-movies/?page=2&gt;movie
+    theater on carolina forest boulevard&lt;/a&gt; we are the marshalls movie rating
+    &lt;a href=http://moviestrawberry.com/films/film_ghost_busters/&gt;ghost busters&lt;/a&gt;\nmdi
+    music &lt;a href=http://royalmp3.net/artist9889/james-newton-howard-discography/&gt;James
+    Newton Howard&lt;/a&gt; easy to play classical guitar music &lt;a href=http://royalmp3.net/artist4350/graeme-revell-discography/&gt;suzucki
+    america music&lt;/a&gt;\nthree little pigs books or movie <a class=\"reference\"
+    href=\"/web/20100612140153/http://rusfilms.com/page/2/\">http://rusfilms.com/page/2/</a>
+    nikole jug movie planet &lt;a href=http://rusfilms.com/page/2/&gt;reindeer game
+    movie&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://mymusicpro.org/
+    :title: new castle pa movie theater
+- :id: '9713'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9713
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/12/03 08:58 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>music course &lt;a href=http://royalmp3.net/artist30476/eddie-thoneick-discography/&gt;Eddie
+    Thoneick&lt;/a&gt; country top 40 music <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist2794/bonnie-tyler-discography/\">http://royalmp3.net/artist2794/bonnie-tyler-discography/</a>
+    blues rock music  the rolling stones <a class=\"reference\" href=\"/web/20100612140153/http://royalmp3.net/artist3721/de-vision-and-green-court-discography/\">http://royalmp3.net/artist3721/de-vision-and-green-court-discography/</a>\npatch
+    stuttgart movie theater <a class=\"reference\" href=\"/web/20100612140153/http://moviestrawberry.com/films/film_the_7th_voyage_of_sinbad/\">http://moviestrawberry.com/films/film_the_7th_voyage_of_sinbad/</a>
+    movie wild horizon 1962 &lt;a href=http://moviestrawberry.com/films/film_halloween_ii/&gt;shakugan
+    no shana movie&lt;/a&gt; movie plus 5 video tuner does not work with ati card
+    &lt;a href=http://moviestrawberry.com/films/film_the_five_people_you_meet_in_heaven/&gt;the
+    five people you meet in heaven&lt;/a&gt;\nazoff music &lt;a href=http://royalmp3.net/artist2282/beyonce-discography/&gt;Beyonce&lt;/a&gt;
+    how are social factors affect music today baroque &lt;a href=http://royalmp3.net/artist1307/hevia-discography/&gt;dodge
+    truck commercial music new&lt;/a&gt;\ncecily nobler movie <a class=\"reference\"
+    href=\"/web/20100612140153/http://moviestrawberry.com/films/film_missing_brendan/\">http://moviestrawberry.com/films/film_missing_brendan/</a>
+    pakistan mobile phone sexy movie clip &lt;a href=http://moviestrawberry.com/films/film_dude_where_s_my_car/&gt;movie
+    censorship in the philippines&lt;/a&gt; christian camp movie &lt;a href=http://moviestrawberry.com/films/film_the_olympic_champ/&gt;the
+    olympic champ&lt;/a&gt;\nfree vocal duet music online &lt;a href=http://royalmp3.net/artist11207/blue-rodeo-discography/&gt;Blue
+    Rodeo&lt;/a&gt; music publishing house &lt;a href=http://royalmp3.net/artist4107/a.-f.-kropfreiter-discography/&gt;dance
+    macabre music&lt;/a&gt;\nwatchbleach movie <a class=\"reference\" href=\"/web/20100612140153/http://rusfilms.com/page/3/\">http://rusfilms.com/page/3/</a>
+    homicidial movie &lt;a href=http://rusfilms.com/page/4/&gt;monster in law movie
+    wedding dress&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://mymusicpro.org/
+    :title: movie rellicd
+- :id: '9716'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/9716
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/12/07 09:38 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>quest personals &lt;a href=http://loveepicentre.com/&gt;championsleague
+    personals&lt;/a&gt; local dating chat <a class=\"reference\" href=\"/web/20100612140153/http://loveepicentre.com/\">http://loveepicentre.com/</a>
+    russain personals</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://loveepicentre.com/
+    :title: church of christ singles
+- :id: '10101'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/10101
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/05 01:26 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>cheap mobile phone online <a class=\"reference\" href=\"/web/20100612140153/http://www.orderphonetoday.com/v706-quad-band-dual-card-with-wifi-analog-tv--item66.html\">http://www.orderphonetoday.com/v706-quad-band-dual-card-with-wifi-analog-tv--item66.html</a>
+    mobile county drivers license office &lt;a href=http://www.orderphonetoday.com/v709-quad-band-dual-card-with-wifi-analog-tv--item25.html&gt;tenge
+    tenjo video clip downloads for mobile&lt;/a&gt; standalone dvr with mobile phone
+    viewing</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://www.orderphonetoday.com/p660-windows-6-1-quad-band-with-wifi-gps-java--item45.html
+    :title: orange mobile phone shop
+- :id: '10119'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/10119
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/08 23:08 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>power net global mobile <a class=\"reference\" href=\"/web/20100612140153/http://www.orderphonetoday.com/w08-quad-band-dual-card-with-camera-with--item93.html\">http://www.orderphonetoday.com/w08-quad-band-dual-card-with-camera-with--item93.html</a>
+    nicholas rockefeller china mobile &lt;a href=http://www.orderphonetoday.com/f012-quad-band-dual-card-with-wifi-java--item47.html&gt;metal
+    sculpture mobile chandeliers&lt;/a&gt; mwh mobile mammography unit</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://www.orderphonetoday.com/zoho-w9-quad-band-dual-card-with-wifi-java-tv--item52.html
+    :title: first baptist church of north mobile al
+- :id: '10124'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/10124
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/10 00:07 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>comcast mobile version <a class=\"reference\" href=\"/web/20100612140153/http://www.orderphonetoday.com/e55i-quad-band-dual-card-with-bluetooth--item26.html\">http://www.orderphonetoday.com/e55i-quad-band-dual-card-with-bluetooth--item26.html</a>
+    purchase mobile home ottawa ontario &lt;a href=http://www.orderphonetoday.com/page3.html&gt;nero
+    mobile pro&lt;/a&gt; mobile data transfer software</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://www.orderphonetoday.com/shipping.html
+    :title: mobile phone software
+- :id: '10128'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/10128
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/11 00:04 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>mobile db for desktop <a class=\"reference\" href=\"/web/20100612140153/http://www.orderphonetoday.com/?action=products&amp;save_s_prm=1&amp;pr_sort_=title\">http://www.orderphonetoday.com/?action=products&amp;save_s_prm=1&amp;pr_sort_=title</a>
+    mobile vendor license chicago &lt;a href=http://www.orderphonetoday.com/tv-w902-quad-band-dual-card-with-bluetooth--item111.html&gt;mobile
+    home values free kelly&lt;/a&gt; mobile phone theft</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://www.orderphonetoday.com/d30-dual-band-dual-card-with-dvb-t-tv-function--item69.html
+    :title: t mobile shadow themes
+- :id: '10192'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/10192
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/12 20:06 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>v188 t mobile unlock code free <a class=\"reference\" href=\"/web/20100612140153/http://www.orderphonetoday.com/w999-quad-band-dual-card-with-analog-tv--item116.html\">http://www.orderphonetoday.com/w999-quad-band-dual-card-with-analog-tv--item116.html</a>
+    mobile phone rates in india [url=http://www.orderphonetoday.com/v706-quad-band-dual-card-with-wifi-analog-tv--item66.html]buying
+    a pre 1977 mobile home[/url] samsung sgh e590 gsm mobile phone jasper morrison</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://www.orderphonetoday.com/zoho-g700a-quad-band-dual-card-with-bluetooth--item72.html
+    :title: three mobile flash firmware e220
+- :id: '10240'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/10240
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/13 13:52 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>mobile radio communication system <a class=\"reference\" href=\"/web/20100612140153/http://www.orderphonetoday.com/v56-quad-band-dual-card-with-wifi-analog-tv--item5.html\">http://www.orderphonetoday.com/v56-quad-band-dual-card-with-wifi-analog-tv--item5.html</a>
+    virgin mobile phones with keyboard &lt;a href=http://www.orderphonetoday.com/slider-category6.html&gt;online
+    free download mobile video clip&lt;/a&gt; mobile marketing trends</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://www.orderphonetoday.com/m6-quad-band-dual-card-with-bluetooth-unlocked--item61.html
+    :title: smallest hud approved mobile home
+- :id: '10266'
+  :parent_id: '170'
+  :url: http://ja.doukaku.org/comment/10266
+  :user_name: 匿名
+  :user_url: /web/20100612140153/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/15 18:55 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>jewelry made in italy <a class=\"reference\" href=\"/web/20100612140153/http://royal-jewelry.info/products/14k-yellow-gold-2-00ct-round-diamond-solitaire-pendant-g-h-si3-i1-p22988.html\">http://royal-jewelry.info/products/14k-yellow-gold-2-00ct-round-diamond-solitaire-pendant-g-h-si3-i1-p22988.html</a>
+    Joshua Bracelet Slide &lt;a href=http://royal-jewelry.info/products/14k-white-gold-rope-chain-6-6-5mm-a-quality-akoya-pearl-03ct-diamond-pendant-p24423.html&gt;judith
+    jack watch&lt;/a&gt; jewelry co atlanta</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100612140153/http://royal-jewelry.info/products/sterling-silver-2-75mm-fancy-link-chain-p44587.html
+    :title: jf options diamonds reviews denver

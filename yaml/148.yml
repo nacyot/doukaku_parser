@@ -1,0 +1,1395 @@
+---
+:id: '148'
+:title: 文字変換表に基く文字列の変換
+:comments:
+- :id: '5621'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5621
+  :user_name: mc
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/405/
+  :language: Arc
+  :time: 2008/02/01 14:24 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  UNIXのtrコマンドや、Perlのtr演算子のように、指定した対応づけに従って文字を変換する関数を作成して下さい。\r<br>予め言語内に用意されている場合は、(1)一般的な使用法と、(2)より進んだ使用方法を提示して下さい。\r<br><br>'ABCDEF'と'abcdef'等すべて対応する文字を書く必要があるものを、(1)基本版、'A-Z'と'a-z'のように\"-\"で範囲を指定できるものを(2)拡張版、2を更に発展させたものを(3)発展版とします。任意のものを選んで解答して下さい。\r<br><br>実行例. (与えられた文字列が、\"typewriter\"の場合)\r<br>tr 'qwertyuiop' 'QWERTYUIOP' \"typewriter\"\r<br>=&gt; TYPEWRITER\r\n\t"
+  :code: |
+    ;; 基本版/Arc
+    (def tr (orig subst str)
+      (tostring
+       (each c str
+         (pr (aif (pos c orig) (subst it) c)))))
+
+    (tr "qwertyuiop" "QWERTYUIOP" "typewriter")
+    ;=&gt;"TYPEWRITER"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5639'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5639
+  :user_name: kozima
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2008/02/02 12:11 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>とりあえず (1) で。文字列には sublis が使えないのでこんなところでしょうか。</p>\n\n\t"
+  :code: |
+    (defun tr (from to string)
+      (map 'string (lambda (c)
+                     (or (some (lambda (x y) (and (char= x c) y)) from to)
+                         c))
+           string))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5643'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5643
+  :user_name: fujidig
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/507/
+  :language: HSP
+  :time: 2008/02/02 13:04 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  前から HSPの黒魔術であるVRAMでテキスト処理をする方法をどう書く？orgのお題で使えないかなーと思っていたのですが、ようやく使うときがきました。\n\t"
+  :code: |
+    #module
+    #defcfunc tr str _text, str _tr1, str _tr2
+        text = _text
+        len = strlen( text )
+        osel = ginfo_sel
+        buffer 29, len, 1, 1
+        mref vram, 66
+        memcpy vram, text, len
+        tr1 = _tr1 : tr2 = _tr2
+        tr_len = strlen( tr1 )
+        repeat tr_len
+            c = peek(tr1, cnt)
+            palette peek(tr2,cnt), c, c, c, cnt==(tr_len-1)
+        loop
+        buffer 30, len, 1, 1
+        repeat 256
+            palette cnt, cnt, cnt, cnt, cnt==255
+        loop
+        gmode 0, len, 1
+        gcopy 29
+        mref vram, 66
+        memcpy text, vram, len
+        gsel osel
+        return text
+    #global
+
+    mes tr( "Hello world!!", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz" )
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5644'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5644
+  :user_name: fujidig
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/507/
+  :language: diff
+  :time: 2008/02/02 13:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  引数の順序は逆の方がよいですね。\n\t"
+  :code: "--- doukaku148.hsp.orig    Sat Feb 02 22:11:44 2008\n+++ doukaku148.hsp
+    \   Sat Feb 02 22:11:29 2008\n@@ -9,8 +9,8 @@\n     tr1 = _tr1 : tr2 = _tr2\n
+    \    tr_len = strlen( tr1 )\n     repeat tr_len\n-        c = peek(tr1, cnt)\n-
+    \       palette peek(tr2,cnt), c, c, c, cnt==(tr_len-1)\n+        c = peek(tr2,
+    cnt)\n+        palette peek(tr1,cnt), c, c, c, cnt==(tr_len-1)\n     loop\n     buffer
+    30, len, 1, 1\n     repeat 256\n@@ -24,4 +24,4 @@\n     return text\n #global\n
+    \n-mes tr( \"Hello world!!\", \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\", \"abcdefghijklmnopqrstuvwxyz\"
+    )\n\\ No newline at end of file\n+mes tr( \"Hello world!!\", \"abcdefghijklmnopqrstuvwxyz\",
+    \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\" )\n\\ No newline at end of file\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5645'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5645
+  :user_name: katsu
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/117/
+  :language: Scheme
+  :time: 2008/02/02 13:18 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">意外と使うことがないので引数の順番を忘れていました。</pre>\n\t"
+  :code: |
+    (use text.tr)
+
+    (print (string-tr  "typewriter" "qwertyuiop" "QWERTYUIOP"))
+    (print (string-tr  "typewriter" "a-z" "A-Z"))
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '5647'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5647
+  :user_name: fujidig
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/507/
+  :language: Ruby
+  :time: 2008/02/02 13:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    puts 'typewriter'.tr( 'qwertyuiop', 'QWERTYUIOP' ) #=&gt; TYPEWRITER
+    puts 'typewriter'.tr( 'a-z', 'A-Z' ) #=&gt; TYPEWRITER
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5648'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5648
+  :user_name: yuin
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/02/02 14:28 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>基本版＋拡張版です。</p>\n\n\t"
+  :code: |
+    import scala.collection.mutable.Stack
+    def tr(pat:String, rep:String, str:String) = {
+      def expand(pat:String) = pat.indexOf('-') match {
+        case -1 =&gt; pat
+        case _  =&gt;
+          ((new Stack[char], false) /: pat){case ((s,f),c) =&gt; (c, f) match {
+            case ('-', _)  =&gt; (s, true)
+            case (c, true) =&gt; s.push((s.pop.toInt to c.toInt).map(_.toChar):_*);
+                              (s, false)
+            case (c, _)    =&gt; s.push(c); (s, false)
+          }}._1.mkString("")
+      }
+      val m = Map(expand(pat).toList.zip(expand(rep).toList):_*)
+      (new StringBuilder /: str){(b,c) =&gt; b.append(m.getOrElse(c,c)) }.toString
+    }
+
+    println(tr("qwertyuiop", "QWERTYUIOP", "typewriter"))
+    println(tr("a-z", "A-Z", "typewriter"))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5649'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5649
+  :user_name: mtsuyugu
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/481/
+  :language: C
+  :time: 2008/02/02 14:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>1 で解答します。</p>\n\n\t"
+  :code: |
+    #include &lt;string.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;stdio.h&gt;
+
+    char c,subst[128];
+    int i;
+    int main( int argc, char *argv[] ){
+       if( argc &lt; 4 ) return EXIT_FAILURE;
+       for(;i&lt;strlen(argv[1]);i++){
+          subst[argv[1][i]] = argv[2][i];
+       }
+       for(i=0;i&lt;strlen(argv[3]);i++){
+          c = subst[argv[3][i]];
+          putchar(c?c:argv[3][i]);
+       }
+       return EXIT_SUCCESS;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5650'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5650
+  :user_name: 匿名
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2008/02/02 15:29 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  (1) 基本版です。\r<br>変換ルールをインスタンス化して再利用できるようにしました。コンストラクタで変換前の文字と変換後の文字を文字列で与えます（文字数が異なる場合は、長い部分が無視されます）。\r<br><br>サロゲートペアに対応しています。\n\t"
+  :code: |
+    import java.util.*;
+
+    public class TrEngine {
+        private HashMap&lt;Integer, Integer&gt; trMap = new HashMap&lt;Integer, Integer&gt;();
+
+        public TrEngine(String orig, String subst) {
+            int i = 0; int j = 0;
+            while (i &lt; orig.length() &amp;&amp; j &lt; orig.length()) {
+                int key = orig.codePointAt(i++);
+                int val = subst.codePointAt(j++);
+                trMap.put(key, val);
+                if (key &gt; 0xffff) i++;
+                if (val &gt; 0xffff) j++;
+            }
+        }
+        public String tr(String str) {
+            StringBuilder result = new StringBuilder();
+            int i = 0;
+            while (i &lt; str.length()) {
+                int c = str.codePointAt(i++);
+                if (c &gt; 0xffff) i++;
+                if (trMap.containsKey(c))
+                    c = trMap.get(c);
+                result.appendCodePoint(c);
+            }
+            return result.toString();
+        }
+        public static void main(String[] args) {
+            TrEngine e = new TrEngine(args[0], args[1]);
+            System.out.println(e.tr(args[2]));
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5651'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5651
+  :user_name: ocean
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/02/02 15:49 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>(1)で。</p>\n\n\t"
+  :code: |
+    import itertools
+
+    def tr(old, new, str):
+        h = dict(itertools.izip(old, new))
+        return "".join(h.get(c, None) or c for c in str)
+
+    print tr('qwertyuiop', 'QWERTYUIOP', "typewriter")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5652'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5652
+  :user_name: yohei
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/415/
+  :language: Prolog
+  :time: 2008/02/02 17:15 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: |
+    % 基本版
+    tr(_, _, [], []).
+    tr(A, B, [X|Xs], [Y|Ys]) :-
+        (nth0(N, A, X) -&gt; nth0(N, B, Y); Y = X), tr(A, B, Xs, Ys).
+
+    % 拡張版
+    tr2(A, B, X, Y) :- expand(A, A1), expand(B, B1), tr(A1, B1, X, Y).
+
+    expand([], []).
+    expand([X1,0'-,X2|Xs], Ys) :- !,
+        numlist(X1, X2, L), append(L, L1, Ys), expand(Xs, L1).
+    expand([X|Xs], [X|Ys]) :- expand(Xs, Ys).
+
+    :- tr("qwertyuiop", "QWERTYUIOP", "typewriter", X1),
+       string_to_list(S1, X1), writeln(S1),
+       tr2("a-z", "A-Z", "typewriter", X2),
+       string_to_list(S2, X2), writeln(S2).
+  :tags:
+  - SWI-Prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '5653'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5653
+  :user_name: seri
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/641/
+  :language: C
+  :time: 2008/02/02 18:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">(1)基本版です。</pre>\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine(Tr("qwertyuiop", "QWERTYUIOP", "typewriter"));
+        }
+
+        static string Tr(string from, string to, string target)
+        {
+            char[] result = new char[target.Length];
+            Dictionary&lt;char, char&gt; table = new Dictionary&lt;char, char&gt;();
+
+            for (int i = 0; i &lt; from.Length &amp;&amp; i &lt; to.Length; i++)
+                table[from[i]] = to[i];
+
+            for (int i = 0; i &lt; target.Length; i++) {
+                char c = target[i];
+                result[i] = (table.ContainsKey(c)) ? table[c] : c;
+            }
+
+            return new string(result);
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5656'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5656
+  :user_name: dpp
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/433/
+  :language: Python
+  :time: 2008/02/02 22:29 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">(1)で。\r\noldとnewの文字列長が等しいことが保証されるならこちらの方が簡潔でよさそうです。\r\n(文字列長が異なる場合、string.maketrans()はValueErrorを投げます。)</pre>\n\t"
+  :code: |
+    def tr(old, new, str):
+        return str.translate(string.maketrans(old, new))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5657'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5657
+  :user_name: ocean
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/02/03 01:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>うーむ、なるほど。（こんなメソッドがあったのか）\nでは、(2)で。</p>\n\n\t"
+  :code: |
+    import itertools
+    import re
+
+    def tr(old, new, str):
+        def expand(s):
+            return re.sub("(.)-(.)", lambda m: "".join(chr(i) for i in xrange(ord(m.group(1)), ord(m.group(2)) + 1)), s)
+        h = dict(itertools.izip(expand(old), expand(new)))
+        return "".join(h.get(c, None) or c for c in str)
+
+    print tr('qwertyuiop', 'QWERTYUIOP', "typewriter")
+    print tr('a-ceh-j', 'A-CEH-J', "abcdefghijk")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5658'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5658
+  :user_name: sumim
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/02/03 02:06 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Squeak Smalltalk には #translateWith: というメソッドがあります。</p>\n<p>引数として、通常は、あらかじめ用意した
+    256 文字のバイト文字列（もしくは、文字を要素とする配列など）をテーブルとして与えます。レシーバの文字列は、自らが含むバイト文字の ASCII コードの位置（正確にはそれ＋１。Smalltalk
+    の配列は１スタートなので…）の要素である文字と置き換えます。なお、同じく組み込みの String&gt;&gt;#asUppercase および #asLowercase
+    という文字列の大文字、小文字化のためのメソッドは、この #translateWith: を上流で使用することで実現されています。</p>\n<p>テーブルには、配列のほかに連想配列（Smalltalk
+    では Python と同様に「辞書」と呼ぶ）を用いることもできるので、バイト文字の範囲外にも応用できます。</p>\n\n\t"
+  :code: |
+    | table |
+    table := Character allByteCharacters.
+    'qwertyuiop' with: 'QWERTYUIOP' do: [:c1 :c2 | table at: c1 asciiValue + 1 put: c2].
+    'typewriter' translateWith: table   "=&gt; 'TYPEWRITER' "
+
+    | table |
+    table := Character allByteCharacters.
+    ($a to: $z) with: ($A to: $Z) do: [:c1 :c2 | table at: c1 asciiValue + 1 put: c2].
+    'typewriter' translateWith: table   "=&gt; 'TYPEWRITER' "
+
+    | table |
+    table := Character allByteCharacters collect: [:char | char asUppercase].
+    'typewriter' translateWith: table   "=&gt; 'TYPEWRITER' "
+
+    | table |
+    table := Dictionary new.
+    'qwertyuiop' with: 'ｑｗｅｒｔｙｕｉｏｐ' do: [:c1 :c2 | table at: c1 asciiValue + 1 put: c2].
+    'typewriter' translateWith: table   "=&gt; 'ｔｙｐｅｗｒｉｔｅｒ' "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '5659'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5659
+  :user_name: pooq
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/606/
+  :language: J
+  :time: 2008/02/03 02:49 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">基本版です。「a.」はシステムが持っている文字・文字コードの\r\n変換表で、これのコピーを書き換えて使っています。\r\n\r\n
+    \  ('qwertyuiop' tr 'QWERTYUIOP') 'typewriter'\r\nTYPEWRITER\r\n</pre>\n\t"
+  :code: |
+    tr=:2 :'(a.i.y){n(a.i.m)}a.'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5660'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5660
+  :user_name: ocean
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/177/
+  :language: diff
+  :time: 2008/02/03 03:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>この場合、関数内関数にする必要はなかったかな。</p>\n\n\t"
+  :code: "--- a.py    Sun Feb  3 11:56:31 2008\n+++ a.py    Sun Feb  3 11:58:05 2008\n@@
+    -1,9 +1,10 @@\n import itertools\n import re\n \n+def expand(s):\n+    return
+    re.sub(\"(.)-(.)\", lambda m: \"\".join(chr(i) for i in xrange(ord(m.group(1)),
+    ord(m.group(2)) + 1)), s)\n+\n def tr(old, new, str):\n-    def expand(s):\n-
+    \       return re.sub(\"(.)-(.)\", lambda m: \"\".join(chr(i) for i in xrange(ord(m.group(1)),
+    ord(m.group(2)) + 1)), s)\n     h = dict(itertools.izip(expand(old), expand(new)))\n
+    \    return \"\".join(h.get(c, None) or c for c in str)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5662'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5662
+  :user_name: 99yen
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2008/02/03 05:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    ●tr(s,a,b)
+        oldとは配列 = aを文字列分解
+        newとは配列 = bを文字列分解
+        Iとは整数。ENDとは整数
+        もし(要素数(old)&gt;要素数(new))ならば
+            END = 要素数(new) - 1
+        違えば
+            END = 要素数(old) - 1
+        Iで0からENDまで繰り返す
+            s = sのold[I]をnew[I]に置換
+        sで戻る
+
+    tr("typewriter","qwertyuiop","QWERTYUIOP")
+    表示
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5663'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5663
+  :user_name: あにす
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/02/03 06:43 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>発展版です。\n最近C#3.0にしたので嬉しくて拡張メソッドにしてみました。</p>\n\n\t"
+  :code: |
+    //http://ja.doukaku.org/148/　投稿用
+    using System;
+    static class Program {
+        static string Tr(this string target, string from, string to) {
+            for(int i = 0; i &lt;= from[2] - from[0]; i++) {
+                target = target.Replace((char)(from[0] + i), (char)(to[0] + i));
+            }
+            return target;
+        }
+        static void Main(string[] args) {
+            Console.WriteLine("ABCDEF".Tr("A-D", "a-d"));
+            Console.ReadLine();
+        }
+    }
+  :tags:
+  - C#3.0
+  :references:
+    :url: 
+    :title: 
+- :id: '5664'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5664
+  :user_name: 99yen
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2008/02/03 07:20 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>手を抜いて、正規表現で拡張版。</p>\n\n\t"
+  :code: |
+    ●trex(s,a,b)
+        sの"[{a}]"を"[{b}]"へ正規表現入換
+
+    trex("typewriter","a-z","A-Z")
+    表示
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5665'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5665
+  :user_name: あにす
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/504/
+  :language: 
+  :time: 2008/02/03 08:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ごめんなさい。間違えました。(2)拡張版でした。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5666'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5666
+  :user_name: あにす
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/02/03 09:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>続いて(1)基本版です。</p>\n\n\t"
+  :code: |
+    //http://ja.doukaku.org/148/　投稿用
+    using System;
+    static class Program {
+        static string Tr(this string target, string from, string to) {
+            for(int i = 0; i &lt; from.Length; i++) {
+                target = target.Replace(from[i], to[i]);
+            }
+            return target;
+        }
+
+        static void Main(string[] args) {
+            Console.WriteLine("typewriter".Tr("qwertyuiop", "QWERTYUIOP"));
+            Console.ReadLine();
+        }
+    }
+  :tags:
+  - C#3.0
+  :references:
+    :url: 
+    :title: 
+- :id: '5669'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5669
+  :user_name: matyr
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2008/02/03 14:24 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  (2)。対応する置換文字が無い(set2のほうが短い)場合は削除。\n\t"
+  :code: |
+    String.prototype.tr = function(expand){
+      return function(set1, set2){
+        var s = [], i = -1, c, x;
+        for(set1 = expand(set1), set2 = expand(set2 || ''); c = this.charAt(++i);)
+          s[i] = ~(x = set1.indexOf(c)) ? set2.charAt(x) : c;
+        return s.join('');
+      };
+    }(function(r, f){
+      return function(set){ return set.indexOf('-') &gt; 0 ? set.replace(r, f) : set };
+    }(/(.)-(.)/g, function(_, a, z){
+      var s = [], i = -1;
+      for(a = a.charCodeAt(0), z = z.charCodeAt(0); a &lt;= z;) s[++i] = a++;
+      return String.fromCharCode.apply(null, s);
+    }));
+
+    //'typewriter'.tr('a-z', 'A-P') =&gt; 'PEIE'
+    //'typewriter'.tr('write')      =&gt; 'yp'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5671'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5671
+  :user_name: 匿名
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/02/03 14:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">keyとvalueのリストを引数に取ってdictを返す\r\ndict.fromitems(ks,vs)のような感じのメソッドがあると\r\n便利だと、いつも思う。</pre>\n\t"
+  :code: |
+    import re
+
+    def tr(a, b, s):
+      d = {}; [d.setdefault(k, v) for k, v in zip(a, b)]
+      return re.sub('[%s]' % a, lambda g: d[g.group()], s)
+
+    print tr('qwertyuiop', 'QWERTYUIOP', 'typewriter')
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5672'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5672
+  :user_name: horiuchi
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/02/03 15:26 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>(2)拡張版 を実装してみました。replaceが短い場合には、最後の文字を拡張して当てはめるようにしています(Perlのtrと同じ仕様)。また、同じ文字がsearch側に複数回していされた場合は最初の指定だけが有効になります。</p>\n<p>#5650
+    と違い、サロゲートペアには対応できてません。</p>\n\n\t"
+  :code: |
+    import java.util.HashMap;
+    import java.util.Map;
+
+    public class Sample148 {
+        private final Map&lt;Character, Character&gt; trMap_ = new HashMap&lt;Character, Character&gt;();
+
+        public Sample148(String search, String replace) {
+            for (int index = 0, len = search.length(); index &lt; len; index++) {
+                char key = search.charAt(index);
+                if (0 &lt; index &amp;&amp; index &lt; len - 1 &amp;&amp; key == '-') {
+                    trRange(search.charAt(index - 1), search.charAt(index + 1),
+                            replace.charAt(index - 1), replace.charAt(index + 1));
+                    index++;
+                } else {
+                    if (!trMap_.containsKey(key)) {
+                        trMap_.put(key, replace.charAt(index));
+                    }
+                }
+            }
+        }
+        private void trRange(char startKey, char endKey, char startVal, char endVal) {
+            for (int offset = 0; offset &lt;= endKey - startKey; offset++) {
+                char key = slide(startKey, offset);
+                if (!trMap_.containsKey(key)) {
+                    char val = slide(startVal, offset);
+                    if (val &gt; endVal) val = endVal;
+                    trMap_.put(key, val);
+                }
+            }
+        }
+        private char slide(char org, int offset) {
+            return (char) (org + offset);
+        }
+
+        public String tr(String str) {
+            StringBuilder builder = new StringBuilder();
+            for (char c: str.toCharArray()) {
+                if (trMap_.containsKey(c)) {
+                    builder.append(trMap_.get(c));
+                } else {
+                    builder.append(c);
+                }
+            }
+            return builder.toString();
+        }
+
+
+        public static void main(String[] args) {
+            System.out.println(new Sample148("qwertyuiop", "QWERTYUIOP").tr("typewriter"));
+            System.out.println(new Sample148("a-z", "A-Z").tr("typewriter"));
+            System.out.println(new Sample148("a-z", "A-X").tr("vwxyz"));
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '5673'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5673
+  :user_name: dankogai
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2008/02/03 20:25 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  \n<p>例題にあるとおり、Perlには組み込みのtrがあります。使い方は以下のとおり\n</p>\n<p>Dan the Perl
+    Monger\n</p>\n\n\n\n\t"
+  :code: |
+    # 基本
+    $str =~ tr/a-z/A-Z/;
+    # もちろんUTF-8対応
+    $str =~ tr/ぁ-ん/ァ-ん/;
+    # \x{XXXX}形式のリテラルも受け付けます
+    # 5.8.0はこの点でバグあり。
+    # 5.8.1以降をご利用ください。
+    $str =~ tr/\x{3000}/ /;
+    # 意味を反転させるのはcで
+    $str =~ tr/a-z/ /c; # a-z 以外をcで
+    # dを付けると、該当文字を削除
+    $str =~ tr/0-9A-Za-z_//cd;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5675'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5675
+  :user_name: こう。
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2008/02/04 01:17 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">3になるのかな？\r\na-cとc-a、a-cとzxcなど、数さえ合えば対応します。\r\n-も文字列の最後なら変換できます。\r\n\r\n元のtrの詳しい仕様は知りませんが･･･</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n\nvoid tr_sub(char*
+    c,char*src,char*dest){\n    char from,to;\n\n    while(*src){\n        if(*(src+1)=='-'&amp;&amp;*(src+2)!='\\0'){\n
+    \           from=*src;\n            to=*dest;\n            do{\n                if(*c==from){\n
+    \                   *c=to;\n                    return;\n                }\n\n
+    \               if(*src&lt;*(src+2)) from++;\n                else from--;\n                if(*dest&lt;*(dest+2))
+    to++;\n                else to--;\n            }while(from&lt;=*(src+2));\n            src+=3;\n
+    \           dest+=3;\n        }else{\n                if(*c==*src){\n                    *c=*dest;\n
+    \                   return;\n                }\n            src++;\n            dest++;\n
+    \       }\n    }\n}\n\nint tr(char *str, char* src, char* dest){\n    char *p;\n
+    \   int len_src;\n    int len_dest;\n    \n    len_src=0;\n    for(p=src;*p;p++){\n
+    \       if(*(p+1)=='-'&amp;&amp;*(p+2)!='\\0'){\n            len_src+=abs(*(p+2)-*p)+1;\n
+    \           p+=2;\n        }else len_src++;\n    }\n    len_dest=0;\n    for(p=dest;*p;p++){\n
+    \       if(*(p+1)=='-'&amp;&amp;*(p+2)!='\\0'){\n            len_dest+=abs(*(p+2)-*p)+1;\n
+    \           p+=2;\n        }else len_dest++;\n    }\n    if(len_dest!=len_src)
+    return -1;\n    \n    \n    while(*str){\n        tr_sub(str++,src,dest);\n    }\n
+    \   return 0;\n}\n\n\nint main(){\n    char* text=\"typewriter\";\n    \n    tr(text,\"qwertyuiop\",\"QWERTYUIOP\");\n
+    \   printf(\"%s\\n\",text);\n    tr(text,\"A-Z\",\"a-z\");\n    printf(\"%s\\n\",text);\n
+    \   tr(text,\"p-r\",\"r-p\");\n    printf(\"%s\\n\",text);\n    tr(text,\"p-r\",\"rsp\");\n
+    \   printf(\"%s\\n\",text);\n    \n    return 0;\n    \n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5679'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5679
+  :user_name: 匿名
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/4/
+  :language: Haskell
+  :time: 2008/02/04 22:26 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>ベタな実装してみました。</p>\n\n\t"
+  :code: |
+    tr s1 s2 s3 = do
+      map conv s3
+        where
+          conv c = case lookup c $ zip s1 s2 of
+            Just k  -&gt; k
+            Nothing -&gt; c
+
+    main = do
+      putStrLn $ tr "qwertyuiop" "QWERTYUIOP" "typewriter"
+      putStrLn $ tr ['a'..'z'] ['A'..'Z'] "typewriter"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5683'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5683
+  :user_name: saws
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/02/05 09:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">お題の拡張版をハッシュを利用して実装してみました. \r\nRubyらしさがでるようにStringクラスのメソッドとして定義しました.
+    \r\n折角なのでone-liner code版も作ってみました. \r\n元のコードとはちょっとだけ仕様が違いますが. (^ ^;;) </pre>\n\t"
+  :code: |
+    #"puts ARGV[0].split(//).map{|x| ((/(\w)-(\w)/ =~ ARGV[2]) ? Array.new($2[0]-$1[0]+1){|i| ($1[0]+i).chr} : ARGV[2].split(//)).fetch(((/(\w)-(\w)/ =~ ARGV[1]) ? Array.new($2[0]-$1[0]+1){|i| ($1[0]+i).chr} : ARGV[1].split(//)).index(x))}.to_s" "typewriter" "qwertyuiop" "QWERTYUIOP"
+    class String
+      def tr2(a, b)
+        table = Hash[*a.expand.zip(b.expand).flatten]
+        split(//).map{|x| (y = table[x]) ? y : x}.to_s
+      end
+      protected
+      def expand
+        (/(\w)-(\w)/ =~ self) ?
+        Array.new($2[0]-$1[0]+1){|i| ($1[0]+i).chr} : split(//)
+      end
+    end
+    puts "test".tr2("a-z", "A-Z") #=&gt; TEST
+    puts "typewriter".tr2("qwertyuiop", "QWERTYUIOP") #=&gt; TYPEWRITER
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5684'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5684
+  :user_name: Otter
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2008/02/05 09:23 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Mapを使ってみました．．．３０分バージョンです。Mapのお勉強になりました。Regexを使ったのもやったのですが、普通に文字を比較するよりもオーバーヘッドになっている気がしたので、却下です…</p>\n<p>次は、無理やり、かつ無駄にParsecを使ってみるの予定です．．．Perlのように組み込み関数がすでにあったりするんでしょうかねぇ．．．</p>\n<p>ネームスペースのハンドリングがなんか怪しげです。</p>\n<p>題意の点から行けば、レンジ指定が'-'ではなく'..'になってしまっているので、拡張版もどきという感じになるのでしょうか．．．</p>\n\n\t"
+  :code: |
+    module Main
+        where
+
+    import Data.Map (Map)
+    import qualified Data.Map as Map
+
+    main :: IO()
+    main = do
+        putStr src &gt;&gt; putStr " -&gt; "
+        putStrLn $ map lookupWithDefault src
+        where
+            lookupWithDefault x = Map.findWithDefault x x lut
+            lut = Map.fromList $ zip strFrom strTo
+            strFrom = ['a'..'z']
+            strTo = ['A'..'Z']
+            src = "Typewriter"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5685'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5685
+  :user_name: naranja
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/448/
+  :language: D
+  :time: 2008/02/05 11:23 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Python 風の maketrans/translate と Perl 風の tr がともに用意されています。\n\t"
+  :code: |
+    import std.stdio;
+    import std.string;
+
+    void main(){
+        auto t = maketrans("qwertyuiop", "QWERTYUIOP");
+        writefln("typewriter".translate(t, ""));
+        writefln("typewriter".tr("qwertyuiop", "QWERTYUIOP"));
+        writefln("typewriter".tr("a-z", "A-Z"));
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5686'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5686
+  :user_name: 匿名
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/02/05 12:26 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>STLのalgorithmを使ってもっとスマートにできるかもしれません。</p>\n\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    #include &lt;map&gt;
+
+    typedef std::map&lt;char, char&gt; CharMap;
+
+    std::string tr(const std::string&amp; s1, const std::string&amp; s2, std::string s3)
+    {
+        CharMap map;
+
+        for(std::string::const_iterator i1 = s1.begin(), i2 = s2.begin(); (i1 != s1.end()) &amp;&amp; (i2 != s2.end()); ++i1, ++i2)
+        {
+            map.insert(CharMap::value_type(*i1, *i2));
+        }
+
+        for(std::string::iterator i = s3.begin(); i != s3.end(); ++i)
+        {
+            CharMap::iterator v = map.find(*i);
+            if(v != map.end())
+            {
+                *i = v-&gt;second;
+            }
+        }
+
+        return s3;
+    }
+
+    int main(int, char* [])
+    {
+        std::cout &lt;&lt; tr("qwertyuiop", "QWERTYUIOP", "typewriter") &lt;&lt; std::endl;
+
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5688'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5688
+  :user_name: Nemo
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/685/
+  :language: PostScript
+  :time: 2008/02/05 13:44 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  PostScript 版、 (2) 拡張版レベルまでです。ろくなエラーチェックをしていないので、置換文字列の字数が合わないと破綻します。\r\n\r\n\n\t"
+  :code: "%!PS\n\n% translate characters \"TR\"\n% \n% (Original) (Target) (InputString)
+    \ TR  (OutputString)\n\n\n% ---- Procedures ----\n/ScanText { % (String) ScanText
+    [(S) (t) (r) (i) (n) (g)]\n    [\n        exch\n        {\n            dup length
+    0 le { exit } if\n            dup 0 1 getinterval\n            dup (-) eq {\n
+    \               pop\n                dup 1 1 getinterval 3 -1 roll\n                0
+    get exch 0 get 1 exch\n                {\n                    1 string dup 0 %
+    num () () 0\n                    4 -1 roll put\n                    exch\n                }
+    for\n                dup length 2 exch 2 sub getinterval\n            } {\n                exch
+    dup length 1 exch 1 sub getinterval\n            } ifelse\n        } loop\n        pop\n
+    \   ]\n} def\n\n/MakeDict { % [OriginalStrArray] [TargetStrArray] MakeDict -dict-\n
+    \   dup length 1 sub\n    100 dict\n    0 1 4 -1 roll\n    { % [OrgStr] [TargetStr]
+    -dict- num\n    1 index exch\n    dup 5 index exch get exch % [OrgStr] [TargetStr]
+    -dict- O[num] num \n        4 index exch get % (O) (T) -dict- (O[num]) (T[num])\n
+    \       put\n    } for\n    3 1 roll pop pop\n} def\n\n/ReplaceText { % (InputString)
+    -dict- ReplaceText (OutputString)\n    1 index length 0 exch 1 exch 1 sub {\n
+    \       dup\n        3 index exch 1\n        getinterval\n        2 index exch\n
+    \       2 copy known {\n            get\n            3 index 3 1 roll\n            putinterval\n
+    \       } {\n            pop pop pop\n        } ifelse\n    } for\n    pop\n}
+    def\n\n/TR { % (Original) (Target) (InputString)  TR  (OutputString)\n    3 1
+    roll\n    ScanText\n    exch ScanText exch\n    MakeDict\n    ReplaceText\n} def\n\n%
+    -------------- Test Code -------------\n(qwertyuiop) (QWERTYUIOP) (typewriter)
+    TR =\n(a-jklmno-z) (A-CDEFG-Z) (A quick brown fox jumps over the lazy dog.) TR
+    =\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5692'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5692
+  :user_name: yotaro
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/703/
+  :language: Haskell
+  :time: 2008/02/05 17:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>愚直な実装です</p>\n\n\t"
+  :code: "import System.Environment\nreplace s (f,t) = map (\\x-&gt;if x == f then
+    t else x) s\ntr s fro = last . scanl replace s . zip fro\nmain = do \n  fro:to:s:xs
+    &lt;- getArgs\n  putStrLn $ tr s fro to\n"
+  :tags:
+  - Haskell
+  :references:
+    :url: 
+    :title: 
+- :id: '5894'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5894
+  :user_name: lufia
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/242/
+  :language: Other
+  :time: 2008/02/28 15:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  (2)拡張版です。\r\n\r\n文字連結のところ(r += sprint(\"%c\", c))は、もっときれいな書き方があるかも。\r\n\r\nr
+    += c;ではエラーになるんですよね。\n\t"
+  :code: |
+    implement Tr;
+
+    include "sys.m";
+        sys: Sys;
+        print, sprint: import sys;
+    include "draw.m";
+
+    Tr: module
+    {
+        init: fn(ctxt: ref Draw-&gt;Context, argv: list of string);
+    };
+
+    MAXRUNE: con 16rFFFF;
+
+    init(nil: ref Draw-&gt;Context, nil: list of string)
+    {
+        sys = load Sys Sys-&gt;PATH;
+
+        print("%s\n", tr("qwertyuiop", "QWERTYUIOP", "typewriter"));
+        print("%s\n", tr("a-z", "A-Z", "typewriter"));
+        print("%s\n", tr("-a-z", "-A-X", "vw-xyz"));
+        print("%s\n", tr("a-", "AZ", "plan-9"));
+        print("%s\n", tr("a-e", "あ-お", "audio"));
+    }
+
+    tr(orig, subst, str: string): string
+    {
+        tab := array[MAXRUNE] of int;
+        for(i := 0; i &lt; len tab; i++)
+            tab[i] = 0;
+
+        orig = expand(orig);
+        subst = expand(subst);
+        compile(tab, orig, subst);
+
+        for(i = 0; i &lt; len str; i++)
+            if(tab[str[i]] != 0)
+                str[i]= tab[str[i]];
+        return str;
+    }
+
+    expand(s: string): string
+    {
+        lastc := 0;
+        r := "";
+        for(i := 0; i &lt; len s; i++){
+            if(s[i] == '-' &amp;&amp; lastc != 0 &amp;&amp; i &lt; len s-1){    # a-z
+                for(c := lastc+1; c &lt;= s[i+1]; c++)
+                    r += sprint("%c", c);
+                i++;
+            }else
+                r += sprint("%c", s[i]);
+            lastc = s[i];
+        }
+        return r;
+    }
+
+    compile(tab: array of int, orig, subst: string)
+    {
+        n := len orig;
+        if(n &gt; len subst)
+            n = len subst;
+        for(i := 0; i &lt; n; i++)
+            tab[orig[i]] = subst[i];
+    }
+  :tags:
+  - Limbo
+  :references:
+    :url: 
+    :title: 
+- :id: '5924'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5924
+  :user_name: 匿名
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/4/
+  :language: Lua
+  :time: 2008/03/02 13:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    function tr(a, b, s)
+      r = ''
+      for i = 1, s:len() do
+        j = a:find(s:sub(i, i))
+        r = r .. (j and b:sub(j, j) or s:sub(i, i))
+      end
+      return r
+    end
+
+    print(tr('qwertyuiop', 'QWERTYUIOP', 'typewriter'))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5975'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5975
+  :user_name: IOG
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/750/
+  :language: Haskell
+  :time: 2008/03/07 07:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>基本機能を有する tr です．\n実行方法は tr コマンドと同様です．</p>\n\n\t"
+  :code: "import System.Environment\n\nmain = do cs &lt;- getContents\n          string1
+    : string2 : others &lt;- getArgs\n          putStr $ tr string1 string2 cs\n\ntr
+    :: String -&gt; String -&gt; String -&gt; String\ntr _ [] _  = error \"Main.tr:
+    empty string2\"\ntr [] _ cs = cs\ntr string1 string2 cs = map (trc $ zip string1
+    string2') cs\n    where\n      str1Length :: Int\n      str1Length = length string1\n\n
+    \     deltaLength :: Int\n      deltaLength = str1Length - length string2\n\n
+    \     string2' :: String\n      string2' \n          | deltaLength &lt; 0 = take
+    str1Length string2\n          | deltaLength &gt; 0 = string2 ++ replicate deltaLength
+    (last string2)\n          | otherwise       = string2\n\n      trc :: [(Char,Char)]
+    -&gt; Char -&gt; Char\n      trc ccs c = case lookup c ccs of \n                    Just
+    c' -&gt; c'\n                    Nothing -&gt; c\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5980'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/5980
+  :user_name: 匿名
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/4/
+  :language: Haskell
+  :time: 2008/03/07 13:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ちょっと改良。\r\n</pre>\n\t"
+  :code: "-- string2' \n--     | deltaLength &lt; 0 = take str1Length string2\n--
+    \    | deltaLength &gt; 0 = string2 ++ replicate deltaLength (last string2)\n--
+    \    | otherwise       = string2\n\n-- 遅延評価なので ++ repeat (last string2) しといても大丈夫\n\nstring2'
+    = zipWith const (string2 ++ repeat (last string2)) string1\n\n-- trc ccs c = case
+    lookup c ccs of \n--               Just c' -&gt; c'\n--               Nothing
+    -&gt; c\n\n-- import Maybe しとけば fromMaybe が使える\n\ntrc ccs c = fromMaybe c $ lookup
+    c ccs\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6072'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/6072
+  :user_name: tamanecoplus
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/501/
+  :language: C
+  :time: 2008/03/25 18:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">(1)基本版、兼、(2)拡張版。\r\n・シンプルさ、高速さを目指しました。\r\n・引数周りに相当、穴があります。\r\n・unix版と同様、パイプとしても使えます。\r\n・マルチバイト未対応。\r\n\r\n実行例）\r\necho
+    typewriter | tr2 qwertyuiop QWERTYUIOP\r\necho typewriter | tr2 a-z A-Z\r\n</pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+
+    int tbl[256];
+    int main(int argc, char *argv[])
+    {
+      int c;
+      if (argc &lt; 3)
+        return 1;
+      while (c = *argv[1]++) {
+        tbl[c] = *argv[2]++;
+        if (*argv[1] == '-')
+          for (argv[1]+=2, argv[2]+=2; ++c &lt;= *(argv[1]-1);)
+            tbl[c] = tbl[c-1] + 1;
+      }
+      while ((c = getchar()) != EOF)
+        putchar(tbl[c] ? tbl[c] : c);
+      return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6213'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/6213
+  :user_name: turugina
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/760/
+  :language: C
+  :time: 2008/04/24 08:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>#5683さんのを基に、STLのalgorithmを使って(2)拡張版を書いてみました。</p>\n<p>スマー... ト..?</p>\n\n\t"
+  :code: |
+    #include &lt;map&gt;
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;functional&gt;
+
+    typedef std::map&lt;char, char&gt; cmap;
+
+    struct _tr : std::unary_function&lt;char, char&gt;
+    {
+      cmap&amp; m_;
+      _tr(cmap&amp; m) : m_(m) {}
+      char operator()(char c) const
+      {
+        cmap::const_iterator it = m_.find(c);
+        return it != m_.end() ? it-&gt;second : c;
+      }
+    };
+
+    std::string _expand(std::string s)
+    {
+      if ( s.length() &lt; 3 )
+        return s;
+      for (std::string::size_type i = 0; i &lt; s.length()-2; ++i) {
+        if ( s[i+1] == '-' &amp;&amp; s[i] &lt; s[i+2] ) {
+          std::string repl;
+          for ( std::string::value_type c = s[i]+1; c &lt; s[i+2]; ++c )
+            repl.append(1,c);
+          s.replace(i+1, 1, repl);
+          i += repl.length();
+        }
+      }
+      return s;
+    }
+
+    std::string tr(const std::string&amp; s1_, const std::string&amp; s2_, std::string s3)
+    {
+        cmap m;
+
+        const std::string s1(_expand(s1_));
+        std::string s2(_expand(s2_));
+        if ( s2.length() &lt; s1.length() )
+          s2.append(s1.length()-s2.length(), '\0');
+
+        std::transform(
+            s1.begin(), s1.end(),
+            s2.begin(), std::inserter(m, m.begin()),
+            std::make_pair&lt;char,char&gt; );
+
+        std::transform( s3.begin(), s3.end(), s3.begin(), _tr(m));
+        s3.erase( std::remove(s3.begin(), s3.end(), '\0'), s3.end() );
+
+        return s3;
+    }
+
+    int main(int, char* [])
+    {
+        std::cout &lt;&lt; tr("qwertyuiop", "QWERTYUIOP", "typewriter") &lt;&lt; std::endl;
+        std::cout &lt;&lt; tr("a-z", "n-za-m", "typewriter") &lt;&lt; std::endl;
+        std::cout &lt;&lt; tr("0-9", "", "0t1y2p3e4w5r6i7t8e9r1") &lt;&lt; std::endl;
+
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6225'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/6225
+  :user_name: vtwntmtn
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/380/
+  :language: Erlang
+  :time: 2008/04/26 15:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">(1)基本版です。\r\n\r\n1&gt; c(tr_basic).\r\n{ok,tr_basic}\r\n2&gt;
+    tr_basic:tr_basic(\"qwertyuiop\", \"QWERTYUIOP\", \"typewriter\").\r\n\"TYPEWRITER\"</pre>\n\t"
+  :code: |
+    -module(tr_basic).
+    -export([tr_basic/3]).
+
+    tr_basic_iter(_, [], Result) -&gt; Result;
+    tr_basic_iter(Pair, Str, Result) -&gt;
+        Chr = hd(Str),
+        case [Y || {X, Y} &lt;- Pair, X == Chr] of
+            [] -&gt; tr_basic_iter(Pair, tl(Str), Result ++ [Chr]);
+            Y -&gt; tr_basic_iter(Pair, tl(Str), Result ++ Y)
+        end.
+
+    tr_basic(Orig, Subst, Str) -&gt;
+        tr_basic_iter(lists:zip(Orig, Subst), Str, []).
+  :tags:
+  - ErlangOTP_R12B-0
+  :references:
+    :url: 
+    :title: 
+- :id: '6569'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/6569
+  :user_name: turugina
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/760/
+  :language: XSLT
+  :time: 2008/06/24 02:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">XSLTでは XPath Functions の translate() が使えます。</pre>\n\t"
+  :code: |
+    &lt;xsl:stylesheet version="2.0"
+      xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+      xmlns:fn="http://www.w3.org/2005/xpath-functions"
+      &gt;
+
+      &lt;xsl:template match="/" &gt;
+        &lt;!-- 基本 --&gt;
+        &lt;xsl:message select="fn:translate('typewriter', 'qwertyuiop', 'QWERTYUIOP')" /&gt;
+        &lt;!-- 特定の文字を消す --&gt;
+        &lt;xsl:message select="fn:translate('かたたたき', 'た', '')" /&gt;
+      &lt;/xsl:template&gt;
+
+    &lt;/xsl:stylesheet&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6825'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/6825
+  :user_name: だいら
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/468/
+  :language: PHP
+  :time: 2008/07/24 22:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  （１）です。\r<br>PHPではstrtrとして実装されています。\n\t"
+  :code: |
+    &lt;?php
+    $str = 'typewriter';
+    $from = 'qwertyuiop';
+    $to = 'QWERTYUIOP';
+    echo strtr($str, $from, $to);
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6869'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/6869
+  :user_name: nemo_kaz
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/837/
+  :language: Groovy
+  :time: 2008/07/28 06:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Groovy的には長めです。\r<br>\"tr\" 相当のAPI 見つかりませんでした。\r<br>10行以内だから、これでよしとします。\r<br><br>実行結果\r<br>----------------------------\r<br>TYPEWRITER\r<br>"
+  :code: "def tr(from, to, str) {\n    if (from.size() != to.size()) { \n        throw
+    new IllegalArgumentException(\"Length mismatch \"+from+\",\"+to)\n    }\n    for
+    (i =0; i&lt;from.size(); i++) {\n        str = str.replaceAll(/${from.getAt(i)}/,\"${to.getAt(i)}\")
+    \n    }\nreturn str\n}\n\nprintln tr(\"qwertyuiop\", \"QWERTYUIOP\", \"typewriter\")\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7468'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/7468
+  :user_name: U Okumura
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/862/
+  :language: Groovy
+  :time: 2008/08/28 13:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>メソッド定義を書いて、それを呼び出す形で書くもの？なら…</p>\n<p>trをインライン化すればワンライナー。</p>\n\n\t"
+  :code: |
+    tr={f,t,w-&gt;w.collect{f.contains(it)?t[f.indexOf(it)]:it}.join()}
+
+    println(tr("qwertyuiop","QWERTYUIOP","typewriter"))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7469'
+  :parent_id: '148'
+  :url: http://ja.doukaku.org/comment/7469
+  :user_name: U Okumura
+  :user_url: /web/20090407070213/http://ja.doukaku.org/user/862/
+  :language: Groovy
+  :time: 2008/08/28 13:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>さっきのは基本でした。今度は拡張版で。\nまだ削りようはいくらでもあるけど、とりあえずcurryが使いたかったので。</p>\n\n\t"
+  :code: |
+    tr={e,f,t,w-&gt;w.collect{e(f).contains(it)?e(t)[e(f).indexOf(it)]:it}.join()}.curry({it[0]..it[2]})
+    println(tr("a-z","A-Z","typewriter"))
+  :tags: []
+  :references:
+    :url: 
+    :title: 

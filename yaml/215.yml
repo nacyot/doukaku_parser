@@ -1,0 +1,2076 @@
+---
+:id: '215'
+:title: 疑似並行処理
+:comments:
+- :id: '7912'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7912
+  :user_name: sumim
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/10/31 20:02 GMT
+  :vote_count: '7'
+  :vote_score: '5'
+  :body: "\r\n\t  <p>数値（たとえば1から10）と、アルファベット（たとえばAからJまで）を順に出力する別々のループ処理を並行に実行させ、共通の出力先に出力する極力シンプルなコードを書いてください。</p>\n<p>念のため、実行後、出力先に数値とアルファベットが混ざって出力されている（たとえば、数値がすべて出力されてからアルファベットが続く…というふうになっていない）ことを確認してください。混ざってさえいれば、それぞれ１文字ずつ交互である必要はありませんし、もちろん交互でも構いません。</p>\n<p>出力先や出力方法は自由です。標準出力、テキストファイル、コンテナオブジェクト（配列、リスト、コレクション）など使いやすいもので構いません。</p>\n<p>例として
+    Squeak Smalltalk でのコードと結果を示します。シンプルなコードなので Smalltalk に馴染みがない人も、おおよその内容は掴めると思います。</p>\n\r\n\t"
+  :code: |
+    | out |
+    out := OrderedCollection new.
+
+    [(1 to: 10) do: [:each | out add: each. Processor yield]] fork.
+    [($A to: $J) do: [:each | out add: each. Processor yield]] forkAndWait.
+
+    ^out asArray  "=&gt; #(1 $A 2 $B 3 $C 4 $D 5 $E 6 $F 7 $G 8 $H 9 $I 10 $J) "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '7998'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7998
+  :user_name: sumim
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2008/11/08 18:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>もちろん可能であれば、疑似である必要はありません。^^;</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7963'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7963
+  :user_name: 匿名
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/11/06 10:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    import threading
+    import time
+
+    def p(x):
+        print x
+        time.sleep(0.001)
+
+    threads = [ threading.Thread(target=lambda ls: map(p, ls), args=(ls,))
+                for ls in (range(1,11), "ABCDEFGHIJ")]
+    for th in threads: th.start()
+    for th in threads: th.join()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7964'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7964
+  :user_name: g000001
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/11/06 10:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  スレッド等の並行処理についてはANSI CL仕様外で、\r<br>処理系毎に異なりますが、差異を吸収するパッケージもあり、\r<br>今回は、その目的にportable-threadsを利用しています。\r<br>結果が上手く混ざらないので、それぞれ、短かいsleepをかませてあります。\r<br>"
+  :code: "(defpackage :doukaku-215 (:use :cl :portable-threads))\n(in-package :doukaku-215)\n\n(loop\n
+    \  :with ans := ()\n   :with tasks := (list \n                   (spawn-thread
+    \"num\" \n                     (lambda () \n                       (dotimes (i
+    10) \n                         (push i ans)\n                         (sleep 0.001))))\n
+    \                  (spawn-thread \"char\"\n                     (lambda () \n
+    \                      (dotimes (i 10) \n                         (push (code-char
+    (+ 65 i)) ans)\n                         (sleep 0.001)))))\n   ;; wait\n   :while
+    (every #'thread-alive-p tasks) :do (sleep 0.05)\n   :finally (return ans))\n\n;=&gt;
+    (#\\J 9 #\\I 8 #\\H 7 #\\G 6 5 #\\F #\\E 4 #\\D 3 #\\C 2 #\\B 1 #\\A 0)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7965'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7965
+  :user_name: emasaka
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/11/06 10:15 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>起動あたりの影響を受けずに混ざって出力されるよう、sleep 1しています。</p>\n\n\t"
+  :code: |
+    #!/bin/bash
+
+    A(){
+      local i
+      for i in {1..10}; do
+        echo $i
+        sleep 1
+      done
+    }
+
+    B() {
+      local i
+      for i in {a..j}; do
+        echo $i
+        sleep 1
+      done
+    }
+
+    A &amp; B
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7966'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7966
+  :user_name: SiroKuro
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/540/
+  :language: Java
+  :time: 2008/11/06 18:05 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  java.util.concurrent.* ベースで作りました。切り替えは単純に Thread.yield() しようかと思ったんですが、程よく混ざらないので「いっせ～の、せ！」で実行させるために無駄に
+    CyclicBarrier です。\n\t"
+  :code: |
+    import java.util.concurrent.*;
+    public class test {
+        public static void main(String[] args) {
+            ExecutorService executor = Executors.newCachedThreadPool();
+            final CyclicBarrier barrier = new CyclicBarrier(2);
+            try {
+                // その１
+                executor.submit(new Callable&lt;Object&gt;(){
+                    public Object call() throws Exception {
+                        for(int i = 1; i &lt;= 10; i++) {
+                            barrier.await();
+                            System.out.println(i);
+                        }
+                        return null;
+                    }
+                });
+                // その２
+                executor.submit(new Callable&lt;Object&gt;(){
+                    public Object call() throws Exception {
+                        for(char c = 'A'; c &lt;= 'J'; c++) {
+                            barrier.await();
+                            System.out.println(c);
+                        }
+                        return null;
+                    }
+                });
+            }
+            finally {
+                executor.shutdown();
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7967'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7967
+  :user_name: yama
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/684/
+  :language: C
+  :time: 2008/11/06 12:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>適当な間隔で出力するように実装してみました</p>\n\n\t"
+  :code: |
+    #include &lt;process.h&gt;
+    #include &lt;windows.h&gt;
+    #include &lt;time.h&gt;
+    #include &lt;stdio.h&gt;
+
+    void PrintDigit(void* p_sleepTime)
+    {
+        int i;
+        for(i=1; i&lt;=10; i++)
+        {
+            printf("%d\n", i);
+            Sleep(rand() % 300);
+        }
+    }
+
+    void PrintAlphabet(void* p_sleepTime)
+    {
+        int i;
+        for(i='A'; i&lt;='Z'; i++)
+        {
+            printf("%c\n", i);
+            Sleep(rand() % 100);
+        }
+    }
+
+    int main()
+    {
+        HANDLE digit;
+        HANDLE alphabet;
+        srand(time(NULL));
+        digit = (HANDLE)_beginthread(PrintDigit, 0, NULL);
+        alphabet = (HANDLE)_beginthread(PrintAlphabet, 0, NULL);
+        WaitForSingleObject(digit, INFINITE);
+        WaitForSingleObject(alphabet, INFINITE);
+        return EXIT_SUCCESS;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7968'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7968
+  :user_name: cappuccino
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/549/
+  :language: C
+  :time: 2008/11/06 12:30 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>スレッドをスタートするときに出力する文字列を渡しています。</p>\n\n\t"
+  :code: |
+    using System;
+    using System.Threading;
+
+    class Program
+    {
+        static void Main()
+        {
+            new Thread(state =&gt; Proc(state)).Start("abc");
+            new Thread(state =&gt; Proc(state)).Start("123");
+        }
+
+        static void Proc(object o)
+        {
+            foreach (var item in (string)o)
+            {
+                Console.WriteLine(item);
+                Thread.Sleep(1000);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7969'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7969
+  :user_name: cappuccino
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/549/
+  :language: C
+  :time: 2008/11/06 16:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>スレッドセーフのコレクションへ出力しています。\na\n1\nb\n2\nc\nd\n3\ne\nf\n4\ng\nh\n5\ni\nj\n6\n7\n8\n9\n10</p>\n<p>System.ServiceModelへのアセンブリ参照を加えること</p>\n\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Threading;
+
+    class Program
+    {
+        static SynchronizedCollection&lt;object&gt; collection = new SynchronizedCollection&lt;object&gt;();
+
+        static void Main()
+        {
+            new Thread(state =&gt; Proc1(state)).Start();
+            new Thread(state =&gt; Proc2(state)).Start();
+
+            Thread.Sleep(3000);
+
+            foreach (var item in collection)
+            {
+                Console.WriteLine(item);
+            }
+        }
+
+        static void Proc1(object state)
+        {
+            char[] c = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j' };
+            foreach (var item in c)
+            {
+                collection.Add(item);
+                Thread.Sleep(100);
+            }
+        }
+
+        static void Proc2(object state)
+        {
+            int[] n = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+            foreach (var item in n)
+            {
+                collection.Add(item);
+                Thread.Sleep(200);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7970'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7970
+  :user_name: horiuchi
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/570/
+  :language: Perl
+  :time: 2008/11/06 17:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>threadsモジュールを使って実行。\nyieldでスレッドが明け渡される場合もあるけど、これくらいのコードだと全部実行されてしまうので
+    sleep 1を入れてます。</p>\n\n\t"
+  :code: |
+    use strict;
+    use threads;
+
+    threads-&gt;new(sub {
+        for (1..10) {
+            print $_. "\n";
+            sleep 1;
+            #threads-&gt;yield();
+        }
+    });
+    threads-&gt;new(sub {
+        for (my $a = 'A'; $a le 'J'; $a++) {
+            print $a. "\n";
+            sleep 1;
+            #threads-&gt;yield();
+        }
+    });
+
+    for my $t (threads-&gt;list()) {
+        $t-&gt;join();
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7971'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7971
+  :user_name: Y
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/428/
+  :language: C
+  :time: 2008/11/06 18:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">OpenMPを使います。\r\n\r\ngcc 4.2以上なら-fopenmp、iccなら-openmpというコンパイラオプションを付けます。\r\nVisual
+    C++ならオプションでOpenMPを有効にます。\r\n\r\n結果：\r\n1 A 2 B 3 C 4 D 5 E 6 F 7 G 8 H 9 I 10
+    J</pre>\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    using namespace std;
+
+    void funcA() {
+      for (int i=1; i&lt;=10; ++i) {
+        #pragma omp critical
+        cout&lt;&lt;i&lt;&lt;' ';
+      }
+    }
+
+    void funcB() {
+      string s="ABCDEFGHIJ";
+      for (size_t i=0; i&lt;s.length(); ++i) {
+        #pragma omp critical
+        cout&lt;&lt;s.at(i)&lt;&lt;' ';
+      }
+    }
+
+    int main() {
+      #pragma omp parallel num_threads(2)
+      {
+        #pragma omp sections
+        {
+          #pragma omp section
+          funcA();
+          #pragma omp section
+          funcB();
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7972'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7972
+  :user_name: mamamoto
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2008/11/06 19:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Thread.passでスレッドを明示的にスイッチさせます。</p>\n<p>これで手元では動いたけどスレッドというものの特性上、実行環境に依存しそう。</p>\n\n\t"
+  :code: |
+    [1..10, 'a'..'j'].map{|range|
+      Thread.start{
+        range.each{|e|
+          p e
+          Thread.pass
+        }
+      }
+    }.each{|thread|
+      thread.join
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7973'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7973
+  :user_name: sawat
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/322/
+  :language: Ruby
+  :time: 2008/11/06 19:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Thread.passを使って、一度に全部出力されてしまうのを避けてます。</p>\n\n\t"
+  :code: |
+    t1= Thread.new {
+      1.upto(10) { |i| print i; Thread.pass}
+    }
+    t2 = Thread.new {
+      'a'.upto('j') { |c| print c; Thread.pass}
+    }
+    t1.join
+    t2.join
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7974'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7974
+  :user_name: こう。
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2008/11/06 19:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あくまで擬似並行処理ということで。\r\n</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n\n#define TASK_END
+    ((void*)-1)\n/*\nvoid put_num(){\n    int i;\n    for(i=0;i&lt;10;i++){\n        putchar('0'+i);\n
+    \       fflush(stdout);\n    }\n}\n*/\nvoid put_num(void **local){\n    /*ローカル変数定義*/\n
+    \   struct local_struct{\n        int i;\n    } *pl;\n    if(*local==NULL){\n
+    \       /*ローカル変数粋確保*/\n        *local =malloc(sizeof(struct local_struct));\n
+    \       pl=*local;\n\n        /*ローカル変数初期化*/\n        pl-&gt;i=0;\n    }else if(*local==TASK_END){\n
+    \       /*タスク終了済み*/\n        return;\n    }else\n        pl=*local;\n\n    /*
+    タスク内容\n       キリのいいところでreturnする。\n    */\n    for(;pl-&gt;i&lt;10;){\n        putchar('0'+pl-&gt;i);\n
+    \       fflush(stdout);\n\n        pl-&gt;i++;\n        //タスクスイッチ\n        return;\n
+    \   }\n\n    //タスク終了処理\n    free(pl);\n    *local=TASK_END;\n}\n\n/*\nvoid put_alpha(){\n
+    \   int i;\n    for(i=0;i&lt;26;i++){\n        putchar('A'+i);\n        fflush(stdout);\n
+    \   }\n}\n*/\nvoid put_alpha(void ** local){\n    /*ローカル変数定義*/\n    struct local_struct{\n
+    \       int i;\n    } *pl;\n    if(*local==NULL){\n        /*ローカル変数粋確保*/\n        *local
+    =malloc(sizeof(struct local_struct));\n        pl=*local;\n\n        /*ローカル変数初期化*/\n
+    \       pl-&gt;i=0;\n    }else if(*local==TASK_END){\n        /*タスク終了済み*/\n        return;\n
+    \   }else\n        pl=*local;\n\n    /* タスク内容\n       キリのいいところでreturnする。\n    */\n
+    \   for(;pl-&gt;i&lt;26;){\n        putchar('A'+pl-&gt;i);\n        fflush(stdout);\n\n
+    \       pl-&gt;i++;\n        //タスクスイッチ\n        return;\n    }\n    \n    //タスク終了処理\n
+    \   free(pl);\n    *local=TASK_END;\n}\n\nint main(){\n    void* local_n=NULL;\n
+    \   void* local_a=NULL;\n    \n    while(local_n!=TASK_END||local_a!=TASK_END){\n
+    \       put_alpha(&amp;local_a);\n        put_num(&amp;local_n);\n        put_alpha(&amp;local_a);\n
+    \   }\n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7975'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7975
+  :user_name: sawat
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/322/
+  :language: JavaScript
+  :time: 2008/11/07 02:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>シンプルにsetIntervalで疑似並列にしてみました。</p>\n\n\t"
+  :code: |
+    var outputarea;
+    function print(s) {
+      if(!outputarea) {
+        outputarea = document.createElement("p");
+        document.body.appendChild(outputarea);
+      }
+      outputarea.innerHTML += s;
+    }
+    function f(data, interval) {
+      var timer = setInterval(function() {
+        if(data &amp;&amp; data.length &gt; 0) {
+          print(data.shift());
+        } else {
+          clearInterval(timer);
+        }
+      }, interval);
+    }
+    var data_list = [
+      [1,2,3,4,5,6,7,8,9],
+      "abcdefghij".split("")
+    ];
+    for(var i=0;i&lt;data_list.length;i++) {
+      f(data_list[i], 100);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7976'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7976
+  :user_name: baal
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/827/
+  :language: Scheme
+  :time: 2008/11/06 20:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Scheme では、スレッドについては SRFI-18 と SRFI-21 で決められています。\n\t"
+  :code: |
+    (use srfi-42)
+    (use gauche.threads)
+    (define (main args)
+      (let ((a (make-thread (lambda ()
+              (do-ec (: n 1 11)
+                (begin (display n) (thread-yield!))))))
+            (b (make-thread (lambda ()
+              (do-ec (: c #\a #\j)
+                (begin (display c) (thread-yield!)))))))
+        (thread-start! a)
+        (thread-start! b)
+        (thread-join! a)
+        (thread-join! b)
+        (newline))
+      0)
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '7977'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7977
+  :user_name: leque
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2008/11/07 02:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>適当に出力が混ざるようにランダムに thread-yield! しています。</p>\n\n\t"
+  :code: |
+    (use srfi-27)
+    (use gauche.threads)
+
+    (define (my-for-each proc xs)
+      (cond ((pair? xs)
+             (when (&lt; (random-real) 0.5) (thread-yield!))
+             (proc (car xs))
+             (my-for-each proc (cdr xs)))))
+
+    (begin
+      (for-each thread-join!
+                (map (lambda (xs)
+                       (thread-start! (make-thread (cut my-for-each display xs))))
+                     '((1 2 3 4 5 6 7 8 9 10)
+                       (a b c d e f g h i j))))
+      (newline))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '7978'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7978
+  :user_name: turugina
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/760/
+  :language: Perl
+  :time: 2008/11/07 02:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">みんな普通に並行処理書いてるような気がするけど、\r\nお題の「擬似」はどこに行ったんだろうと\r\n思わなくもなく。\r\n\r\nというわけで、Perl/Tkで擬似並行処理</pre>\n\t"
+  :code: |
+    use strict;
+    use warnings;
+
+    use Tk;
+
+    my $lblvar='';
+    my $num = 1;
+    my $al = 'A';
+
+    # ウィンドウとラベル
+    # ラベルに文字が追加されていく
+    my $mw = Tk::MainWindow-&gt;new;
+    $mw-&gt;Label(-textvariable =&gt; \$lblvar)-&gt;pack(qw/-fill both/);
+
+    # Windowが表示されたらタイマ開始
+    $mw-&gt;bind(q/&lt;Expose&gt;/ =&gt; sub {
+        $mw-&gt;after(timergen() , \&amp;append_number);
+        $mw-&gt;after(timergen() , \&amp;append_alphabet);
+    });
+
+    $mw-&gt;MainLoop;
+
+    sub timergen
+    { int rand 3000 };
+
+    sub append
+    { $lblvar .= ($lblvar ? ',' : '') . shift; }
+
+    sub append_number
+    {
+      return if $num &gt; 10;
+
+      append($num++);
+      $mw-&gt;after(timergen() , \&amp;append_number);
+    }
+
+    sub append_alphabet
+    {
+      return if $al gt 'J';
+
+      append($al++);
+      $mw-&gt;after(timergen() , \&amp;append_alphabet);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7979'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7979
+  :user_name: tsuwabuki
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/479/
+  :language: Haskell
+  :time: 2008/11/07 03:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    import Data.Char
+    import Control.Concurrent
+
+    main = forkIO f &gt;&gt; g
+        where f = mapM_ (\x -&gt; threadDelay 100000 &gt;&gt; putStr (show x)) [1..10]
+              g = mapM_ (\x -&gt; threadDelay 100000 &gt;&gt; putChar x) ['A'..'J']
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7980'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7980
+  :user_name: kh
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2008/11/07 09:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>D2.020から言語コアと標準ライブラリが分離されました。\nなぜか言語コアのほうに含まれているThreadGroupなるユーティリティクラスを使ってみました。</p>\n\n\t"
+  :code: |
+    private import core.thread, std.stdio;
+
+    void main() {
+        auto threads = new ThreadGroup;
+        threads.create({
+            foreach(x; "0123456789") {
+                write(x);
+                Thread.yield;
+            }
+        });
+        threads.create({
+            foreach(x; "abcdefghij") {
+                write(x);
+                Thread.yield;
+            }
+        });
+        threads.joinAll;
+    }
+  :tags:
+  - D2.020
+  :references:
+    :url: 
+    :title: 
+- :id: '7982'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7982
+  :user_name: sna
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/819/
+  :language: Scala
+  :time: 2008/11/07 05:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  極力シンプルにと言うことでspawn。\r<br>yieldが予約語だったことを忘れてて少し悩んだ。\n\t"
+  :code: |
+    import scala.concurrent.ops._
+
+    object TwoThread extends Application {
+      spawn { ('a' to 'j').foreach{ x =&gt; print(x + " "); Thread.`yield` } }
+      spawn { (  1 to 10 ).foreach{ x =&gt; print(x + " "); Thread.`yield` } }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7983'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7983
+  :user_name: 匿名
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/4/
+  :language: JavaScript
+  :time: 2008/11/07 12:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    import System;
+    import System.Threading;
+
+    class Sample {
+        static function Main()
+        {
+            var t = new Sample();
+            t.doIt();
+        }
+
+        function doIt(){
+            var t1 = new Thread(numPrint);
+            var t2 = new Thread(charPrint);
+            t1.Start();
+            t2.Start();
+        }
+
+        function numPrint(){
+            for(var i=0;i&lt;10;i++){
+                print(i+1);
+            }
+        }
+        function charPrint(){
+            var data = "abcdefghij"
+            for(var i=0;i&lt;10;i++){
+                print(data.charAt(i));
+            }
+        }
+    }
+
+    Sample.Main();
+  :tags:
+  - JScript.NET
+  :references:
+    :url: 
+    :title: 
+- :id: '7984'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7984
+  :user_name: matyr
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/343/
+  :language: Groovy
+  :time: 2008/11/07 13:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    Thread.with{[0..9,'a'..'j'].each{x-&gt;start{x.each{print it;yield()}}}}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7985'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7985
+  :user_name: baal
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/827/
+  :language: Scheme
+  :time: 2008/11/07 14:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  継続 (call/cc) を使ってスレッドもどき。\n\t"
+  :code: |
+    (define loop
+      (lambda (c1 ls)
+        (and c1 (pair? ls)
+          (begin (display (car ls))
+            (loop (call/cc (lambda (c2) (c1 c2))) (cdr ls))))))
+
+    (let ((cc (call/cc (lambda (cc)
+      (loop cc '(1 2 3 4 5 6 7 8 9 10))))))
+      (loop cc '(A B C D E F G H I J))
+      (newline))
+  :tags:
+  - 継続
+  :references:
+    :url: 
+    :title: 
+- :id: '7986'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7986
+  :user_name: matyr
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/343/
+  :language: Other
+  :time: 2008/11/07 14:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  よく混ざるようasyncを二重に入れてみた。\n\t"
+  :code: |
+    using Nemerle.Concurrency;
+
+    foreach(n in ['0', 'a'])
+      async foreach(i in [0..9])
+        async Nemerle.IO.print((i + n) :&gt; char)
+  :tags: []
+  :references:
+    :url: /web/20091213150003/http://nemerle.org/
+    :title: Nemerle
+- :id: '7987'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7987
+  :user_name: komamitsu
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/786/
+  :language: OCaml
+  :time: 2008/11/07 09:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Thread.yield だと切り替わらなかったのでThread.delayを使いました。</p>\n\n\t"
+  :code: |
+    (* ocamlc -thread -o para unix.cma threads.cma para.ml *)
+
+    let para printer lst =
+      Thread.create
+      (fun lst -&gt;
+        List.iter
+        (fun x -&gt;
+          printer x;
+          flush stdout;
+          Thread.delay 0.1) lst) lst
+
+    let _ =
+      List.iter
+      (fun t -&gt; Thread.join t)
+      [ para (fun c -&gt; Printf.printf "%c " c)
+        ['A'; 'B'; 'C'; 'D'; 'E'; 'F'; 'G'; 'H'; 'I'; 'J'];
+        para (fun i -&gt; Printf.printf "%d " i)
+        [1; 2; 3; 4; 5; 6; 7; 8; 9; 10] ]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7989'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7989
+  :user_name: emasaka
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/11/07 16:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>sleepをreturnに変えたら、疑似並行処理なコルーチンみたいなのになりました。</p>\n\n\t"
+  :code: "#!/bin/bash\n\nA() {\n  while ((i &lt;= 10)); do\n    echo $((i++))\n    return\n
+    \ done\n  i=DONE\n}\n\nCHARS=({a..j})\n\nB() {\n  while ((j &lt; ${#CHARS[@]}
+    )); do\n    echo ${CHARS[j++]}\n    return\n  done\n  j=DONE\n}\n\ndoit() {\n
+    \ local i=1\n  local j=0\n  \n  while [ $i != DONE -a $j != DONE ]; do\n    [
+    $i != DONE ] &amp;&amp; A\n    [ $j != DONE ] &amp;&amp; B\n  done\n}\n\ndoit\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7990'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7990
+  :user_name: emasaka
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/11/07 16:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>さらに変形して継続渡しもどきに。</p>\n\n\t"
+  :code: |
+    #!/bin/bash
+
+    A() {
+      local i=$1
+      local cont=$2
+      if ((i &lt;= 10)); then
+        echo $((i++))
+        if [ -n "$cont" ]; then
+          $cont "$FUNCNAME $i"
+        else
+          $FUNCNAME $i
+        fi
+      else
+        [ -n "$cont" ] &amp;&amp; $cont
+      fi
+    }
+
+    CHARS=({a..j})
+
+    B() {
+      local i=$1
+      local cont=$2
+      if ((i &lt; ${#CHARS[@]} )); then
+        echo ${CHARS[i++]}
+        if [ -n "$cont" ]; then
+          $cont "$FUNCNAME $i"
+        else
+          $FUNCNAME $i
+        fi
+      else
+        [ -n "$cont" ] &amp;&amp; $cont
+      fi
+    }
+
+    A 1 'B 0'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7991'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7991
+  :user_name: raynstard
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/127/
+  :language: C
+  :time: 2008/11/07 11:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">昔、シューティングゲームを作った時に\r\nスプライトの操作で似たようなことをした記憶がある。\r\n\r\n並列実行というよりは、\r\nWindowsのイベント処理みたいなものです\r\nこのコードでは、ただのタイマ処理に近いけど、\r\nポーリングすることが目的だろうということで投下！\r\n\r\nホントに並列実行させるようにしようと思うと\r\nBのようにプログレス管理して再入可能にしないとだめなのかなー？(状態遷移)\r\n\r\nでも、そんなコーディングはしたくない(笑\r\n\r\n//
+    gcc -Wall -std=c99 doukaku215.c</pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;sys/time.h&gt;
+
+    typedef struct tagFRAMEINFO
+    {
+      time_t     next;
+      int        state;
+      void (*update)(struct tagFRAMEINFO *);
+    } FRAMEINFO;
+
+    void A(struct tagFRAMEINFO *info)
+    {
+        static const int num[] = {1,2,3,4,5,6,7,8,9,10};
+        static size_t index = 0;
+        printf("%d ", num[index ++]);
+        index %= 10;
+
+        info-&gt;next = time(NULL) + 1;
+    }
+
+    void B(struct tagFRAMEINFO *info)
+    {
+        switch( info-&gt;state ++  )
+        {
+            default: case 0: break;
+            case 1:  printf("A "); break;
+            case 2:  printf("B "); break;
+            case 3:  printf("C "); break;
+            case 4:  printf("D "); break;
+            case 5:  printf("E "); break;
+            case 6:  printf("F "); break;
+            case 7:  printf("G "); break;
+            case 8:  printf("H "); break;
+            case 9:  printf("I "); break;
+            case 10: printf("J "); info-&gt;state = 0; break;
+        }
+        info-&gt;next = time(NULL) + 2;
+    }
+
+    int main( int argc, char *argv[] )
+    {
+        FRAMEINFO frame[] = { {0,0,A}, {0,0,B} };
+        time_t    now;
+
+        setvbuf(stdout, NULL, _IONBF, 0);
+        while( 1 )
+        {
+            for( size_t n=0; n&lt;(sizeof(frame)/sizeof(*frame)); n++)
+            {
+                now = time(NULL);
+                if( now &gt;= frame[n].next )
+                {
+                    frame[n].update( &amp;frame[n] );
+                }
+            }
+        }
+
+        return 0;
+    }
+  :tags:
+  - C99
+  :references:
+    :url: 
+    :title: 
+- :id: '7992'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7992
+  :user_name: 99yen
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2008/11/07 19:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>タイマーを使って。</p>\n\n\t"
+  :code: |
+    I=0
+    A=0
+
+    数値タイマとはタイマー
+    これについて
+        値は10
+        時満ちた時は～
+            もし(I&lt;=10)ならば
+                "{I} "を継続表示
+                I=I+1
+            違えば
+                停止
+        開始
+
+    英字タイマとはタイマー
+    これについて
+        値は10
+        時満ちた時は～
+            もし(A&lt;=10)ならば
+                "{CHR(A+65)} "を継続表示
+                A=A+1
+            違えば
+                停止
+        開始
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7993'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7993
+  :user_name: vtwntmtn
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/380/
+  :language: C
+  :time: 2008/11/08 08:22 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <p>boost::thread版です。g++の場合は以下のようにコンパイルしてください。</p>\n<p>g++ para.cxx
+    -lboost_thread</p>\n\n\t"
+  :code: "#include &lt;string&gt;\n#include &lt;iostream&gt;\n\n#include &lt;boost/thread/thread.hpp&gt;\n\nclass
+    Proc\n{\nprivate:\n    std::string m_str;\n\npublic:\n    Proc(std::string s)
+    : m_str(s) {}\n    \n    void operator () (void)\n    {\n        for (int i =
+    0; i &lt; m_str.size(); ++i)\n        {\n            std::cout &lt;&lt; m_str[i]
+    &lt;&lt; std::flush;\n        }\n    }\n};\n\nint main(void)\n{\n    Proc numbers(\"0123456789\");\n
+    \   Proc alphabets(\"ABCDEFGHIJ\");\n    boost::thread nt(numbers);\n    boost::thread
+    at(alphabets);\n    nt.join();\n    at.join();\n    return 0;\n}\n"
+  :tags:
+  - boost
+  :references:
+    :url: 
+    :title: 
+- :id: '7994'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7994
+  :user_name: vtwntmtn
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/380/
+  :language: 
+  :time: 2008/11/08 08:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>よく考えてみると、これってマルチコアの場合、本当に並列処理するかもしれないので、お題の「擬似並列処理」からは外れてるかもしれません。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7995'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7995
+  :user_name: 匿名
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/11/08 09:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">この例は1文字ずつだからいいのですが、\r\nstd::coutがスレッドセーフでない可能性を\r\n考慮したコードにしておいたほうがいいと思います。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7996'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7996
+  :user_name: vtwntmtn
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/380/
+  :language: Erlang
+  :time: 2008/11/08 16:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">以下のようにして実行します。\r\n\r\nerlc para.erl \r\nerl
+    -noshell -s para para -s init stop</pre>\n\t"
+  :code: |
+    -module(para).
+    -export([para/0]).
+
+    proc(Pid, []) -&gt; Pid ! void;
+    proc(Pid, [Chr | Str]) -&gt;
+        io:format("~s", [[Chr]]),
+        proc(Pid, Str).
+
+    para() -&gt;
+        Pid = self(),
+        spawn(fun() -&gt; proc(Pid, "0123456789") end),
+        spawn(fun() -&gt; proc(Pid, "ABCDEFGHIJ") end),
+        receive _ -&gt; receive _ -&gt; void end end.
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7997'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7997
+  :user_name: vtwntmtn
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/380/
+  :language: Other
+  :time: 2008/11/08 17:07 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n<p>Makefileという名前で保存して、以下のように実行してください。（-jオプションは標準的ではないかもしれないので、もしかするとGNU
+    Make専用かも）\n</p>\n<p><code>make -j2</code>\n</p>\n\n\n\n\t"
+  :code: |
+    all: numbers alphabets
+
+    numbers:
+        @echo 0
+        @echo 1
+        @echo 2
+        @echo 3
+        @echo 4
+        @echo 5
+        @echo 6
+        @echo 7
+        @echo 8
+        @echo 9
+
+    alphabets:
+        @echo A
+        @echo B
+        @echo C
+        @echo D
+        @echo E
+        @echo F
+        @echo G
+        @echo H
+        @echo I
+        @echo J
+  :tags:
+  - Makefile
+  :references:
+    :url: 
+    :title: 
+- :id: '7998'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7998
+  :user_name: sumim
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2008/11/08 18:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>もちろん可能であれば、疑似である必要はありません。^^;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7999'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/7999
+  :user_name: 匿名
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/11/08 21:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    import stackless
+
+    def put_iterator(it):
+        for i in it:
+            print i
+            stackless.schedule()
+
+    stackless.tasklet(put_iterator)('ABCDEFGHIJ')
+    stackless.tasklet(put_iterator)(range(1,11))
+
+    stackless.run()
+  :tags:
+  - StacklessPython
+  :references:
+    :url: 
+    :title: 
+- :id: '8000'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8000
+  :user_name: vtwntmtn
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/380/
+  :language: C
+  :time: 2008/11/08 23:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>考慮しました。</p>\n\n\t"
+  :code: "#include &lt;string&gt;\n#include &lt;cstdlib&gt;\n#include &lt;iostream&gt;\n\n#include
+    &lt;boost/thread.hpp&gt;\n\nclass Proc\n{\nprivate:\n    std::string m_str;\n
+    \   boost::mutex &amp; m_mtx;\n\npublic:\n    Proc(std::string s, boost::mutex
+    &amp; m) : m_str(s), m_mtx(m) {}\n    \n    void operator () (void)\n    {\n        for
+    (int i = 0; i &lt; m_str.size(); ++i)\n        {\n            usleep(1);\n            boost::mutex::scoped_lock
+    lck(m_mtx);\n            std::cout &lt;&lt; m_str[i] &lt;&lt; std::flush;\n        }\n
+    \   }\n};\n\nint main(void)\n{\n    boost::mutex mutex;\n    boost::thread numbers(Proc(\"0123456789\",
+    mutex));\n    boost::thread alphabets(Proc(\"ABCDEFGHIJ\", mutex));\n    numbers.join();\n
+    \   alphabets.join();\n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8001'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8001
+  :user_name: oz3
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/948/
+  :language: Delphi
+  :time: 2008/11/08 23:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  初めての投稿です。宜しくお願いします。\r\nDelphiの投稿がないので。\r\n他の言語に比べると、やはり行数も長いですね。\n\t"
+  :code: |
+    program thread;
+
+    {$APPTYPE CONSOLE}
+
+    uses
+      Classes, SyncObjs, SysUtils;
+
+    var
+      csConsole: TCriticalSection;
+
+    procedure SerializeWrite(const s: string);
+    begin
+      csConsole.Enter;
+      try
+        Write(s);
+      finally
+        csConsole.Leave;
+      end;
+      Sleep(1);
+    end;
+
+    type TWriteText = class(TThread)
+      private
+        FText: string;
+      protected
+        procedure Execute; override;
+      public
+        constructor Create(const Text: string);
+    end;
+
+    constructor TWriteText.Create(const Text: string);
+    begin
+      inherited Create(true);
+      FText := Text;
+      Resume;
+    end;
+
+    procedure TWriteText.Execute;
+    var
+      n: integer;
+    begin
+      for n := 0 to Length(FText) - 1 do
+        SerializeWrite(copy(FText, n + 1, 1));
+    end;
+
+    var
+      threadWrite0To9: TWriteText;
+      threadWriteAtoZ: TWriteText;
+    begin
+      csConsole := TCriticalSection.Create;
+      try
+        threadWrite0To9 := TWrite0to9.Create('0123456789');
+        threadWriteAtoZ := TWriteAtoZ.Create('ABCDEFGHIJ');
+        try
+          threadWrite0To9.WaitFor;
+          threadWriteAtoZ.WaitFor;
+        finally
+          FreeAndNil(threadWrite0To9);
+          FreeAndNil(threadWriteAtoZ);
+        end;
+      finally
+        FreeAndNil(csConsole);
+      end;
+    end.
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8002'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8002
+  :user_name: a2c
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/831/
+  :language: Python
+  :time: 2008/11/09 09:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">1-10とA-Jのスマートな書き方がわからなかった。\r\nsleep(0.01)を入れて、交互になるようにしてあります。\r\nそうしないと、2つめのプロセス作る前に\r\nPrint終わってしまう気がする。＜交互にならない\r\n\r\n</pre>\n\t"
+  :code: "#!/usr/bin/env python                                                            \n#
+    coding:utf-8\n\nfrom multiprocessing import Process\nimport time\ndef printStr(str):\n
+    \ for i in str:\n    print i\n    time.sleep(0.01) # 出力を緩慢に\n\nif __name__ ==
+    '__main__':                                                       \n  strArr =
+    [[i for i in range(1,10)],\n                ['A','B','C','D','E','F','G','H','I','J']]\n
+    \ for str in strArr:\n    p = Process(target = printStr, args=(str,))\n    p.start()\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8003'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8003
+  :user_name: a2c
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/831/
+  :language: Python
+  :time: 2008/11/09 09:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ちょっと修正\r\n無駄にめんどくさい事してた・・orz</pre>\n\t"
+  :code: "if __name__ == '__main__':\n  strArr = [range(1,10), 'ABCDEFGHIJ']                                           \n
+    \ for str in strArr:\n    p = Process(target = printStr, args=(str,))\n    p.start()\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8004'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8004
+  :user_name: pa
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/943/
+  :language: Other
+  :time: 2008/11/09 13:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">spawnを試す。\r\nchannelで子プロセスの終了を待つ。\r\n\r\n出力\r\na0b1c2d3e4f5g6h7ij89</pre>\n\t"
+  :code: |
+    implement d215;
+
+    include "sys.m";
+    include "draw.m";
+
+    d215: module{
+        init: fn(ctx: ref Draw-&gt;Context, argv: list of string);
+    };
+
+    sys: Sys;
+
+    init(ctx: ref Draw-&gt;Context, argv: list of string)
+    {
+        i: int;
+        ch := chan of int;
+
+        sys = load Sys Sys-&gt;PATH;
+
+        spawn print_num(ch);
+
+        for(i = 0; i &lt; 10; i ++){
+            sys-&gt;print("%c", i + 'a');
+        }
+
+        &lt;- ch;
+    }
+
+    print_num(ch: chan of int)
+    {
+        i: int;
+
+        for(i = 0; i &lt; 10; i ++){
+            sys-&gt;print("%d", i);
+        }
+
+        ch &lt;- = 0;
+
+        exit;
+    }
+  :tags:
+  - Limbo
+  :references:
+    :url: 
+    :title: 
+- :id: '8006'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8006
+  :user_name: sawat
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/322/
+  :language: JavaScript
+  :time: 2008/11/09 19:41 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>javascript 1.7 の yield で疑似並列。</p>\n\n\t"
+  :code: |
+    function create_loop(data) {
+        for(var i=0,n=data.length;i&lt;n;i++) {
+          print(data[i]);
+          yield true;
+        }
+        yield false;
+    }
+    var f1 = create_loop([1,2,3,4,5,6,7,8,9,10]);
+    var f2 = create_loop(['a','b','c','d','e','f','g','h','i','j']);
+    while(f1.next() &amp; f2.next());
+  :tags:
+  - Firefox
+  - javascript1.7
+  :references:
+    :url: /web/20091213150003/http://d.hatena.ne.jp/amachang/20060805/1154743229
+    :title: JavaScript 1.7 の yield が凄すぎる件について - IT戦記
+- :id: '8008'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8008
+  :user_name: sawat
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/322/
+  :language: JavaScript
+  :time: 2008/11/09 22:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>print関数の定義を忘れました。\n以下のような関数があるものとしてください。</p>\n\n\t"
+  :code: |
+    var outputarea;
+    function print(s) {
+      if(!outputarea) {
+        outputarea = document.createElement("p");
+        document.body.appendChild(outputarea);
+      }
+      outputarea.innerHTML += s;
+    }
+    // あるいは
+    function print(s) {
+      console.log(s); // 要firebug
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8012'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8012
+  :user_name: 匿名
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/11/10 02:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>range(1,10)だと１～９までしか出力されないと思う。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8013'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8013
+  :user_name: cooldaemon
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/451/
+  :language: Erlang
+  :time: 2008/11/10 02:08 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Erlang のプレーンな例は、他の方が解答されていましたので、あえて lists ライブラリを積極的に使ったパターンを投稿してみます。\nミソは、終了メッセージの選択受信かな？</p>\n\n\t"
+  :code: |
+    -module(doukaku215).
+    -author('cooldaemon@gmail.com').
+    -export([run/0]).
+
+    run() -&gt;
+      Pid = self(),
+      lists:foreach(
+        fun (CPid) -&gt; receive {CPid, finish} -&gt; ok end end,
+        lists:map(
+          fun (Cs) -&gt; spawn(fun () -&gt;
+            lists:foreach(fun (C) -&gt; io:fwrite("~s", [[C]]) end, Cs),
+            Pid ! {self(), finish}
+          end) end,
+          lists:map(fun (N) -&gt; lists:seq(N, N+8) end, [$1, $A])
+        )
+      ).
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8015'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8015
+  :user_name: いげ太
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/399/
+  :language: Other
+  :time: 2008/11/10 07:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    #r "system.servicemodel.dll"
+
+    let sc = new System.Collections.Generic.SynchronizedCollection&lt;obj&gt;() in
+    let inline sc_add x = sc.Add(x); System.Threading.Thread.Sleep(64) in
+    [ async { Seq.iter sc_add {1..10} }; async { Seq.iter sc_add {'A'..'J'} } ]
+    |&gt; (Async.Parallel &gt;&gt; Async.Run &gt;&gt; ignore);
+    sc |&gt; Seq.to_list |&gt; printfn "%A"
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '8016'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8016
+  :user_name: genzou
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/11/10 08:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>こんな風にcurry化って利用するものなのかな？？</p>\n\n\t"
+  :code: |
+    run = { list, sleep -&gt; list.each{ println it; Thread.sleep(sleep); } }
+    Thread.start run.curry('a'..'z', 100)
+    Thread.start run.curry(1..9, 200)
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '8018'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8018
+  :user_name: komamitsu
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/786/
+  :language: C
+  :time: 2008/11/10 15:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>makecontext()とかでお手軽にコンテキストスイッチ。</p>\n\n\t"
+  :code: |
+    #include &lt;ucontext.h&gt;
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;unistd.h&gt;
+
+
+    #define STACK_NUM  2
+    #define ITEM_NUM  10
+    #define ITEM_SIZE  3
+
+    #define handle_error(msg) \
+      do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+    static struct {
+      int pos;
+      struct {
+        ucontext_t ctx;
+        char stack[16384];
+      } proc[STACK_NUM];
+    } uctx;
+
+
+    static void next_uctx(void)
+    {
+      int old_uctx_pos = uctx.pos;
+
+      uctx.pos = (uctx.pos + 1) % STACK_NUM;
+
+      if (swapcontext(&amp;uctx.proc[old_uctx_pos].ctx, &amp;uctx.proc[uctx.pos].ctx) == -1)
+        handle_error("swapcontext");
+    }
+
+    static void func(char list[ITEM_NUM][ITEM_SIZE])
+    {
+      int i;
+
+      for(i = 0; i &lt; ITEM_NUM; i++) {
+        printf("%s ", list[i]);
+        usleep(100);
+        next_uctx();
+      }
+    }
+
+    int main(int argc, char *argv[])
+    {
+      int i;
+      char lists[STACK_NUM][ITEM_NUM][ITEM_SIZE] = {
+        { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" },
+        { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J" },
+      };
+      ucontext_t uctx_main;
+
+      for(i = 0; i &lt; STACK_NUM; i++) {
+        ucontext_t *ucp = &amp;uctx.proc[i].ctx;
+
+        if (getcontext(ucp) == -1)
+          handle_error("getcontext");
+
+        ucp-&gt;uc_stack.ss_sp = uctx.proc[i].stack;
+        ucp-&gt;uc_stack.ss_size = sizeof(uctx.proc[0].stack);
+        ucp-&gt;uc_link = (i &gt;= STACK_NUM - 1) ? &amp;uctx_main: &amp;uctx.proc[i + 1].ctx;
+        makecontext(ucp, (void (*)(void))func, 1, lists[i]);
+      }
+
+      if (swapcontext(&amp;uctx_main, &amp;uctx.proc[0].ctx) == -1)
+        handle_error("swapcontext");
+
+      exit(EXIT_SUCCESS);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8019'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8019
+  :user_name: hchbaw
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/950/
+  :language: Other
+  :time: 2008/11/10 12:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Clojure です、トランザクション内で更新をかけるんですね。</p>\n\n\t"
+  :code: |
+    (import '(java.util.concurrent Executors))
+
+    (defn- par
+      [&amp; tasks]
+      (let [exe (.newCachedThreadPool Executors)]
+        (try
+         (.invokeAll exe tasks)
+         (finally (.shutdown exe)))))
+
+    (let [r (ref '())]
+      (par
+       (fn []
+         (dotimes n 10
+           (dosync (alter r #(cons (inc n) %)))
+           (.sleep Thread 1)))
+       (fn []
+         (dotimes n 10
+           (dosync (alter r #(cons (Character. (char (+ 64 (inc n)))) %)))
+           (.sleep Thread 1))))
+      @r)
+    ;=&gt;(\J 10 \I 9 \H 8 \G 7 \F 6 \E 5 \D 4 \C 3 \B 2 \A 1)
+  :tags:
+  - Clojure
+  :references:
+    :url: 
+    :title: 
+- :id: '8020'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8020
+  :user_name: pa
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/943/
+  :language: C
+  :time: 2008/11/10 20:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">pthreadに興味がわいたのでテスト。\r\ngcc -lpthreadでコンパイル。\r\nputcはスレッドセーフという前提です。\r\n\r\n出力:\r\na01bc23de45fg67hi89j</pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;pthread.h&gt;
+
+    void *thread_alpha(void *arg);
+
+    int main( int argc, char ** argv )
+    {
+        pthread_t pt;
+        int i;
+        int err;
+
+        err =  pthread_create( &amp;pt, NULL, &amp;thread_alpha, NULL);
+        if(err){
+            return -1;
+        }
+
+        for(i = 0; i &lt; 10; i ++){
+            putc('0' + i, stdout);
+            usleep(1);
+        }
+
+        /* スレッドの終了を待つ */
+        pthread_join( pt, NULL);
+
+        return 0;
+    }
+
+    void *thread_alpha(void *arg)
+    {
+        int i;
+
+        for(i = 0; i &lt; 10; i ++){
+            putc_unlocked('a' + i, stdout);
+            usleep(1);
+        }
+
+        pthread_exit(0);
+    }
+  :tags: []
+  :references:
+    :url: /web/20091213150003/http://codezine.jp/article/detail/1892?p=1
+    :title: 'pthreadについて（概要・生成） '
+- :id: '8021'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8021
+  :user_name: 匿名
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/11/10 21:00 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>いちおう擬似並行処理といえるかな。</p>\n\n\t"
+  :code: |
+    def f(s):
+      for i in s:
+       print i,
+       yield i
+
+    def run(ths):
+      while ths:
+        for th in ths:
+          try:
+            th.next()
+          except StopIteration:
+            ths.remove(th)
+
+    run([f('ABCDEFGHIJ'), f(range(1,11))])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8022'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8022
+  :user_name: ckbx
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/893/
+  :language: Python
+  :time: 2008/11/10 21:36 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">スレッドを使わない擬似並行処理です。\r\n一行Pythonで119 bytes.\r\n\r\n一行にするとループやgeneratorが使えないため、\r\nlambdaのリストを巡回することで代用しています。\r\n</pre>\n\t"
+  :code: |
+    import sys;F=lambda x:(lambda:sys.stdout.write(chr(x)));
+    [[p()for p in q]for q in [(F(i+48),F(i+65))for i in range(10)]]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8023'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8023
+  :user_name: ocaml-nagoya
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/514/
+  :language: OCaml
+  :time: 2008/11/11 00:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>スレッドつくって画面表示。最後のThread.delayは、これが無いとすぐに実行が終了してしまうので、待ちを入れる意味です。</p>\n\n\t"
+  :code: "open Format\n  \nlet spawn_loop f x =\n  let rec forever f x = \n    let
+    v = f x in forever f v\n  in\n  ignore (Thread.create (forever f) x)\n    \nlet
+    _ =\n  spawn_loop (fun () -&gt;\n    List.iter (fprintf std_formatter \"%d@?\")
+    \ [1; 2; 3; 4; 5; 6; 7; 8; 9; 10;]) ();\n  spawn_loop (fun () -&gt;\n    List.iter
+    (fprintf std_formatter \"%c@?\")  ['A'; 'B'; 'C'; 'D'; 'E'; 'F'; 'G'; 'H'; 'I';
+    'J']) ();\n  Thread.delay 10.\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8026'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8026
+  :user_name: lufia
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/242/
+  :language: Other
+  :time: 2008/11/11 08:53 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>スレッド2つにしてみました。</p>\n\n\t"
+  :code: |
+    implement Channel;
+
+    include "sys.m";
+        sys: Sys;
+    include "draw.m";
+
+    Channel: module
+    {
+        init: fn(ctxt: ref Draw-&gt;Context, argv: list of string);
+    };
+
+    init(nil: ref Draw-&gt;Context, nil: list of string)
+    {
+        sys = load Sys Sys-&gt;PATH;
+        c1 := chan of int;
+        c2 := chan of int;
+
+        spawn task('A', 10, c1);
+        spawn task('0', 10, c2);
+        (&lt;- c1, &lt;- c2);
+        sys-&gt;print("\n");
+    }
+
+    task(bp, n: int, c: chan of int)
+    {
+        for(i := 0; i &lt; n; i++)
+            sys-&gt;print("%c", bp+i);
+        c &lt;- = 0;
+    }
+  :tags:
+  - Limbo
+  :references:
+    :url: 
+    :title: 
+- :id: '8048'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8048
+  :user_name: とおる。
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/955/
+  :language: Lua
+  :time: 2008/11/17 01:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>初チャレンジ。\nLua のコルーチンで for ループを素朴に使っています。</p>\n\n\t"
+  :code: |
+    function mkfunc (printfunc)
+      return function ()
+        for v = 1, 10 do
+          printfunc (v)
+          coroutine.yield ()
+        end
+      end
+    end
+
+    function printalpha (n)
+      print (string.char (n + string.byte ("A") - 1))
+    end
+
+    function costat (c)
+      return coroutine.status (c) == "suspended"
+    end
+
+    local c, d = coroutine.create (mkfunc (print)),
+                 coroutine.create (mkfunc (printalpha))
+
+    while costat (c) or costat (d) do
+      coroutine.resume (c)
+      coroutine.resume (d)
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8077'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8077
+  :user_name: uehaj
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2008/11/24 01:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Executorを使いたかったので。</p>\n\n\t"
+  :code: |
+    exec = java.util.concurrent.Executors.newCachedThreadPool()
+    [1..9,'a'..'z'].each{r-&gt;exec.submit({r.each{println it;Thread.yield()}})}
+    exec.shutdown()
+  :tags:
+  - Caller
+  - Executor
+  - ExecutorService
+  - Future
+  :references:
+    :url: /web/20091213150003/http://www.itarchitect.jp/technology_and_programming/-/23241.html
+    :title: 第6回 並行プログラミング用ライブラリ（1）――Excecutorの仕組み
+- :id: '8136'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8136
+  :user_name: ihag
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/560/
+  :language: C
+  :time: 2008/12/12 05:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>普通にfork(2)で子プロセスを作る例が無かったので，書いてみました．</p>\n<p>子プロセスの実行開始のタイミングをそろえるために，signalを使っています．また，ほどよく出力が混ざるように適宜usleepしています．</p>\n\n\t"
+  :code: |
+    #include &lt;sys/types.h&gt;
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;signal.h&gt;
+    #include &lt;string.h&gt;
+    #include &lt;sysexits.h&gt;
+    #include &lt;unistd.h&gt;
+
+    #define ITEMS_MAX 10
+    #define CHILD_MAX 2
+
+    #ifndef false
+    # define false 0
+    #endif
+    #ifndef true
+    # define true !false
+    #endif
+
+    static int is_activated = false;
+
+    static const char *table[][ITEMS_MAX + 1] = {
+      { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" },
+      { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"  },
+    };
+
+    int child_proc(pid_t, const char **);
+    void child_activate(int);
+
+    int
+    main(int argc, void **argv)
+    {
+        int i;
+        pid_t children[CHILD_MAX];
+        memset(children, -1, sizeof(children));
+
+        /* create child processes */
+        for (i = 0; i &lt; CHILD_MAX; i++) {
+            if ((children[i] = fork()) == -1)
+                exit(EXIT_FAILURE);
+            else if (children[i] == 0)
+                _exit(child_proc(getpid(), table[i]));
+        }
+
+        /* activate all of children by sending signal */
+        usleep(100000);
+        for (i = 0; i &lt; CHILD_MAX; i++)
+            kill(children[i], SIGUSR1);
+
+        /* wait until all child processes finish */
+        for (i = 0; i &lt; CHILD_MAX; i++) {
+            int status;
+            if (wait(&amp;status) == -1)
+                exit(EXIT_FAILURE);
+        }
+
+        exit(EXIT_SUCCESS);
+    }
+
+    void
+    child_activate(int signum)
+    {
+        is_activated = true;
+    }
+
+    int
+    child_proc(pid_t my_pid, const char **table)
+    {
+        int c;
+        struct sigaction act;
+
+        /* waiting signal from the parent */
+        memset(&amp;act, 0, sizeof(act));
+        act.sa_handler = child_activate;
+        if (sigaction(SIGUSR1, &amp;act, NULL) != 0)
+            return EXIT_FAILURE;
+
+        sleep(60);
+        if (!is_activated)
+            return EXIT_FAILURE;    /* timed out */
+
+        /* process something */
+        for (c = 0; c &lt; ITEMS_MAX; c++) {
+            printf("%s ", table[c]);
+            fflush(stdout);
+            usleep(10000);
+        }
+        printf("\n");
+
+        return EXIT_SUCCESS;
+    }
+  :tags:
+  - POSIX
+  :references:
+    :url: 
+    :title: 
+- :id: '8203'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8203
+  :user_name: hchbaw
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/950/
+  :language: Other
+  :time: 2008/12/17 22:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>新しいリリースに追従しました。\n</p>\n<p>static メソッドの呼び方、バインディングの記法を修正しました。\n</p>\n<p>＃
+    conj を使うのが Clojure っぽいのかしらん。\n</p>\n\n\n\n\t"
+  :code: "(defn- par\n  [&amp; tasks]\n  (let [exe (java.util.concurrent.Executors/newCachedThreadPool)]\n
+    \   (try\n     (.invokeAll exe tasks)    \n     (finally (.shutdown exe)))))\n\n(let
+    [r (ref [])]\n  (par\n   (fn []\n     (dotimes [n 10]\n       (dosync (alter r
+    #(conj % (inc n))))\n       (Thread/sleep 1)))\n   (fn []\n     (dotimes [n 10]\n
+    \      (dosync (alter r #(conj % (Character. (char (+ 64 (inc n)))))))\n       (Thread/sleep
+    1))))\n  @r)\n;⇒ [1 \\A 2 \\B 3 \\C 4 \\D 5 \\E 6 \\F 7 \\G 8 \\H 9 \\I 10 \\J]\n"
+  :tags:
+  - Cloujure
+  - clojure_20081217
+  :references:
+    :url: 
+    :title: 
+- :id: '8580'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8580
+  :user_name: 陽炎
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/1022/
+  :language: Fortress
+  :time: 2009/03/05 07:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>疑似ではなくちゃんと並列になってる……はず．</p>\n\n\t"
+  :code: |
+    component doukaku215
+      import List.{...}
+      export Executable
+
+      run(args: String...): () = do
+
+        do
+          for i &lt;- 0#10 do
+            t = spawn print i ", "
+            t.wait()
+          end
+        also do
+          for c &lt;- &lt;|"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"|&gt; do
+            t = spawn print c ", "
+            t.wait()
+          end
+        end
+        print "\n"
+
+      end
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8786'
+  :parent_id: '215'
+  :url: http://ja.doukaku.org/comment/8786
+  :user_name: rennos
+  :user_url: /web/20091213150003/http://ja.doukaku.org/user/1024/
+  :language: HSP
+  :time: 2009/04/05 09:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "    randomize\n    sdim buf\n    cntAlph = 0\n    cntDig  = 0\n    \n    repeat
+    26\n        buf += cntDig\n        buf += strf(\"%c\", 'A'+ cntAlph)\n        cntDig
+    \ ++\n        cntAlph ++\n    loop\n    mes buf\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

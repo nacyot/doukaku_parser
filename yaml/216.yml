@@ -1,0 +1,959 @@
+---
+:id: '216'
+:title: inline/embeded bytecode assembly
+:comments:
+- :id: '7961'
+  :parent_id: '216'
+  :url: http://ja.doukaku.org/comment/7961
+  :user_name: nori
+  :user_url: /web/20090512170312/http://ja.doukaku.org/user/59/
+  :language: 
+  :time: 2008/11/06 07:49 GMT
+  :vote_count: '7'
+  :vote_score: '-3'
+  :body: "\r\n\t  <p>Duff's deviceをinline bytecode assemblyを使って実装してください。C言語ではよくあるinline
+    asmのほかの言語バージョンといったところです。copyのsrcとdstは呼び出し側から渡すようにしてください。（要はbytecode側で閉じていてはならない)</p>\n<p>Duff's
+    deviceとは、\n<a class=\"reference\" href=\"/web/20090512170312/http://ja.wikipedia.org/wiki/Duff%27s_device\">http://ja.wikipedia.org/wiki/Duff%27s_device</a>
+    に説明がありますが、ループ展開したコピーのコードです。もちろんbytecodeである時点で速度の話をするのはナンセンスです。</p>\n<p>bytecodeで速くするとかいう話よりも、ある言語で書かれたcodeの中にその言語で使用されているbytecodeが埋め込めるかどうか、どのようにできるのかが、このお題の意図です。面白い使い道があるならsiteしていただけると幸いです。</p>\n<p>また、1言語につき1種のbytecodeとは限りません。たとえば、PythonならCPythonのbytecode,
+    JythonのJavaVMのbytecode, IronPythonのCIL/CLRなどがあります。\nもちろん特定アーキテクチャのasmを呼んでもよいです。x86を書くことができるpyasmなんてものもあるらしいです。\n<a
+    class=\"reference\" href=\"/web/20090512170312/http://members.verizon.net/olsongt/usersGuide.pdf\">http://members.verizon.net/olsongt/usersGuide.pdf</a></p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8034'
+  :parent_id: '216'
+  :url: http://ja.doukaku.org/comment/8034
+  :user_name: 匿名
+  :user_url: /web/20090512170312/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/11/14 05:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>marshal.dumps(compile(duff, \"&lt;script&gt;\", \"single\"))\nとかやって生成させたバイト列にコメントをつけただけです。\nこんなんじゃダメっすよねえ……</p>\n<p>Pythonバイトコードアセンブラのようなものはあるようですね。\nディスアセンブルは標準のdisでできるのですが。</p>\n\n\t"
+  :code: |
+    #!/usr/bin/env python
+    import marshal
+
+    # def duff(src):
+    #     next = iter(src).next
+    #     while True:
+    #         yield next()
+    #         yield next()
+    #         yield next()
+    #         yield next()
+    #         yield next()
+    #         yield next()
+    #         yield next()
+    #         yield next()
+
+    exec marshal.loads(
+    "\x63"              # TYPE_CODE
+    "\x00\x00\x00\x00"  #   co_argcount: 0
+    "\x00\x00\x00\x00"  #   co_nlocals: 0
+    "\x01\x00\x00\x00"  #   co_stacksize: 1
+    "\x40\x00\x00\x00"  #   co_flags
+    "\x73"              #   co_code: TYPE_STRING
+    "\x0D\x00\x00\x00"  #   length of string: 13
+    "\x64\x00\x00"      #     LOAD_CONST 0
+    "\x84\x00\x00"      #     MAKE_FUNCTION 0
+    "\x5A\x00\x00"      #     STORE_NAME 0
+    "\x64\x01\x00"      #     LOAD_CONST 1
+    "\x53"              #     RETURN_VALUE
+    "\x28"              #   co_consts: TYPE_TUPLE
+    "\x02\x00\x00\x00"  #   length of tuple: 2
+    "\x63"              #     TYPE_CODE
+    "\x01\x00\x00\x00"  #       co_argcount: 1
+    "\x02\x00\x00\x00"  #       co_nlocals: 2
+    "\x02\x00\x00\x00"  #       co_stacksize: 1
+    "\x63\x00\x00\x00"  #       co_flags
+    "\x73"              #       co_code: TYPE_STRING
+    "\x62\x00\x00\x00"  #       length of string: 98
+    "\x74\x00\x00"      #         LOAD_GLOBAL 0
+    "\x7C\x00\x00"      #         LOAD_FAST 0
+    "\x83\x01\x00"      #         CALL_FUNCTION 1
+    "\x69\x01\x00"      #         LOAD_ATTR 1
+    "\x7D\x01\x00"      #         STORE_FAST 1
+    "\x78\x4C\x00"      #         SETUP_LOOP 76
+    "\x74\x02\x00"      #         LOAD_GLOBAL 2
+    "\x6F\x44\x00"      #         JUMP_IF_FALSE 68
+    "\x01"              #         POP_TOP
+    "\x7C\x01\x00"      #         LOAD_FAST 1
+    "\x83\x00\x00"      #         CALL_FUNCTION 0
+    "\x56"              #         YIELD_VALUE
+    "\x01"              #         POP_TOP
+    "\x7C\x01\x00"      #         LOAD_FAST 1
+    "\x83\x00\x00"      #         CALL_FUNCTION 0
+    "\x56"              #         YIELD_VALUE
+    "\x01"              #         POP_TOP
+    "\x7C\x01\x00"      #         LOAD_FAST 1
+    "\x83\x00\x00"      #         CALL_FUNCTION 0
+    "\x56"              #         YIELD_VALUE
+    "\x01"              #         POP_TOP
+    "\x7C\x01\x00"      #         LOAD_FAST 1
+    "\x83\x00\x00"      #         CALL_FUNCTION 0
+    "\x56"              #         YIELD_VALUE
+    "\x01"              #         POP_TOP
+    "\x7C\x01\x00"      #         LOAD_FAST 1
+    "\x83\x00\x00"      #         CALL_FUNCTION 0
+    "\x56"              #         YIELD_VALUE
+    "\x01"              #         POP_TOP
+    "\x7C\x01\x00"      #         LOAD_FAST 1
+    "\x83\x00\x00"      #         CALL_FUNCTION 0
+    "\x56"              #         YIELD_VALUE
+    "\x01"              #         POP_TOP
+    "\x7C\x01\x00"      #         LOAD_FAST 1
+    "\x83\x00\x00"      #         CALL_FUNCTION 0
+    "\x56"              #         YIELD_VALUE
+    "\x01"              #         POP_TOP
+    "\x7C\x01\x00"      #         LOAD_FAST 1
+    "\x83\x00\x00"      #         CALL_FUNCTION 0
+    "\x56"              #         YIELD_VALUE
+    "\x01"              #         POP_TOP
+    "\x71\x12\x00"      #         JUMP_ABSOLUTE 18
+    "\x01"              #         POP_TOP
+    "\x57"              #         POP_BLOCK
+    "\x64\x00\x00"      #         LOAD_CONST 0
+    "\x53"              #         RETURN_VALUE
+    "\x28"              #       co_consts: TYPE_TUPLE
+    "\x01\x00\x00\x00"  #       length of tuple: 1
+    "\x4E"              #         TYPE_NONE
+    "\x28"              #       co_names: TYPE_TUPLE
+    "\x03\x00\x00\x00"  #       length of tuple: 3
+    "\x74"              #         TYPE_INTERNED
+    "\x04\x00\x00\x00"  #         length of string: 4
+    "\x69\x74\x65\x72"  #           "iter"
+    "\x74"              #         TYPE_INTERNED
+    "\x04\x00\x00\x00"  #         length of string: 4
+    "\x6E\x65\x78\x74"  #           "next"
+    "\x74"              #         TYPE_INTERNED
+    "\x04\x00\x00\x00"  #         length of string: 4
+    "\x54\x72\x75\x65"  #           "True"
+    "\x28"              #       co_varnames: TYPE_TUPLE
+    "\x02\x00\x00\x00"  #       length of tuple: 2
+    "\x74"              #         TYPE_INTERNED
+    "\x03\x00\x00\x00"  #         length of string: 3
+    "\x73\x72\x63"      #           "src"
+    "\x52"              #         TYPE_STRINGREF
+    "\x01\x00\x00\x00"  #         index: 1
+    "\x28"              #       co_freevars: TYPE_TUPLE
+    "\x00\x00\x00\x00"  #       length of tuple: 0
+    "\x28"              #       co_cellvars: TYPE_TUPLE
+    "\x00\x00\x00\x00"  #       length of tuple: 0
+    "\x73"              #       co_filename: TYPE_STRING
+    "\x08\x00\x00\x00"  #       length of string: 8
+    "\x3C\x73\x63\x72\x69\x70\x74\x3E"   # "&lt;script&gt;"
+    "\x74"              #       co_name: TYPE_INTERNED
+    "\x04\x00\x00\x00"  #       length of string: 4
+    "\x64\x75\x66\x66"  #         "duff"
+    "\x02\x00\x00\x00"  #       co_firstlineno: 2
+    "\x73"              #       co_lnotab: TYPE_STRING
+    "\x14\x00\x00\x00"  #       length of string: 20
+    "\x00\x01\x0F\x01\x0A\x01\x08\x01"    # XXX: see codeobject.c
+    "\x08\x01\x08\x01\x08\x01\x08\x01"    # about co_lnotab.
+    "\x08\x01\x08\x01"                    #
+    "\x4E"              #     TYPE_NONE
+    "\x28"              #   co_names: TYPE_TUPLE
+    "\x01\x00\x00\x00"  #   length of tuple: 1
+    "\x52"              #     TYPE_STRINGREF
+    "\x04\x00\x00\x00"  #     index: 4
+    "\x28"              #   co_varnames: TYPE_TUPLE
+    "\x00\x00\x00\x00"  #   length of tuple: 0
+    "\x28"              #   co_freevars: TYPE_TUPLE
+    "\x00\x00\x00\x00"  #   length of tuple: 0
+    "\x28"              #   co_cellvars: TYPE_TUPLE
+    "\x00\x00\x00\x00"  #   length of tuple: 8
+    "\x73"              #   co_filename: TYPE_STRING
+    "\x08\x00\x00\x00"  #   length of string: 8
+    "\x3C\x73\x63\x72\x69\x70\x74\x3E"   # "&lt;script&gt;"
+    "\x73"              #   co_name: TYPE_STRING
+    "\x08\x00\x00\x00"  #   length of string: 8
+    "\x3C\x6D\x6F\x64\x75\x6C\x65\x3E"   # "&lt;module&gt;"
+    "\x02\x00\x00\x00"  #   co_firstlineno: 2
+    "\x73"              #   co_lnotab: TYPE_STRING
+    "\x00\x00\x00\x00"  #   length of string: 0
+    )
+
+    print list(duff(range(10)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8036'
+  :parent_id: '216'
+  :url: http://ja.doukaku.org/comment/8036
+  :user_name: koguro
+  :user_url: /web/20090512170312/http://ja.doukaku.org/user/438/
+  :language: Scheme
+  :time: 2008/11/14 13:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>dyncompを使って x86 のネイティブコードを生成してみました。さらにマクロを使いコピーするバイト数が定数の場合はループを展開しアセンブリコードを直接生成します。</p>\n<p>Duff's
+    deviceそのものを実装した訳ではないのですが、お題の目的が「bytecodeを埋め込めるか」というところにあるようなので、ご容赦ください(アセンブラも無理矢理使っているだけです)。</p>\n\n\t"
+  :code: "(use gauche.uvector)\n(use dyncomp)\n\n(cinclude \"gauche/uvector.h\")\n\n(define-macro
+    (bytecopy to from count)\n  `(apply ,(if (integer? count)\n               `(clambda
+    (to from count)\n                   (let* ((dst :: |char*| (SCM_U8VECTOR_ELEMENTS
+    to))\n                          (src :: |char*| (SCM_U8VECTOR_ELEMENTS from)))\n
+    \                    ,@(do ((i 0 (+ i 1))\n                            (asmbody
+    '() (append asmbody\n                                                 '((asm \"movl
+    \  -32(%ebp), %eax\")\n                                                   (asm
+    \"movzbl (%eax), %edx\")         \n                                                   (asm
+    \"movl   -28(%ebp), %eax\")\n                                                   (asm
+    \"movb   %dl, (%eax)\")\n                                                   (asm
+    \"leal   -32(%ebp), %eax\")\n                                                   (asm
+    \"incl   (%eax)\")\n                                                   (asm \"leal
+    \  -28(%ebp), %eax\")\n                                                   (asm
+    \"incl   (%eax)\")))))\n                           ((&lt;= count i) asmbody))))\n
+    \              `(clambda (to from count::&lt;int&gt;)\n                         (let*
+    ((dst :: |char*| (SCM_U8VECTOR_ELEMENTS to))\n                                (src
+    :: |char*| (SCM_U8VECTOR_ELEMENTS from))\n                                (i ::
+    int))\n                           (for ((set! i 0) (&lt; i count) (pre++ i))\n
+    \                               (set! (* dst) (* src))\n                                (pre++
+    dst)\n                                (pre++ src)))))\n          (list ,to ,from
+    ,count)))\n\n;; 普通のループによるコピー\n(let ((from #u8(1 2 3 4 5 6 7 8 9 10))\n      (to
+    (make-u8vector 10)))\n  (format #t \"before: ~s~%\" to)\n  (bytecopy to from (u8vector-length
+    to))\n  (format #t \"after:  ~s~%\" to))\n\n;; ループを展開してコピー\n(let ((from #u8(1
+    2 3 4 5 6 7 8 9 10))\n      (to (make-u8vector 10)))\n  (format #t \"before: ~s~%\"
+    to)\n  (bytecopy to from 10)\n  (format #t \"after:  ~s~%\" to))\n"
+  :tags:
+  - dyncomp
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '8037'
+  :parent_id: '216'
+  :url: http://ja.doukaku.org/comment/8037
+  :user_name: sumim
+  :user_url: /web/20090512170312/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/11/14 10:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n<p>Smalltalk にはインラインでバイトコードを記述する機能はないので、代わりに通常
+    Smalltalk では表現できない C言語のスイッチ文（ラベルへのジャンプ）で書かれたDuff's deviceの動きを真似たメソッドを生成する操作を記述することにトライしてみました。</p>\n<p>まず元になるコード（そのままでは機能しない）をコンパイルしたメソッドを処理系に生成させ、そのバイト列に対しあらためて、やはり
+    Smalltalk にはない（が、バイトコード命令にはある）ジャンプ命令である「A4 00」を挿入して呼び出しに用いる最終的なメソッド（バイトコード列）を再構成しました。</p>\n<p>ジャンプ命令「A4
+    00」の２バイト目は飛ぶ先（A4 の場合下流）を示します。「00」だと結果的にジャンプはせず次のバイトコードを実行するだけですが、このメソッドには実行時に与えられた配列のサイズによって自分のジャンプ先を動的に書き換える操作をあらかじめ加え、それによってお題のDuff's
+    deviceの動きをシュミレートしています。</p>\n<p>組み上がったメソッドはクラスには属させず #valueWithReceiver:arguments:
+    でレシーバを含めた引数を与えて静的に呼び出しています。実行後のコードの内容を末尾のコメントに示しました。各行は「先頭からのバイト数 &lt;バイトコード&gt;
+    操作内容」という書式になっています。</p>\n\n\t"
+  :code: "| code original modified src dst |\ncode := 'copyFrom: src\n    | idx mod
+    |\n    idx := src size.\n    mod := idx negated \\\\ 4.\n    thisContext method
+    at: 50 put: mod * 11.\n    [   self at: idx put: (src at: idx). idx := idx - 1.\n
+    \       self at: idx put: (src at: idx). idx := idx - 1.\n        self at: idx
+    put: (src at: idx). idx := idx - 1.\n        self at: idx put: (src at: idx).
+    idx := idx - 1.\n        idx &gt; 0\n    ] whileTrue'.\n\noriginal := (Parser
+    new parse: code class: WriteStream) generate asArray.\nmodified := ((original
+    first: 48), #(16rA4 0), (original allButFirst: 48)).\n\nsrc := 1 to: 10.\ndst
+    := Array new: src size.\n(modified as: CompiledMethod) inspect; valueWithReceiver:
+    dst arguments: {src}.\n^dst   \"=&gt; #(1 2 3 4 5 6 7 8 9 10) \"\n\n\n\"\n33 &lt;10&gt;
+    pushTemp: 0\n34 &lt;C2&gt; send: size\n35 &lt;69&gt; popIntoTemp: 1\n36 &lt;11&gt;
+    pushTemp: 1\n37 &lt;D0&gt; send: negated\n38 &lt;21&gt; pushConstant: 4\n39 &lt;BA&gt;
+    send: \\\\\n40 &lt;6A&gt; popIntoTemp: 2\n41 &lt;89&gt; pushThisContext: \n42
+    &lt;D2&gt; send: method\n43 &lt;23&gt; pushConstant: 50\n44 &lt;12&gt; pushTemp:
+    2\n45 &lt;24&gt; pushConstant: 11\n46 &lt;B8&gt; send: *\n47 &lt;C1&gt; send:
+    at:put:\n48 &lt;87&gt; pop\n49 &lt;A4 16&gt; jumpTo: 73   -- 追加されたジャンプ命令（ジャンプ先書き換え済み）\n51
+    &lt;70&gt; self\n52 &lt;11&gt; pushTemp: 1\n53 &lt;10&gt; pushTemp: 0\n54 &lt;11&gt;
+    pushTemp: 1\n55 &lt;C0&gt; send: at:\n56 &lt;C1&gt; send: at:put:\n57 &lt;87&gt;
+    pop\n58 &lt;11&gt; pushTemp: 1\n59 &lt;76&gt; pushConstant: 1\n60 &lt;B1&gt; send:
+    -\n61 &lt;69&gt; popIntoTemp: 1\n62 &lt;70&gt; self\n63 &lt;11&gt; pushTemp: 1\n64
+    &lt;10&gt; pushTemp: 0\n65 &lt;11&gt; pushTemp: 1\n66 &lt;C0&gt; send: at:\n67
+    &lt;C1&gt; send: at:put:\n68 &lt;87&gt; pop\n69 &lt;11&gt; pushTemp: 1\n70 &lt;76&gt;
+    pushConstant: 1\n71 &lt;B1&gt; send: -\n72 &lt;69&gt; popIntoTemp: 1\n73 &lt;70&gt;
+    self\n74 &lt;11&gt; pushTemp: 1\n75 &lt;10&gt; pushTemp: 0\n76 &lt;11&gt; pushTemp:
+    1\n77 &lt;C0&gt; send: at:\n78 &lt;C1&gt; send: at:put:\n79 &lt;87&gt; pop\n80
+    &lt;11&gt; pushTemp: 1\n81 &lt;76&gt; pushConstant: 1\n82 &lt;B1&gt; send: -\n83
+    &lt;69&gt; popIntoTemp: 1\n84 &lt;70&gt; self\n85 &lt;11&gt; pushTemp: 1\n86 &lt;10&gt;
+    pushTemp: 0\n87 &lt;11&gt; pushTemp: 1\n88 &lt;C0&gt; send: at:\n89 &lt;C1&gt;
+    send: at:put:\n90 &lt;87&gt; pop\n91 &lt;11&gt; pushTemp: 1\n92 &lt;76&gt; pushConstant:
+    1\n93 &lt;B1&gt; send: -\n94 &lt;69&gt; popIntoTemp: 1\n95 &lt;11&gt; pushTemp:
+    1\n96 &lt;75&gt; pushConstant: 0\n97 &lt;B3&gt; send: &gt;\n98 &lt;99&gt; jumpFalse:
+    101\n99 &lt;A3 CE&gt; jumpTo: 51\n101 &lt;78&gt; returnSelf\n\"\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '8038'
+  :parent_id: '216'
+  :url: http://ja.doukaku.org/comment/8038
+  :user_name: 匿名
+  :user_url: /web/20090512170312/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2008/11/15 04:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">クラスローダを作成してバイトコードを直接ソースコード上に記述しました。\r\nちなみに読み込んだバイトコードは以下のクラスをコンパイルしたものです\r\n（アセンブラで作ったものではありません）。\r\n\r\nクラスローダを自作して任意のバイトコードをプログラム中で生成する方法は\r\n「構造リフレクション」をJavaで行う場合の常道のようです。\r\n\r\npublic
+    class Copy {\r\n\tpublic static void copy(byte[] to, byte[] from) {\r\n\t\tint
+    count = from.length;\r\n\t\tint i = 0;\r\n\t\tswitch (count % 8)  /* count &gt;
+    0 とする */\r\n\t\t {\r\n\t\t   case 7: to[i] = from[i++];\r\n\t\t   case 6: to[i]
+    = from[i++];\r\n\t\t   case 5: to[i] = from[i++];\r\n\t\t   case 4: to[i] = from[i++];\r\n\t\t
+    \  case 3: to[i] = from[i++];\r\n\t\t   case 2: to[i] = from[i++];\r\n\t\t   case
+    1: to[i] = from[i++];\r\n\t\t   case 0:\r\n\t\t }\r\n\t   \twhile (i &lt; count)
+    {  \r\n\t   \t\tto[i] = from[i++];\r\n\t   \t\tto[i] = from[i++];\r\n\t   \t\tto[i]
+    = from[i++];\r\n\t   \t\tto[i] = from[i++];\r\n\t   \t\tto[i] = from[i++];\r\n\t
+    \  \t\tto[i] = from[i++];\r\n\t   \t\tto[i] = from[i++];\r\n\t   \t\tto[i] = from[i++];\r\n\t
+    \  \t}\r\n\t}\r\n}</pre>\n\t"
+  :code: "import java.lang.reflect.Method;\n\npublic class Sample extends ClassLoader
+    {\n\n    @Override\n    public Class&lt;?&gt; findClass(String name) throws ClassNotFoundException
+    {\n        byte[] b = {\n                -54, -2, -70, -66, 0, 0, 0, 49, 0, 24,
+    7, 0, 2, 1, 0, 4, 67, 111, 112, 121, 7, 0, 4, 1, 0, 16, 106, \n                97,
+    118, 97, 47, 108, 97, 110, 103, 47, 79, 98, 106, 101, 99, 116, 1, 0, 6, 60, 105,
+    110, 105, 116, \n                62, 1, 0, 3, 40, 41, 86, 1, 0, 4, 67, 111, 100,
+    101, 10, 0, 3, 0, 9, 12, 0, 5, 0, 6, 1, 0, 15, 76, 105, \n                110,
+    101, 78, 117, 109, 98, 101, 114, 84, 97, 98, 108, 101, 1, 0, 18, 76, 111, 99,
+    97, 108, 86, 97, \n                114, 105, 97, 98, 108, 101, 84, 97, 98, 108,
+    101, 1, 0, 4, 116, 104, 105, 115, 1, 0, 6, 76, 67, 111, \n                112,
+    121, 59, 1, 0, 4, 99, 111, 112, 121, 1, 0, 7, 40, 91, 66, 91, 66, 41, 86, 1, 0,
+    2, 116, 111, 1, 0, \n                2, 91, 66, 1, 0, 4, 102, 114, 111, 109, 1,
+    0, 5, 99, 111, 117, 110, 116, 1, 0, 1, 73, 1, 0, 1, 105, 1, \n                0,
+    10, 83, 111, 117, 114, 99, 101, 70, 105, 108, 101, 1, 0, 9, 67, 111, 112, 121,
+    46, 106, 97, 118, 97, \n                0, 33, 0, 1, 0, 3, 0, 0, 0, 0, 0, 2, 0,
+    1, 0, 5, 0, 6, 0, 1, 0, 7, 0, 0, 0, 47, 0, 1, 0, 1, 0, 0, 0, 5, \n                42,
+    -73, 0, 8, -79, 0, 0, 0, 2, 0, 10, 0, 0, 0, 6, 0, 1, 0, 0, 0, 1, 0, 11, 0, 0,
+    0, 12, 0, 1, 0, 0, 0, \n                5, 0, 12, 0, 13, 0, 0, 0, 9, 0, 14, 0,
+    15, 0, 1, 0, 7, 0, 0, 1, 96, 0, 4, 0, 4, 0, 0, 0, -56, 43, -66, \n                61,
+    3, 62, 28, 16, 8, 112, -86, 0, 0, 0, 0, 0, 110, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0,
+    0, 110, 0, 0, 0, 101, \n                0, 0, 0, 92, 0, 0, 0, 83, 0, 0, 0, 74,
+    0, 0, 0, 65, 0, 0, 0, 56, 0, 0, 0, 47, 42, 29, 43, 29, -124, 3, \n                1,
+    51, 84, 42, 29, 43, 29, -124, 3, 1, 51, 84, 42, 29, 43, 29, -124, 3, 1, 51, 84,
+    42, 29, 43, 29, -124,\n                3, 1, 51, 84, 42, 29, 43, 29, -124, 3,
+    1, 51, 84, 42, 29, 43, 29, -124, 3, 1, 51, 84, 42, 29, 43, 29, \n                -124,
+    3, 1, 51, 84, -89, 0, 75, 42, 29, 43, 29, -124, 3, 1, 51, 84, 42, 29, 43, 29,
+    -124, 3, 1, 51, 84, \n                42, 29, 43, 29, -124, 3, 1, 51, 84, 42,
+    29, 43, 29, -124, 3, 1, 51, 84, 42, 29, 43, 29, -124, 3, 1, 51, \n                84,
+    42, 29, 43, 29, -124, 3, 1, 51, 84, 42, 29, 43, 29, -124, 3, 1, 51, 84, 42, 29,
+    43, 29, -124, 3, 1, \n                51, 84, 29, 28, -95, -1, -74, -79, 0, 0,
+    0, 2, 0, 10, 0, 0, 0, 86, 0, 21, 0, 0, 0, 3, 0, 3, 0, 4, 0, 5, \n                0,
+    5, 0, 56, 0, 7, 0, 65, 0, 8, 0, 74, 0, 9, 0, 83, 0, 10, 0, 92, 0, 11, 0, 101,
+    0, 12, 0, 110, 0, 13, \n                0, 119, 0, 16, 0, 122, 0, 17, 0, -125,
+    0, 18, 0, -116, 0, 19, 0, -107, 0, 20, 0, -98, 0, 21, 0, -89, 0, \n                22,
+    0, -80, 0, 23, 0, -71, 0, 24, 0, -62, 0, 16, 0, -57, 0, 26, 0, 11, 0, 0, 0, 42,
+    0, 4, 0, 0, 0, -56, \n                0, 16, 0, 17, 0, 0, 0, 0, 0, -56, 0, 18,
+    0, 17, 0, 1, 0, 3, 0, -59, 0, 19, 0, 20, 0, 2, 0, 5, 0, -61, \n                0,
+    21, 0, 20, 0, 3, 0, 1, 0, 22, 0, 0, 0, 2, 0, 23};\n        return defineClass(name,
+    b, 0, b.length);\n    }\n\n    public static void main(String[] args) throws Exception
+    {\n        byte[] to = new byte[100];\n        byte[] from = new byte[100];\n
+    \       for (int i = 0; i &lt; from.length; i++)\n            from[i] = (byte)i;\n
+    \       Method[] ms = new Sample().loadClass(\"Copy\").getMethods();\n        ms[0].invoke(null,
+    to, from);\n        System.out.println(java.util.Arrays.toString(to));\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8040'
+  :parent_id: '216'
+  :url: http://ja.doukaku.org/comment/8040
+  :user_name: emasaka
+  :user_url: /web/20090512170312/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/11/15 06:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">言語がbashだった。別れたい…\r\nbashだとアドレス渡された時なんか恥ずかしいｗｗ\r\nセグフォしちゃうしｗｗ\r\nポインタにはせめて有効なアドレスを渡して欲しい・・・\r\nカーネル空間を渡されたら・・・・もう最悪ｗｗ\r\nせめて普通にページやマッピングぐらいは考えて欲しい。\r\n常識的に仮想記憶を使って欲しいだけなんです！\r\n\r\n#
+    …ネタはさておき。\r\n# スクリプトを実行しているbashに、組み込みコマンドとして\r\n# duffを追加します。\r\n# アセンブリ言語部分はCからgcc
+    -O0 -Sで出力したものです。\r\n</pre>\n\t"
+  :code: |
+    pgm_dir=$(mktemp -u /tmp/duff.XXXXXXXXXX)
+    pgm_name=duff
+    pgm_source=${pgm_name}.s
+
+    (
+        mkdir $pgm_dir
+        cd $pgm_dir
+        cat &gt; $pgm_dir/$pgm_source &lt;&lt;'__ASM__'
+            .text
+    .globl duff_builtin
+            .type   duff_builtin, @function
+    duff_builtin:
+            pushl   %ebp
+            movl    %esp, %ebp
+            pushl   %ebx
+            subl    $36, %esp
+            call    __i686.get_pc_thunk.bx
+            addl    $_GLOBAL_OFFSET_TABLE_, %ebx
+            cmpl    $0, 8(%ebp)
+            jne     .L2
+            call    builtin_usage@PLT
+            movl    $258, -28(%ebp)
+            jmp     .L3
+    .L2:
+            movl    8(%ebp), %eax
+            movl    4(%eax), %eax
+            movl    (%eax), %eax
+            movl    %eax, (%esp)
+            call    atoi@PLT
+            movl    %eax, -8(%ebp)
+            movl    8(%ebp), %eax
+            movl    (%eax), %eax
+            movl    %eax, 8(%ebp)
+            cmpl    $0, 8(%ebp)
+            jne     .L4
+            call    builtin_usage@PLT
+            movl    $258, -28(%ebp)
+            jmp     .L3
+    .L4:
+            movl    8(%ebp), %eax
+            movl    4(%eax), %eax
+            movl    (%eax), %eax
+            movl    %eax, (%esp)
+            call    atoi@PLT
+            movl    %eax, -12(%ebp)
+            movl    8(%ebp), %eax
+            movl    (%eax), %eax
+            movl    %eax, 8(%ebp)
+            cmpl    $0, 8(%ebp)
+            jne     .L5
+            call    builtin_usage@PLT
+            movl    $258, -28(%ebp)
+            jmp     .L3
+    .L5:
+            movl    8(%ebp), %eax
+            movl    4(%eax), %eax
+            movl    (%eax), %eax
+            movl    %eax, (%esp)
+            call    atoi@PLT
+            movl    %eax, -16(%ebp)
+            movl    -16(%ebp), %edx
+            movl    %edx, %eax
+            sarl    $31, %eax
+            movl    %eax, %ecx
+            shrl    $29, %ecx
+            leal    (%edx,%ecx), %eax
+            andl    $7, %eax
+            subl    %ecx, %eax
+            movl    %eax, -24(%ebp)
+            cmpl    $7, -24(%ebp)
+            ja      .L6
+            movl    -24(%ebp), %eax
+            sall    $2, %eax
+            movl    .L15@GOTOFF(%eax,%ebx), %eax
+            addl    %ebx, %eax
+            jmp     *%eax
+            .section        .rodata
+            .align 4
+            .align 4
+    .L15:
+            .long   .L7@GOTOFF
+            .long   .L8@GOTOFF
+            .long   .L9@GOTOFF
+            .long   .L10@GOTOFF
+            .long   .L11@GOTOFF
+            .long   .L12@GOTOFF
+            .long   .L13@GOTOFF
+            .long   .L14@GOTOFF
+            .text
+    .L7:
+            movl    -12(%ebp), %eax
+            movzbl  (%eax), %edx
+            movl    -8(%ebp), %eax
+            movb    %dl, (%eax)
+            addl    $1, -12(%ebp)
+    .L14:
+            movl    -12(%ebp), %eax
+            movzbl  (%eax), %edx
+            movl    -8(%ebp), %eax
+            movb    %dl, (%eax)
+            addl    $1, -12(%ebp)
+    .L13:
+            movl    -12(%ebp), %eax
+            movzbl  (%eax), %edx
+            movl    -8(%ebp), %eax
+            movb    %dl, (%eax)
+            addl    $1, -12(%ebp)
+    .L12:
+            movl    -12(%ebp), %eax
+            movzbl  (%eax), %edx
+            movl    -8(%ebp), %eax
+            movb    %dl, (%eax)
+            addl    $1, -12(%ebp)
+    .L11:
+            movl    -12(%ebp), %eax
+            movzbl  (%eax), %edx
+            movl    -8(%ebp), %eax
+            movb    %dl, (%eax)
+            addl    $1, -12(%ebp)
+    .L10:
+            movl    -12(%ebp), %eax
+            movzbl  (%eax), %edx
+            movl    -8(%ebp), %eax
+            movb    %dl, (%eax)
+            addl    $1, -12(%ebp)
+    .L9:
+            movl    -12(%ebp), %eax
+            movzbl  (%eax), %edx
+            movl    -8(%ebp), %eax
+            movb    %dl, (%eax)
+            addl    $1, -12(%ebp)
+    .L8:
+            movl    -12(%ebp), %eax
+            movzbl  (%eax), %edx
+            movl    -8(%ebp), %eax
+            movb    %dl, (%eax)
+            addl    $1, -12(%ebp)
+            subl    $8, -16(%ebp)
+            cmpl    $0, -16(%ebp)
+            jg      .L7
+    .L6:
+            movl    $0, -28(%ebp)
+    .L3:
+            movl    -28(%ebp), %eax
+            addl    $36, %esp
+            popl    %ebx
+            popl    %ebp
+            ret
+            .size   duff_builtin, .-duff_builtin
+    .globl duff_doc
+            .section        .rodata
+    .LC0:
+            .string "Duff's device implementation"
+            .section        .data.rel.local,"aw",@progbits
+            .align 4
+            .type   duff_doc, @object
+            .size   duff_doc, 8
+    duff_doc:
+            .long   .LC0
+            .long   0
+    .globl duff_struct
+            .section        .rodata
+    .LC1:
+            .string "duff"
+    .LC2:
+            .string "duff to from count"
+            .section        .data.rel,"aw",@progbits
+            .align 4
+            .type   duff_struct, @object
+            .size   duff_struct, 24
+    duff_struct:
+            .long   .LC1
+            .long   duff_builtin
+            .long   1
+            .long   duff_doc
+            .long   .LC2
+            .long   0
+            .section        .text.__i686.get_pc_thunk.bx,"axG",@progbits,__i686.get_pc_thunk.bx,comdat
+    .globl __i686.get_pc_thunk.bx
+            .hidden __i686.get_pc_thunk.bx
+            .type   __i686.get_pc_thunk.bx, @function
+    __i686.get_pc_thunk.bx:
+            movl    (%esp), %ebx
+            ret
+            .section        .note.GNU-stack,"",@progbits
+    __ASM__
+
+        cc -shared -o $pgm_name $pgm_source
+    )
+
+    enable -f $pgm_dir/$pgm_name $pgm_name
+    rm -rf $pgm_dir
+  :tags: []
+  :references:
+    :url: /web/20090512170312/http://anond.hatelabo.jp/20081111000645
+    :title: 彼氏が軽自動車に乗ってた。別れたい…
+- :id: '8041'
+  :parent_id: '216'
+  :url: http://ja.doukaku.org/comment/8041
+  :user_name: horiuchi
+  :user_url: /web/20090512170312/http://ja.doukaku.org/user/570/
+  :language: C
+  :time: 2008/11/15 07:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">以下のコードを、.NET Frameworkのリフレクションの機能で実装しました。\r\nC#のswitch文では
+    fall-through ができないのですが、ILでは関係なく動かせます。また、IL作るのにC#の言語機能が使えるのは面白いですね。\r\n\r\nstatic
+    void Copy(byte[] to, byte[] from) {\r\n    int count = from.Length;\r\n    int
+    index = 0;\r\n    switch (count % 8) {\r\n        case 7:\r\n            to[index]
+    = from[index++];\r\n            goto case 6;\r\n        case 6:\r\n            to[index]
+    = from[index++];\r\n            goto case 5;\r\n        case 5:\r\n            to[index]
+    = from[index++];\r\n            goto case 4;\r\n        case 4:\r\n            to[index]
+    = from[index++];\r\n            goto case 3;\r\n        case 3:\r\n            to[index]
+    = from[index++];\r\n            goto case 2;\r\n        case 2:\r\n            to[index]
+    = from[index++];\r\n            goto case 1;\r\n        case 1:\r\n            to[index]
+    = from[index++];\r\n            goto case 0;\r\n        case 0:\r\n            break;\r\n
+    \   }\r\n    while (index &lt; count) {\r\n        to[index] = from[index++];\r\n
+    \       to[index] = from[index++];\r\n        to[index] = from[index++];\r\n        to[index]
+    = from[index++];\r\n        to[index] = from[index++];\r\n        to[index] =
+    from[index++];\r\n        to[index] = from[index++];\r\n        to[index] = from[index++];\r\n
+    \   }\r\n}\r\n</pre>\n\t"
+  :code: |
+    using System;
+    using System.Reflection;
+    using System.Reflection.Emit;
+
+    namespace doukaku216 {
+        class Program {
+            public delegate void CopyDelegate(byte[] to, byte[] from);
+            public static CopyDelegate CreateCopy() {
+                DynamicMethod method = new DynamicMethod("Copy", null, new Type[] { typeof(byte[]), typeof(byte[]) });
+                ILGenerator ilgen = method.GetILGenerator();
+
+                LocalBuilder countLocal = ilgen.DeclareLocal(typeof(int));
+                LocalBuilder indexLocal = ilgen.DeclareLocal(typeof(int));
+
+                ilgen.Emit(OpCodes.Ldarg_1);
+                ilgen.Emit(OpCodes.Ldlen);
+                ilgen.Emit(OpCodes.Stloc_0);
+
+                ilgen.Emit(OpCodes.Ldc_I4_0);
+                ilgen.Emit(OpCodes.Stloc_1);
+
+                ilgen.Emit(OpCodes.Ldloc_0);
+                ilgen.Emit(OpCodes.Ldc_I4_8);
+                ilgen.Emit(OpCodes.Rem);
+
+                Label startLabel = ilgen.DefineLabel();
+                Label endLabel = ilgen.DefineLabel();
+                Label case1Label = ilgen.DefineLabel();
+                Label case2Label = ilgen.DefineLabel();
+                Label case3Label = ilgen.DefineLabel();
+                Label case4Label = ilgen.DefineLabel();
+                Label case5Label = ilgen.DefineLabel();
+                Label case6Label = ilgen.DefineLabel();
+                Label case7Label = ilgen.DefineLabel();
+                ilgen.Emit(OpCodes.Switch, new Label[] { endLabel, case1Label, case2Label, case3Label, case4Label, case5Label, case6Label, case7Label });
+                ilgen.Emit(OpCodes.Br, endLabel);
+
+                ilgen.MarkLabel(case7Label);
+                CreateCopyIL(ilgen);
+                ilgen.MarkLabel(case6Label);
+                CreateCopyIL(ilgen);
+                ilgen.MarkLabel(case5Label);
+                CreateCopyIL(ilgen);
+                ilgen.MarkLabel(case4Label);
+                CreateCopyIL(ilgen);
+                ilgen.MarkLabel(case3Label);
+                CreateCopyIL(ilgen);
+                ilgen.MarkLabel(case2Label);
+                CreateCopyIL(ilgen);
+                ilgen.MarkLabel(case1Label);
+                CreateCopyIL(ilgen);
+
+                ilgen.Emit(OpCodes.Br_S, endLabel);
+                ilgen.MarkLabel(startLabel);
+                for (int index = 0; index &lt; 8; index++) {
+                    CreateCopyIL(ilgen);
+                }
+
+                ilgen.MarkLabel(endLabel);
+                ilgen.Emit(OpCodes.Ldloc_1);
+                ilgen.Emit(OpCodes.Ldloc_0);
+                ilgen.Emit(OpCodes.Blt_S, startLabel);
+
+                ilgen.Emit(OpCodes.Ret);
+                return method.CreateDelegate(typeof(CopyDelegate)) as CopyDelegate;
+            }
+            private static void CreateCopyIL(ILGenerator ilgen) {
+                ilgen.Emit(OpCodes.Ldarg_0);
+                ilgen.Emit(OpCodes.Ldloc_1);
+                ilgen.Emit(OpCodes.Ldarg_1);
+                ilgen.Emit(OpCodes.Ldloc_1);
+                ilgen.Emit(OpCodes.Dup);
+                ilgen.Emit(OpCodes.Ldc_I4_1);
+                ilgen.Emit(OpCodes.Add);
+                ilgen.Emit(OpCodes.Stloc_1);
+                ilgen.Emit(OpCodes.Ldelem_U1);
+                ilgen.Emit(OpCodes.Stelem_I1);
+            }
+
+
+            static void Main(string[] args) {
+                byte[] to = new byte[100];
+                byte[] from = new byte[100];
+                for (byte index = 0; index &lt; from.Length; index++) {
+                    from[index] = index;
+                }
+                CopyDelegate copy = CreateCopy();
+                copy(to, from);
+                Console.WriteLine(BitConverter.ToString(to));
+            }
+        }
+    }
+  :tags:
+  - IL
+  :references:
+    :url: 
+    :title: 
+- :id: '8042'
+  :parent_id: '216'
+  :url: http://ja.doukaku.org/comment/8042
+  :user_name: horiuchi
+  :user_url: /web/20090512170312/http://ja.doukaku.org/user/570/
+  :language: C
+  :time: 2008/11/15 08:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>投稿してから気付いたので、ちゃんと元のアセンブラと同等のILが作れるのに気付いたので修正。</p>\n\n\t"
+  :code: |
+    using System;
+    using System.Reflection;
+    using System.Reflection.Emit;
+
+    namespace doukaku216 {
+        class Program {
+            public delegate void CopyDelegate(byte[] to, byte[] from);
+            public static CopyDelegate CreateCopy() {
+                DynamicMethod method = new DynamicMethod("Copy", null, new Type[] { typeof(byte[]), typeof(byte[]) });
+                ILGenerator ilgen = method.GetILGenerator();
+
+                LocalBuilder countLocal = ilgen.DeclareLocal(typeof(int));
+                LocalBuilder indexLocal = ilgen.DeclareLocal(typeof(int));
+
+                ilgen.Emit(OpCodes.Ldarg_1);
+                ilgen.Emit(OpCodes.Ldlen);
+                ilgen.Emit(OpCodes.Stloc_0);
+
+                ilgen.Emit(OpCodes.Ldc_I4_0);
+                ilgen.Emit(OpCodes.Stloc_1);
+
+                ilgen.Emit(OpCodes.Ldloc_0);
+                ilgen.Emit(OpCodes.Ldc_I4_8);
+                ilgen.Emit(OpCodes.Rem);
+
+                Label case0Label = ilgen.DefineLabel();
+                Label case1Label = ilgen.DefineLabel();
+                Label case2Label = ilgen.DefineLabel();
+                Label case3Label = ilgen.DefineLabel();
+                Label case4Label = ilgen.DefineLabel();
+                Label case5Label = ilgen.DefineLabel();
+                Label case6Label = ilgen.DefineLabel();
+                Label case7Label = ilgen.DefineLabel();
+                ilgen.Emit(OpCodes.Switch, new Label[] { case0Label, case1Label, case2Label, case3Label, case4Label, case5Label, case6Label, case7Label });
+
+                ilgen.MarkLabel(case0Label);
+                CreateCopyIL(ilgen);
+                ilgen.MarkLabel(case7Label);
+                CreateCopyIL(ilgen);
+                ilgen.MarkLabel(case6Label);
+                CreateCopyIL(ilgen);
+                ilgen.MarkLabel(case5Label);
+                CreateCopyIL(ilgen);
+                ilgen.MarkLabel(case4Label);
+                CreateCopyIL(ilgen);
+                ilgen.MarkLabel(case3Label);
+                CreateCopyIL(ilgen);
+                ilgen.MarkLabel(case2Label);
+                CreateCopyIL(ilgen);
+                ilgen.MarkLabel(case1Label);
+                CreateCopyIL(ilgen);
+
+                ilgen.Emit(OpCodes.Ldloc_1);
+                ilgen.Emit(OpCodes.Ldloc_0);
+                ilgen.Emit(OpCodes.Blt_S, case0Label);
+
+                ilgen.Emit(OpCodes.Ret);
+                return method.CreateDelegate(typeof(CopyDelegate)) as CopyDelegate;
+            }
+            private static void CreateCopyIL(ILGenerator ilgen) {
+                ilgen.Emit(OpCodes.Ldarg_0);
+                ilgen.Emit(OpCodes.Ldloc_1);
+                ilgen.Emit(OpCodes.Ldarg_1);
+                ilgen.Emit(OpCodes.Ldloc_1);
+                ilgen.Emit(OpCodes.Dup);
+                ilgen.Emit(OpCodes.Ldc_I4_1);
+                ilgen.Emit(OpCodes.Add);
+                ilgen.Emit(OpCodes.Stloc_1);
+                ilgen.Emit(OpCodes.Ldelem_U1);
+                ilgen.Emit(OpCodes.Stelem_I1);
+            }
+
+
+            static void Main(string[] args) {
+                byte[] to = new byte[100];
+                byte[] from = new byte[100];
+                for (byte index = 0; index &lt; from.Length; index++) {
+                    from[index] = index;
+                }
+                CopyDelegate copy = CreateCopy();
+                copy(to, from);
+                Console.WriteLine(BitConverter.ToString(to));
+            }
+        }
+    }
+  :tags:
+  - IL
+  :references:
+    :url: 
+    :title: 
+- :id: '8043'
+  :parent_id: '216'
+  :url: http://ja.doukaku.org/comment/8043
+  :user_name: 匿名
+  :user_url: /web/20090512170312/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/11/15 12:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  C#のSwitch もfall-throughですけど・\r\n（例文のように書けないという意味ですよね）\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8046'
+  :parent_id: '216'
+  :url: http://ja.doukaku.org/comment/8046
+  :user_name: horiuchi
+  :user_url: /web/20090512170312/http://ja.doukaku.org/user/570/
+  :language: 
+  :time: 2008/11/16 08:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>すいません、多少言葉が少なかったです。\n以下のようなコードはC#でも書けます。</p>\n<dl class=\"docutils\">\n<dt>switch
+    (n) {</dt>\n<dd>\n<p class=\"first\">case 0:\ncase 1:</p>\n<div class=\"system-message\">\n<p
+    class=\"system-message-title\">System Message: ERROR/3 (<tt class=\"docutils\">&lt;string&gt;</tt>,
+    line 7)</p>\nUnexpected indentation.</div>\n<blockquote>\n～何かの処理;\nbreak;</blockquote>\n<div
+    class=\"system-message\">\n<p class=\"system-message-title\">System Message: WARNING/2
+    (<tt class=\"docutils\">&lt;string&gt;</tt>, line 9)</p>\nBlock quote ends without
+    a blank line; unexpected unindent.</div>\n<dl class=\"last docutils\">\n<dt>case
+    2:</dt>\n<dd>～</dd>\n</dl>\n</dd>\n</dl>\n<div class=\"system-message\">\n<p class=\"system-message-title\">System
+    Message: WARNING/2 (<tt class=\"docutils\">&lt;string&gt;</tt>, line 11)</p>\nDefinition
+    list ends without a blank line; unexpected unindent.</div>\n<p>}</p>\n<p>しかし、case
+    0 とcase 1の間に何か処理がある場合には\nbreakかreturnかgotoを書け、とエラーになります。\nつまり、参考ページの通り『暗黙的な落下
+    (フォール スルー) をサポートしていません。』とのことです。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20090512170312/http://msdn.microsoft.com/ja-jp/library/06tc147t(VS.80).aspx
+    :title: switch (C#)
+- :id: '8047'
+  :parent_id: '216'
+  :url: http://ja.doukaku.org/comment/8047
+  :user_name: horiuchi
+  :user_url: /web/20090512170312/http://ja.doukaku.org/user/570/
+  :language: 
+  :time: 2008/11/16 08:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">なんだか、コードをコメントに書いたらエラーがでちゃいました。\r\n書いてあったのを復元しておきます。\r\n\r\nswitch
+    (n) {\r\n    case 0:\r\n    case 1:\r\n        ～何かの処理;\r\n        break;\r\n    case
+    2:\r\n        ～\r\n}\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8049'
+  :parent_id: '216'
+  :url: http://ja.doukaku.org/comment/8049
+  :user_name: 匿名
+  :user_url: /web/20090512170312/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2008/11/17 09:50 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>固定コードではいまいちなので、ループを完全に展開するようにしました。クラスローダのコンストラクタでコピーする個数を渡します。</p>\n\n\t"
+  :code: "import java.lang.reflect.Method;\nimport java.io.*;\n\npublic class Sample
+    extends ClassLoader {\n    private static final byte[] PROLOGUE = {-54, -2, -70,
+    -66, 0, 0, 0, 49, 0, 12, 10, 0, 3, 0, 9, 7, 0, 10, 7, 0, 11, \n            1,
+    0, 6, 60, 105, 110, 105, 116, 62, 1, 0, 3, 40, 41, 86, 1, 0, 4, 67, 111, 100,
+    101, 1, 0, 4, 99, 111, \n            112, 121, 1, 0, 7, 40, 91, 66, 91, 66, 41,
+    86, 12, 0, 4, 0, 5, 1, 0, 4, 67, 111, 112, 121, 1, 0, 16, 106, \n            97,
+    118, 97, 47, 108, 97, 110, 103, 47, 79, 98, 106, 101, 99, 116, 0, 33, 0, 2, 0,
+    3, 0, 0, 0, 0, 0, 2, 0, \n            1, 0, 4, 0, 5, 0, 1, 0, 6, 0, 0, 0, 17,
+    0, 1, 0, 1, 0, 0, 0, 5, 42, -73, 0, 1, -79, 0, 0, 0, 0, 0, 9, 0, \n            7,
+    0, 8, 0, 1, 0, 6};\n    private static final byte[] FUNC_DATA = {0, 4, 0, 3};\n
+    \   private static final byte[] ENTRY = {3,  61};\n    private static final byte[]
+    BODY = {42, 28, 43, 28, -124, 2, 1, 51, 84};\n    private static final byte[]
+    EPILOGUE = {-79, 0, 0, 0, 0, 0, 0};\n    int bytes;\n\n    public Sample(int num)
+    {\n        bytes = num;\n    }\n\n    @Override\n    public Class&lt;?&gt; findClass(String
+    name) throws ClassNotFoundException {\n        try {\n            ByteArrayOutputStream
+    bs = new ByteArrayOutputStream();\n            DataOutputStream os = new DataOutputStream(bs);\n
+    \           os.write(PROLOGUE);\n            os.writeInt(9 * bytes + 15);\n            os.write(FUNC_DATA);\n
+    \           os.writeInt(9 * bytes + 3);\n            os.write(ENTRY);\n            for
+    (int i = 0; i &lt; bytes; i++)\n                os.write(BODY);\n            os.write(EPILOGUE);\n
+    \           byte[] b = bs.toByteArray();\n            return defineClass(name,
+    b, 0, b.length);\n        } catch (IOException e) {\n            throw new ClassNotFoundException(e.getMessage());\n
+    \       }\n    }\n\n    public static void main(String[] args) throws Exception
+    {\n        byte[] to = new byte[100];\n        byte[] from = new byte[100];\n
+    \       for (int i = 0; i &lt; from.length; i++)\n            from[i] = (byte)
+    i;\n        Method[] ms = new Sample(from.length).loadClass(\"Copy\").getMethods();\n
+    \       ms[0].invoke(null, to, from);\n        System.out.println(java.util.Arrays.toString(to));\n
+    \   }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8330'
+  :parent_id: '216'
+  :url: http://ja.doukaku.org/comment/8330
+  :user_name: egtra
+  :user_url: /web/20090512170312/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2009/01/14 04:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>C++ですが、ただのインラインアセンブラではつまらないので、Xbyakを使いました。C++コードでアセンブリを表現し、実行時に機械語を作るというものです。\n</p>\n<p>ここでは、nバイト専用のコピールーチンを作るようにしてみました。\n</p>\n\n\n\n\t"
+  :code: |
+    #include &lt;cstdio&gt;
+    #include "xbyak/xbyak.h"
+
+    struct MakeDuff : Xbyak::CodeGenerator
+    {
+        MakeDuff(unsigned n)
+        {
+            push(edi);
+            push(esi);
+            mov(edi, ptr[esp+12+0]);
+            mov(esi, ptr[esp+12+4]);
+            mov(eax, edi);
+            mov(ecx, (n &gt;&gt; 3) + 1);
+            switch (n &amp; 7)
+            {
+                case 7: jmp("L7"); break;
+                case 6: jmp("L6"); break;
+                case 5: jmp("L5"); break;
+                case 4: jmp("L4"); break;
+                case 3: jmp("L3"); break;
+                case 2: jmp("L2"); break;
+                case 1: jmp("L1"); break;
+                case 0: break;
+            }
+        L("L0");
+            copyOneByte();
+        L("L7");
+            copyOneByte();
+        L("L6");
+            copyOneByte();
+        L("L5");
+            copyOneByte();
+        L("L4");
+            copyOneByte();
+        L("L3");
+            copyOneByte();
+        L("L2");
+            copyOneByte();
+        L("L1");
+            copyOneByte();
+            dec(ecx);
+            jnz("L0");
+            pop(esi);
+            pop(edi);
+            ret();
+        }
+    private:
+        void copyOneByte()
+        {
+            mov(al, ptr[esi]);
+            mov(ptr[edi], al);
+            inc(esi);
+            inc(edi);
+        }
+    };
+
+    typedef void* (*duff_memcpy_t)(void* dst, void const* src);
+
+    int main()
+    {
+        static const char src[] = "hello, world";
+        MakeDuff m(sizeof src);
+        duff_memcpy_t duff = reinterpret_cast&lt;duff_memcpy_t&gt;(m.getCode());
+        char dst[32];
+        duff(dst, src);
+        std::puts(dst);
+    }
+  :tags:
+  - Xbyak
+  :references:
+    :url: /web/20090512170312/http://homepage1.nifty.com/herumi/soft/xbyak.html
+    :title: Xbyak

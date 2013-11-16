@@ -1,0 +1,832 @@
+---
+:id: '67'
+:title: 続・ファイル内の重複行削除
+:comments:
+- :id: '3424'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3424
+  :user_name: にしお
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/10/17 08:03 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <p>「 <a class=\"reference\" href=\"/web/20081202130714/http://ja.doukaku.org/66/\">ファイル内の重複行削除(後優先)</a>
+    」の続編です。</p>\r\n<p>1行あたり平均60文字のデータが書き込まれた、巨大なファイルがあるとします。どのくらい巨大かというと、積んでいるメモリの10倍程度の容量があります。このファイルから、同じ内容が書かれている行を取り除くプログラムを作ってください。ただし、同じ内容が書かれている行のうち、最後に出現したものを残すものとします。</p>\r\n<p>このサイズのファイルを丸ごとメモリに読み込もうとしてしまうと、
+    <a class=\"reference\" href=\"/web/20081202130714/http://ja.wikipedia.org/wiki/%E3%82%B9%E3%83%A9%E3%83%83%E3%82%B7%E3%83%B3%E3%82%B0\">スラッシング
+    - Wikipedia</a> が発生することが予想されます。そこで行単位で読み込もう、というのが前回のお題の趣旨でした。</p>\r\n<p>しかし、与えられたファイルが運悪く「一致する部分のないファイル」である可能性を考えてみましょう。たとえ1行ずつ読んで処理をしたとしても、「重複するかどうかの判定」のために前の行をまるごとメモリに取っておいたのでは、最終的にファイルを丸ごとメモリに乗せることになってしまいます。</p>\r\n<p>こういうデータが入力されうる状況の場合にどう書くか、というお題です。前回のお題の条件3「ファイル全体を一度にメモリに読み込んで処理しないこと」を「たとえすべての行が異なるようなデータであっても、メモリの消費量をファイルサイズのおよそ10%程度に抑えること」と読み替えてください。</p>\r\n<p>\r\n追記：「メモリの10倍」はさすがに条件として厳しすぎました。「ファイルのサイズは4ギガバイト未満であり、メモリの消費量をファイルサイズの半分以下に抑えること」と読み替えてください。半分以下に抑えられているのならば題意は満たすものとします。もちろん、頑張ってもっと少ないメモリで動くようにするのもアリです。\r\n\t</p>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3427'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3427
+  :user_name: 匿名
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/10/17 14:57 GMT
+  :vote_count: '3'
+  :vote_score: '-3'
+  :body: "\n\t  <pre class=\"compact\">python付属ののDBパッケージを使っています。\r\n実際にどれだけのサイズが扱えるのか未確認なので\r\n本当にこれでうまく行くかどうかは分かりません。\r\n</pre>\n\t"
+  :code: |
+    import os, sys, dumbdbm, md5
+
+    db = dumbdbm.open('tmp')
+    fp = file(sys.argv[1], 'r')
+    i = 0
+    for s in fp:
+      k = md5.md5(s).digest()
+      if db.has_key(k):
+        db[db[k]] = '0'
+      db[k] = str(i)
+      db[str(i)] = '1'
+      i += 1
+
+    fp.seek(0)
+    i = 0
+    for s in fp:
+      if db[str(i)] == '1':
+        sys.stdout.write(s)
+      i += 1
+    fp.close()
+    db.close()
+
+    os.remove('tmp.dat')
+    os.remove('tmp.dir')
+    os.remove('tmp.bak')
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3429'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3429
+  :user_name: にしお
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/10/17 15:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">よかった、ちゃんと投稿できたんだ\r\n\r\nさすがに「メモリの10倍の量」は\r\n条件として厳しすぎたかなと後悔しています。\r\nまず4ギガを超えるファイルを扱えるのかとか…\r\n\r\nというわけで、少し条件をゆるめたいと思います。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3430'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3430
+  :user_name: 匿名
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/10/17 23:10 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">題意から離れてしまう突っ込みですが…\r\n大きいファイルを扱うのも大変ですが小さいファイルを扱うのも大変そうです\r\nおそらく数バイトのファイルで追加条件をクリアするのは不可能でしょう</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3431'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3431
+  :user_name: にしお
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/10/18 00:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  なるほど。ファイルサイズが小さい場合には処理系が食うメモリだけで制限を超えてしまう場合があるわけですね…。題意は1行あたり何バイトあれば重複行の削除ができるかという点なのでそういう定数オーダーの項は無視してもいいことにしましょうか。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3432'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3432
+  :user_name: ところてん
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/10/18 01:30 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">これ、ファイルを何回でもスキャンしていいとすれば、だいぶ楽になると思うんですがどうでしょう？\r\nファイルを何回もスキャンするのはスラッシングとは違う気がするんだけど、どうなんだろうなぁ。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3433'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3433
+  :user_name: 匿名
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/10/18 02:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">この問題では、「動くはず」と「動いた」は全然違う危険があります。\r\n具体的な検証用のファイル（あるいはその作り方）を示して、\r\n「実際に動作したものを投稿する」というルールが必要なのではないでしょうか。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3434'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3434
+  :user_name: にしお
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/10/18 03:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">もちろんそれは禁止されていません。\r\nというより、「ファイルを読むのは1回だけ」とか\r\n「別のファイルに書き出したりしてはいけない」とか\r\n条件をつけてしまうと解けなくなるのではないかと…\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3435'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3435
+  :user_name: にしお
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/10/18 03:08 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  「動くつもりで投稿したけど動かない」という事態は今までにも何度も起きましたが、「動かないコードを投稿してそれが発覚するとマイナス評価を受ける」「動かないことを指摘した人はプラス評価を受ける」という形でうまく回っているように思えます。\r<br><br>ルールを増やして縛るよりも、行動の結果に対する評価でフィードバックする方がいいのではないかと思っています。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3439'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3439
+  :user_name: katsu
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/117/
+  :language: Scheme
+  :time: 2007/10/18 03:17 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">バッファは1行です。\r\n頭から1行ずつ取り出して、\r\nそれ以降の行と比べ、同じ行が無ければ出力します。\r\n注目する行の移動には、seekを使ってます。\r\n計算量の事は聞かないで下さい。\r\n;
+    #3437の事は無かったことにして下さい。</pre>\n\t"
+  :code: |
+    (define (main args)
+      (call-with-input-file (cadr args)
+        (lambda (port)
+          (let loop ((next 0))
+            (port-seek port next)
+            (let ((buf (read-line port))
+                  (next (port-tell port)))
+              (unless (eof-object? buf)
+                (let loop1 ()
+                  (let1 bufn (read-line port)
+                    (cond ((eof-object? bufn) (print buf))
+                          ((not (string=? bufn buf)) (loop1)))))
+                (loop next)))))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '3440'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3440
+  :user_name: 匿名
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/10/18 03:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">&gt; 題意は1行あたり何バイトあれば重複行の削除ができるか\r\nということは、ハッシュに任意の行へのオフセット(ファイルサイズが4GB超なので仮に6バイト)\r\nだけを置いて一行60バイトなので必要なサイズが行あたり6/60で\r\n使用メモリがファイルサイズの10分の1になるというあたりが、想定していた回答なのかな。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3441'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3441
+  :user_name: mamamoto
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2007/10/18 03:31 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">全行一回なめて行頭n文字が同じだった行の位置を記録します。\r\nんで巻き戻して読んでいって、さっき記録した疑わしい行がある場合、実際見に行って比較、表示か非表示を決めます。\r\n\r\n60メガ100万行のファイルでメモリ30メガ、44秒くらいでした。</pre>\n\t"
+  :code: |
+    def fetch(fin, head)
+      cur = fin.pos
+      fin.pos = head
+      s = fin.gets
+      fin.pos = cur
+      s
+    end
+
+    def line_with_headpos(fin)
+      head = fin.pos
+      while line = fin.gets
+        yield(line, head)
+        head = fin.pos
+      end
+    end
+
+    def zoku(fn, n=5)
+      open(fn){|fin|
+        h = {}
+
+        line_with_headpos(fin){|line, head|
+          (h[line[0,n]] ||= []) &lt;&lt; head
+        }
+
+        fin.rewind
+
+        line_with_headpos(fin){|line, head|
+          flag = h[line[0,n]].any?{|ps|
+            head &lt; ps &amp;&amp; line == fetch(fin, ps)
+          }
+          print line unless flag
+        }
+      }
+    end
+
+    zoku(ARGV[0])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3442'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3442
+  :user_name: mamamoto
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/437/
+  :language: 
+  :time: 2007/10/18 03:37 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">6メガ10万行のファイルで実行してみましたが\r\nメモリ使用量が最大時25メガほど、\r\n100メガほどのテンポラリファイルが作成され、\r\n時間は24秒ほどでした。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3446'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3446
+  :user_name: katsu
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/117/
+  :language: 
+  :time: 2007/10/18 03:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">そういうことは、動くコードで語ってくれと言うのがここの主旨なんじゃないですかね。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3447'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3447
+  :user_name: mamamoto
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/437/
+  :language: 
+  :time: 2007/10/18 04:09 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">あとこのコードだとMD5が衝突したときのことが考慮されてないと思います。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3449'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3449
+  :user_name: にしお
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/10/18 04:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">まぁ、僕が出題時に考えていたのはまさにその通りの方法です。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3452'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3452
+  :user_name: mamamoto
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/437/
+  :language: C
+  :time: 2007/10/18 07:26 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">自分のRubyのもそうですが一行のみファイルには負ける、\r\nということでバッファ一文字で。\r\nがんがんseekします。</pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;fcntl.h&gt;
+    #include &lt;sys/types.h&gt;
+    #include &lt;unistd.h&gt;
+
+    char same(int fin, off_t a, off_t b){
+        char x[1],y[1];
+        char ret;
+
+        while (1){
+            lseek(fin, a++, SEEK_SET);
+            ret = read(fin, x, 1);
+
+            lseek(fin, b++, SEEK_SET);
+            ret += read(fin, y, 1);
+
+            if (ret == 1 || x[0] != y[0]){
+                return 0;
+            }
+            if (ret == 0 || x[0] == '\n'){
+                return 1;
+            }
+        }
+    }
+
+    off_t next_line(int fin, off_t a){
+        char x[1];
+        char ret;
+
+        lseek(fin, a, SEEK_SET);
+        do{
+            ret = read(fin, x, 1);
+        }while(x[0] != '\n' &amp;&amp; ret &gt; 0);
+
+        return ret == 0 ? 0 : lseek(fin, 0, SEEK_CUR);
+    }
+
+    void print(int fin, off_t a){
+        char x[1];
+        char ret;
+
+        lseek(fin, a, SEEK_SET);
+        do{
+            ret = read(fin, x, 1);
+            if (ret == 0)
+                break;
+
+            printf("%c", x[0]);
+        }while(x[0] != '\n');
+    }
+
+    void zoku(int fin){
+        off_t a=0,b=0;
+
+        do{
+            char flag = 1;
+
+            lseek(fin, a, SEEK_SET);
+            b = a;
+            while ((b = next_line(fin, b))){
+                if (same(fin, a, b)){
+                    flag = 0;
+                    break;
+                }
+            }
+            if (flag)
+                print(fin ,a);
+
+        }while((a = next_line(fin, a)));
+    }
+
+    int main(int argc, char** argv){
+        int fin;
+
+        if (argc &lt;= 1)
+            return 1;
+
+        fin = open(argv[1], O_RDONLY);
+
+        if (fin &lt; 0)
+            return 1;
+
+        zoku(fin);
+
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3453'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3453
+  :user_name: Y
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/428/
+  :language: SQL
+  :time: 2007/10/18 07:39 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">使い方：sh uniq.sh input.txt\r\n\r\nhttp://unicode.org/にあるUnihan.txtを37個連結した、\r\n約4000万行（約1GB）のファイルの処理に、\r\nCore2
+    6700, メモリ2GB、MySQL 5.0.45（設定ファイルはmy-huge.cnf）で、\r\n約23分かかりました（消費メモリは約400MB）\r\n\r\nuniq.shは下に</pre>\n\t"
+  :code: |
+    mysql -uroot -N -r test &lt;&lt; EOF
+
+    DROP TABLE IF EXISTS tmp;
+    CREATE TABLE tmp (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      line LONGTEXT NOT NULL,
+      INDEX (line(10))
+    ) CHARACTER SET UTF8;
+
+    LOAD DATA LOCAL INFILE "$1" INTO TABLE tmp FIELDS TERMINATED BY '\n' (line);
+
+    SELECT line FROM tmp GROUP BY line ORDER BY max(id);
+
+    EOF
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3455'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3455
+  :user_name: sawat
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/322/
+  :language: 
+  :time: 2007/10/18 09:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">この問題は「ファイルの書き換え」ではなく、「標準出力に表示」でもOKですか？</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3456'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3456
+  :user_name: とーん
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/466/
+  :language: Ruby
+  :time: 2007/10/18 09:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">構想は同じですが、なんかすっきりしてないなぁ。\r\nline_with_headposを拝借させていただきました。</pre>\n\t"
+  :code: "def line_with_headpos(fin)\n  head = fin.pos\n  while line = fin.gets\n
+    \   yield(line, head)\n    head = fin.pos\n  end\nend\n\ndef deldup(file)\n  require
+    'digest/md5'\n  \n  buf = Hash.new\n  open(file, 'r') {|io|\n    \n    line_with_headpos(io){|line,
+    head|\n      (buf[Digest::MD5.digest(line)] ||= []) &lt;&lt; head\n    }\n    \n
+    \   buf.each_value {|val|\n      0.upto(val.size-2) {|i|\n        io.pos = i\n
+    \       idat = io.gets\n        i.upto(val.size-1) {|j|\n          io.pos = j\n
+    \         if idat == io.gets\n            val[i] = -1\n            break\n          end\n
+    \       }\n      }\n    }\n    \n    buf.values.flatten.select {|i|\n      i !=
+    -1\n    }.sort.each {|i|\n      io.pos = i\n      print io.gets\n    }\n  }\nend\n\ndeldup(ARGV[0])\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3458'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3458
+  :user_name: katsu
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/117/
+  :language: 
+  :time: 2007/10/18 11:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">一文字バッファに萌えました。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3459'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3459
+  :user_name: 匿名
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/10/18 13:46 GMT
+  :vote_count: '5'
+  :vote_score: '-5'
+  :body: "\n\t  <pre class=\"compact\">#3427を投稿したものです。\r\n\r\n今や同じmd5値を持つデータが生成可能らしいですが\r\n逆に言えば敢えてそういうデータを処理するのでもない限り\r\n特に問題ない、というわけには行きませんか。\r\n\r\nもともとこの手のダイジェスト関数は一意とみなせる\r\nと言うところに価値があるわけですから。\r\n\r\nmd5には原理的な脆弱性が見つかっていますので、\r\n実用的なプログラムでは使わない方がいいでしょう、\r\nとだけは言い添えておきます。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3460'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3460
+  :user_name: kenaxt
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/456/
+  :language: Ruby
+  :time: 2007/10/18 18:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">外部コマンドsortを使ってます。\r\n・対象ファイルの各行のハッシュ値をテンポラリファイルに出力\r\n・テンポラリファイルを順ソート後、読み込んで重複行数をカウント\r\n・対象ファイルを再読込、重複行に出会うたびに重複行数カウントをデクリメント\r\n100万行、60MBの数字のみファイルで、実行時間は50秒、メモリ35MB使用です。\r\nマシンはCelleon2.8Ghz、メモリ1GB、Ubuntu7.04。</pre>\n\t"
+  :code: |
+    require 'tempfile'
+
+    def make_big_seq_file(cntmax,lthmin,eps)
+      cntmax.times {
+        s = ""
+        (lthmin+rand(eps)).times {
+          s &lt;&lt; rand(10).to_s
+        }
+        puts s
+      }
+    end
+
+    #make_big_seq_file(10**6,50,20)
+
+    def double_line_reject(f)
+      h = Hash.new(0)
+
+      temp = Tempfile::new("foobar")
+      open(f) {|fin|
+        while line = fin.gets
+          temp.puts(line.hash)
+        end
+        temp.close
+
+        f = open("|sort #{temp.path}")
+        iold = ""
+        f.each {|i|
+          i = i.chomp.to_i
+          h[i] += 1 if iold == i
+          iold = i
+        }
+        fin.rewind
+        while line = fin.gets
+          puts line if h[line.hash] &lt; 1
+          h[line.hash] -= 1
+        end
+      }
+    end
+
+    double_line_reject(ARGV[0])
+  :tags:
+  - Ruby1.8.5
+  :references:
+    :url: 
+    :title: 
+- :id: '3461'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3461
+  :user_name: yohei
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/415/
+  :language: C
+  :time: 2007/10/18 18:45 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">ハッシュテーブルを作成して。\r\n60MB 100万行で メモリ30MB、40秒くらいでした。\r\n</pre>\n\t"
+  :code: "#include &lt;string&gt;\n#include &lt;iostream&gt;\n#include &lt;fstream&gt;\n#include
+    &lt;list&gt;\n#include &lt;vector&gt;\n#include &lt;numeric&gt;\n#include &lt;algorithm&gt;\n#include
+    &lt;functional&gt;\nusing namespace std;\n\ntemplate &lt;int SIZE&gt;\nstruct
+    StringHashFunc : public binary_function&lt;int, unsigned char, int&gt; {\n    int
+    operator()(int h, unsigned char c) const {\n        return (h * 137 + c) % SIZE;\n
+    \   }\n};\ntemplate &lt;class T, int SIZE&gt;\nclass StringHashTable {\n    vector&lt;list&lt;T&gt;
+    &gt; table;\npublic:\n    StringHashTable&lt;T, SIZE&gt;() : table(SIZE) {}\n
+    \   list&lt;T&gt; &amp;operator[](const string &amp;s) {\n        return table[accumulate(s.begin(),
+    s.end(), 0, StringHashFunc&lt;SIZE&gt;())];\n    }\n};\n\nvoid uniq(const char
+    *fname_in, const char *fname_out) {\n    StringHashTable&lt;ifstream::off_type,
+    399989&gt; table;\n\n    ifstream fin(fname_in);   if (!fin)  return;\n    ofstream
+    fout(fname_out); if (!fout) return;\n\n    string s0, s1;\n    ifstream::pos_type
+    p0, p1;\n    \n    p0 = 0;\n    while (getline(fin, s0)) {\n        list&lt;ifstream::off_type&gt;
+    &amp;q = table[s0];\n        p1 = fin.tellg();\n        if (q.empty()) {\n            q.push_back(p0);\n
+    \       } else {\n            if (fin.eof()) fin.clear();\n            list&lt;ifstream::off_type&gt;::iterator
+    ite;\n            for (ite = q.begin(); ite != q.end(); ++ite) {\n                fin.seekg(*ite,
+    ios::beg);\n                getline(fin, s1);\n                if (s0 == s1) break;\n
+    \           }\n            if (ite == q.end()) q.push_back(p0);\n            else
+    \               *ite = p0;\n            fin.seekg(p1, ios::beg);\n        }\n
+    \       p0 = p1;\n    }\n    \n    fin.clear();\n    fin.seekg(0, ios::beg);\n
+    \   p0 = 0;\n    while (getline(fin, s0)) {\n        if (fin.eof()) {\n            fout
+    &lt;&lt; s0 &lt;&lt; flush;\n        } else {\n            list&lt;ifstream::off_type&gt;
+    &amp;q = table[s0];\n            if (find(q.begin(), q.end(), p0) != q.end())
+    {\n                fout &lt;&lt; s0 &lt;&lt; '\\n';\n            }\n        }\n
+    \       p0 = fin.tellg();\n    }\n}\n\nint main(void) {\n    uniq(\"dup.txt\",
+    \"uniq.txt\");\n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3463'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3463
+  :user_name: shiro
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/10/18 23:33 GMT
+  :vote_count: '7'
+  :vote_score: '7'
+  :body: "\n\t  <pre class=\"compact\">&gt; 今や同じmd5値を持つデータが生成可能らしいですが\r\n&gt; 逆に言えば敢えてそういうデータを処理するのでもない限り\r\n&gt;
+    特に問題ない、というわけには行きませんか。\r\n&gt; もともとこの手のダイジェスト関数は一意とみなせる\r\n&gt; と言うところに価値があるわけですから。\r\n\r\n目的によります。そして、今回のお題に対して衝突を無視するのはどっちかというとまずいと思います。\r\nfalse
+    positiveがごく少数生じても良い場合と、ごくわずかでもその可能性があったら\r\n(それ単独では)使えない場合とがあるわけですよ。\r\n\r\n(まあ、お題の元ネタがヒストリファイルの整理ってことで、\r\n打ったはずのコマンドが出現しない確率がわずかにあっても\r\nそれほど困らないだろう、という議論は出来ると思いますが。\r\n一般的に「一意とみなせるから良いはずだ」という議論は乱暴だと思います)\r\n\r\n&gt;
+    md5には原理的な脆弱性が見つかっていますので、\r\n&gt; 実用的なプログラムでは使わない方がいいでしょう、\r\n&gt; とだけは言い添えておきます。\r\n\r\n目的によります。そして、今回のお題のような問題にmd5を使うのは、\r\n衝突へのフォローさえ入れれば、実用的なプログラムに使っても*全く*問題ありません。\r\n(もっとも、今回の問題の場合もっとナイーブなハッシュ関数で良いと思いますが)\r\n\r\n「脆弱性」とか「一意とみなせる」とかいう話は、それにくっついてる文脈があるんですよ。\r\n文脈を無視して言葉だけ取り出して議論するのは無意味です。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3464'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3464
+  :user_name: 匿名
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/10/19 03:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">参加者の総意で評価が形成されていく\r\nというのはいいアイディアですね。\r\n\r\nでも、今回は、4G程度が目標だったはずが、\r\n参加者の総意で60M程度に落ち着きそうで、\r\nちょっと残念な気がします。\r\n\r\nまあ、これからに期待ですね。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3465'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3465
+  :user_name: にしお
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/10/19 09:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">4Gでも問題なく動くコードを投稿いただければ\r\n少なくとも僕はプラス評価をつけますよ。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3466'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3466
+  :user_name: sawat
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/322/
+  :language: Java
+  :time: 2007/10/19 09:44 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">ファイルを2回読み込み、1回目でハッシュを使って重複している行を洗い出して、2回目で出力をします。\r\n\r\n45万行76M
+    byteのファイルについて、最大ヒープサイズ20Mbyte（-Xmx20m）でOutOfMemory発生しませんでした。全体の使用メモリは30Mちょっと。\r\n実行後のファイルは8万行19Mbyteでした。\r\n使用するメモリ量は2回以上出現する文字列の種類に依存します。</pre>\n\t"
+  :code: "import java.io.*;\nimport java.util.*;\n\npublic class Uniq {\n   public
+    static void main(String[] args) throws FileNotFoundException, IOException {\n
+    \     File file = new File(args[0]);\n\n      printUniq(file, findDuplications(file));\n
+    \  }\n\n   private static Map&lt;String, Integer&gt; findDuplications(File file)\n
+    \           throws FileNotFoundException, IOException {\n      BufferedReader
+    br = new BufferedReader(new FileReader(file));\n      try {\n         Set&lt;Integer&gt;
+    hash = new HashSet&lt;Integer&gt;();\n         Map&lt;String, Integer&gt; dupStrings
+    = new HashMap&lt;String, Integer&gt;();\n         String line;\n         int lineCount
+    = 0;\n         while ((line = br.readLine()) != null) {\n            if (!hash.add(line.hashCode()))
+    {\n               dupStrings.put(line, lineCount);\n            }\n            lineCount++;\n
+    \        }\n         return dupStrings;\n      } finally {\n         br.close();\n
+    \     }\n   }\n   private static void printUniq(File file, Map&lt;String, Integer&gt;
+    map)\n            throws FileNotFoundException, IOException {\n      BufferedReader
+    br = new BufferedReader(new FileReader(file));\n      try {\n         String line;\n
+    \        int lineCount = 0;\n         while ((line = br.readLine()) != null) {\n
+    \           final Integer last = map.get(line);\n            if (last == null
+    || last.intValue() == lineCount) {\n               System.out.println(line);\n
+    \           }\n            lineCount++;\n         }\n      } finally {\n         br.close();
+    \n      }\n   }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3468'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3468
+  :user_name: 匿名
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/10/19 10:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  全部メモリ内で処理しているように見えるのはきのせいですか？\r\nお題の真意的に、重複行あるなしにかかわらず処理できないといけないと思うので\r\nこの場合重複なしだったらまずい予感？\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3469'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3469
+  :user_name: 匿名
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/10/19 10:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">早とちりしました。\r\nメモリ使用量についてちゃんと注意書きがありましたね^^;\r\n失礼しました。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3470'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3470
+  :user_name: 匿名
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/10/19 13:20 GMT
+  :vote_count: '3'
+  :vote_score: '-3'
+  :body: "\n\t  <pre class=\"compact\">専門的な知識は持ち合わせていませんのこれ以上の議論はしませんが\r\n私が知りたいのは、\r\n「このコードにおいて既知の手法を使った人為的な衝突以外の衝突を考慮する必要があるのか」\r\nただそれだけです。\r\n\r\n必要がないのなら、このコードにおいて自前のデータを処理する場合に限れば\r\n衝突を考慮しなくて構わないはずだし、必要があるのならやっぱりmd5は捨てだな、と言うだけです。\r\n\r\n他の人がコードを利用したいならその人がどうにかすればいいわけで私は関知しません。\r\n\r\nこれで何か問題ありますか？\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3471'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3471
+  :user_name: raynstard
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2007/10/19 14:18 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">個人的思うのは。\r\n別に性能要件があるわけではないので、\r\n結果を見て4G程度でも耐えられるという根拠になれば\r\n十分ではないかなーなんて思います。\r\n\r\nそういった点で言うとコメントで\r\nどのくらいのペースで使用メモリが増えていくのとか\r\nあると良かったのかもしれませんね。\r\n#
+    めんどくさいからきっと僕もしないのだろうけど(笑</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3472'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3472
+  :user_name: sumim
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/10/19 14:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk で。\n\t"
+  :code: "| in memo currPos line out |\r\nin := FileStream oldFileNamed: 'in.txt'.\r\nmemo
+    := Dictionary new.\r\n\r\n[   currPos := in position.\r\n    (line := in nextLine)
+    notNil\r\n] whileTrue: [memo at: line hash put: currPos].\r\nin reset.\r\n\r\nout
+    := FileStream forceNewFileNamed: 'out.txt'.\r\nmemo values sort do: [:pos |\r\n
+    \   out nextPutAll: (in position: pos; nextLine); cr].\r\nin close. out edit\r\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '3473'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3473
+  :user_name: sumim
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2007/10/19 14:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  なぜか言語欄の選択が投稿に反映されなかったようです。お手数ですが、「Other」→「Smalltalk」への差し替えをお願いいたします。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3474'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3474
+  :user_name: にしお
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/10/19 14:47 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">「衝突する可能性がある」という問題はmd5に起因するものではなく\r\n一般的にハッシュ関数すべてにあるものなので\r\nmd5で意図的に衝突を起こさせる方法が見つかっているかどうかとは\r\nまったく無関係じゃないですか？\r\n\r\n今回の件に関してmd5に非はないですよね？\r\n\r\nアルゴリズムがmd5であれSHA-1であれ、\r\n今回のような使い方をすれば\r\n「きわめて低い確率で期待と違う挙動をする」\r\nとうバグを作り込むことになってしまいます。\r\n「これはとても危険なコーディングスタイルだ」\r\nというのがあなたにマイナス評価をつけている人たちの言いたいことなのでは。\r\n\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3475'
+  :parent_id: '67'
+  :url: http://ja.doukaku.org/comment/3475
+  :user_name: shiro
+  :user_url: /web/20081202130714/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/10/19 23:21 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  \n<p>にしおさんがフォローしてるけど。\n</p>\n<p>&gt;「このコードにおいて既知の手法を使った人為的な衝突以外の衝突を考慮する必要があるのか」\n</p>\n<p>だから目的によります。\n
+    \  ちなみに、セキュリティ用途(一方向関数としてハッシュを使っている場合)でなければ、人為的な衝突か偶然な衝突かは関係ないことの方が\n   多いと思います。今回の問題は情報圧縮のためにハッシュを使ってるので、原因が何であれ衝突は衝突ですね。\n</p>\n<p>今回のようなお題の場合、大抵のプログラマは経験的に衝突しちゃまずいと\n
+    \  考えると思うんですが、その判断が間違ってる可能性もあります。\n   ほんとうに衝突を考慮する必要があるのかどうか知りたければ、\n   「今回の問題の要件において、衝突が生じる可能性はxx%であり、コマンドのヒストリファイルという前提で一日yy個のコマンドを叩いているとすれば、衝突が起きるのはzz年に一度の確率である。そんなことを気にするよりもディスクのクラッシュを心配した方がよい。よって今回のお題で衝突を考慮する必要はない。」\n
+    \  というような定量的な議論をしてみると良いでしょう。\n   みんなそれが面倒だから安全側に倒れてるだけで、実は意外な結論になるかもしれません。\n   私も見てみたいです。そういう議論。\n</p>\n<p>&gt;
+    これで何か問題ありますか？\n</p>\n<p>これも目的によります:-)\n   あなたが趣味で自分で使うコードを書いているだけで、\n   プログラミングの面白さについてもこれ以上踏み込む\n
+    \  つもりがないのなら、何も問題ないと思います。\n</p>\n<p>そうでないなら、一度「ハッシュ」というものについて\n   調べてみるといいですよ。\n
+    \  深追いするとすごく面白いです。\n</p>\n\n\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 

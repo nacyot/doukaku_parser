@@ -1,0 +1,2084 @@
+---
+:id: '37'
+:title: モノクロ画像の類似検索
+:comments:
+- :id: '3393'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/3393
+  :user_name: にしお
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/02 13:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  1024 * 768のサイズのモノクロ二値画像が100枚あるとします。\r\nその中の一枚を指定したときに、その画像以外で一番その画像に似ている画像を見つけるコードを書いてください。\r\nなお、同じ位置のピクセルが同じ値であるほど「似ている」とします。
+    \r\n<p>\r\n説明のために2*3のサイズで説明します。\r\n</p>\n<pre>\r\n画像1\r\n■■■\r\n■■■\r\n\r\n画像2\r\n□□□\r\n□□□\r\n\r\n画像3\r\n■■■\r\n□□□\r\n\r\n指定された画像\r\n■■■\r\n■□□\r\n</pre>\r\nこの場合、画像1とは4つのピクセルが同じ値なので類似度は4、\r\n画像2との類似度は2、画像3とは上半分の3つと下半分の白2つが一致するので類似度は5、よって一番類似しているのは画像3となります。\r\n<p>\r\nこのお題の趣旨は検索処理の実行速度にあるので、\r\n実行してみて実用的な速度で動くことを確認することを強く推奨します。\r\n可能であればマシンのスペックと実行にかかった時間を書いてもらえると参考になっておもしろいと思います。\r\n</p>\n<p>\r\nなおこのお題はC言語からスクリプト言語への挑戦状です。\r\nスクリプト言語に有利な問題が多すぎるので、この手の問題も大募集します。\r\n\t</p>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1733'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1733
+  :user_name: cats
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/08/02 15:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  100枚で0.2秒でした。Celeron 1.4GHz\r\nimgフォルダの中からtarget.pngに近いものを出力\n\t"
+  :code: |
+    using System;
+    using System.Diagnostics;
+    using System.Drawing;
+    using System.IO;
+    class Program
+    {
+      static void Main()
+      {
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
+        Console.WriteLine(Directory.GetCurrentDirectory());
+        bool[] target = GetBit("target.png");
+        int min = int.MaxValue;
+        string near = "";
+        foreach (string s in Directory.GetFiles("img", "*.png"))
+        {
+          bool[] bb = GetBit(s);
+          int n = Math.Min(target.Length, bb.Length), k = Math.Max(target.Length, bb.Length) - n;
+          for (int i = 0; i &lt; n; i++) if (target[i] != bb[i]) ++k;
+          if (k &lt; min) { min = k; near = s; }
+        }
+        sw.Stop();
+        Console.WriteLine("near = {0}  time = {1} sec", near, sw.Elapsed.TotalSeconds);
+      }
+      static bool[] GetBit(string pic)
+      {
+        Bitmap bmp = new Bitmap(pic);
+        bool[] res = new bool[bmp.Width * bmp.Height];
+        int k = 0;
+        for (int i = 0; i &lt; bmp.Height; i++)
+          for (int j = 0; j &lt; bmp.Width; j++) res[k++] = bmp.GetPixel(j, i).ToArgb() != -1;
+        bmp.Dispose();
+        return res;
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1734'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1734
+  :user_name: cats
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/172/
+  :language: 
+  :time: 2007/08/02 15:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  しまった。画像のサイズがテスト用の20x20のままでした。なので、実際はもっと時間がかかるはず。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1735'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1735
+  :user_name: 匿名
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/08/02 15:17 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">今しかた思いついたもので、テストすらしてませんが・・・</pre>\n\t"
+  :code: "public class Answer {\n\t/**\n\t * byte[i][j] = 1のとき黒、0のとき白とする。\n\t * XOR演算をすれば２つのドットが等しければ0、等しくなければ1になるので\n\t
+    * それを利用する\n\t */\n\tpublic static int calculateSimilarity(final byte[][] source,
+    final byte[][] target) {\n\t\tfinal int MAX_SCORE = source.length;\n\t\tint retVal
+    = MAX_SCORE;\n\t\tfor(int i=0; i&lt;source.length(); i++) {\n\t\t\tfor(int j=0;
+    j&lt;source.length(); j++) {\n\t\t\t\tretVal -= (source[i][j]^target[i][j]);\n\t\t\t}\n\t\t}\n\t\treturn
+    MAX_SCORE - retVal;\n\t}\n\t\n\tpublic static int getMostSimilarImage(final byte[][][]
+    source, byte[][] target ) {\n\t\tint bestImageIndex = -1;\n\t\tint bestImageScore
+    = 0;\n\t\tfor(int i=0; i&lt; source.length; i++) {\n\t\t\tscore =  calculateSimilarity(source[i],
+    target)\n\t\t\tif(bestImageScore &lt; score) {\n\t\t\t\tbestImageIndex = i;\n\t\t\t\tbestImageScore
+    = score;\n\t\t\t}\n\t\t}\n\t\t\n\t\treturn bestImageIndex;\n\t}\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1736'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1736
+  :user_name: hamano
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/25/
+  :language: C
+  :time: 2007/08/02 15:25 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  わーい。C言語からの挑戦だ。\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;time.h&gt;
+
+    #define WIDTH (1024/8)
+    #define HEIGHT 768
+
+    int similar(unsigned char img1[WIDTH][HEIGHT],
+                unsigned char img2[WIDTH][HEIGHT])
+    {
+        int x, y, eor, ret=0;
+        for(y=0; y&lt;HEIGHT; y++){
+            for(x=0; x&lt;WIDTH; x++){
+                eor = img1[x][y] ^ img2[x][y];
+                eor = ((eor &amp; 0xAA) &gt;&gt; 1) + (eor &amp; 0x55);
+                eor = ((eor &amp; 0xCC) &gt;&gt; 2) + (eor &amp; 0x33);
+                eor = ((eor &gt;&gt;4 ) + eor) &amp; 0x0F;
+                ret+= 8 - eor;
+            }
+        }
+        return ret;
+    }
+
+    int main(void)
+    {
+        int x, y;
+        time_t now;
+        unsigned char img1[WIDTH][HEIGHT];
+        unsigned char img2[WIDTH][HEIGHT];
+
+        /* ランダムな画像を２つ作る */
+        time(&amp;now);
+        srand(now);
+        for(y=0; y&lt;HEIGHT; y++){
+            for(x=0; x&lt;WIDTH; x++){
+                img1[x][y] = rand() % 256;
+                img2[x][y] = rand() % 256;
+            }
+        }
+        printf("similar=%d\n", similar(img1, img2));
+        return EXIT_SUCCESS;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1738'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1738
+  :user_name: rihi
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/256/
+  :language: Haskell
+  :time: 2007/08/02 16:00 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  Celeron M 1.3GHzで0.25秒でした。\n\t"
+  :code: |
+    import Foreign
+    import System.IO
+    import Control.Exception
+    import Control.Monad
+    import Data.List
+    import Data.Char
+    import System.Environment
+
+
+    width, height :: Int
+    (width, height) = (1024, 768)
+
+    bmpLineLen = (width+31) `div` 32 * 4
+    imageSize = bmpLineLen * height
+
+    withBitmap :: FilePath -&gt; (Ptr Word32 -&gt; IO a) -&gt; IO a
+    withBitmap path action = do
+      h &lt;- openFile path ReadMode
+      (`finally` hClose h) $ do
+        c &lt;- hGetChar h
+        c1 &lt;- hGetChar h
+        when ([c, c1] /= "BM") $ fail $ path ++ ": not a bitmap file"
+        _:_:sofs &lt;- replicateM 6 $ hGetChar h
+        let pos = foldr (\c v -&gt; ord c + 256 * v) 0 sofs
+        hSeek h AbsoluteSeek $ fromIntegral pos
+        allocaBytes imageSize $ \ptr -&gt; do
+          v &lt;- hGetBuf h ptr imageSize
+          action ptr
+
+    difference :: Ptr Word32 -&gt; Ptr Word32 -&gt; IO Int
+    difference p0 p1 = loop p0 p1 0 (plusPtr p0 imageSize)
+      where
+        loop p0 p1 cnt last
+          | p0 `seq` p1 `seq` cnt `seq` last `seq` False = undefined
+        loop p0 p1 cnt last
+          | p0 == last = return cnt
+          | otherwise = do
+            b0 &lt;- peek p0
+            b1 &lt;- peek p1
+            loop (advancePtr p0 1) (advancePtr p1 1) (cnt + count32 (xor b0 b1)) last
+
+
+    -- 立っているビットの数を数える
+    -- http://katsura-kotonoha.sakura.ne.jp/prog/c/tip0001e.shtml
+
+    count32 :: Word32 -&gt; Int
+    count32 a = let
+      b = shiftR (a .&amp;. 0xaaaaaaaa) 1 + (a .&amp;. 0x55555555)
+      c = shiftR (b .&amp;. 0xcccccccc) 2 + (b .&amp;. 0x33333333)
+      d = shiftR (c .&amp;. 0xf0f0f0f0) 4 + (c .&amp;. 0x0f0f0f0f)
+      e = shiftR (d .&amp;. 0xff00ff00) 8 + (d .&amp;. 0x00ff00ff)
+      f = shiftR (e .&amp;. 0xffff0000) 16 + (e .&amp;. 0x0000ffff)
+      in fromIntegral f
+
+
+    files :: [FilePath]
+    files = map name [0..99]
+      where
+        name n = "image" ++ show n ++ ".bmp"
+
+    main = do
+      [file] &lt;- getArgs
+      withBitmap file $ \bmp -&gt; do
+        let
+          comp f = withBitmap f $ \bmp1 -&gt; do
+            d &lt;- difference bmp bmp1
+            return (d, f)
+        rs &lt;- mapM comp $ delete file files
+        putStrLn $ snd $ minimum rs
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1739'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1739
+  :user_name: hamano
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/25/
+  :language: C
+  :time: 2007/08/02 16:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">すいません、#1736 は2枚の画像の類似度を出したところで終わっていましたm(--)m\r\nちゃんと
+    100枚の画像を比較する続きのコードです。\r\n\r\n# segmentation fault で悩んだのですが ulimit でスタックサイズの制限を外す必要がありました。\r\n%
+    ulimit -s unlimited</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;time.h&gt;\n\n#define
+    WIDTH (1024/8)\n#define HEIGHT 768\n\nint similar(unsigned char img1[WIDTH][HEIGHT],\n
+    \           unsigned char img2[WIDTH][HEIGHT])\n{\n    int x, y, eor, ret=0;\n
+    \   for(y=0; y&lt;HEIGHT; y++){\n        for(x=0; x&lt;WIDTH; x++){\n            eor
+    = img1[x][y] ^ img2[x][y];\n            eor = ((eor &amp; 0xAA) &gt;&gt; 1) +
+    (eor &amp; 0x55);\n            eor = ((eor &amp; 0xCC) &gt;&gt; 2) + (eor &amp;
+    0x33);\n            eor = ((eor&gt;&gt;4) + eor) &amp; 0x0F;\n            ret+=
+    8 - eor;\n        }\n    }\n    return ret;\n}\n\nint main(void)\n{\n    int x,
+    y, i, j, s, max;\n    time_t now;\n    unsigned char img[100][WIDTH][HEIGHT];\n\n
+    \   /* ランダムな画像を100枚作る */\n    time(&amp;now);\n    srand(now);\n    for(i=0; i&lt;
+    100; i++){\n        for(y=0; y&lt;HEIGHT; y++){\n            for(x=0; x&lt;WIDTH;
+    x++){\n                img[i][x][y] = rand() % 256;\n            }\n        }\n
+    \   }\n    \n    max=0;\n    for(i=1; i&lt; 100; i++){                                     \n
+    \       s = similar(img[0], img[i]);\n        if(max &lt; s){\n            j =
+    i;\n            max = s;\n        }\n    }\n    printf(\"most similar: img[%d]=%d\\n\",
+    j, max);\n    return EXIT_SUCCESS;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1740'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1740
+  :user_name: yuin
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/08/02 16:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">素直に付き合わせるとどうなるのかな？と思ったので素直につき合わせ。\r\n\r\nこのお題の趣旨は検索処理の実行速度、とあるので本物の画像ではなく、配列を生成して画像に見立てました。\r\n\r\nAhtlon64
+    3000で32秒くらいです。遅いですねえ・・・実用的な速度がどの程度をさすのかわかりませんが、まぁ使えないことはないですよね。</pre>\n\t"
+  :code: |
+    object Similar {
+      type CMap = Array[Array[int]]
+      def similarityScore(c1:CMap, c2:CMap) = {
+        (0 to c1(0).length-1).foldLeft(0){(r,y) =&gt; {
+          r + (0 to c1.length-1).foldLeft(0){(r,x) =&gt; {
+            r + (c1(x)(y)^c2(x)(y)^1)
+          }}
+        }}
+      }
+
+      def select(c1:CMap, clist:Array[CMap]) = {
+        var r:CMap = null
+        var topScore = 0
+        clist.foreach(c =&gt; {
+          val s = similarityScore(c1, c)
+          if(s &gt; topScore) {
+            r = c
+            topScore = s
+          }
+        })
+        (topScore, r)
+      }
+
+      def makeRandomCMap(width:int, height:int):CMap = {
+        new Array[int](height).map(y =&gt; {
+          new Array[int](width).map(x =&gt; Math.random.hashCode &amp; 0x1)
+        })
+      }
+    }
+
+    val width = 1024
+    val height = 768
+    val c1 = Similar.makeRandomCMap(width, height)
+    val clist = List.range(0, 100).map(x =&gt; Similar.makeRandomCMap(width, height)).toArray
+    println("start")
+    val start = System.currentTimeMillis
+    val (score, c) = Similar.select(c1, clist)
+    println("top score:"+score)
+    println("time:"+(System.currentTimeMillis-start) + " milli seconds.")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1741'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1741
+  :user_name: rubikitch
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/105/
+  :language: Common
+  :time: 2007/08/02 17:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  これってXOR使えばいいんだよね。\r\nテストデータがいいかげんすぎて…。誰かがテストデータを提供してくれればいいんだけど。\r\nSBCL
+    on Pentium4 2.66GHz / MEM 1GB / Debian GNU/Linuxにて4.5秒。\r\n\r\n画像は0からの番号（index）で指定。\n\t"
+  :code: "(defpackage most-similar-image\n  (:use common-lisp iterate))\n(in-package
+    :most-similar-image)\n\n(defparameter *images*\n  '(#786432*101010101010101101011001010
+    ;taget\n    #786432*101010001010101101011001010 ;most similar\n    #786432*101111101010101101011001010\n
+    \   #786432*101010001010000001011001010\n    #786432*101111101010101101011001010\n
+    \   #786432*101010000000000000001001010\n    #786432*101011111111111111111111111\n
+    \   #786432*101010001010100000000001010\n    #786432*000000000000000000000001010\n
+    \   #786432*101010000000101101011001010\n    #786432*101000000010101101011000010\n
+    \   #786432*101010001000000001011001010\n    #786432*101010001010101000000001010\n
+    \   #786432*101000000000000101011001010\n    #786432*101010001010101000000000010\n
+    \   #786432*101010000000101101011001010\n    #786432*101010001010000000011001010\n
+    \   #786432*101010001010101101011001010\n    #786432*101000000000001101011001010\n
+    \   #786432*000000000000000000000001010\n    #786432*101010001000000000000000010\n
+    \   #786432*101010001010100101011001000\n    #786432*100000000000000001011001010\n
+    \   #786432*000000000010101000001001010\n    #786432*101010001000000000011001010\n
+    \   #786432*101010001010101101000000010\n    #786432*101000000000001101011001010\n
+    \   #786432*101010001010100000001001010\n    #786432*101010001010101101000000000\n
+    \   #786432*101010000000000000011001010\n    #786432*101010001010101101000000010\n
+    \   #786432*000000001010101101011001010\n    #786432*101010000000101101011001010\n
+    \   #786432*101010001010000001011001010\n    #786432*101010001010101100000000010\n
+    \   #786432*101010001000111000000111111\n    #786432*111111111111111111111111110\n
+    \   #786432*101010001010101101000000000\n    #786432*000000000000001101011001010\n
+    \   #786432*101010001010100000000001010\n    #786432*101010001010101101011000000\n
+    \   #786432*000000000010000000011001010\n    #786432*101010001010101101000000010\n
+    \   #786432*101010001010100001011001000\n    #786432*101010001010101101011001010\n
+    \   #786432*000000000000000100000000000\n    #786432*001000001010101100010001000\n
+    \   #786432*101000000000001101000000000\n    #786432*101000000000101101001001010\n
+    \   #786432*101010001010101000000000010\n    #786432*100010001000001101011001000\n
+    \   #786432*101010001000000100001001010\n    #786432*101010001010000001000000010\n
+    \   #786432*101000000010101100001001000\n    #786432*100000000010101100000001010\n
+    \   #786432*101000000000000000010001000\n    #786432*000001011010010001100100010\n
+    \   #786432*010010001011010010010011101\n    #786432*111010100010111000001111111\n
+    \   #786432*101000110000001111011100111\n    #786432*010101100001011110111011010\n
+    \   #786432*000011111000111010010001011\n    #786432*110001000111100010101001001\n
+    \   #786432*000100000111111100010010011\n    #786432*101010101110001100101100111\n
+    \   #786432*011111100011110111111101000\n    #786432*010000111111111110010101110\n
+    \   #786432*100111110100101101110010010\n    #786432*000010011011011001001111011\n
+    \   #786432*100101000111111000011011011\n    #786432*101111110001110100001000110\n
+    \   #786432*110000100110100011111110001\n    #786432*110111110010000010100011001\n
+    \   #786432*011001010010011001111101000\n    #786432*011100101100100010000010110\n
+    \   #786432*011101011111000100000010111\n    #786432*100010010100011001000100101\n
+    \   #786432*111011111000010000100100110\n    #786432*011001110110010010100011010\n
+    \   #786432*111011001110101011000100100\n    #786432*000001011111101000011101011\n
+    \   #786432*001110101010110011110001111\n    #786432*111101111000101001100100110\n
+    \   #786432*101101011011111110100111100\n    #786432*101111110011010110111100111\n
+    \   #786432*010001001010001111000111011\n    #786432*001011101000011010111000110\n
+    \   #786432*011000101000011010011110001\n    #786432*010111010011001110001101100\n
+    \   #786432*100110101011100010000010001\n    #786432*111010100111000111000100111\n
+    \   #786432*110111001011011010010100110\n    #786432*010011001011011000100010010\n
+    \   #786432*010110101110111011100011011\n    #786432*000101001001011000010110010\n
+    \   #786432*100000101101000000110010110\n    #786432*011010101101011000011010100\n
+    \   #786432*010011001010100110010101011\n    #786432*101100110110101110000011010\n
+    \   #786432*011100001100101011011000000\n\n))\n    \n\n(defun most-similar-image
+    (image-num images)\n  (let ((image-n (elt images image-num)))\n    (iter (for
+    image in images)\n          (for i from 0)\n          (if (/= i image-num)\n              (finding
+    i maximizing (similarity image-n image))))))\n\n(defun similarity (img1 img2)\n
+    \ (if (= (length img1) (length img2))\n      (count 0 (bit-xor img1 img2))\n      0))\n(time
+    (most-similar-image 0 *images*))  ; =&gt; 1\n;; Evaluation took:\n;;   4.5 seconds
+    of real time\n;;   4.406379 seconds of user run time\n;;   0.023332 seconds of
+    system run time\n;;   [Run times include 0.01 seconds GC run time.]\n;;   0 calls
+    to %EVAL\n;;   0 page faults and\n;;   9,736,984 bytes consed.\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1742'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1742
+  :user_name: tomatsu
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/323/
+  :language: Pnuts
+  :time: 2007/08/02 17:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Core2 Duo1.83GHz、pnuts -J-server -O で起動して1.3秒
+    (配列の初期化を除く）</pre>\n\t"
+  :code: |
+    N_WORDS = 1024*768/32
+    fb = new int[100][N_WORDS]
+    for (j:0..99){
+      for (i:0..N_WORDS-1) fb[j][i] = random()
+    }
+
+    distance = makeProxy(Integer.getMethod("bitCount", [int]))
+
+    function sim(f1,f2){
+      d = 0
+      for (i:0..N_WORDS-1) d += distance(f1[i]^f2[i])
+      d
+    }
+
+    function sim(f1,f2, min){
+      d = 0
+      for (i:0..N_WORDS-1) {
+         d += distance(f1[i]^f2[i])
+         if (d &gt; min) return d
+      }
+      d
+    }
+
+    function findOne(f0, buffers){
+       idx = 0
+       min = sim(f0, buffers[0])
+       for (i: 1.. size(buffers)-1){
+          f = buffers[i]
+          m = sim(f0, f, min)
+          if (m &lt; min){
+            min = m
+            idx = i
+          }
+       }
+       idx
+    }
+    s=currentTimeMillis()
+    println(findOne(fb[0], fb[1..])+1, "th image")
+    println((currentTimeMillis()-s), " msec")
+  :tags:
+  - Pnuts
+  :references:
+    :url: 
+    :title: 
+- :id: '1743'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1743
+  :user_name: 匿名
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/4/
+  :language: Perl
+  :time: 2007/08/02 17:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">モノクロ画像ってことでXBM。\r\nひじょーに適当に読んでる({}内をeval)し、サイズのチェックもしてないのでアレですが・・・\r\n\r\nfind_similar.pl
+    ターゲット.xbm 他.xbm 他.xbm ....\r\n\r\nって調べる画像ファイルをコマンドラインで全部与える必要があります。\r\n8枚を対象にして2.4秒@Pentium
+    M 2.0G</pre>\n\t"
+  :code: |
+    #!/usr/bin/perl
+
+    use strict;
+    use warnings;
+
+    my @highest = (-1, -1);
+    my $target_fname = shift;
+    my $target = _load_xbm($target_fname);
+
+    for my $cand (@ARGV) {
+        my $score = 0;
+        my $dat = _load_xbm($cand);
+
+        for (my $i = 0; $i &lt; 98304; $i++) {
+            my $b8 = $target-&gt;[$i] ^ $dat-&gt;[$i];
+            $b8 = (($b8 &amp; 0xAA) &gt;&gt; 1) + ($b8 &amp; 0x55);
+            $b8 = (($b8 &amp; 0xCC) &gt;&gt; 2) + ($b8 &amp; 0x33);
+            $b8 = (($b8 &gt;&gt; 4) + $b8) &amp; 0x0F;
+            $score += 8 - $b8;
+        }
+
+        printf "'$cand' は $score ピクセルマッチしました。\n";
+        if($score &gt; $highest[0]) {
+            @highest = ($score, $cand);
+        }
+    }
+
+    print "'$target_fname'に一番近いのは'$highest[1]'で$highest[0]ピクセルマッチしました。\n";
+
+    sub _load_xbm {
+        open(my $fh, shift) or die $!;
+        local $/;
+        my $dat = &lt;$fh&gt;;
+        close $fh;
+        if($dat =~ /\{([^\}]+)\}/s) {
+            return [eval $1];
+        }
+        else {
+            "XBMファイルじゃなくね？";
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1744'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1744
+  :user_name: talo
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/237/
+  :language: Java
+  :time: 2007/08/02 18:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    import java.util.Arrays;
+
+    /**
+     * デフォルトの java で実行すると OutOfMemoryError が発生するため、
+     * java -Xrs -Xms256m -Xmx256m MonochromeMain などとして実行する必要がある。
+     */
+    public class MonochromeMain {
+
+        private static final int WIDTH = 1024;
+
+        private static final int HEIGHT = 768;
+
+        private static final int VALUE = 100;
+
+        public static void main(String[] args) {
+            Monochrome base = MonochromeFactory.createMonocrome(WIDTH, HEIGHT);
+            java.util.List&lt;Monochrome&gt; images = new java.util.ArrayList&lt;Monochrome&gt;();
+            while (images.size() &lt; VALUE) {
+                images.add(MonochromeFactory.createMonocrome(WIDTH, HEIGHT));
+            }
+            int maxSimilar = 0;
+            int maxIndex = 0;
+
+            long start = System.currentTimeMillis();
+            for (int i = 0; i &lt; VALUE; ++i) {
+                if (base.equals(images.get(i))) {
+                    maxIndex = i;
+                    maxSimilar = HEIGHT * WIDTH;
+                    break;
+                }
+                int similar = 0;
+                boolean flg = false;
+                for (int j = 0; j &lt; HEIGHT; ++j) {
+                    for (int k = 0; k &lt; WIDTH; ++k) {
+                        similar += 1 - (base.getPixel(k, j) ^ images.get(i).getPixel(k, j));
+                    }
+                    if (maxSimilar &lt; similar) {
+                        maxSimilar = similar;
+                        maxIndex = i;
+                    }
+                }
+            }
+            System.out.println("max similar image[" + maxIndex + "]: " + maxSimilar);
+            System.out.println("time: " + (System.currentTimeMillis() - start));
+        }
+
+        private static Monochrome createMonocrome(int width, int height) {
+            Monochrome o = new Monochrome(width, height);
+            java.util.Random rand = new java.util.Random();
+            for (int i = 0; i &lt; height; ++i) {
+                for (int j = 0; j &lt; width; ++j) {
+                    o.setPixel((byte) rand.nextInt(2), j, i);
+                }
+            }
+            return o;
+        }
+
+    }
+
+    /**
+     * モノクロ画像クラス.
+     */
+    class Monochrome {
+
+        private byte[][] pixel;
+
+        public Monochrome(int width, int height) {
+            pixel = new byte[height][width];
+        }
+
+        public void setPixel(byte b, int x, int y) {
+            pixel[y][x] = b;
+        }
+
+        public byte getPixel(int x, int y) {
+            return pixel[y][x];
+        }
+
+        public byte[][] getAllPixel() {
+            return pixel;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof Monochrome) {
+                return Arrays.equals(
+                    this.pixel, ((Monochrome) o).getAllPixel());
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.asList(pixel).hashCode();
+        }
+
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1745'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1745
+  :user_name: talo
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/237/
+  :language: 
+  :time: 2007/08/02 19:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">実行結果を貼り忘れました。\r\n最初は初期化の部分も全て測定範囲内に入れていたんですが、今は検索部分のみにしています。\r\n全て含んでいたときが大体6500
+    ～ 7500 くらいだったので、処理時間の半分以上は初期化時間ですね。\r\n\r\n環境: Pentium 4 CPU 3.40GHz\r\n結果: java
+    -Xrs -Xms256m -Xmx256m MonochromeMain\r\nmax similar image[72]: 394486\r\ntime:
+    1844</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1746'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1746
+  :user_name: talo
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/237/
+  :language: 
+  :time: 2007/08/02 19:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">16行目と19行目の MonochromeFactory は編集中の名残です。消し忘れました。以下が正しいコードになります。\r\n\r\n16行目:\r\nMonochrome
+    base = createMonocrome(WIDTH, HEIGHT);\r\n\r\n19行目:\r\nimages.add(createMonocrome(WIDTH,
+    HEIGHT));</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1748'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1748
+  :user_name: talo
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/237/
+  :language: 
+  :time: 2007/08/02 19:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あああ。。。32行目の flg もいらない。。。もっと推敲して投稿するようにしないとなぁ。。。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1749'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1749
+  :user_name: shiro
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/08/02 21:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">バイナリの扱いはsrfi-4 uniform vectorで。\r\n主なボトルネックはビット数を数えるところ。\r\nGaucheは組込みのlogcountというのを持っていますが、\r\n多倍長整数にも汎用的に対応してるため思ったより遅いことが判明。\r\nビットマスクとシフトで数えるのはそこそこ速かったんですが、\r\n富豪的に16ビットごとのテーブル索引がもっと速い。\r\n\r\n実行は、Pentium4
+    2.0GHz / メモリ2GB のマシンで4秒を切るくらい。\r\n\r\ngosh&gt; (time (find-closest-pic \"pic035\"
+    (sys-glob \"pic???\")))\r\n;(time (find-closest-pic \"pic035\" (sys-glob \"pic???\")))\r\n;
+    real   3.946\r\n; user   3.860\r\n; sys    0.060\r\n392118\r\n\"pic064\"\r\n\r\nなお、ファイルの読み込みに1.5秒くらいかかっています。\r\n</pre>\n\t"
+  :code: |
+    (use gauche.uvector)
+    (use gauche.sequence)
+    (use srfi-42)
+
+    (define-constant *image-size* (* 1024 768))
+
+    (define-constant *logcount16*
+      (let1 cnts (make-vector 65536)
+        (do-ec (: i 65536) (set! (ref cnts i) (logcount i)))
+        cnts))
+
+    (define (find-closest-pic sample pics)
+      (define (diff-score! vp vs)
+        (u32vector-xor! vp vs)
+        (let1 v1 (u32vector-and vp #x0000ffff)
+          (u32vector-and! vp #xffff0000)
+          (sum-ec (: i (u32vector-length vs))
+                  (+ (vector-ref *logcount16* (u32vector-ref v1 i))
+                     (vector-ref *logcount16* (ash (u32vector-ref vp i) -16))))))
+      (define (read-pic! v file)
+        (with-input-from-file file (cut read-block! v)))
+      (define vs (make-u32vector (/ *image-size* 32)))
+      (define vp (make-u32vector (/ *image-size* 32)))
+
+      (read-pic! vs sample)
+      (fold2 (lambda (pic score ans)
+               (cond [(equal? sample pic) (values score ans)]
+                     [else (read-pic! vp pic)
+                           (let1 s (diff-score! vp vs)
+                             (if (&lt; s score) (values s pic) (values score ans)))]))
+             #i1/0 #f pics))
+
+    ;; (find-closest-pic "pic035" (sys-glob "pic???"))
+    ;;   =&gt; 392118 and "pic064"
+
+
+    ;;;
+    ;;; test data generation
+    ;;;
+    (use srfi-27)
+
+    (define (generate-random-pics n)
+      (do-ec (: k n)
+             (let1 v (make-u8vector (/ *image-size* 8))
+               (do-ec (: i (/ *image-size* 8))
+                      (set! (ref v i) (random-integer 256)))
+               (with-output-to-file (format "pic~3,'0d" k) (cut write-block v)))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '1750'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1750
+  :user_name: shiro
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/08/02 21:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">&gt; なお、ファイルの読み込みに1.5秒くらいかかっています。\r\n\r\nいや、これは計測違いでした。\r\n全部オンメモリで計算してもこんなもの：\r\ngosh&gt;
+    (time (find-closest-pic (ref *vecs* 35) *vecs*) (values))\r\n;(time (find-closest-pic
+    (ref *vecs* 35) *vecs*) (values))\r\n; real   3.618\r\n; user   3.530\r\n; sys
+    \   0.080\r\n\r\nなのでファイル読み込みのオーバヘッドは0.3秒くらいですね。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1751'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1751
+  :user_name: ether
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/96/
+  :language: 
+  :time: 2007/08/02 22:46 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  これ画像が最初にどういう形（オンメモリ or ファイル、ファイルであれば形式）で与えられるか絞らないとせっかくの投稿同士を比較しづらいんじゃないですかね。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1752'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1752
+  :user_name: yuin
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/08/03 01:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">これじゃScalaが完全にダメな子になるので\r\n続いてパフォーマンス重視版。\r\n\r\n同じ環境で一気に1.2秒程度になりました。\r\nfoldLeftやforeachの関数呼び出しに時間が\r\nかかるので、そこをwhileループにしてやると\r\n速くなります。\r\n\r\nので呼び出し回数が多いsimilarityScoreをwhileに変更。\r\n\r\nhttp://www.scala-lang.org/docu/faq.html#id2243538\r\n\r\nらへんを参照。速度的にはwhile,for,mapなどIterableのメソッド、の順です。</pre>\n\t"
+  :code: |
+    import java.util.Random
+    object Similar {
+      type CMap = Array[Array[int]]
+      def similarityScore(c1:CMap, c2:CMap) = {
+        var score = 0
+        var i = 0
+        var height = c1.length
+        var width  = c1(0).length
+        while(i &lt; height) {
+          var score2 = 0
+          var j = 0
+          while(j &lt; width) {
+            score2 = score2 + (c1(i)(j)^c2(i)(j)^1)
+            j = j+1
+          }
+          score = score + score2
+          i = i+1
+        }
+        score
+      }
+
+      def select(c1:CMap, clist:Array[CMap]) = {
+        var r:CMap = null
+        var topScore = 0
+        clist.foreach(c =&gt; {
+          val s = similarityScore(c1, c)
+          if(s &gt; topScore) {
+            r = c
+            topScore = s
+          }
+        })
+        (topScore, r)
+      }
+
+      def makeRandomCMap(width:int, height:int):CMap = {
+        val rand = new Random
+        new Array[int](height).map(y =&gt; {
+          new Array[int](width).map(x =&gt; rand.nextInt(2))
+        })
+      }
+
+      def main(args: Array[String]) = {
+        val width = 1024
+        val height = 768
+        val c1 = Similar.makeRandomCMap(width, height)
+        val clist = List.range(0, 100).map(x =&gt; Similar.makeRandomCMap(width, height)).toArray
+        println("start")
+        val start = System.currentTimeMillis
+        val (score, c) = Similar.select(c1, clist)
+        println("top score:"+score)
+        println("time:"+(System.currentTimeMillis-start) + " milli seconds.")
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1753'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1753
+  :user_name: morchin
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/78/
+  :language: Python
+  :time: 2007/08/03 01:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">画像から0,1のデータに変換するコードは書いていない。アルゴリズムは線形なのでO(100
+    * n_bits)くらいのオーダーなのでそんなに遅くはないと思う…。</pre>\n\t"
+  :code: "# -*- coding: utf-8 -*-\n\ndef find_analogy_index(pixcels, ptn):\n\tmax_cnt
+    = 0\n\tmax_idx = None\n\tfor i, p in enumerate(pixcels):\n\t\tcnt = 0\n\t\tfor
+    y, l in enumerate(p):\n\t\t\tfor x, b in enumerate(l):\n\t\t\t\tif ptn[y][x] ==
+    b: cnt += 1\n\tif max_cnt &lt; cnt:\n\t\tmax_cnt = cnt\n\t\tmax_idx = i\n\treturn
+    max_idx\n\ndef print_pixcels(ptn):\n\tfor l in ptn:\n\t\tL = [b == 1 and u'■'
+    or u'□' for b in l]\n\t\tprint ''.join(L)\n\nif __name__ == '__main__':\n\tpixcels=[\n\t\t[[1,1,1],
+    [1,1,1]],\n\t\t[[0,0,0], [0,0,0]],\n\t\t[[1,1,1], [0,0,0]]\n\t]\n\tidx = find_analogy_index(pixcels,
+    [[1,1,1], [1,0,0]])\n\tprint_pixcels(pixcels[idx])\n\t\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1754'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1754
+  :user_name: morchin
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/78/
+  :language: Python
+  :time: 2007/08/03 01:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  11～13行目がインデント1つずれていた…orz\n\t"
+  :code: "def find_analogy_index(pixcels, ptn):\n\tmax_cnt = 0\n\tmax_idx = None\n\tfor
+    i, p in enumerate(pixcels):\n\t\tcnt = 0\n\t\tfor y, l in enumerate(p):\n\t\t\tfor
+    x, b in enumerate(l):\n\t\t\t\tif ptn[y][x] == b: cnt += 1\n\t\tif max_cnt &lt;
+    cnt:\n\t\t\tmax_cnt = cnt\n\t\t\tmax_idx = i\n\treturn max_idx\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1755'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1755
+  :user_name: shiro
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/08/03 02:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">むむ。他の動的言語(PnutsやScala)がけっこういけてますね。闘志に火がつきました。\r\n\r\nuniform
+    vectorの組込み演算を使って0.87秒 (Pen4 2.0GHz)。オンメモリのデータで。\r\n\r\ngosh&gt; (time (find-closest-pic
+    (ref *vecs* 35) *vecs*) )\r\n;(time (find-closest-pic (ref *vecs* 35) *vecs*))\r\n;
+    real   0.873\r\n; user   0.870\r\n; sys    0.000\r\n392016\r\n</pre>\n\t"
+  :code: |
+    (use gauche.uvector)
+    (use gauche.sequence)
+    (use srfi-42)
+
+    (define-constant *image-size* (* 1024 768))
+
+    (define (find-closest-pic vs pics)
+      (define (diff-score vp vs)
+        (let1 vx (u8vector-xor vp vs)
+          (+ (u8vector-dot v1 (u8vector-and vx #x01))
+             (/ (u8vector-dot v1 (u8vector-and vx #x02)) 2)
+             (/ (u8vector-dot v1 (u8vector-and vx #x04)) 4)
+             (/ (u8vector-dot v1 (u8vector-and vx #x08)) 8)
+             (/ (u8vector-dot v1 (u8vector-and vx #x10)) 16)
+             (/ (u8vector-dot v1 (u8vector-and vx #x20)) 32)
+             (/ (u8vector-dot v1 (u8vector-and vx #x40)) 64)
+             (/ (u8vector-dot v1 (u8vector-and vx #x80)) 128))))
+      (define v1 (make-u8vector (/ *image-size* 8) 1))
+
+      (values-ref
+       (fold2 (lambda (vp score ans)
+                (cond [(eq? vs vp) (values score ans)]
+                      [else (let1 s (diff-score vp vs)
+                              (if (&lt; s score) (values s vp) (values score ans)))]))
+              #i1/0 #f pics)
+       0))
+
+    ;; (find-closest-pic "pic035" (sys-glob "pic???"))
+    ;;   =&gt; 392118 and "pic064"
+
+    ;;;
+    ;;; test data generation
+    ;;;
+    (use srfi-27)
+
+    (define (generate-random-pics n)
+      (list-ec (: k n)
+               (let1 v (make-u8vector (/ *image-size* 8))
+                 (do-ec (: i (/ *image-size* 8))
+                        (u8vector-set! v i (random-integer (expt 2 8))))
+                 v)))
+
+    (define *vecs* (generate-random-pics 100))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '1756'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1756
+  :user_name: nobsun
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/08/03 02:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  loop のところの seq が随分効きますね。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1758'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1758
+  :user_name: にしお
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/03 03:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  「一番その画像に似ている画像を見つけるコード」ではなくて「類似度を判定するコード」としたほうがよかったですね…。今後パフォーマンスを問う場合は「何々が与えられて何々を返す部分」といった感じでターゲットを明示するようにします。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1759'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1759
+  :user_name: にしお
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/03 03:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">&gt;これってXOR使えばいいんだよね。\r\n\r\nすばらしい洞察 +1\r\nこの問題の肝はxorやpopCountを使って高速化がしやすいかどうかにありました。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1760'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1760
+  :user_name: にしお
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/03 03:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">PythonのPyInt_Typeは値がlongな上に参照カウンタとかも持っているので、\r\nその時点ですでに何十倍か無駄にメモリを食うわけです。\r\nアルゴリズムのオーダーがたとえ同じでも\r\n係数が何十倍か違えば当然何十倍か遅くなるわけです。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1761'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1761
+  :user_name: nobsun
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/03 03:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  1024*768 ビットのランダムビットファイルを 0..100 まで作成したものを使って、ファイル0 と残りの100個を比較する版？
+    rihiさんのコードをシンプルにした(改悪？)ものです。\n\t"
+  :code: "import Foreign\nimport Data.List\nimport System.IO\n\nstarling f g x = f
+    x (g x)\n\ncmpapp :: Ord b =&gt; (a -&gt; b) -&gt; a -&gt; a -&gt; Ordering\ncmpapp
+    f x y = f x `compare` f y\n\nmain :: IO ()\nmain = withBitmap \"data/0\"\n     $
+    \\ bmp -&gt; do { let comp n = withBitmap (\"data/\"++show n)\n                                $
+    flip ((&gt;&gt;=) . difference bmp) \n                                $ return
+    . (,) n\n                   ; rs &lt;- mapM comp [1..100]\n                   ;
+    print $ minimumBy (cmpapp snd) rs\n\t\t   }\n\nwithBitmap :: FilePath -&gt; (Ptr
+    Word32 -&gt; IO a) -&gt; IO a\nwithBitmap path action\n = do { h &lt;- openBinaryFile
+    path ReadMode\n      ; allocaBytes bitmapSize\n      $ starling ((&gt;&gt;) .
+    flip (hGetBuf h) bitmapSize) action\n      }\n\nbitmapSize = 1024 * 768 `div`
+    8\n\ndifference :: Ptr Word32 -&gt; Ptr Word32 -&gt; IO Int\ndifference p q =
+    loop 0 p q 0\n  where\n    loop c p q d\n      | c == bitmapSize = return d\n
+    \     | otherwise \n         = do { a &lt;- peek p ; b &lt;- peek q\n              ;
+    (((loop $! (c+4)) $! (inc p)) $! (inc q)) $! (d + diff a b)\n              }\n
+    \   inc x = advancePtr x 1\n\ndiff :: Word32 -&gt; Word32 -&gt; Int\ndiff x y
+    = count (x `xor` y)\n\ncount :: Word32 -&gt; Int\ncount a = fromEnum f\n  where
+    \n      b = shiftR (a .&amp;. 0xaaaaaaaa)  1 + (a .&amp;. 0x55555555)\n      c
+    = shiftR (b .&amp;. 0xcccccccc)  2 + (b .&amp;. 0x33333333)\n      d = shiftR
+    (c .&amp;. 0xf0f0f0f0)  4 + (c .&amp;. 0x0f0f0f0f)\n      e = shiftR (d .&amp;.
+    0xff00ff00)  8 + (d .&amp;. 0x00ff00ff)\n      f = shiftR (e .&amp;. 0xffff0000)
+    16 + (e .&amp;. 0x0000ffff)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1762'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1762
+  :user_name: onjo
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/235/
+  :language: Common
+  :time: 2007/08/03 03:38 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Pentium 4 3GHz, 1G RAM で以下の結果でした。32bit データを consing 無しで扱えるような 64bit
+    環境だともっとはやいかも。\r\n画像のロード:  94 msec で、画像のロード＋探索: 391 msec =&gt; 313 msec (型指定) =&gt;
+    297 msec (ビットカウントをマクロに)　くらいであきらめました。\r\nまぁ、今見直すと同じ名前なら類似度計算するの無駄とかありますね…\n\t"
+  :code: "(defpackage :doukaku-37 (:use :cl))\n(in-package :doukaku-37)\n\n(declaim
+    (optimize (speed 3) (space 0) (debug 0) (safety 0)))\n\n(defconstant +width+ 1024)\n(defconstant
+    +height+ 768)\n(defconstant +max-score+ (* +width+ +height+))\n;; 32bit マシンで実行するので、16bit
+    幅にしておく。fixnum の範囲を超えると consing で遅くなる\n(defconstant +shorts+ (/ (* +width+ +height+)
+    16))\n\n(defun make-random-image ()\n  (let ((vec (make-array +shorts+ :element-type
+    '(unsigned-byte 16))))\n    (loop for i from 0 below +shorts+ do (setf (aref vec
+    i) (random #xFFFF)))\n    vec))\n\n(defun generate-images ()\n  (loop for i from
+    1 to 100\n        for name = (format nil \"image.~A\" i) do\n        (with-open-file
+    (s name :direction :output :if-exists :supersede\n                                :element-type
+    '(unsigned-byte 16))\n          (write-sequence (make-random-image) s))))\n\n(defun
+    load-image (name &amp;aux (bytes (make-array +shorts+ :element-type '(unsigned-byte
+    16))))\n  (with-open-file (s name :direction :input :element-type '(unsigned-byte
+    16))\n    (read-sequence bytes s)\n    bytes))\n\n(defun load-all-images ()\n
+    \ (loop for i from 1 to 100\n        for name  = (format nil \"image.~A\" i)\n
+    \       for image = (load-image name)\n        collect (list :name name :image
+    image :score 0)))\n\n;; 最適化 1: of-type unsigned-byte 16 を追加。 logxor が xor 命令に展開されてちょっとはやい\n;;
+    最適化 2: logcount -&gt; logcount16 マクロへ (気休め)\n(defun similarity (image-1 image-2)\n
+    \ (loop for byte-1 of-type (unsigned-byte 16) across image-1 \n        for byte-2
+    of-type (unsigned-byte 16) across image-2\n        summing (logcount16 (logxor
+    byte-1 byte-2))))\n\n(defmacro logcount16 (num)\n  `(let ((x (the (unsigned-byte
+    16) ,num)))\n     (declare (type (unsigned-byte 16) x))\n     (setf x (+ (logand
+    (ash x -1) #x5555) (logand x #x5555))\n           x (+ (logand (ash x -2) #x3333)
+    (logand x #x3333))\n           x (+ (logand (ash x -4) #x0F0F) (logand x #x0F0F))\n
+    \          x (+ (logand (ash x -8) #x00FF) (logand x #x00FF)))))\n\n(defun find-similar-image
+    (name)\n  (let ((image (load-image name))\n        (data  (load-all-images)))\n
+    \   (loop with result = (list :name nil :score +max-score+)\n          for x in
+    data\n          for score = (similarity image (getf x :image))\n          do (when
+    (and (&lt;= score (getf result :score)) (not (equal name (getf x :name))))\n               (setf
+    result x))\n             (setf (getf x :score) score)\n          finally (return
+    (getf result :name)))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1763'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1763
+  :user_name: sumim
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/03 03:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk で。001.png 〜 100.png から indexOfRef で指定した番号の画像とそれ以外とを比べ、その中で最も似ている画像の番号を返します。実行時間は
+    1 GHz PowerPC (Mac OS X) で 11.5 秒程度でした。\n\t"
+  :code: |
+    | indexOfRef getImage refImage numOfImgs |
+    indexOfRef := 1.
+    numOfImgs := 100.
+
+    getImage := [:index |
+        | name file |
+        name := (index printPaddedWith: $0 to: 3), '.png'.
+        file := FileStream fileNamed: name.
+        file binary.
+        (PNGReadWriter createAFormFrom: file contentsOfEntireFile) first].
+
+    refImage := getImage value: indexOfRef.
+
+    ((1 to: numOfImgs) copyWithout: indexOfRef) detectMin: [:idx |
+        (refImage deltaFrom: (getImage value: idx)) primCountBits]
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '1764'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1764
+  :user_name: shiro
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/08/03 04:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  logcount16は65536エントリのsimple vectorにあらかじめ計算しといてsvrefする、というのはどうでしょう?\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1765'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1765
+  :user_name: sumim
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/03 04:28 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  Squeak Smalltalk のいったん読み込んでから一気に比較する版。選定にかかった時間（最後の式の処理時間）は 1 GHz
+    PowerPC (Mac OS X) で 1 秒ほどでした。\n\t"
+  :code: |
+    | indexOfRef refImage numOfImgs images |
+    indexOfRef := 1.
+    numOfImgs := 100.
+    images := (1 to: numOfImgs) collect: [:idx |
+        | name file |
+        name := (idx printPaddedWith: $0 to: 3), '.png'.
+        file := FileStream fileNamed: name.
+        file binary.
+        (PNGReadWriter createAFormFrom: file contentsOfEntireFile) first].
+
+    refImage := images at: indexOfRef.
+
+    ((1 to: numOfImgs) copyWithout: indexOfRef) detectMin: [:idx |
+        (refImage deltaFrom: (images at: idx)) primCountBits]
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '1766'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1766
+  :user_name: talo
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/237/
+  :language: Java
+  :time: 2007/08/03 04:31 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">・for ループ部分のメソッド抽出により、images.get(i) の呼び出しが最小限になり、高速化。\r\n　ここがかなりの負荷になっていた。\r\n・実行するときの確保するヒープ領域は
+    100mb くらいでいい。 \r\n　画像データ部分だけで 1024 * 768 * 100 = 約78mb + α 必要になり、デフォルトでは足りない。\r\n・その他間違ってたとこ修正。\r\n・時間は
+    450ms くらいに大幅縮小。</pre>\n\t"
+  :code: |
+    import java.util.Arrays;
+
+    public class MonochromeMain {
+
+        private static final int WIDTH = 1024;
+
+        private static final int HEIGHT = 768;
+
+        private static final int VALUE = 100;
+
+        private static int similarityScore(Monochrome target, Monochrome image) {
+            int score = 0;
+            for (int j = 0; j &lt; HEIGHT; ++j) {
+                for (int k = 0; k &lt; WIDTH; ++k) {
+                    score += (target.getPixel(k, j) ^ image.getPixel(k, j) ^ 1);
+                }
+            }
+            return score;
+        }
+
+        private static Monochrome createMonocrome(int width, int height) {
+            Monochrome o = new Monochrome(width, height);
+            java.util.Random rand = new java.util.Random();
+            for (int i = 0; i &lt; height; ++i) {
+                for (int j = 0; j &lt; width; ++j) {
+                    o.setPixel((byte) rand.nextInt(2), j, i);
+                }
+            }
+            return o;
+        }
+
+        public static void main(String[] args) {
+            Monochrome target = createMonocrome(WIDTH, HEIGHT);
+            java.util.List&lt;Monochrome&gt; images = new java.util.ArrayList&lt;Monochrome&gt;();
+            while (images.size() &lt; VALUE) {
+                images.add(createMonocrome(WIDTH, HEIGHT));
+            }
+            int topScore = 0;
+            int topIndex = 0;
+            long start = System.currentTimeMillis();
+            for (int i = 0; i &lt; VALUE; ++i) {
+                if (target.equals(images.get(i))) {
+                    topIndex = i;
+                    topScore = HEIGHT * WIDTH;
+                    break;
+                }
+                int score = similarityScore(target, images.get(i));
+                if (topScore &lt; score) {
+                    topScore = score;
+                    topIndex = i;
+                }
+            }
+            System.out.println("max score image[" + topIndex + "]: " + topScore);
+            System.out.println("time: " + (System.currentTimeMillis() - start));
+        }
+
+    }
+
+    // 以下の Monochrome クラスは同じなので省略
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1768'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1768
+  :user_name: sumim
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2007/08/03 05:04 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  参考まで、#deltaForm: の中身はビット列の XOR で、#primCountBits の中身は popCount です。いずれも、Smalltalk
+    システム（暫定ダイナブック環境、あるいは ALTO コンピュータ）発祥ということでよく知られている BitBlt という機構が下請けています。http://ja.wikipedia.org/wiki/Bitblt\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1769'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1769
+  :user_name: morchin
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/78/
+  :language: 
+  :time: 2007/08/03 05:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">なるほど。プリミティブな型を使用することによるところがボトルネックになるとしたら\r\nnumarrayを使うとか、そういう型を使用しない別のアプローチを使うとかになりそうですね。\r\n一瞬、2進数のビット演算でいけると思ったのですが、2.5でまだ使えないですね。もう少し考えて見ます。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1770'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1770
+  :user_name: rucker
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/08/03 07:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">出題をわざと誤読して好き勝手やってみる。\r\n読み込んだgif画像を64x48画素のグレースケールに縮小し、画素の輝度の差の二乗和を比較。\r\n写真フォルダから適当に101枚選んで誤差拡散で1024x768の二値画像に変換してテストしたところ\r\nCoreSolo
+    1.2GHzで約38秒。\r\n内比較にかかったのは2%程。残りは読み込みと縮小処理でした。\r\n</pre>\n\t"
+  :code: "&lt;?php\ndefine('CELL_CX',64);\ndefine('CELL_CY',48);\n\nfunction loadimage($filename,$w,$h)\n{\n\tif(($tmp=@imagecreatefromgif($filename))===false)\n\t\treturn
+    false;\n\t$img=imagecreatetruecolor($w,$h);\n\timagecopyresampled($img,$tmp, 0,0,
+    0,0, $w,$h, imagesx($tmp),imagesy($tmp));\n\treturn $img;\n}\n\nfunction compareimg($img0,$img1,$limit)\n{\n\t$w=imagesx($img0);\n\t$h=imagesy($img0);\n\t$d=0;\n\tfor($y=0;$y&lt;$h
+    &amp;&amp; $d&lt;$limit;++$y)\n\t\tfor($x=0;$x&lt;$w;++$x)\n\t\t{\t$d1=(imagecolorat($img0,$x,$y)&amp;0xff)-(imagecolorat($img1,$x,$y)&amp;0xff);\n\t\t\t$d+=$d1*$d1;\n\t\t}\n\treturn
+    $d;\n}\n\n$start=microtime(true);\n\nif(($needle=loadimage($argv[1],CELL_CX,CELL_CY))===false)\n\texit(1);\n\n$diff=0x7fffffff;\n$result=\"\";\n\nif(!($dh=opendir($argv[2])))\n\texit(2);\nwhile(($file=readdir($dh))!==false)\n{\tif(($img=loadimage($argv[2].'/'.$file,CELL_CX,CELL_CY))!==false)\n\t{\t$d=compareimg($needle,$img,$diff);\n\t\tif($d&lt;$diff)\n\t\t{\t$diff=$d;\n\t\t\t$result=$file;\n\t\t}\n\t}\n}\nclosedir($dh);\n\necho
+    \"$result\\n\";\necho microtime(true)-$start,\"sec\\n\";\n\nif(($img=loadimage($argv[2].'/'.$result,CELL_CX,CELL_CY))!==false)\n\timagejpeg($img,\"result.jpg\",90);\nimagejpeg($needle,\"needle.jpg\",90);\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1772'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1772
+  :user_name: PHO
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/69/
+  :language: Haskell
+  :time: 2007/08/03 09:53 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">それを並列化してみました。CPU二つ以上ある人向け。\r\n\r\n% ghc --make
+    ImgDiffPar -O3 -threaded  ← スレッド重要\r\n% ./ImgDiffPar +RTS -N2  ← CPU四つなら -N4\r\n\r\n私の環境:
+    PowerPC G5 2.0GHz x 2\r\n並列化前: 0.56秒\r\n並列化後: 0.47秒\r\n改善率: 19.1%\r\n\r\nしかし今考えると
+    difference じゃなくて rs &lt;- mapM comp [1..100] \r\nの部分を二つに割った方が良かったかも。</pre>\n\t"
+  :code: "import Foreign\nimport Data.List\nimport System.IO\nimport System.IO.Unsafe\nimport
+    Control.Parallel\n\nstarling f g x = f x (g x)\n\ncmpapp :: Ord b =&gt; (a -&gt;
+    b) -&gt; a -&gt; a -&gt; Ordering\ncmpapp f x y = f x `compare` f y\n\nmain ::
+    IO ()\nmain = withBitmap \"data/0\"\n     $ \\ bmp -&gt; do { let comp n = withBitmap
+    (\"data/\"++show n)\n                                $ flip ((&gt;&gt;=) . difference
+    bmp) \n                                $ return . (,) n\n                   ;
+    rs &lt;- mapM comp [1..100]\n                   ; print $ minimumBy (cmpapp snd)
+    rs\n\t\t   }\n\nwithBitmap :: FilePath -&gt; (Ptr Word32 -&gt; IO a) -&gt; IO
+    a\nwithBitmap path action\n = do { h &lt;- openBinaryFile path ReadMode\n      ;
+    allocaBytes bitmapSize\n      $ starling ((&gt;&gt;) . flip (hGetBuf h) bitmapSize)
+    action\n      }\n\nbitmapSize = 1024 * 768 `div` 8\n\ndifference :: Ptr Word32
+    -&gt; Ptr Word32 -&gt; IO Int\ndifference p q = upper `par` lower `par` return
+    $! (upper + lower)\n  where\n    halfSize = bitmapSize `div` 2\n\n    upper =
+    unsafePerformIO $\n            loop 0 p q 0 halfSize\n\n    lower = unsafePerformIO
+    $\n            loop halfSize (plusPtr p halfSize) (plusPtr q halfSize) 0 bitmapSize\n\n
+    \   loop c p q d lim\n      | c == lim = return d\n      | otherwise \n         =
+    do { a &lt;- peek p ; b &lt;- peek q\n              ; ((((loop $! (c+4)) $! (inc
+    p)) $! (inc q)) $! (d + diff a b)) $! lim\n              }\n\n    inc x = advancePtr
+    x 1\n\ndiff :: Word32 -&gt; Word32 -&gt; Int\ndiff x y = count (x `xor` y)\n\ncount
+    :: Word32 -&gt; Int\ncount a = fromEnum f\n  where \n      b = shiftR (a .&amp;.
+    0xaaaaaaaa)  1 + (a .&amp;. 0x55555555)\n      c = shiftR (b .&amp;. 0xcccccccc)
+    \ 2 + (b .&amp;. 0x33333333)\n      d = shiftR (c .&amp;. 0xf0f0f0f0)  4 + (c
+    .&amp;. 0x0f0f0f0f)\n      e = shiftR (d .&amp;. 0xff00ff00)  8 + (d .&amp;. 0x00ff00ff)\n
+    \     f = shiftR (e .&amp;. 0xffff0000) 16 + (e .&amp;. 0x0000ffff)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1773'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1773
+  :user_name: rihi
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/256/
+  :language: 
+  :time: 2007/08/03 10:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  これがないとloopがcntについて非正格になるので、影響が大きいようです。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1775'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1775
+  :user_name: onjo
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/235/
+  :language: 
+  :time: 2007/08/03 11:31 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  あらかじめ結果を計算したテーブルを参照すると、短くてはやそうなコードになるんですが、計測すると若干遅めという結果でした。\r\nこれくらいの計算だとメモリ参照するよりもレジスタ演算のみのほうがはやいみたいです。（AllegroCL
+    8.1 on Windows）\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1785'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1785
+  :user_name: onjo
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/235/
+  :language: 
+  :time: 2007/08/03 13:46 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  む、テーブルを defvar から defconstant に変更するとちょっと効率が改善されますね…\r\n所要時間は defvar
+    &gt; logcount16マクロ &gt; defconstant  ですが、それぞれの差は数%程度のようです。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1808'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1808
+  :user_name: kzk
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/43/
+  :language: C
+  :time: 2007/08/04 06:52 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">__builtin_popcount (g++ only)！\r\n\r\nデータ形式は謎だけど、とりあえず__builtin_popcountの知名度向上のためにsubmit。\r\n\r\ncore2duo
+    6600  @ 2.40GHz\r\n\r\npcore% g++ -Wall -Wextra -O2 37.cpp; time ./a.out\r\n27:81\r\n./a.out
+    \ 0.06s user 0.02s system 96% cpu 0.083 total\r\n</pre>\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+
+    using namespace std;
+
+    const int W = 1024 / (sizeof(int) * 8);
+    const int H = 768;
+    unsigned int data[100][H][W];
+
+    int
+    main(void)
+    {
+      srand(time(NULL));
+
+      for (int i = 0; i &lt; 100; i++)
+        for (int h = 0; h &lt; H; h++)
+          for (int w = 0; w &lt; W; w++)
+            data[i][h][w] = rand();
+
+      int ret = -1;
+      int retcnt = numeric_limits&lt;int&gt;::max();
+      int target = rand() % 100;
+      for (int i = 0; i &lt; 100; i++) {
+        if (i == target) continue;
+
+        int cnt = 0;
+        for (int h = 0; h &lt; H; h++)
+          for (int w = 0; w &lt; W; w++)
+            cnt += __builtin_popcount(data[target][h][w] ^ data[i][h][w]);
+
+        if (cnt &lt; retcnt) {
+          retcnt = cnt;
+          ret = i;
+        }
+      }
+
+      cout &lt;&lt; target &lt;&lt; ":" &lt;&lt; ret &lt;&lt; endl;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1871'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1871
+  :user_name: onjo
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/235/
+  :language: Common
+  :time: 2007/08/05 11:09 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  logcount =&gt; 313msec, logcount16 =&gt; 297msec, defconstant + svref
+    =&gt; 281msec でした。\n\t"
+  :code: "(defconstant +bits+\n  (let ((vec (make-sequence 'simple-vector 65536)))\n
+    \   (dotimes (i 65536)\n      (setf (svref vec i) (logcount16 i)))\n    vec))\n\n(defun
+    similarity (image-1 image-2)\n  (loop for byte-1 of-type (unsigned-byte 16) across
+    image-1 \n        for byte-2 of-type (unsigned-byte 16) across image-2\n        summing
+    (svref +bits+ (logxor byte-1 byte-2))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1905'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1905
+  :user_name: 匿名
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/08/06 03:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">投稿のタイミングが遅すぎのような気もしますがおくります。\r\n\r\n画像データはダミーをrandomを使って生成しています。\r\nスピードは諦めて、コードの簡潔さで勝負です。\r\n\r\nちなみにAthlonXP
+    1700+で１２０秒弱ほどかかりました。\r\n</pre>\n\t"
+  :code: |
+    from random import seed, randint
+    from array import array
+
+    def next():
+      return array('B', [randint(0, 255) for i in range(1024/8*768)])
+
+    l = [sum([1 for j in range(8) if (1 &lt;&lt; j) &amp; i]) for i in range(256)]
+    o = next()
+    r = [sum([l[j&amp;k] for j, k in zip(o, next())]) for i in range(100)]
+
+    print max(r), [i for i in range(len(r)) if r[i] == max(r)]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1906'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1906
+  :user_name: 匿名
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/08/06 04:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あっと、間違ってました。XORじゃなくてANDになってるし、\r\n7行目も違う。\r\n\r\nなんか、あってるのか自身が無くなってきた。\r\n</pre>\n\t"
+  :code: |
+    from random import seed, randint
+    from array import array
+
+    def next():
+      return array('B', [randint(0, 255) for i in range(1024/8*768)])
+
+    l = [sum([1 for j in range(8) if not (1 &lt;&lt; j) &amp; i]) for i in range(256)]
+    o = next()
+    r = [sum([l[j^k] for j, k in zip(o, next())]) for i in range(100)]
+
+    print max(r), [i for i in range(len(r)) if r[i] == max(r)]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1907'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1907
+  :user_name: shiro
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/08/06 04:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">無駄に遠回りしてみました。\r\n異なったピクセル数の集計をグラフィクスハードウェアにやらせています。\r\n8bit/colorプレーンでオーバフローが起きないように、1024x768ぶんの\r\nビットマップを3分割し、R、G、Bコンポーネントがそれぞれ1または0の\r\n512x512のテクスチャにして、それを256分割して32x32の正方形に加算で\r\n貼込んで、CPU側に読み戻して集計してます。\r\n\r\n残念ながら速度はそう速くなく、Pen4
+    2.0GHz/GeForce 6800/Linux で比較部分が 2.1秒程度。\r\n細かく計測するとglBitmapでの転送がほとんどの時間(1.8秒以上)を占めています。\r\n512x512
+    一枚の転送に6msくらいかかってるので何か間違えているの\r\nだろうかとも思ったんですが、転送サイズを変えてみると綺麗にサイズに\r\n比例してるし、glDrawPixelsなどはそんなに遅くないので、glBitmapで\r\n巨大なイメージを送る方が悪いってことかなあ。(ドライバはNVIDIAのものです)。\r\n</pre>\n\t"
+  :code: "(use gl)\n(use gl.glut)\n(use gauche.uvector)\n(use gauche.sequence)\n(use
+    gauche.time)\n(use srfi-42)\n\n(define *varray*\n  (let1 v (make-f32vector (*
+    5 4 256))\n    (do-ec (: x 16)\n           (: y 16)\n           (let ((ind (*
+    (+ (* x 16) y) 5 4))\n                 (x0  (/. x 16)) (x1 (/. (+ x 1) 16))\n
+    \                (y0  (/. y 16)) (y1 (/. (+ y 1) 16)))\n             ;; (s, t,
+    x, y, z) * 4\n             (set! (subseq v ind (+ ind 20))\n                   `(,x0
+    ,y0  0  0 0\n                     ,x0 ,y1  0 32 0\n                     ,x1 ,y1
+    32 32 0\n                     ,x1 ,y0 32 0 0))))\n    v))\n\n(define *v1* (make-u8vector
+    (* 32 32 3) 1))\n\n(define *texname* 0)\n\n(define (count-pixels bitmap)\n  (define
+    (draw-source cnt color)\n    (gl-color color)\n    (gl-raster-pos 0 0)\n    (gl-bitmap
+    512 512 0 0 0 0\n               (uvector-alias &lt;u8vector&gt; bitmap \n                              (*
+    cnt (* (/ 1024 8) 256))\n                              (* (+ cnt 1) (* (/ 1024
+    8) 256)))))\n  (define (make-texture)\n    (gl-clear GL_COLOR_BUFFER_BIT)\n    (draw-source
+    0 '#u8(1 0 0))\n    (draw-source 1 '#u8(0 1 0))\n    (draw-source 2 '#u8(0 0 1))\n
+    \   (gl-copy-tex-image-2d GL_TEXTURE_2D 0 GL_RGB 0 0 512 512 0))\n  (define (accumulate)\n
+    \   (gl-clear GL_COLOR_BUFFER_BIT)\n    (gl-color 0 0 0)\n    (gl-enable GL_TEXTURE_2D)\n
+    \   (gl-draw-arrays GL_QUADS 0 (* 4 256))\n    (gl-disable GL_TEXTURE_2D))\n\n
+    \ (define (count)\n    (let1 v (gl-read-pixels 0 0 32 32 GL_RGB GL_UNSIGNED_BYTE)\n
+    \     (u8vector-dot *v1* v)))\n\n  (make-texture)\n  (accumulate)\n  (until (gl-get-error)
+    (pa$ = GL_NO_ERROR)\n         =&gt; err (print \"glError: \"(glu-error-string
+    err)))\n  (count))\n\n(define (find-closest-pic vec pics)\n  (values-ref \n   (fold2
+    (lambda (pic i minscore)\n            (let1 score (count-pixels (u8vector-xor
+    vec pic))\n              (if (&lt; score (cdr minscore))\n                (values
+    (+ i 1) (cons i score))\n                (values (+ i 1) minscore))))\n          0
+    '(0 . #i1/0) pics)\n   1))\n\n(define (doit)\n  (print (time (find-closest-pic
+    (car *vecs*) (cdr *vecs*))))\n  (exit 0))\n\n(define (main args)\n  (glut-init
+    args)\n  (glut-init-display-mode (logior GLUT_SINGLE GLUT_RGB))\n  (glut-init-window-size
+    512 512)\n  (glut-create-window (car args))\n\n  (gl-pixel-store GL_UNPACK_ALIGNMENT
+    1)\n  (gl-clear-color 0 0 0 0)\n  (gl-viewport 0 0 512 512)\n  (gl-matrix-mode
+    GL_PROJECTION)\n  (glu-ortho-2d 0 512 0 512)\n  (gl-matrix-mode GL_MODELVIEW)\n
+    \ (gl-load-identity)\n  (gl-enable GL_BLEND)\n  (gl-blend-func GL_ONE GL_ONE)\n
+    \ (gl-shade-model GL_FLAT)\n  (set! *texname* (ref (gl-gen-textures 1) 0))\n  (gl-bind-texture
+    GL_TEXTURE_2D *texname*)\n  (gl-tex-parameter GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER
+    GL_NEAREST)\n  (gl-tex-parameter GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)\n
+    \ (gl-tex-env GL_TEXTURE_ENV GL_TEXTURE_ENV_MODE GL_ADD)\n  (gl-interleaved-arrays
+    GL_T2F_V3F *varray*)\n\n  (glut-display-func doit)\n  (glut-main-loop)\n  0)\n\n;;;\n;;;
+    test data generation\n;;;\n(use srfi-27)\n\n(define (generate-random-pics n)\n
+    \ (list-ec (: k n)\n           (let1 v (make-u8vector (/ (* 1024 768) 8))\n             (do-ec
+    (: i (/ (* 1024 768) 8))\n                    (u8vector-set! v i (random-integer
+    (expt 2 8))))\n             v)))\n\n(define *vecs* (generate-random-pics 100))\n"
+  :tags:
+  - OpenGL
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '1933'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1933
+  :user_name: jz5
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/344/
+  :language: VB
+  :time: 2007/08/06 12:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">BitArrayを使ってます。それゆえ、全く同じ形式・ファイルサイズの場合のみ動き、\r\nヘッダ情報は一緒ということにしてファイル全部をXORしてます。\r\nXOR後、立っているビットを数えている部分が非常にスマートではないね……。\r\n\r\n「類似度を判定するコード」の方が良かったと結論でているので言うのもなんですが、\r\n「一番その画像に似ている画像を見つけるコード」の場合、\r\n探索の最初に似ている画像が見つかれば、それ以降の探索時間を短くできるので、\r\n検証に使用する画像がないと時間の比較しようがないですね。</pre>\n\t"
+  :code: |
+    Public Function GetMostSimilarImage(ByVal source As String, ByVal target() As String) As String
+
+        Dim ba1 As New BitArray(System.IO.File.ReadAllBytes(source))
+
+        Dim min As Integer = Integer.MaxValue
+        Dim diff As Integer
+        Dim mostSimilar As String = ""
+
+        Dim i, j As Integer
+
+        For i = 0 To target.Length - 1
+
+            Dim ba2 As New BitArray(System.IO.File.ReadAllBytes(target(i)))
+            ba2.Xor(ba1)
+
+            diff = 0
+            For j = 0 To ba2.Length - 1
+                If Not ba2(j) Then
+                    Continue For
+                End If
+
+                diff += 1
+                If diff &gt; min Then
+                    Exit For
+                End If
+            Next
+
+            If diff &lt; min Then
+                min = diff
+                mostSimilar = target(i)
+            End If
+
+        Next
+
+        Return mostSimilar
+
+    End Function
+  :tags:
+  - VB8.0
+  :references:
+    :url: 
+    :title: 
+- :id: '1935'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1935
+  :user_name: ocean
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/08/06 12:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  PIL (Python Imaging Library) を使います。画像形式は PBM を用い、画像が無い場合は自動的にランダムな画像を作成するようになってます。（上書きはしないので、いきなり実行しても安全なはず）\r\n\r\npsyco
+    (Python JIT compiler) http://psyco.sourceforge.net/ を使うという反則技を犯して 66.11秒です。（私のマシンは
+    Pentium2-266Mhz なので、最近のマシンではたぶんずっと速いでしょう）\n\t"
+  :code: |
+    import PIL.Image
+    import random
+    import time
+    import sys
+    import os
+
+    size = (1024, 768)
+
+    pathes = ["doukaku%02d.pbm" % i for i in xrange(100)]
+
+    def create():
+        def data():
+            n = (size[0] * size[1]) // 8 + 1
+            a = [chr(i) for i in xrange(256)]
+            return "".join(random.choice(a) for _ in xrange(n))
+        for path in pathes:
+            if not os.path.exists(path):
+                sys.stdout.write("%s ... " % path)
+                PIL.Image.fromstring("1", size, data()).save(path)
+                sys.stdout.write("done.\n")
+
+    def compare(path1):
+        def data(path):
+            return PIL.Image.open(path).getdata()
+        h = {}
+        data1 = data(path1)
+        for path2 in pathes:
+            if path1 != path2:
+                data2 = data(path2)
+                count = 0
+                for i in xrange(size[0] * size[1]):
+                    if data1[i] == data2[i]:
+                        count += 1
+                print path2, count
+                h.setdefault(count, []).append(path2)
+        print "%s is similar to %r" % (path1, max(h.iteritems())[1])
+
+    def main():
+        create() # first, create pbm files if not exist
+        t1 = time.time()
+        compare(pathes[int(sys.argv[1]) if len(sys.argv) == 2 else 0])
+        t2 = time.time()
+        print "Ellapsed time is %.2f sec." % (t2 - t1)
+
+    if __name__ == '__main__':
+        import psyco
+        psyco.full()
+        main()
+  :tags:
+  - PIL
+  - psyco
+  :references:
+    :url: 
+    :title: 
+- :id: '1936'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1936
+  :user_name: ocean
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/177/
+  :language: 
+  :time: 2007/08/06 12:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  あと、私はジェネレータ好きなのですが、どうもpsycoとは相性が悪いようで、これを使うとあまり速くなりませんでした。(--;\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1957'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/1957
+  :user_name: yattom
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/335/
+  :language: awk
+  :time: 2007/08/07 03:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">配列(ハッシュ)のキーを &lt;x * 1000 + y&gt; として、0/1で格納します。\r\n100枚ぶんをメモリに保持しようとすると処理できないので、1枚ずつ\r\n生成して、処理して、メモリ開放してます。ちょっとインチキです。\r\n(WindowsXP,
+    PentiumM1.7GHz, 1GB, GNU Awk 3.1.5 Win32版)\r\n\r\n100枚ぶん処理するのに、406秒かかりました。\r\nそのうち266秒が、画像データをランダムに生成する処理です。\r\n比較は140秒という計算です。\r\n(類似度の高いものを選ぶ処理は、端折ってしまいました。)\r\n</pre>\n\t"
+  :code: "function matchedness(pic1, pic2,   result, i) {\n\tresult = 0\n\tfor(i in
+    pic1) {\n\t\tif(pic1[i] == pic2[i]) {\n\t\t\tresult++\n\t\t}\n\t}\n\treturn result\n}\n\n\nfunction
+    make_pic(pic,  x, y) {\n\tfor(x = 0; x &lt; 1024; x++) {\n\t\tfor(y = 0; y &lt;
+    768; y++) {\n\t\t\tif(rand() &gt; 0.5) {\n\t\t\t\tpic[x * 1000 + y] = 0\n\t\t\t}
+    else {\n\t\t\t\tpic[x * 1000 + y] = 1\n\t\t\t}\n\t\t}\n\t}\n}\n\n\nBEGIN {\n\tmake_pic(org)\n\n\tstart
+    = systime()\n\tfor(i = 0; i &lt; 100; i++) {\n\t\tmake_pic(pic)\n\t\tprint systime()
+    - start, matchedness(pic, org)\n\t\tdelete pic\n\t}\n\tprint systime() - start\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2049'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/2049
+  :user_name: kkobayashi
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2007/08/09 15:02 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">Pentium M 1.5GHzで実行しました。\r\n\r\n&gt; df &lt;-
+    profiling(bitmap.match.01, 1024, 768, 100)\r\nsouce image  : file012.bmp \r\nmost
+    similar : file072.bmp \r\n&gt; df[[\"by.total\"]][c(\"bitmap.match\",\"sample.images\",\"sapply.bitmap.match\"),]\r\n
+    \                   total.time total.pct self.time self.pct\r\nbitmap.match             12.56
+    \    100.0         0        0\r\nsample.images             9.54      76.0         0
+    \       0\r\nsapply.bitmap.match       1.54      12.3         0        0\r\n\r\n&gt;
+    df &lt;- profiling(bitmap.match.02, 1024, 768, 100)\r\nsouce image  : file030.bmp
+    \r\nmost similar : file024.bmp\r\n&gt; df[[\"by.total\"]][c(\"bitmap.match\",\"sample.images\",\"sapply.bitmap.match\",\"lapply.to.vector\"),]\r\n
+    \                   total.time total.pct self.time self.pct\r\nbitmap.match             70.88
+    \    100.0         0        0\r\nsample.images             7.98      11.3         0
+    \       0\r\nsapply.bitmap.match       3.98       5.6         0        0\r\nlapply.to.vector
+    \        58.90      83.1         0        0\r\n\r\nサンプル画像として、1024x768のmatrixにモノクロ2値情報を読み込んだ状態を想定しています。\r\n普通に書いた場合（bitmap.match.01）とビット演算を使用した場合（bitmap.match.02）の\r\nプロファイルを取ってみたところ、普通に書いた場合のほうが早く終わりました。\r\n\r\nビット演算を使用した場合は32bit変数に変換するオーバーヘッドが相当大きかったのと、\r\n普通に書いた場合は100個のmatrixに対するループ演算であったのに対して\r\nビット演算を使用した場合は(1024*768/32)*100個のループ演算が実行されるため、\r\n計算自体が高速でもループのオーバーヘッドによって遅くなってしまったのだと思います。\r\n\r\n実際にこういう処理が必要になれば迷わずCで書きますが、普段気にしないRの実行速度について\r\n色々分かったのは面白かったです。</pre>\n\t"
+  :code: |
+    require(bitops)
+
+    lapply.to.vector     &lt;- lapply
+    apply.to.vector      &lt;- apply
+    lapply.sample.images &lt;- lapply
+    sapply.bitmap.match  &lt;- sapply
+    sapply.sample.images &lt;- sapply
+
+    sample.images &lt;- function(WIDTH=1024, HEIGHT=768, SAMPLES=100){
+        images &lt;- lapply.sample.images(1:SAMPLES, function(x)
+                                       (matrix(sample(0:1, WIDTH*HEIGHT, replace=T), HEIGHT, WIDTH)))
+        names(images) &lt;- sapply.sample.images(1:SAMPLES, function(x) sprintf("file%03d.bmp",x))
+        return(images)
+    }
+
+    to.vector &lt;- function(x){
+        bits.32 &lt;- c(as.vector(x), numeric((32-length(x))%%32))
+        return(apply.to.vector(matrix(bits.32, 32), 2, function(b)(b %*% (2 ** (0:31)))))
+    }
+
+    pop.count &lt;- function(x){
+        x &lt;- bitAnd(x, 0x55555555) + bitAnd(bitShiftR(x,  1), 0x55555555)
+        x &lt;- bitAnd(x, 0x33333333) + bitAnd(bitShiftR(x,  2), 0x33333333)
+        x &lt;- bitAnd(x, 0x0f0f0f0f) + bitAnd(bitShiftR(x,  4), 0x0f0f0f0f)
+        x &lt;- bitAnd(x, 0x00ff00ff) + bitAnd(bitShiftR(x,  8), 0x00ff00ff)
+        x &lt;- bitAnd(x, 0x0000ffff) + bitAnd(bitShiftR(x, 16), 0x0000ffff)
+        return(x)
+    }
+
+    bitmap.match.01 &lt;- function(WIDTH=1024, HEIGHT=768, SAMPLES=100){
+        images  &lt;- sample.images(WIDTH, HEIGHT, SAMPLES)
+        s_index &lt;- sample(1:SAMPLES, 1)
+        s_image &lt;- unname(unlist(images[s_index]))
+        score &lt;- sapply.bitmap.match(images[-s_index], function(x)(sum(s_image==x)))
+        cat("souce image  :", names(images[s_index]), "\n")
+        cat("most similar :", names(which.max(score)), "\n")
+    }
+
+    bitmap.match.02 &lt;- function(WIDTH=1024, HEIGHT=768, SAMPLES=100){
+        images  &lt;- sample.images(WIDTH, HEIGHT, SAMPLES)
+        images  &lt;- lapply.to.vector(images, to.vector)
+        s_index &lt;- sample(1:SAMPLES, 1)
+        s_image &lt;- unname(unlist(images[s_index]))
+        score &lt;- sapply.bitmap.match(images[-s_index], function(x)(sum(pop.count(bitXor(s_image, x)))))
+        cat("souce image  :", names(images[s_index]), "\n")
+        cat("most similar :", names(which.min(score)), "\n")
+    }
+
+    profiling &lt;- function(bitmap.match, ...){
+        Rprof("profile.out")
+        bitmap.match(...)
+        Rprof()
+        summaryRprof("profile.out")
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2051'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/2051
+  :user_name: shimakuma
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/08/09 22:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  wscript.exe @ Celeron 2.8GHz で70秒弱(うち50秒ほどは配列生成)。最適化前は110秒弱かかっていました。\n\t"
+  :code: "(this.WSH ? function($){ WSH.Echo($) } : alert)( (function doukaku37(w,
+    h, b, n){\n\tvar time = (new Date()).getTime();\n\twith(Math) var f = floor, r
+    = random, b = pow(2, b), s = ceil(log(h) * LOG2E);\n\tfunction randomPict(){\n\t\tfor(var
+    a = {}, i = 0, j; i &lt; w; i++) for(j = 0; j &lt; h; j++)\n\t\t\ta[i &lt;&lt;
+    s | j] = f(r() * b);\n\t\treturn a;\n\t}\n\tfor(var P = randomPict(), min = Infinity,
+    p, i, j, x, diff, num; n &gt; 0; n--){\n\t\tp = randomPict(), diff = 0;\n\t\tfor(i
+    = 0; i &lt; w; i++) for(j = 0; j &lt; h; j++){\n\t\t\tx = P[x = i &lt;&lt; s |
+    j] ^ p[x];\n\t\t\t// 最適化↓ for(; x; x &gt;&gt;&gt;= 1) if(x &amp; 1) diff++;\n\t\t\tx
+    = ((x &amp; 0xAAAAAAAA) &gt;&gt;  1) + (x &amp; 0x55555555);\n\t\t\tx = ((x &amp;
+    0xCCCCCCCC) &gt;&gt;  2) + (x &amp; 0x33333333);\n\t\t\tx = ((x &amp; 0xF0F0F0F0)
+    &gt;&gt;  4) + (x &amp; 0x0F0F0F0F);\n\t\t\tx = ((x &amp; 0xFF00FF00) &gt;&gt;
+    \ 8) + (x &amp; 0x00FF00FF);\n\t\t\tx = ((x &amp; 0xFFFF0000) &gt;&gt; 16) + (x
+    &amp; 0x0000FFFF);\n\t\t\tdiff += x;\n\t\t}\n\t\tif(diff &lt; min) min = diff,
+    num = n;\n\t}\n\treturn \"No.\"+ num +\" (\"+ min +\")\\n\"+ ((new Date()).getTime()
+    - time)/1000 +\"sec.\";\n})(1024, 24, 32, 99) ); // 768 = 24 * 32\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3317'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/3317
+  :user_name: naranja
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/448/
+  :language: D
+  :time: 2007/10/14 16:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">std.random.rand() よりも std.c.stdlib.rand() のほうが圧倒的に高速なので\r\n後者を使っていますが、そのせいで配列を乱数っぽい何かで初期化するハメになってます。\r\n本質的じゃないのでいいかなと。\r\n\r\nPentium4
+    3GHz、メモリ 2GB 下での実行結果はこんな感じです。\r\n\r\ninit: 0.063 [sec]\r\ncomp: 0.062 [sec]\r\nstandard:
+    43, max similarity: 467034, most similar: [75]</pre>\n\t"
+  :code: |
+    import std.stdio;
+    import std.c.stdlib;
+    import std.date;
+
+    void main(){
+        int num = 100;
+        uint[32][768][] table;  // 32px * 32blocks = 1024px
+        table.length = num;
+        randomize();
+
+        auto initStart = getUTCtime();
+        foreach(n, image; table){
+            foreach(h, row; image){
+                foreach(w, block; row){
+                    table[n][h][w] = (rand() * 2) + ((rand() * 2) &lt;&lt; 16);
+                }
+            }
+        }
+        auto initStop = getUTCtime();
+
+        auto compStart = getUTCtime();
+        int standard = rand() % num;
+        int[] similarity;
+        similarity.length = num;
+
+        foreach(n, image; table){
+            if(n == standard){
+                similarity[n] = -1;
+                continue;
+            }
+            foreach(h, row; image){
+                foreach(w, block; row){
+                    int blockSim = ~(block ^ table[standard][h][w]);
+                    blockSim = ((blockSim &amp; 0xAAAA_AAAA) &gt;&gt;  1) + (blockSim &amp; 0x5555_5555);
+                    blockSim = ((blockSim &amp; 0xCCCC_CCCC) &gt;&gt;  2) + (blockSim &amp; 0x3333_3333);
+                    blockSim = ((blockSim &amp; 0xF0F0_F0F0) &gt;&gt;  4) + (blockSim &amp; 0x0F0F_0F0F);
+                    blockSim = ((blockSim &amp; 0xFF00_FF00) &gt;&gt;  8) + (blockSim &amp; 0x00FF_00FF);
+                    blockSim = ((blockSim &amp; 0xFFFF_0000) &gt;&gt; 16) + (blockSim &amp; 0x0000_FFFF);
+                    similarity[n] += blockSim;
+                }
+            }
+        }
+
+        int maxSimilarity = -1;
+        foreach(e; similarity){
+            maxSimilarity = maxSimilarity &gt; e ? maxSimilarity : e;
+        }
+
+        int[] mostSimilar;
+        foreach(i, e; similarity){
+            if(e == maxSimilarity){
+                mostSimilar ~= i;
+            }
+        }
+        auto compStop = getUTCtime();
+
+        writefln("init: %.3f [sec]", (initStop - initStart) / 1000.0);
+        writefln("comp: %.3f [sec]", (compStop - compStart) / 1000.0);
+        writefln("standard: ", standard, ", max similarity: ", maxSimilarity, ", most similar: ", mostSimilar);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3425'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/3425
+  :user_name: mamamoto
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2007/10/17 08:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">pure rubyには厳しい問題です。\r\nモノクロデータは別で用意してます。\r\n\r\nmodel
+    name      : Intel(R) Core(TM)2 CPU          6400  @ 2.13GHz\r\n\r\n{:score=&gt;394250,
+    :index=&gt;33}\r\nruby cmp_bmp.rb  9.56s user 0.04s system 99% cpu 9.617 total\r\n</pre>\n\t"
+  :code: "class MonoBmp\r\n  attr_reader :a\r\n\r\n  def initialize(fn)\r\n    @@tbl
+    ||= self.class.cnt_tbl(0x100)\r\n    @a = File.read(fn)\r\n  end\r\n\r\n  def
+    self.zero_cnt(n, size)\r\n    r = 0\r\n    size.times{|i|\r\n      r += (((n &gt;&gt;
+    i) &amp; 1) ^ 1)\r\n    }\r\n    r\r\n  end\r\n\r\n  def self.cnt_tbl(size)\r\n
+    \   a = []\r\n    size.times{|i|\r\n      a[i] = zero_cnt(i, 8)\r\n    }\r\n    a\r\n
+    \ end\r\n\r\n  def cmp(oth)\r\n    c = 0\r\n    @a.size.times{|i|\r\n      c +=
+    @@tbl[@a[i] ^ oth.a[i]]\r\n    }\r\n    c\r\n  end\r\nend\r\n\r\ndef similar(tar,
+    rest)\r\n  max = 0\r\n  max_i = nil\r\n\r\n  rest.each_with_index{|e, i|\r\n    score
+    = tar.cmp(e)\r\n    if score &gt; max\r\n      max = score\r\n      max_i = i\r\n
+    \   end\r\n  }\r\n\r\n  {:index =&gt; max_i, :score =&gt; max}\r\nend\r\n\r\nlist
+    = (0..99).map{|i|\r\n  MonoBmp.new(sprintf(\"bmp/%04d.bmp\",i))\r\n}\r\n\r\np
+    similar(list[0], list[1..-1])\r\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3426'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/3426
+  :user_name: mamamoto
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2007/10/17 08:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">3425はログイン忘れてました。\r\npureだと厳しいのでinlineでやったもの。\r\n\r\nmodel
+    name      : Intel(R) Core(TM)2 CPU          6400  @ 2.13GHz\r\n\r\n{:index=&gt;33,
+    :score=&gt;394250}\r\nruby cmp_bmp2.rb  0.19s user 0.10s system 98% cpu 0.293
+    total\r\n\r\n</pre>\n\t"
+  :code: |
+    require "rubygems"
+    require "inline"
+
+    class MonoBmp
+      attr_reader :a
+
+      inline do |bldr| bldr.c('
+      int cmp_by_c(const char* a, const char* b, int size){
+        int i, j, r=0;
+
+        for (i = 0; i &lt; size; i++){
+          char n = a[i]^b[i];
+          for (j = 0; j &lt; 8; j++){
+            r += (((n &gt;&gt; j) &amp; 1) ^ 1);
+          }
+        }
+        return r;
+      }
+      ')
+      end
+
+      def initialize(fn)
+        @a = File.read(fn)
+      end
+
+      def cmp(oth)
+        cmp_by_c(@a, oth.a, @a.size)
+      end
+    end
+
+    def similar(tar, rest)
+      max = 0
+      max_i = nil
+
+      rest.each_with_index{|e, i|
+        score = tar.cmp(e)
+        if score &gt; max
+          max = score
+          max_i = i
+        end
+      }
+
+      {:index =&gt; max_i, :score =&gt; max}
+    end
+
+    list = (0..99).map{|i|
+      MonoBmp.new(sprintf("bmp/%04d.bmp",i))
+    }
+
+    p similar(list[0], list[1..-1])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6011'
+  :parent_id: '37'
+  :url: http://ja.doukaku.org/comment/6011
+  :user_name: Nemo
+  :user_url: /web/20080331044845/http://ja.doukaku.org/user/685/
+  :language: C
+  :time: 2008/03/13 14:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">練習がてら書いてみました。\r\nC++ といいつつ、無茶苦茶に環境依存。\r\nコンパイルは
+    Intel C++/Mac で。\r\nicpcem64t -O3 -ip -m64 -march=core2 -axT -openmp -pg -g -o
+    compare-figs compare-figs.cc\r\n\r\n100個の比較だと瞬間で終わるので、\r\n1024個の画像から類似度の最も高いペアを選ぶベンチマークして、\r\n4
+    thread 並列で9秒、\r\n8 thread 並列で8秒弱。\r\n単純な100回比較だと 1.5 ms 相当になります。\r\n残念ながら 4 thread
+    でほぼ頭打ち。\r\n1 thread だとSSE版と通常版で1.5倍くらい差がつくのですが、8 thread だと同じになってしまいます。\r\n</pre>\n\t"
+  :code: "#include &lt;cstdio&gt;\n#include &lt;cstdlib&gt;\n#include &lt;stdint.h&gt;\n#include
+    &lt;tmmintrin.h&gt;\n#include &lt;sys/timeb.h&gt;\n\nconst int FigWidth=1024;\nconst
+    int FigHeight=768;\n\ntypedef union {\n  __m128i b;\n  uint8_t ui8[16];\n  uint32_t
+    ui32[4];\n  int32_t si32[4];\n  uint64_t ui64[2];\n} w128_t;\n\ninline uint64_t
+    bitcount_64(uint64_t val) {\n  val = ((val&gt;&gt; 1) &amp; 0x5555555555555555ULL)
+    + (val &amp; 0x5555555555555555ULL);\n  val = ((val&gt;&gt; 2) &amp; 0x3333333333333333ULL)
+    + (val &amp; 0x3333333333333333ULL);\n  val = ((val&gt;&gt; 4) &amp; 0x0f0f0f0f0f0f0f0fULL)
+    + (val &amp; 0x0f0f0f0f0f0f0f0fULL);\n  val = ((val&gt;&gt; 8) &amp; 0x00ff00ff00ff00ffULL)
+    + (val &amp; 0x00ff00ff00ff00ffULL);\n  val = ((val&gt;&gt;16) &amp; 0x0000ffff0000ffffULL)
+    + (val &amp; 0x0000ffff0000ffffULL);\n  val = ((val&gt;&gt;32) &amp; 0x00000000ffffffffULL)
+    + (val &amp; 0x00000000ffffffffULL);\n  return val;\n};\n\ninline \nint compare2(int64_t*
+    map, int64_t* map2, size_t size) {\n  int sum=0;\n  for(int i=0;i&lt;size;i++){\n
+    \     sum+=bitcount_64(map[i] ^ map2[i]);\n  }\n  return sum;\n}\n\n\nint compare_full2(int
+    &amp; cc, int &amp; ci, int &amp; cj, w128_t **bitmap, size_t size, int nFigs)
+    \n{\n  int ii,i,j,sum;\n  #pragma omp parallel for private (sum,ii,i,j) shared
+    (bitmap,cc,ci,cj,size)\n  for(ii=0;ii&lt;8;ii++){\n    for(i=ii;i&lt;nFigs;i+=8){\n
+    \     for(j=i+1;j&lt;nFigs;j++) {\n        sum=compare2(reinterpret_cast&lt;int64_t
+    *&gt;(bitmap[i]),\n                     reinterpret_cast&lt;int64_t *&gt;(bitmap[j]),size*2);\n
+    \       if (sum&lt;cc) {\n          cc=sum;\n          ci=i;\n          cj=j;\n
+    \       }\n      }\n    }\n  }\n  #pragma omp barrier\n  return 1;\n}\n\n// =====
+    Compare Using SSE =====\nint compare_full(int &amp; cc, int &amp; ci, int &amp;
+    cj, w128_t **bitmap, size_t size, int nFigs) \n{\n  w128_t  b0,b1,b2,b7;\n  b0.ui64[0]=b0.ui64[1]=0x5555555555555555ULL;\n
+    \ b1.ui64[0]=b1.ui64[1]=0x3333333333333333ULL;\n  b2.ui64[0]=b2.ui64[1]=0x0f0f0f0f0f0f0f0fULL;\n
+    \ b7.ui64[0]=b7.ui64[1]=0x000000ff000000ffULL;\n  int ii,i,j,k;\n  w128_t c;\n
+    \ __m128i val,sum;\n#pragma omp parallel for private (sum,c,ii,i,j,k,val) shared
+    (bitmap,cc,ci,cj,size)\n  for(ii=0;ii&lt;8;ii++){\n    for(i=ii;i&lt;nFigs;i+=8){\n
+    \     for(j=i+1;j&lt;nFigs;j++) {\n        sum=_mm_xor_si128(sum,sum);\n        for(k=0;k&lt;size;k++){\n
+    \         val =_mm_xor_si128(bitmap[i][k].b,bitmap[j][k].b);\n          val=_mm_add_epi8(
+    _mm_and_si128(b0.b,val),\n                            _mm_and_si128(b0.b,_mm_srli_epi64(val,1)));\n
+    \         val=_mm_add_epi8(_mm_and_si128(b1.b,_mm_srli_epi64(val,2)),\n                           _mm_and_si128(b1.b,val));\n
+    \         val=_mm_add_epi8(_mm_and_si128(b2.b,_mm_srli_epi64(val,4)),\n                           _mm_and_si128(b2.b,val));\n
+    \         val=_mm_add_epi8(val,_mm_srli_epi64(val,8));\n          val=_mm_hadd_epi16(val,val);\n
+    \         val=_mm_hadd_epi16(val,val);\n          val=_mm_hadd_epi16(val,val);\n
+    \         val=_mm_and_si128(val,b7.b);\n          sum=_mm_add_epi32(sum,val);\n
+    \     }\n      c.b=sum;\n      if (c.ui32[0]&lt;cc) {\n        cc=c.ui32[0];\n
+    \       ci=i;\n        cj=j;\n      }\n    }\n  }\n  }\n  #pragma omp barrier\n
+    \ return 0;\n}\n// ===== Test Code =====\nint fillrandom(w128_t* map, size_t size)
+    {\n  for(int i=0;i&lt;size;i++) {\n    for(int j=0;j&lt;4;j++){\n      map[i].ui32[j]=(((unsigned
+    int)(rand()))&lt;&lt;16)+(rand() &amp; 0xffff);\n    }\n  }\n  return 1;\n}\n\nint
+    main(int argc, char** argv) {\n  w128_t **bitmap;\n  size_t size=FigWidth*FigHeight/128;\n\n\n
+    \ int nFigs=atoi(argv[1]);\n\n  bitmap=new w128_t* [nFigs] ;\n  for(int i=0;i&lt;nFigs;i++)
+    {\n    bitmap[i]=new w128_t [size];\n    fillrandom(bitmap[i],size);\n  }\n  int
+    cc,ci,cj;\n  struct timeb t0,t1,t2;\n  ftime(&amp;t0);\n  cc=FigWidth*FigHeight;
+    \ ci=-1;  cj=-1; \n\n  compare_full(cc,ci,cj,bitmap,size,nFigs);\n  ftime(&amp;t1);\n
+    \ fprintf(stderr,\"SSSE3:   %d : %d %d / %10.3f sec\\n\",cc,ci,cj,\n      0.001*((t1.time-t0.time)*1000+(t1.millitm-t0.millitm)));\n
+    \ cc=FigWidth*FigHeight;  ci=-1;  cj=-1; \n  compare_full2(cc,ci,cj,bitmap,size,nFigs);\n
+    \ ftime(&amp;t2);\n  fprintf(stderr,\"Normal: %d : %d %d / %10.3f sec\\n\",cc,ci,cj,\n
+    \     0.001*((t2.time-t1.time)*1000+(t2.millitm-t1.millitm)));\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

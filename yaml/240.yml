@@ -1,0 +1,1047 @@
+---
+:id: '240'
+:title: キッチンタイマー
+:comments:
+- :id: '8582'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8582
+  :user_name: ところてん
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2009/03/06 02:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">キッチンタイマーを作ってください。\r\n要件は以下のとおりです。\r\n\r\n・タイマーが鳴るまでの時間を入力可能\r\n・残り時間を表示\r\n・タイマーが切れたら音がなる</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8612'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8612
+  :user_name: turugina
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/760/
+  :language: Perl
+  :time: 2009/03/10 02:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>TkとWin32::Soundで。</p>\n<p>Win32::Soundを使っているので、Windows環境限定です。</p>\n\n\t"
+  :code: |
+    use strict;
+    use warnings;
+
+    use Tk;
+
+    BEGIN {
+      if ( $^O !~ /Win32/ ) {
+        die q/ごめん、無理/;
+      }
+      eval q/use Win32::Sound/;
+      die $@ if $@;
+    }
+
+    my $mw = Tk::MainWindow-&gt;new(
+      -title =&gt; q/KitchenTimer/,
+    );
+    my $count = 0;
+    $mw-&gt;Entry(
+      -textvariable =&gt; \$count,
+    )-&gt;pack;
+    my $start = $mw-&gt;Button(
+      -text =&gt; q/start/,
+      -command =&gt; \&amp;start_timer,
+    );
+    $start-&gt;pack;
+    my $stop = $mw-&gt;Button(
+      -text =&gt; q/stop/,
+      -command =&gt; \&amp;stop_timer,
+      -state =&gt; q/disabled/,
+    );
+    $stop-&gt;pack;
+
+    $mw-&gt;MainLoop;
+
+    my $timer;
+    sub start_timer
+    {
+      return if $count &lt;= 0;
+      $timer = $mw-&gt;repeat(1000, \&amp;process_timer);
+      $start-&gt;configure(-state =&gt; q/disabled/);
+      $stop-&gt;configure(-state =&gt; q/normal/);
+    }
+    sub stop_timer
+    {
+      $timer-&gt;cancel if $timer;
+      $timer = undef;
+      $start-&gt;configure(-state =&gt; q/normal/);
+      $stop-&gt;configure(-state =&gt; q/disabled/);
+    }
+    sub process_timer
+    {
+      if ( --$count == 0 ) {
+        Win32::Sound::Play(q/ding.wav/);
+        stop_timer;
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8615'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8615
+  :user_name: 匿名
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2009/03/10 03:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    #!/usr/bin/env python
+    import sys, time, math
+
+    def timeseq(limit):
+        now = time.time()
+        while now &lt;= limit:
+            yield math.ceil(limit - now)
+            now = time.time()
+
+    if __name__ == '__main__':
+        sys.stdout = sys.stderr
+        if len(sys.argv) == 1:
+            print 'usage: %s MM:SS' % sys.argv[0]
+        else:
+            m, s = map(int, sys.argv[1].split(':'))
+            for t in timeseq(time.time() + m * 60 + s):
+                print '%s\r' % time.strftime('%M:%S', time.gmtime(t)),
+                time.sleep(.2)
+            print '\a'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8616'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8616
+  :user_name: sumim
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/03/10 04:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    | timer |
+
+    timer := [:limit |
+        | start remain |
+        start := DateAndTime now.
+        [(remain := DateAndTime now - start) &lt;= limit] whileTrue: [
+            (limit - remain) printString displayAt: Display center.
+            (Delay forSeconds: 0.2) wait].
+        BaseSoundSystem beep].
+
+    timer value: 5 minutes + 10 seconds
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '8618'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8618
+  :user_name: selpo
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/1013/
+  :language: C
+  :time: 2009/03/10 07:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>台所に置いとくと便利かもしれません。</p>\n\n\t"
+  :code: |
+    using System;
+    using System.IO;
+    using System.Threading;
+    using System.Media;
+    static class P
+    {
+        static void Main()
+        {
+            // アラーム音は、カレントディレクトリの
+            // alarm.wav とする。ない場合は、ビープ音。
+            int limit;
+            Console.Write("何秒間？\n&gt; ");
+            limit = int.Parse(Console.ReadLine());
+            Console.Clear();
+            Console.WriteLine("残り : " + limit + "秒");
+            Console.WriteLine("Enter で開始。");
+            TimerCallback countDown = (o) =&gt;
+            {
+                Console.Clear();
+                if (limit &gt;= 0)
+                    Console.WriteLine("残り : " + limit-- + "秒");
+            };
+            while (Console.ReadKey(false).Key != ConsoleKey.Enter)
+                ;
+            var tm = new Timer(countDown, null, 0, 1000);
+            Thread.Sleep(limit * 1000);
+            tm.Dispose();
+            Console.Clear();
+            Console.WriteLine("時間です。");
+            if (File.Exists("alarm.wav"))
+                new SoundPlayer("alarm.wav").Play();
+            else
+                Console.Beep();
+        }
+    }
+  :tags:
+  - C#3.0
+  :references:
+    :url: 
+    :title: 
+- :id: '8623'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8623
+  :user_name: あにす
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/504/
+  :language: Python
+  :time: 2009/03/10 10:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  僕が普段から実用しているものです。\r<br>PythonはPythonでもIronPythonです。\r<br>System.Windows.FromsのGUIを持ってます。\r<br>動かす際には\r<br>時間が来たときに鳴る：alarm1.wav\r<br>ボタンを押したときに鳴る：pi.wav\r<br>の2つの音声ファイルを用意して下さい。\n\t"
+  :code: "import sys\nimport clr\nclr.AddReference(\"System\")\nclr.AddReference(\"System.Drawing\")\nclr.AddReference(\"System.Windows.Forms\")\nfrom
+    sys import argv\nfrom System import DateTime, TimeSpan\nfrom System.Drawing import
+    Font, FontStyle, GraphicsUnit, Rectangle, Size\nfrom System.Media import SoundPlayer\nfrom
+    System.Windows.Forms import Application, Button, CheckBox, Form, FormBorderStyle,
+    Label, Timer\n\nform = Form()\n\n#コントロール、コンポーネント\nlabel1 = Label()\nbutton10m
+    = Button()\nbutton1m = Button()\nbutton10s = Button()\nbutton1s = Button()\nbuttonReset
+    = Button()\nbuttonStart = Button()\ncheckBox1 = CheckBox()\ntimer1 = Timer()\n\n#フィールド\npi
+    = alarm1 = None\ntimeSpan = TimeSpan(0)\ndateTime = DateTime.Now\n\ndef update():\n
+    \   if(timer1.Enabled):\n        timer1_Tick(None,None)\n    else:\n        label1.Text
+    = timeSpan.ToString()\n\ndef soundInit():\n    global pi,alarm1\n    if(pi ==
+    None or alarm1 == None):\n        pi = SoundPlayer(\"pi.wav\")\n        alarm1
+    = SoundPlayer(\"alarm1.wav\")\n\ndef end():\n    soundInit()\n    timer1.Stop()\n
+    \   buttonReset_Click(None,None)\n    Application.DoEvents()\n    alarm1.PlayLooping()\n\n#▼イベントプロシージャ\n#ボタンクリック時にビープ音を鳴らす\ndef
+    beepPi(sender,e):\n    soundInit()\n    alarm1.Stop()\n    pi.Play()\n    \ndef
+    button_Click(sender,e):\n    global timeSpan\n    timeSpan += TimeSpan(0,0,sender.Tag)\n
+    \   update()\n\ndef buttonReset_Click(sender,e):\n    global timeSpan\n    timeSpan
+    = TimeSpan(0)\n    timer1.Stop()\n    update()\n    \ndef buttonStart_Click(sender,e):\n
+    \   global dateTime\n    dateTime = DateTime.Now\n    \n    if(timeSpan &lt;=
+    TimeSpan(0,0,10)):\n        timer1.Interval = 100\n    else:\n        timer1.Interval
+    = 1000\n    \n    timer1.Start()\n    timer1_Tick(None,None)\n    \ndef checkBox1_CheckedChanged(sender,e):\n
+    \   form.TopMost = sender.Checked\n    \ndef timer1_Tick(sender,e):\n    ts =
+    timeSpan - (DateTime.Now - dateTime)\n    if(ts.Milliseconds &gt; 0):\n        ts
+    += TimeSpan(0,0,1)\n    \n    if(ts &lt;= TimeSpan(0,0,10)):\n        timer1.Interval
+    = 100\n    \n    label1.Text = ts.ToString().Substring(0,8)\n    \n    if(ts &lt;=
+    TimeSpan()):\n        end()\n    \ndef Form1_Load(sender,e):\n    if len(argv)
+    &gt;= 3:\n        global timeSpan\n        timeSpan = TimeSpan(0,int(argv[1]),int(argv[2]));\n
+    \       buttonStart_Click(None,None)\n    update()    \n#▲イベントプロシージャ\n\n#フォームにコントロールを配置する\ndef
+    initialize():\n    #▼label1\n    label1.Bounds = Rectangle(0,0,184,48)\n    label1.Text
+    = \"00:00:00\"\n    label1.Font = Font(\"MS UI Gothic\", 35, FontStyle.Regular,
+    GraphicsUnit.Point, 128)\n    #▲label1\n    \n    #▼button10m\n    button10m.Bounds
+    = Rectangle(0,48,40,23)\n    button10m.Text = \"10分\"\n    button10m.Tag = 600\n
+    \   #▲button10m\n    \n    #▼button1m\n    button1m.Bounds = Rectangle(40,48,40,23)\n
+    \   button1m.Text = \"1分\"\n    button1m.Tag = 60\n    #▲button1m\n    \n    #▼button10s\n
+    \   button10s.Bounds = Rectangle(80,48,40,23)\n    button10s.Text = \"10秒\"\n
+    \   button10s.Tag = 10\n    #▲button10s\n    \n    #▼button1s\n    button1s.Bounds
+    = Rectangle(120,48,40,23)\n    button1s.Text = \"1秒\"\n    button1s.Tag = 1\n
+    \   #▲button1s\n    \n    #▼buttonReset\n    buttonReset.Bounds = Rectangle(160,48,48,23)\n
+    \   buttonReset.Text = \"リセット\"\n    #▲buttonReset\n    \n    #▼buttonStart\n
+    \   buttonStart.Bounds = Rectangle(212,48,53,23)\n    buttonStart.Text = \"スタート\"\n
+    \   #▲buttonStart\n    \n    #▼checkBox1\n    checkBox1.Bounds = Rectangle(186,25,84,16)\n
+    \   checkBox1.Text = \"TopMost\"\n    #▲checkBox1\n\n    #▼Form1\n    form.Size
+    = Size(272,93)\n    form.Text = \"焼き弁タイマー2py\"\n    form.FormBorderStyle = FormBorderStyle.FixedToolWindow\n
+    \   #▲Form1\n    \n    #▼フォームへ追加\n    form.Controls.Add(checkBox1)\n    form.Controls.Add(label1)\n
+    \   form.Controls.Add(button10m)\n    form.Controls.Add(button1m)\n    form.Controls.Add(button10s)\n
+    \   form.Controls.Add(button1s)\n    form.Controls.Add(buttonReset)\n    form.Controls.Add(buttonStart)\n
+    \   #▲フォームへ追加\n\n    #▼イベントハンドラ登録\n    button10m.Click += button_Click\n    button1m.Click
+    += button_Click\n    button10s.Click += button_Click\n    button1s.Click += button_Click\n
+    \   buttonReset.Click += buttonReset_Click\n    buttonStart.Click += buttonStart_Click\n
+    \   form.Load += Form1_Load\n    timer1.Tick += timer1_Tick\n    checkBox1.CheckedChanged
+    += checkBox1_CheckedChanged\n    for ctrl in form.Controls:                #フォームとラベル以外(操作対象)\n
+    \       if(ctrl is not form and ctrl is not label1):    #のみクリックで音が出る様に\n            ctrl.Click
+    += beepPi            #イベント追加\n    #▲イベントハンドラ登録\n\nform.SuspendLayout()\ninitialize()\nform.ResumeLayout(False)\nform.PerformLayout()\n\nApplication.Run(form)\n"
+  :tags:
+  - IronPython
+  - System.Windows.Forms
+  :references:
+    :url: 
+    :title: 
+- :id: '8627'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8627
+  :user_name: syat
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/766/
+  :language: Batchfile
+  :time: 2009/03/10 07:42 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    start http://e.ggtimer.com/%1%%20seconds
+  :tags: []
+  :references:
+    :url: /web/20100628133901/http://www.lifehacker.jp/2009/02/eggtimer.html
+    :title: 簡単に使えるWebベースのシンプルタイマー「E.ggTimer」
+- :id: '8634'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8634
+  :user_name: 匿名
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2009/03/10 11:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>特にnowとか使う必要無いと思います。</p>\n\n\t"
+  :code: "#!/usr/bin/env python\nimport sys, time\n\ndef timeseq(limit):\n  for i
+    in range(limit, 0, -1): \n    yield i\n    time.sleep(1)\n\nif __name__ == '__main__':\n
+    \   sys.stdout = sys.stderr\n    if len(sys.argv) == 1:\n        print 'usage:
+    %s MM:SS' % sys.argv[0]\n    else:\n        m, s = map(int, sys.argv[1].split(':'))\n
+    \       for t in timeseq(m * 60 + s):\n            print '%02d:%02d\\r' % (t /
+    60, t % 60)\n        print '\\a'\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8636'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8636
+  :user_name: 匿名
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/03/10 22:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>コメントありがとうございます。</p>\n<p>sleep()のような関数は厳密に1秒寝てくれるとは限らないので、sleep()に頼ると誤差が集積していきますので、あのような書き方を致しました。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8640'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8640
+  :user_name: rennos
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/1024/
+  :language: HSP
+  :time: 2009/03/11 13:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  長くなってしまった……。\n\t"
+  :code: "#uselib \"user32.dll\"\n#func MessageBeep  \"MessageBeep\"  int\n#func EnableWindow
+    \"EnableWindow\" int,int\n\n#define true 1\n#define false 0\n\ngoto *main\n\n//
+    グローバル定義\n#deffunc ObjEnableAll int bEnable\n    EnableWindow infBtn, bEnable\n
+    \   foreach timer\n        EnableWindow infInput(0, cnt), bEnable\n    loop\n
+    \   return\n    \n#deffunc timetick int idx\n    timer(idx) --\n    if ( idx &gt;
+    0 ) {        // '時'ではない\n        if ( timer(idx) &lt; 0 ) {\n            timer(idx)
+    ++\n            timer(idx - 1) --\n            if ( timer(idx - 1) &gt;= 0 ) {\n
+    \               timer(idx) = 59\n            } else {\n                timetick
+    idx - 1\n            }\n        }\n    }\n    return\n    \n#defcfunc IsTimerLasting
+    local bLast\n    bLast = false\n    foreach timer\n        if ( timer(cnt) !=
+    0 ) { bLast = true : break }\n    loop\n    return bLast\n    \n*main\n    dim
+    infInput, 2, 3\n    dim timer, 3        // 時、分、秒\n    gosub *LSetWindow\n    stop\n
+    \   \n*LTimerLoop\n    ObjEnableAll false\n    while ( IsTimerLasting() )\n        wait
+    100                    // 1秒\n        timetick length(timer) - 1    // 刻む\n        \n
+    \       // 内容を更新\n        foreach timer\n            objprm infInput(1, cnt),
+    timer(cnt)\n        loop\n    wend\n    ObjEnableAll true\n    MessageBeep -1\n
+    \   return\n    \n*LSetWindow\n    width 180, 60 : title \"台所時計\"\n        objmode
+    2\n        timestr = \"時\", \"分\", \"秒\"\n        foreach timer\n            pos
+    \ 5 + 55 * cnt, 5 : input timer(cnt), 30, 22\n            infInput(0, cnt) = objinfo(stat,
+    2), stat\n            pos 37 + 55 * cnt, 7 : mes timestr(cnt)\n        loop\n
+    \       pos  5, 30 : button gosub \"開始\", *LTimerLoop\n        infBtn = objinfo(stat,
+    2), stat\n        \n    return\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8642'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8642
+  :user_name: emasaka
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2009/03/11 13:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>単にコマンドラインの次の行で、テキスト表示でカウントダウンするだけです。\r</p>\n<p>\r</p>\n<p>キー操作：\r</p>\n<p>\r</p>\n<ul>\n<li>\n
+    SPC: 一時停止/再開\r\n</li>\n<li>\n h、l: カーソルを左右（分・秒）に移動\r\n</li>\n<li> k、j: カーソル位置の値（分・秒）を1つ増減\r</li>\n</ul>\n</div>\n\t"
+  :code: |
+    #!/bin/bash
+
+    function dsp_time() {
+        local t=$1
+        echo -ne '\r'
+        printf '%02.02d:%02d' $((t / 60)) $((t % 60))
+        echo -ne '\r'
+        [ "$cur_mode" = SEC ] &amp;&amp; tput cuf 3
+    }
+
+    function timer_up() {
+        if [ "$cur_mode" = MIN ]; then
+            ((t_end += 60))
+        else
+            ((t_end += 1))
+        fi
+    }
+
+    function timer_down() {
+        if [ "$cur_mode" = MIN ]; then
+            (((t_end - SECONDS - offset &gt;= 60) &amp;&amp; (t_end -= 60)))
+        else
+            (((t_end - SECONDS - offset &gt;= 1) &amp;&amp; (t_end -= 1)))
+        fi
+    }
+
+    function key_command() {
+        case "$c" in
+        'h') cur_mode=MIN ;;
+        'l') cur_mode=SEC ;;
+        'k') timer_up ;;
+        'j') timer_down ;;
+        '') ((run_mode = run_mode == 1 ? 0 : 1)) ;;
+        esac
+    }
+
+    trap 'stty cbreak echo' EXIT
+    stty -cbreak -echo
+
+    tm=420                  # 7 min
+    run_mode=1
+    cur_mode=MIN
+    offset=$SECONDS
+    t_end=$((offset + tm))
+    while ((tm &gt; 0)); do
+        dsp_time $tm
+        read -n 1 -t 1 c &amp;&amp; key_command "$c"
+        if [ $run_mode = 1 ]; then
+            ((tm = t_end - SECONDS - offset))
+        else
+            ((offset = t_end - tm - SECONDS))
+        fi
+    done
+
+    dsp_time 0
+    echo
+    echo -ne '\a'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8644'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8644
+  :user_name: kiy0taka
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/16/
+  :language: Bash
+  :time: 2009/03/11 14:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    function timer { t=$1; while [ $t -gt 0 ]; do echo $t; t=`expr $t - 1`; sleep 1; clear; done; printf '\a'; }
+    timer 10
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8655'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8655
+  :user_name: 匿名
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2009/03/13 02:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    import java.io.*;
+    public class KitchenTimer {
+        public static void main(String[] args) throws Exception{
+            BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
+            String sec = buf.readLine();
+            long nowtime = System.currentTimeMillis();
+            long stoptime = nowtime + (Integer.parseInt(sec) * 1000);
+            while(stoptime &gt; nowtime) {
+                System.out.println((stoptime - nowtime)/1000);
+                Thread.sleep(1000l);
+                nowtime = System.currentTimeMillis();
+            }
+            java.awt.Toolkit.getDefaultToolkit().beep();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8660'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8660
+  :user_name: 匿名
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2009/03/13 21:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>locateで表示位置を指定。\nmyclsで画面をきれいに。\n画面に出力させた後にこの二つの関数を呼び出してカーソルを元の位置に戻しまた出力させる。\nこれを繰り返して最初の入力値と現在の経過時間が等しくなったときビープ音を鳴らして終了。</p>\n\n\t"
+  :code: |
+    #include &lt;windows.h&gt;
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;time.h&gt;
+    /*------------locate------------*/
+    int locate (int x, int y)
+    {
+    HANDLE handle;
+    COORD position;
+    handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    position.X = (SHORT)x;
+    position.Y = (SHORT)y;
+    SetConsoleCursorPosition(handle,position);
+    return 0;
+    }
+    /*------------------------*/
+
+    /*------------mycls------------*/
+    int mycls (void)
+    {
+    int i=0;
+    while(i&lt;=10)
+        {
+        printf("        ");
+        i++;
+        }
+    return 0;
+    }
+    /*------------------------*/
+
+    int main (void)
+    {
+    clock_t start;
+    int intime;
+    int sec;
+    char string[30];
+    locate(25,10);
+    printf("時間を秒単位で入力してください\n");
+    locate(35,11);
+    fgets(string,30,stdin);
+    locate(0,10);
+    mycls();
+    locate(0,11);
+    mycls();
+    intime=atoi(string);
+    start=clock();
+    while(1)
+        {
+        sec=clock()-start;
+        sec/=CLOCKS_PER_SEC;
+        locate(0,10);
+        mycls();
+        locate(35,10);
+        if (sec==intime)
+            {
+            printf("時間です.\a");
+            break;
+            }
+        else
+            {
+            printf("%3d",intime-sec);
+            }
+        Sleep(20);
+        }
+    return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8662'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8662
+  :user_name: leque
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2009/03/15 10:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    (define (main args)
+      (let* ((m (string-&gt;number (cadr args)))
+             (s (if (null? (cddr args)) 0 (string-&gt;number (caddr args))))
+             (d (+ (* m 60) s))
+             (end (+ (sys-time) d)))
+        (do ((now (sys-time) (sys-time)))
+            ((&lt;= (- end now) 0) (display #\x07))
+          (receive (m s) (quotient&amp;remainder (- end now) 60)
+            (format #t "~2,'0D:~2,'0D~%" m s)
+            (sys-sleep 1)))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '8749'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8749
+  :user_name: silverwire
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/646/
+  :language: Batchfile
+  :time: 2009/03/29 07:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">こんな感じでも書けますね。\r\n\r\nあまり大きな数を指定されると 1秒を刻めなくなってしまいますが、\r\nそのような場合は
+    8行目を削除してください。\r\n\r\nなお、14行目の行末は BL(Ctrl + G) です。制御コードの一つです\r\nが、 コピー &amp; ペーストで問題無く復元できると思います。\r\n\r\nWindows
+    XPで動作を確認しました。</pre>\n\t"
+  :code: "@echo off\nsetlocal enabledelayedexpansion\n  if \"%~1\" == \"\" (echo usage:
+    %~n0 SECOND) &amp; exit /b 1\n  \n  for /l %%i in (%~1,-1,1) do (\n    cls\n    set
+    t=\n    for /l %%j in (1,1,%%i) do set t=!t!^|\n    echo !t! %%i\n    ping -n
+    2 127.0.0.1 &gt; NUL\n  )\n  \n  cls\n  echo \nendlocal\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8831'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8831
+  :user_name: lunlumo
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/813/
+  :language: Scala
+  :time: 2009/04/22 07:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>　Actorを使って書いてみました。</p>\n\n\t"
+  :code: "import    java.io.File\nimport    javax.sound.sampled.{AudioFormat, AudioInputStream,
+    AudioSystem, DataLine, SourceDataLine}\nimport    scala.actors.{Actor, TIMEOUT}\nimport
+    \   scala.actors.Actor.loop\nimport    scala.swing.{Alignment, BorderPanel, Button,
+    FlowPanel, Label, MainFrame, Menu, MenuBar, MenuItem, Panel, Separator, SimpleGUIApplication,
+    TextField}\nimport    scala.swing.event.{ActionEvent, ButtonClicked}\n\nabstract
+    class Request\ncase class Start(s:Actor, i:Long, r:Boolean) extends Request\ncase
+    object Stop extends Request\n\nabstract class Response\ncase object Timeout extends
+    Response\n\nclass Timer extends Actor {\n    var    a:Actor = null\n    var    i:Long
+    = 100\n    var    r:Boolean = false\n    var    e:Boolean = false\n    start\n
+    \   def reset:Unit = {\n        a = null\n        i = 100\n        r = false\n
+    \       e = false\n    }\n    def act:Unit = loop {\n            receiveWithin(i)
+    {\n                case Start(a, i, r) =&gt; {\n                    this.a = a\n
+    \                   this.i = i\n                    this.r = r\n                    e
+    = true\n                }\n                case Stop =&gt; reset\n                case
+    TIMEOUT =&gt;\n                    if (e) {\n                        a ! Timeout\n
+    \                       if (!r) reset\n                    }\n            }\n
+    \       }\n}\n\nclass KitchenTimer extends Actor {\n    var    s:Long = 0\n    var
+    \   i:Long = 0\n    var    u:(Long)=&gt;Unit = null\n    var    p:()=&gt;Unit
+    = null\n    var    t:Timer = new Timer\n    var    e:Boolean = false\n    start\n
+    \   def this(i:Long, u:(Long)=&gt;Unit, p:()=&gt;Unit) = {\n        this()\n        this.i
+    = i\n        this.u = u\n        this.p = p\n    }\n    def reset:Unit = {\n        s
+    = 0\n        e = false\n    }\n    def act:Unit = loop {\n        receive {\n
+    \           case Timeout =&gt;\n                if (e) {\n                    ((System.currentTimeMillis
+    - s) / 1000) match {\n                        case l if (l &lt; i) =&gt; u(i -
+    l)\n                        case _ =&gt; {\n                            p()\n
+    \                           reset\n                            t ! Stop\n                        }\n
+    \                   }\n                }\n            case _ =&gt;\n        }\n
+    \   }\n    def run:Unit = {\n        s = System.currentTimeMillis\n        e =
+    true\n        t ! Start(this, 100, true)\n    }\n    def run(i:Long):Unit = {\n
+    \       this.i = i\n        run\n    }\n    def run(i:Long, u:(Long)=&gt;Unit,
+    p:()=&gt;Unit):Unit = {\n        this.u = u\n        this.p = p\n        run(i)\n
+    \   }\n    def stop:Unit = {\n        reset\n        t ! Stop\n    }\n}\n\nobject
+    Beep {\n    val    s:Int = 256000\n    val    p:String = System.getenv(\"windir\")
+    + \"\\\\Media\\\\Windows XP Error.wav\"\n    def play:Unit = \n        try {\n
+    \           val    a:AudioInputStream    = AudioSystem.getAudioInputStream(new
+    File(p))\n            val    f:AudioFormat = a.getFormat\n            val    l:SourceDataLine
+    = AudioSystem.getLine(new DataLine.Info(classOf[SourceDataLine], f)).asInstanceOf[SourceDataLine]\n
+    \           var    b:Array[Byte] = new Array[Byte](s)\n            def read:Unit
+    = a.read(b, 0, s) match {\n                    case r if (r &gt;= 0) =&gt; {\n
+    \                       l.write(b, 0, r)\n                        read\n                    }\n
+    \                   case _ =&gt;\n                }\n            l.open(f)\n            l.start\n
+    \           read\n            l.drain\n            l.close\n        } catch {\n
+    \           case e =&gt; e.printStackTrace\n        }\n}\n\nclass KitchenTimerFrame
+    extends MainFrame {\n    \n    val    t:KitchenTimer = new KitchenTimer\n    \n
+    \   title = \"Kitchen Timer\"\n    \n    menuBar = new MenuBar\n    \n    val
+    \   menu:Menu = new Menu(\"file\")\n    val    startMenu:MenuItem = new MenuItem(\"start\")\n
+    \   val    stopMenu:MenuItem = new MenuItem(\"stop\")\n    val    quitMenu:MenuItem
+    = new MenuItem(\"quit\")\n    \n    menu.contents += startMenu\n    menu.contents
+    += stopMenu\n    menu.contents += new Separator\n    menu.contents += quitMenu\n
+    \   \n    menuBar.contents += menu\n    \n    val    time:TextField = new TextField(\"180\")\n
+    \   val    left:Label = new Label\n    val    start:Button = new Button(\"start\")\n
+    \   val    stop:Button = new Button(\"stop\")\n    \n    contents = new BorderPanel
+    {\n        \n        import BorderPanel.Position._\n        \n        layout(new
+    FlowPanel(FlowPanel.Alignment.Left) {\n                val    l:Label = new Label(\"time:\")\n
+    \               l.preferredSize = (30, 20)\n                l.horizontalAlignment
+    = Alignment.Left\n                time.preferredSize = (50, 20)\n                contents
+    += l\n                contents += time\n            }\n        ) = North\n        \n
+    \       layout(new FlowPanel(FlowPanel.Alignment.Left) {\n                val
+    \   l:Label = new Label(\"left:\")\n                l.preferredSize = (30, 20)\n
+    \               l.horizontalAlignment = Alignment.Left\n                left.preferredSize
+    = (50, 20)\n                left.horizontalAlignment = Alignment.Left\n                contents
+    += l\n                contents += left\n            }\n        ) = Center\n        \n
+    \       layout(new FlowPanel(FlowPanel.Alignment.Right) {\n                contents
+    += start\n                contents += stop\n            }\n        ) = South\n
+    \   }\n    \n    listenTo(startMenu, stopMenu, quitMenu, start, stop)\n    reactions
+    += {\n        case ActionEvent(`startMenu`) | ButtonClicked(`start`) =&gt; startHandler\n
+    \       case ActionEvent(`stopMenu`) | ButtonClicked(`stop`) =&gt; stopHandler\n
+    \       case ActionEvent(`quitMenu`) =&gt; quitHandler\n    }\n    \n    peer.setResizable(false)\n
+    \   pack\n    \n    def resetInfo:Unit = left.text = time.text\n    def startHandler:Unit
+    = {\n        resetInfo\n        t.run(time.text.toLong, updateHandler _, timeoutHandler
+    _)\n    }\n    def stopHandler:Unit = {\n        resetInfo\n        t.stop\n    }\n
+    \   def updateHandler(l:Long):Unit = left.text = l.toString\n    def timeoutHandler:Unit
+    = {\n        resetInfo\n        Beep.play\n    }\n    def quitHandler:Unit = System.exit(1)\n}\n\nobject
+    KitchenTimerApplication extends SimpleGUIApplication {\n    def top = new KitchenTimerFrame\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8832'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8832
+  :user_name: lunlumo
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/813/
+  :language: Scala
+  :time: 2009/04/22 08:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>　sleepを使ったシンプルなものも。</p>\n\n\t"
+  :code: |
+    object KitchenTimer {
+        def main(args:Array[String]):Unit =
+            if (args.size != 1)
+                println("usage: KitchenTimer TIME")
+            else {
+                try {
+                    val    t:Long = args(0).toLong
+                    val    s:Long = System.currentTimeMillis
+                    def loop:Unit = ((System.currentTimeMillis - s) / 1000) match {
+                            case p if (p &gt;= t) =&gt; java.awt.Toolkit.getDefaultToolkit.beep
+                            case p =&gt; {
+                                println((t - p).toString)
+                                Thread.sleep(1000)
+                                loop
+                            }
+                        }
+                    loop
+                } catch {
+                    case e:NumberFormatException =&gt; println("invlaid time format.")
+                    case e =&gt; e.printStackTrace
+                }
+            }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8961'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/8961
+  :user_name: Otter
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2009/05/20 07:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>GHC&amp;Win32前提です…</p>\n\n\t"
+  :code: "{-# OPTIONS_GHC -fglasgow-exts #-}\n \nmodule Main where\n\nimport System
+    (getArgs)\nimport System.Win32.Process (sleep)\nimport System.Win32.Types (DWORD)\n\nforeign
+    import stdcall \"Beep\" beep :: DWORD -&gt; DWORD -&gt; IO ()\n\ndoTimer :: Int
+    -&gt; IO ()\ndoTimer 0 = putStrLn \"It's time!\" &gt;&gt; beep 800 500\ndoTimer
+    sec = do\n    putStrLn $ (show sec) ++ \" seconds remaining\"\n    sleep 1000
+    -- 1000  msec = 1 sec\n    doTimer (sec - 1)    \n    \nmain = getArgs &gt;&gt;=
+    doTimer . read . head\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9001'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/9001
+  :user_name: ワサビ
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/1045/
+  :language: OCaml
+  :time: 2009/05/23 22:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  GUIウィンドウ上に、測定時間の入力ボックス・残り時間の表示部・タイマーのスタートボタンを配置しています。\r<br>入力ボックスには「分：秒」または「秒」での指定が可能です。\r<br>測定可能範囲は0:01～59:59で、範囲外の時間や不正な値を入力をするとエラーアイコンが表示されます。\n\t"
+  :code: |
+    #light
+
+    open System
+    open System.Windows.Forms
+    open System.Drawing
+
+    let label1 = new Label(Location = new Point(10, 12), AutoSize = true, Text = "測定時間")
+    let textBoxTime = new TextBox(Location = new Point(100, 10), Width = 50)
+    let label2 = new Label(Location = new Point(10, 40), AutoSize = true, Text = "残り時間")
+    let labelRest = new Label(Location = new Point(100, 40), AutoSize = true, Text = "")
+    let buttonStart = new Button(Location = new Point(10, 80), AutoSize = true, Text = "スタート")
+    let errorProvider = new ErrorProvider(BlinkStyle = ErrorBlinkStyle.BlinkIfDifferentError)
+    let timer = new Timer(Interval = 1000)
+    let rest = new TimeSpan() |&gt; ref
+    let printRest (rest : TimeSpan) = labelRest.Text &lt;- sprintf "%d:%02d" rest.Minutes rest.Seconds
+    buttonStart.Click.Add (fun _ -&gt;
+        match Text.RegularExpressions.Regex.Match(textBoxTime.Text, @"^((\d+):)?(\d+)$") with
+        | m when not m.Success -&gt;
+            errorProvider.SetError(textBoxTime, "秒 または 分:秒 で指定してください")
+        | m -&gt;
+            let min = if m.Groups.[1].Success then int m.Groups.[2].Value else 0
+            match new TimeSpan(0, min, int m.Groups.[3].Value) with
+            | rest' when rest'.TotalSeconds = 0. -&gt;
+                errorProvider.SetError(textBoxTime, "1秒以上を指定してください")
+            | rest' when rest'.TotalHours &gt;= 1. -&gt;
+                errorProvider.SetError(textBoxTime, "1時間未満を指定してください")
+            | rest' -&gt;
+                errorProvider.SetError(textBoxTime, "")
+                printRest rest'
+                rest := rest'
+                timer.Start())
+    timer.Tick.Add (fun _ -&gt;
+        rest := !rest - new TimeSpan(0, 0, 1)
+        printRest !rest
+        if (!rest).TotalSeconds = 0. then
+            timer.Stop()
+            Media.SystemSounds.Asterisk.Play())
+    let form = new Form(Text = "キッチンタイマー", Size = new Size(200, 160), AcceptButton = buttonStart)
+    [|(label1 :&gt; Control); (textBoxTime :&gt; Control); (label2 :&gt; Control); (labelRest :&gt; Control); (buttonStart :&gt; Control)|]
+    |&gt; form.Controls.AddRange
+    form.ShowDialog() |&gt; ignore
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '9021'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/9021
+  :user_name: ポケット
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/828/
+  :language: Common
+  :time: 2009/05/29 21:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "(defun second-&gt;minutes (x)\n  (let ((minute (floor x 60)))\n    (list
+    minute (- x (* minute 60)))))\n\n(defun timer (x y)\n  (let ((seconder (+ (* x
+    60) y)))\n    (if (zerop seconder)\n          (princ (code-char 7))\n    (progn
+    (format t \"~A : ~A~%\" (car (second-&gt;minutes seconder)) \n               (cadr
+    (second-&gt;minutes seconder)))\n           (princ (code-char 13))\n           (sleep
+    1)\n           (timer x (1- y))))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9025'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/9025
+  :user_name: ポケット
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/828/
+  :language: C
+  :time: 2009/05/31 11:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "#include &lt;iostream&gt;\n\nusing namespace std;\n\nclass Timer\n{\nprivate:\n
+    \ int minute;\n  int second;\npublic:\n  Timer(int m,int s){\n    minute = m;\n
+    \   second = s;\n  }\n  void count_down() {\n    while(1) {\n      if (minute
+    == 0 &amp;&amp; second == 0) {\n    cout &lt;&lt; \"\\a\";\n    cout &lt;&lt;
+    \"時間です!!\" &lt;&lt; endl;\n    break;\n      }\n      cout.width(2);\n      cout.fill('0');\n
+    \     cout &lt;&lt; minute &lt;&lt; \":\";\n      cout.width(2);\n      cout.fill('0');\n
+    \     cout &lt;&lt; second &lt;&lt; endl; \n      if (second == 0) {\n    minute--;\n
+    \   second = 60;\n      }\n      second--;\n      sleep(1);\n    }\n  }\n};\n\nint
+    main() {\n  int minute,second;\n  cout &lt;&lt; \"分を指定してください(0 ~ 60) :\" ;\n  cin
+    \ &gt;&gt; minute;\n  cout &lt;&lt; \"秒を指定してください(0 ~ 59) :\" ;\n  cin  &gt;&gt;
+    second;\n  Timer timer(minute,second);\n  timer.count_down();\n  return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9029'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/9029
+  :user_name: seri
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/641/
+  :language: Ruby
+  :time: 2009/06/01 14:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">cursesをつかってみました。\r\n</pre>\n\t"
+  :code: |
+    require 'curses'
+    include Curses
+
+    init_screen
+    begin
+      w = Window.new(20, 100, 0, 0)
+      w.addstr("何秒間?\n&gt; ")
+      sec = w.getstr.to_i
+      sec.times { |t|
+        w.clear
+        w.setpos(0, 0)
+        w.addstr("残り: #{sec - t} 秒")
+        w.refresh
+        sleep 1
+      }
+      beep
+      flash
+      w.clear
+      w.setpos(0, 0)
+      w.addstr("時間です (何かキーを押して終了)")
+      w.getch
+      w.close
+    ensure
+      close_screen
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9306'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/9306
+  :user_name: konn
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/100/
+  :language: Haskell
+  :time: 2009/07/08 04:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>POSIX 系限定です。\nカウントダウンは同じ行でやる様にしみました。</p>\n\n\t"
+  :code: "module Kitchen where\nimport System.Environment (getArgs, getProgName)\nimport
+    System.IO (hFlush, stdout)\nimport System.Posix.Unistd (sleep)\n\nmain = do args
+    &lt;- getArgs\n          pname &lt;- getProgName\n          case args of\n            (s:_)
+    -&gt; timer $ read s\n            _     -&gt; putStrLn (\"usage: \" ++ pname ++
+    \" [sec]\")\n            \ntimer 0 = putStrLn \"\\CRremaining: 0\\nFINISH!\\BEL\\BEL\\BEL\\BEL\\BEL\"\ntimer
+    s = do  putStr $ \"\\CRremaining: \" ++ seikei s\n              hFlush stdout\n
+    \             sleep 1\n              timer (s-1)\n\nseikei s = take (1+floor(logBase
+    10 (fromIntegral$s+1))) (show s ++ repeat ' ')\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9368'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/9368
+  :user_name: silverwire
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/646/
+  :language: JavaScript
+  :time: 2009/07/14 21:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">JavaScriptで。\r\n\r\nタイマーが鳴るまでの時間はブラウザーのアドレスバーから以下の\r\nように指定します。\r\n\r\n
+    \ e.g.\r\n    file:///(パス文字列)/240.html?(秒数)\r\n\r\n指定した時間が経過した後に鳴る音は、ダイアログがポップアップ\r\nする時に鳴るもので勘弁してください。\r\n\r\n
+    Firefox 2.0.0.6, Google Chrome 1.0.154.48, Opera 9.23で動作\r\nを確認しました。</pre>\n\t"
+  :code: "&lt;html&gt;\n&lt;body&gt;\n&lt;script type=\"text/javascript\"&gt;\n    Function.prototype.repeat
+    = \n    function (t, o) {\n        var _ = this;\n        return setInterval(function
+    () { _.apply(o); }, t);\n    };\n\n    var Timer = \n    function (t) {\n        this.id
+    \  = 0;\n        this.time = t;\n        this.tick = function () {\n            if
+    (!this.id) this.id = this.tick.repeat(1000, this);\n            document.body.innerHTML
+    = this.time + ' second(s) remaining.';\n            if (this.time-- == 0) {\n
+    \               alert('!');\n                clearTimeout(this.id);\n            }\n
+    \       };\n    };\n\n    window.onload = \n    function () {\n        var t =
+    parseInt(location.search.substring(1));\n        if (!isNaN(t)) new Timer(t).tick();\n
+    \   };\n&lt;/script&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9440'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/9440
+  :user_name: ivoryworks
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/647/
+  :language: 
+  :time: 2009/08/02 20:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">入力は秒で。\r\nタイムアウトで味気ないbeepが出力されます。\r\n</pre>\n\t"
+  :code: |
+    #sec = val(input("input sec."));
+    insert str(#sec)+"\n";
+    #start = tickcount;
+    while (#sec) {
+        if ((#start + 1000) &lt;= tickcount) {
+            #start = tickcount;
+            #sec = #sec - 1;
+            moveto 0,0;
+            beginsel;
+            golineend;
+            endsel;
+            insert str(#sec);
+            gofileend;
+        }
+    }
+    beep;
+    endmacro;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9542'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/9542
+  :user_name: uehaj
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2009/09/01 07:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>groovy 1.7で匿名内部クラス（およびその他内部クラス）がサポートされたぞ記念。</p>\n\n\t"
+  :code: |
+    import java.util.Timer;
+
+    def now() { System.currentTimeMillis() }
+    def start = now()
+    def end = start + Integer.parseInt(args[0]) * 1000
+
+    Timer t = new Timer();
+    t.schedule(new TimerTask() {
+        public void run(){
+          if (now() &gt; end) {
+            println "\7"
+            System.exit(0)
+          }
+          println((end-now())/1000)
+        }
+      }, 0, 1000);
+  :tags:
+  - '1.7'
+  :references:
+    :url: 
+    :title: 
+- :id: '10363'
+  :parent_id: '240'
+  :url: http://ja.doukaku.org/comment/10363
+  :user_name: 匿名
+  :user_url: /web/20100628133901/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2010/03/28 23:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>音はビープ音で</p>\n\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;time.h&gt;
+    #include &lt;windows.h&gt;    /* Sleep用 */
+
+    int main(int argc, char *argv[]){
+        int sec, beep_cnt = 4;
+        clock_t old_time, new_time;
+        if (argc &lt; 2) return 0;
+        sec = atoi(argv[1]);
+        old_time = clock();
+        while(1){
+            new_time = clock();
+            if ((new_time - old_time) / 1000 &gt;= sec) {
+                printf("\r00\n時間です\n");
+                while(beep_cnt --) {
+                    putchar('\a');
+                    putchar('\r');
+                    Sleep(1000);
+                }
+                break;
+            }
+            printf("\r%02d", sec - ((new_time - old_time) / 1000));
+            Sleep(100);
+        }
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 

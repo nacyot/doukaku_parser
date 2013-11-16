@@ -1,0 +1,735 @@
+---
+:id: '122'
+:title: 西暦 to 和暦
+:comments:
+- :id: '5067'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5067
+  :user_name: ocean
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/177/
+  :language: 
+  :time: 2007/12/31 07:09 GMT
+  :vote_count: '8'
+  :vote_score: '0'
+  :body: "\r\n\t  西暦を和暦に変換するプログラムを書いてください。元号の切り替わる日など、複数の表記が可能な場合には両方表示し、西暦が無効な日付の場合には「範囲外」と表示するようにしてください。対応すべき日付は明治元年以降とします。\r<br><br>&gt;a.py 1868/12/2\r<br>明治1年12月2日\r<br><br>&gt;a.py 1926/12/24\r<br>大正15年12月24日\r<br><br>&gt;a.py 2007/12/01\r<br>平成19年12月1日\r<br><br>&gt;a.py 1926/12/25\r<br>大正15年12月25日 昭和1年12月25日\r<br><br>&gt;a.py 1868/1/2\r<br>範囲外\r<br><br>&gt;a.py 1868/100/2\r<br>範囲外\r<br>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20081122164632/http://www.kumamotokokufu-h.ed.jp/kumamoto/bungaku/wa_seireki.html
+    :title: 和暦西暦対応表
+- :id: '5228'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5228
+  :user_name: Y
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/428/
+  :language: 
+  :time: 2008/01/08 13:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">最初の例はどう解釈するのでしょう。\r\n1868/12/2は明治1年12月2日ではないと思います。\r\n問題を明治6年1月1日以降に限った方がいいのでは？\r\n\r\nまた、カレンダーが正しく実装されていればできるのですから、\r\n「無効と表示しなければならない」\r\nではなく、\r\n「無効と表示してもよい」\r\nとしたほうがいいのでは？\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5229'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5229
+  :user_name: squld
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/643/
+  :language: Java
+  :time: 2008/01/08 14:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">とりあえず、太陰暦への変換は諦めて書いてみました。\r\n(私も問題を明治6年1月1日以降に限った方が良いと思います。)\r\n\r\n結果\r\n-----------\r\n明治1年12月2日\r\n大正15年12月24日\r\n平成19年12月1日\r\n大正15年12月25日
+    昭和1年12月25日\r\n範囲外\r\n範囲外\r\n-----------</pre>\n\t"
+  :code: |
+    import java.text.ParseException;
+    import java.text.SimpleDateFormat;
+    import java.util.Date;
+    import java.util.Locale;
+
+    public class JapaneseImperialCalendarTest {
+        public static String convert(String aYYYYMMDD) throws ParseException {
+            aYYYYMMDD = aYYYYMMDD.replaceAll("^0+|(?&lt;=/)0", "");
+            Date tDate = new SimpleDateFormat("y/M/d").parse(aYYYYMMDD);
+            if (!new SimpleDateFormat("yyyy/M/d").format(tDate).equals(aYYYYMMDD)) {
+                return "範囲外";
+            } else if (tDate.getTime() &lt; -3197178000000L) {
+                return "範囲外";
+            } else if (tDate.getTime() == -1812186000000L) {
+                return "明治45年7月30日 大正1年7月30日";
+            } else if (tDate.getTime() == -1357635600000L) {
+                return "大正15年12月25日 昭和1年12月25日";
+            }
+            return new SimpleDateFormat("GGGGy年MMMMd日", new Locale("ja", "JP", "JP")).format(tDate);
+        }
+
+        public static void main(String[] args) throws ParseException {
+            System.out.println(convert("1868/12/2"));
+            System.out.println(convert("1926/12/24"));
+            System.out.println(convert("2007/12/01"));
+            System.out.println(convert("1926/12/25"));
+            System.out.println(convert("1868/1/2"));
+            System.out.println(convert("1868/100/2"));
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5230'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5230
+  :user_name: 匿名
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/01/08 14:21 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>暫定で</p>\n\n\t"
+  :code: |2
+        class Program
+        {
+            static void Main(string[] args)
+            {
+                try
+                {
+                    CultureInfo culture = new CultureInfo("ja-JP", true);
+                    culture.DateTimeFormat.Calendar = new JapaneseCalendar();
+                    DateTime datetime = DateTime.Parse(args[0]);
+                    Console.WriteLine(datetime.ToString("ggyy年M月d日", culture));
+                }
+                catch
+                {
+                    Console.WriteLine("範囲外です");
+                }
+            }
+        }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5231'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5231
+  :user_name: seri
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/641/
+  :language: C
+  :time: 2008/01/08 14:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">とりあえず、明治6年1月1日以前を範囲外としてあります。\r\n\r\n&gt;trans.exe
+    1868/12/2\r\n範囲外\r\n\r\n&gt;trans.exe 1926/12/24\r\n大正15年12月24日\r\n\r\n&gt;trans.exe
+    2007/12/01\r\n平成19年12月1日\r\n\r\n&gt;trans.exe 1926/12/25\r\n大正15年12月25日 昭和1年12月25日\r\n\r\n&gt;trans.exe
+    1868/100/2\r\n範囲外\r\n\r\n&gt;trans.exe 1868/1/2\r\n範囲外</pre>\n\t"
+  :code: |
+    using System;
+    using System.Globalization;
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            CultureInfo culture = new CultureInfo("ja-JP", true);
+            DateTime date;
+            string[] tmp;
+            int y, m, d;
+
+            culture.DateTimeFormat.Calendar = new JapaneseCalendar();
+
+            try {
+                tmp = args[0].Split('/');
+                y = int.Parse(tmp[0]);
+                m = int.Parse(tmp[1]);
+                d = int.Parse(tmp[2]);
+                date = new DateTime(y, m, d);
+
+                if (DateTime.Compare(date, new DateTime(1873, 1, 1)) &lt; 0)
+                    throw new Exception();
+
+                if (y == 1912 &amp;&amp; m == 7 &amp;&amp; d == 30)
+                    Console.Write("明治45年7月30日 ");
+                else if (y == 1926 &amp;&amp; m == 12 &amp;&amp; d == 25)
+                    Console.Write("大正15年12月25日 ");
+
+                Console.WriteLine(date.ToString("ggy年M月d日", culture));
+
+            }
+            catch {
+                Console.WriteLine("範囲外");
+                return;
+            }
+
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5232'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5232
+  :user_name: seri
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/641/
+  :language: 
+  :time: 2008/01/08 15:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">追記\r\n明治6年1月1日以降のみを対象とするという意見には私も賛成です（そうすると出題の意図から離れてしまうのかもしれませんが…）。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5234'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5234
+  :user_name: mc
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/01/08 16:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  とりあえず、太陰暦には、対応してないです…。\r<br>実行結果:\r<br>(to-japanese-date \"1926/12/25\") 〜\r<br>〜\r<br>;1868/12/2 =&gt; 明治1年12月2日\r<br>;1926/12/24 =&gt; 大正15年12月24日\r<br>;2007/12/01 =&gt; 平成19年12月1日\r<br>;1926/12/25 =&gt; 大正15年12月25日 昭和1年12月25日\r<br>;1868/1/2 =&gt; 範囲外\r<br>;1868/100/2 =&gt; 範囲外\n\t"
+  :code: |
+    (defpackage #:doukaku-122 (:use #:cl))
+    (in-package #:doukaku-122)
+
+    (defconstant +meiji-end+     396802800)
+    (defconstant +taisho-start+  +meiji-end+)
+    (defconstant +taisho-end+    851353200)
+    (defconstant +showa-start+   +taisho-end+)
+    (defconstant +showa-end+     2809090800)
+    (defconstant +heisei-start+  2809177200)
+    (defconstant +meiji-offset+  1867)
+    (defconstant +taisho-offset+ 1911)
+    (defconstant +showa-offset+  1925)
+    (defconstant +heisei-offset+ 1988)
+
+    (defun to-japanese-date (date-string)
+      (or (ppcre:register-groups-bind (y m d)
+              ("([0-9]{4})/([01]*[0-9])/([0-3]*[0-9])$" date-string)
+            (destructuring-bind (y m d) (mapcar #'parse-integer `(,y ,m ,d))
+              (when (and (&lt;= y 1868) (&lt;= m 1) (&lt; d 25))
+                (return-from to-japanese-date (princ "範囲外")))
+              (let ((utime (if (&gt;= y 1900)
+                               (encode-universal-time 0 0 0 d m y -9)
+                               0))
+                    gengo toshi)
+                (when (&lt;= +heisei-start+ utime)
+                  (push "平成" gengo)
+                  (push (- y +heisei-offset+) toshi))
+                (when (&lt;= +showa-start+ utime +showa-end+)
+                  (push "昭和" gengo)
+                  (push (- y +showa-offset+) toshi))
+                (when (&lt;= +taisho-start+ utime +taisho-end+)
+                  (push "大正" gengo)
+                  (push (- y +taisho-offset+) toshi))
+                (when (&lt;= 0 utime +meiji-end+)
+                  (push "明治" gengo)
+                  (push (- y +meiji-offset+) toshi))
+                (format nil #'multiple-gengo-print gengo toshi m d))))
+          (princ "範囲外")))   ;日付のパターンにマッチしない場合は範囲外
+
+    (defun multiple-gengo-print (stream gengo y &amp;rest args)
+      (do ((yy y (cdr yy)) (g gengo (cdr g)))
+          ((endp g))
+        (apply #'format stream "~A~D年~D月~D日" (car g) (car yy) args)
+        (and (cdr g) (princ " " stream))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5235'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5235
+  :user_name: mc
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/405/
+  :language: diff
+  :time: 2008/01/08 16:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>すいません、余計なプリント文が混じってましたので修正します。</p>\n\n\t"
+  :code: |
+    --- 5234.txt    2008-01-09 01:43:00.000000000 +0900
+    +++ 5234.txt.diff       2008-01-09 01:42:50.000000000 +0900
+    @@ -20 +20 @@
+    -            (return-from to-japanese-date (princ "範囲外")))
+    +            (return-from to-japanese-date "範囲外"))
+    @@ -38 +38 @@
+    -      (princ "範囲外")))   ;日付のパターンにマッチしない場合は範囲外
+    +      "範囲外"))   ;日付のパターンにマッチしない場合は範囲外
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5236'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5236
+  :user_name: sumim
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/01/08 17:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    | 入力 変換 境界 年号 日付 出力 |
+    入力 := '1926/12/25'.
+    変換 := [:文字列 |
+        | 年月日 |
+        年月日 := (文字列 subStrings: '/') collect: [:各々 | 各々 asInteger].
+        [DateAndTime year: 年月日 first month: 年月日 second day: 年月日 third]
+            ifError: [^'範囲外']].
+    境界 := #('1873/1/1' '1912/7/30' '1926/12/25' '1989/1/8') collect: [:各々 | 変換 value: 各々].
+    境界 := 境界 readStream.
+    年号 := #(明治 6 大正 1 昭和 1 平成 1).
+    (日付 := 変換 value: 入力) &lt; 境界 peek ifTrue: [^'範囲外'].
+    出力 := OrderedCollection new.
+    年号 pairsDo: [:号 :年 |
+        | 開始 |
+        開始 := 境界 next.
+        (日付 between: 開始 and: (境界 peek ifNil: [開始 max: 日付])) ifTrue: [
+            出力 add: (号, '{1}年{2}月{3}日'
+                format: {日付 year - 開始 year + 年. 日付 month. 日付 dayOfMonth})]].
+    ^出力 asArray   "=&gt; #('大正15年12月25日' '昭和1年12月25日') "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '5243'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5243
+  :user_name: ocean
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/177/
+  :language: 
+  :time: 2008/01/09 01:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>すみません、明治５年以前は太陰暦であったとは・・・知りませんでした。「明治６年以降」にお題を修正します。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5244'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5244
+  :user_name: Jlake
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/658/
+  :language: JavaScript
+  :time: 2008/01/09 02:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "&lt;html&gt;\n&lt;head&gt;\n&lt;title&gt;西暦 to 和暦&lt;/title&gt;\n&lt;meta
+    http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /&gt;\n&lt;script
+    type=\"text/javascript\"&gt;\n&lt;!--\n//*******************************************************\n//
+    西暦 to 和暦\n//*******************************************************\nfunction
+    toWareki(numYear, numMonth, numDay) {\n    var today = new Date();\n    numCurYear
+    = today.getFullYear();\n    numCurMon = today.getMonth() + 1;\n    numCurDay =
+    today.getDate();\n    \n    strDate = '' + numYear + ((numMonth &lt; 10) ? '0'
+    : '') + numMonth + ((numDay &lt; 10) ? '0' : '') + numDay;\n    strCurDate = ''
+    + numCurYear + ((numCurMon &lt; 10) ? '0' : '') + numCurMon + ((numCurDay &lt;
+    10) ? '0' : '') + numCurDay;\n\n    var arrWareki = [\n        {'name': '明治',
+    'start': '18680908', 'end': '19120730'},\n        {'name': '大正', 'start': '19120730',
+    'end': '19261225'},\n        {'name': '昭和', 'start': '19261225', 'end': '19890107'},\n
+    \       {'name': '平成', 'start': '19890108', 'end': strCurDate}\n    ];\n    \n
+    \   var strName = '';\n    for(var i=0; i&lt;arrWareki.length; i++) {\n        if(arrWareki[i]['start']
+    &lt;= strDate &amp;&amp; strDate &lt;= arrWareki[i]['end']) {\n            var
+    strAnd = (strName == '') ? '' : '年&amp;nbsp;';\n            var numBaseYear =
+    parseInt(arrWareki[i]['start'].substring(0,4));\n            strName += strAnd
+    + arrWareki[i]['name'] + (numYear - numBaseYear + 1);\n        }\n    }\n\n    return
+    (strName == '') ? '範囲外' : strName + '年' + numMonth + '月' + numDay + '日';\n}\n//--&gt;\n&lt;/script&gt;\n&lt;/head&gt;\n&lt;body&gt;\n西暦：&lt;br/&gt;\n&lt;input
+    type=\"text\" id=\"year\" value=\"2008\" size=\"4\" /&gt;\n&lt;input type=\"text\"
+    id=\"month\" value=\"1\" size=\"2\" /&gt;\n&lt;input type=\"text\" id=\"day\"
+    value=\"9\" size=\"2\" /&gt;\n&lt;input type=\"button\" value=\"変換\" onclick=\"document.getElementById('wareki').innerHTML=toWareki(document.getElementById('year').value,
+    document.getElementById('month').value, document.getElementById('day').value);\"
+    /&gt;\n&lt;br/&gt;\n和暦：&lt;br&gt;\n&lt;div id=\"wareki\"&gt;&amp;nbsp;&lt;/div&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5246'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5246
+  :user_name: todogzm
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/550/
+  :language: Java
+  :time: 2008/01/09 04:05 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">Java SE 6の和暦機能を使用しました。\r\n結果は以下のとおりで、太陰暦云々の話でもエラーなしで\r\n出力するところに注意が必要です。\r\n\r\n
+    明治01年 12月 2日\r\n 大正15年 12月 24日\r\n 平成19年 12月 1日\r\n 昭和01年 12月 25日\r\n 明治01年 1月
+    2日\r\n 明治09年 4月 2日\r\n\r\nちゃんと「範囲外」を出力しなければならないため、\r\nお題を解いたとは言えないのですが、\r\n和暦を使う際には気をつけてくださいねという\r\n意味も込めて投稿の投稿です。</pre>\n\t"
+  :code: "import java.text.DateFormat;\nimport java.text.ParseException;\nimport java.text.SimpleDateFormat;\nimport
+    java.util.Date;\nimport java.util.Locale;\n\npublic class Wareki {\n\n    public
+    static void main(String[] args) throws ParseException {\n        System.out.println(convert(\"1868/12/2\"));\n
+    \       System.out.println(convert(\"1926/12/24\"));\n        System.out.println(convert(\"2007/12/01\"));\n
+    \       System.out.println(convert(\"1926/12/25\"));\n        System.out.println(convert(\"1868/1/2\"));\n
+    \       System.out.println(convert(\"1868/100/2\"));\n    }\n    \n    public
+    static String convert(String dateStr) throws ParseException {\n        Locale
+    waLocale = new Locale(\"ja\", \"JP\", \"JP\");\n        DateFormat sei = new SimpleDateFormat(\"yyyy/MM/dd\");\n
+    \       Date date = sei.parse(dateStr);\n        \n        DateFormat wa = new
+    SimpleDateFormat(\"GGGGyy年 MMMM d日\", waLocale);\n            \n        return
+    wa.format(date);\n    }\n\n}\n"
+  :tags:
+  - Java1.6
+  - JavaSE6
+  :references:
+    :url: /web/20081122164632/http://www.javainthebox.net/laboratory/JavaSE6/imperialcalendar/imperialcalendar.html
+    :title: Java SE 6 じゃじゃ馬ならし 和暦
+- :id: '5248'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5248
+  :user_name: 梅紫蘇
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/596/
+  :language: C
+  :time: 2008/01/09 06:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>「なでしこ」とかそーいう機能のあってもよさそうな...と調べてる間に....(まさかJavaのほうとは)。そこがオイシイ言語やライブラリもあるんじゃないの？もったいない:-)</p>\n<p>といいつつ、太陰暦付近はあいまいな出力をするプログラム。（対応する範囲が５年程しかないし、ゴリ押しでできそうな気もする）</p>\n\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;iostream&gt;\n\nbool check_date(int
+    yy, int mm, int dd) {\n    if ((mm &lt; 1) || (mm &gt; 12))\n        return false;\n
+    \   int DATE_MAX[] = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};\n    if
+    (dd &lt; 1 || dd &gt; DATE_MAX[mm - 1])\n        return false;\n    if ((mm !=
+    2) || (dd &lt; 29))\n        return true;\n    return ((yy % 4) == 0 &amp;&amp;
+    (yy % 100) != 0) || ((yy % 400) == 0);\n}\n\nvoid wareki(int yy, int mm, int dd,
+    std::ostream&amp; s) {\n    if ((yy &lt; 1868) || (check_date(yy, mm, dd) == false))
+    { s &lt;&lt; \"範囲外\"; }\n    else {\n        int ymd = yy * 10000 + mm * 100 +
+    dd;\n        if      (ymd &lt;  18680125) { s &lt;&lt; \"範囲外\"; }\n        else
+    if (ymd == 19120730) { s &lt;&lt; \"明治45年7月30日 大正1年7月30日\";    }\n        else
+    if (ymd == 19261225) { s &lt;&lt; \"大正15年12月25日 昭和1年12月25日\";  }\n        else
+    {\n            if (ymd &lt; 18730101) {    // 1873/1/1より前((明治5年以前)は太陰暦\n                if
+    \     (ymd &lt; 18690101) { s &lt;&lt; \"明治1年9月8日～11月18日のどこか\"; }\n                else
+    if (ymd &lt; 18700101) { s &lt;&lt; \"明治1年11月19日～明治2年11月29日のどこか\"; }\n                else
+    if (ymd &lt; 18710101) { s &lt;&lt; \"明治2年11月30日～明治3年11月10日のどこか\"; }\n                else
+    if (ymd &lt; 18720101) { s &lt;&lt; \"明治3年11月11日～明治4年11月20日のどこか\"; }\n                else
+    \                    { s &lt;&lt; \"明治4年11月21日～明治5年12月2日のどこか\";  }\n            }\n
+    \           else {\n                if      (ymd &lt;= 19120730) { s &lt;&lt;
+    \"明治\" &lt;&lt; (yy - 1869) &lt;&lt; \"年\"; }\n                else if (ymd &lt;=
+    19261225) { s &lt;&lt; \"大正\" &lt;&lt; (yy - 1911) &lt;&lt; \"年\"; }\n                else
+    if (ymd &lt;= 19890107) { s &lt;&lt; \"昭和\" &lt;&lt; (yy - 1925) &lt;&lt; \"年\";
+    }\n                else                      { s &lt;&lt; \"平成\" &lt;&lt; (yy
+    - 1988) &lt;&lt; \"年\"; }\n                s &lt;&lt; mm &lt;&lt; \"月\" &lt;&lt;
+    dd &lt;&lt; \"日\";\n            }\n        }\n    }\n}\n\nvoid wareki(const char*
+    p) {\n    int yy, mm, dd;\n    sscanf(p, \"%d/%d/%d\", &amp;yy, &amp;mm, &amp;dd);\n
+    \   wareki(yy, mm, dd, std::cout);\n    std::cout &lt;&lt; std::endl;\n}\n\nint
+    main(int argc, char* argv[]) {\n    wareki(\"1868/12/2\");    // ... orz\n    wareki(\"1926/12/24\");
+    \  // 大正15年12月24日\n    wareki(\"2007/12/01\");   // 平成19年12月1日\n    wareki(\"1912/7/30\");
+    \   // 明治45年7月30日 大正1年7月30日\n    wareki(\"1926/12/25\");   // 大正15年12月25日 昭和1年12月25日
+    \n    wareki(\"1868/1/2\");     // 範囲外 \n    wareki(\"1868/100/2\");   // 範囲外
+    \n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5249'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5249
+  :user_name: naranja
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/448/
+  :language: D
+  :time: 2008/01/09 08:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  明治 6 年より前は範囲外で。あまり美しくないですが。\n\t"
+  :code: |
+    import std.stdio;
+    import std.date;
+    import std.string;
+
+    void printWareki(string date){
+        auto d = parse(date);
+        if(d == d_time_nan){
+            writefln("範囲外");
+            return;
+        }
+
+        auto meiji6 = parse("1873/1/1");
+        auto taisho = parse("1912/7/30");
+        auto showa = parse("1926/12/25");
+        auto heisei = parse("1989/1/8");
+
+        auto dateParts = date.split("/");
+        auto year = atoi(dateParts[0]);
+        auto month = atoi(dateParts[1]);
+        auto day = atoi(dateParts[2]);
+
+        void output(char eraNameCap){
+            auto diff = (['M' : 1867, 'T' : 1911, 'S' : 1925, 'H' : 1988]);
+            auto eraName = (['M' : "明治", 'T' : "大正", 'S' : "昭和", 'H' : "平成"]);
+            writef("%s%d年%d月%d日", eraName[eraNameCap],
+                        year - diff[eraNameCap], month, day);
+        }
+
+        if(meiji6 &lt;= d &amp;&amp; d &lt; taisho){
+            output('M');
+        }
+        else if(d == taisho){
+            output('M'); writef(" "); output('T');
+        }
+        else if(taisho &lt; d &amp;&amp; d &lt; showa){
+            output('T');
+        }
+        else if(d == showa){
+            output('T'); writef(" "); output('S');
+        }
+        else if(showa &lt; d &amp;&amp; d &lt; heisei){
+            output('S');
+        }
+        else if(heisei &lt;= d){
+            output('H');
+        }
+        else{
+            writef("範囲外");
+        }
+        writefln();
+    }
+
+    void main(){
+        printWareki("1868/12/2");   // 範囲外
+        printWareki("1926/12/24");  // 大正15年12月24日
+        printWareki("2007/12/01");  // 平成19年12月1日
+        printWareki("1926/12/25");  // 大正15年12月25日 昭和1年12月25日
+        printWareki("1868/1/2");    // 範囲外
+        printWareki("1868/100/2");  // 範囲外
+        printWareki("1904/02/06");  // 明治37年2月6日
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5250'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5250
+  :user_name: 99yen
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2008/01/09 09:15 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <p>お察しの通りなでしこには「和暦変換」という関数が標準でありますが、すべてグレゴリオ暦で処理するようです。</p>\n\n\t"
+  :code: |
+    「1868/12/2」を和暦変換して表示
+    「1926/12/25」を和暦変換して表示
+    /*
+     * 結果
+     明治元年12月2日
+     昭和元年12月25日
+    */
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5251'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5251
+  :user_name: 匿名
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/01/09 09:18 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  たしかに、Java6で導入された和暦に関する機能は明治⇔大正⇔昭和の境界になっている日の扱いが新しい方の年号になっているので、厳密ではありませんね。\r\n\r\nとはいえ、Javaに限らずほとんどの言語の組み込みAPIは異なる暦(たとえば西暦と和暦)の日付が1対1対応すると仮定したインタフェースになっているため、きれいな解決方法はなさそうです。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5252'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5252
+  :user_name: yuin
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/01/09 10:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "import java.text.{SimpleDateFormat, ParseException}\nimport java.util.{Date,
+    Locale, Calendar}\n\nobject west2japanese {\n  val inf    = new SimpleDateFormat(\"y/MM/dd\")\n
+    \ val parse = {inf.setLenient(false);inf}.parse _:String =&gt; Date\n  val format
+    = new SimpleDateFormat(\"GGGGy年MMMMd日\", \n                    new Locale(\"ja\",
+    \"JP\", \"JP\")).format _:Date =&gt; String\n  def apply(d:String) = try { \n
+    \   (format compose parse)(d) match {\n      case \"大正1年7月30日\" =&gt; \"明治45年7月30日
+    大正1年7月30日\"\n      case \"昭和1年12月25日\" =&gt; \"大正15年12月25日 昭和1年12月25日\"\n      case
+    s if s.matches(\"^(西暦|明治[1-5]{1}年).*\") =&gt; \"範囲外\"\n      case s =&gt; s\n
+    \   }\n  }catch{\n    case e:ParseException =&gt; \"範囲外\"\n  }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5253'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5253
+  :user_name: 99yen
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2008/01/09 10:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>明治6年以降対応版を自前で。</p>\n\n\t"
+  :code: |
+    ●Date2Wareki(date)
+        tmpとは文字列
+        dとは整数=Date2Int(date)
+        もし(d&lt;18730101)ならば
+            "範囲外"で戻る
+        もし(d&lt;=19120730)ならば
+            もし(d=19120730)ならば
+                "明治45年7月30日 大正元年7月30日"で戻る
+            Date2JADate("明治",1867,date)
+        もし(d&gt;=19120731&amp;&amp;d&lt;=19261225)ならば
+            もし(d=19261225)ならば
+                "大正15年12月25日 昭和元年12月25日"で戻る
+            Date2JADate("大正",1911,date)
+        もし(d&gt;=19261226&amp;&amp;d&lt;=19890107)ならば
+            Date2JADate("昭和",1925,date)
+        もし(d&gt;=19890108)ならば
+            Date2JADate("平成",1988,date)
+    ●Date2JADate(nengou,sa,date)
+        date=dateを"/"で区切る
+        "{nengou}{date[0]-sa}年{TOINT(date[1])}月{TOINT(date[2])}日"で戻る
+    ●Date2Int(date)
+        date=dateを"/"で区切る
+        TOSTR(date[0]を4でゼロ埋め)&amp;TOSTR(date[1]を2でゼロ埋め)&amp;TOSTR(date[2]を2でゼロ埋め)で戻る
+
+    Date2Wareki("1926/12/25")を表示
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5254'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5254
+  :user_name: ocean
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/01/09 10:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Pythonのがないみたいなので投稿。</p>\n\n\t"
+  :code: |
+    # coding: shift_jis
+
+    import datetime
+    import sys
+
+    def main():
+        year, month, day = [int(s) for s in sys.argv[1].split("/")]
+        def f():
+            try:
+                date = datetime.date(year, month, day)
+            except ValueError:
+                return
+            if datetime.date(1873, 1, 1) &lt;= date &lt;= datetime.date(1912, 7, 30):
+                yield u"明治", 1867
+            if datetime.date(1912, 7, 30) &lt;= date &lt;= datetime.date(1926, 12, 25):
+                yield u"大正", 1911
+            if datetime.date(1926, 12, 25) &lt;= date &lt;= datetime.date(1989, 1, 7):
+                yield u"昭和", 1925
+            if datetime.date(1989, 1, 8) &lt;= date:
+                yield u"平成", 1988
+        print " ".join(u"%s%d年%d月%d日" % (gengo, year - offset, month, day) \
+            for gengo, offset in f()) or u"範囲外"
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5255'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5255
+  :user_name: saws
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/01/09 11:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>お題のサンプル出力では元年は前年号の最終年と併記していますが, 1年を元年としたことが同義だと考えてその記述は省略しました.</p>\n\n\t"
+  :code: "require 'date'\nrequire 'kconv'\nWAREKI = [['明治', '1868/9/8'], ['大正', '1912/7/30'],
+    \n  ['昭和', '1926/12/25'], ['平成', '1989/1/8']]\nDATES = %w('1868/12/2' '1926/12/24'
+    '2007/12/01' '1926/12/25'\n           '1868/1/2' '1868/100/2')\nwareki = WAREKI.sort{|a,
+    b| \n  -1*(Date.parse(a[1]).year &lt;=&gt; Date.parse(b[1]).year)\n} # =&gt; 新しい年代からマッチさせるためにソート
+    \nDATES.each{|date_str|\n  begin\n    date = Date.parse(date_str)\n    y0, m0,
+    d0 = date.year, date.month, date.day\n    era = wareki.each{|nengo, date_str|\n
+    \     date = Date.parse(date_str)\n      y1, m1, d1 = date.year, date.month, date.day\n
+    \     evaluation = y0 &gt;= y1 &amp;&amp; (m0 &gt; m1 or m0 == m1 &amp;&amp; d0
+    &gt;= d1)\n      break [nengo, y0 - y1] if evaluation\n    }\n    puts \"#{era[0]}#{era[1]
+    == 0 ? '元' : era[1] + 1}年#{m0}月#{d0}日\".tosjis\n  rescue\n    puts '範囲外'.tosjis\n
+    \   next\n  end\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5257'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5257
+  :user_name: hirataka
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/233/
+  :language: JavaScript
+  :time: 2008/01/09 14:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">seireki2wareki(\"1868/9/8\")\r\n&gt;&gt;範囲外\r\n\r\nseireki2wareki(\"1873/1/1\")\r\n&gt;&gt;明治6年1月1日\r\n\r\nseireki2wareki(\"1926/12/24\")\r\n&gt;&gt;大正15年12月24日\r\n\r\nseireki2wareki(\"2007/12/01\")\r\n&gt;&gt;大正15年12月24日\r\n\r\nseireki2wareki(\"1926/12/25\")\r\n&gt;&gt;大正15年12月24日\r\n\r\nseireki2wareki(\"1868/1/2\")\r\n&gt;&gt;範囲外\r\n\r\nseireki2wareki(\"1873/100/2\")\r\n&gt;&gt;範囲外</pre>\n\t"
+  :code: "function　seireki2wareki(y){\n    var c = new Date(y);\n    \n    if(c.getFullYear()&lt;1873)
+    return \"範囲外\";\n    \n    var wareki = {\n        '明治' : [new Date(\"1868/9/8\"),
+    new Date(\"1912/7/30\")],\n        '大正' : [new Date(\"1912/7/30\"), new Date(\"1926/12/25\")],\n
+    \       '昭和' : [new Date(\"1926/12/25\"), new Date(\"1989/1/7\")],\n        '平成'
+    : [new Date(\"1989/1/8\"), new Date()]\n    }\n    var a = [];\n\n    for(w in
+    wareki){\n        var from = wareki[w][0];\n        var to = wareki[w][1];\n        \n
+    \       if((c&gt;=from &amp;&amp; c&lt;=to)){\n            var n1 = (to.getFullYear()-
+    from.getFullYear())+1;\n            var n2 = to.getFullYear()- c.getFullYear();\n
+    \           \n            a.push(w+ (n1-n2)+ \"年\"+ (c.getMonth()+1)+ \"月\"+ c.getDate()+
+    \"日\");\n        }\n    }\n    \n    return a.join(\" \") || \"範囲外\";\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5259'
+  :parent_id: '122'
+  :url: http://ja.doukaku.org/comment/5259
+  :user_name: xsd
+  :user_url: /web/20081122164632/http://ja.doukaku.org/user/154/
+  :language: OCaml
+  :time: 2008/01/09 15:54 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <pre class=\"compact\">明治元年～明治５年の範囲で太陰暦にも対応しました。\r\n(黄道の計算などはしておらず、5年分のテーブルを持っているだけです。)\r\n漢字での出力に対応していますが、utf-8専用です。\r\n\r\n%
+    ./dk122 1868/12/2\r\n明治元年10月19日\r\n% ./dk122 1926/12/24\r\n大正15年12月24日\r\n% ./dk122
+    2007/12/01\r\n平成19年12月1日\r\n% ./dk122 1926/12/25\r\n大正15年12月25日  昭和元年12月25日\r\n%
+    ./dk122 1868/1/2\r\n範囲外\r\n% ./dk122 1868/100/2\r\n範囲外\r\n\r\n【追加テスト】\r\n% ./dk122
+    1873/1/1\r\n明治6年1月1日\r\n% ./dk122 1872/12/31\r\n明治5年12月2日\r\n% ./dk122 1868/10/23\r\n明治元年9月8日\r\n%
+    ./dk122 1870/10/25\r\n明治3年10月1日\r\n% ./dk122 1870/11/23\r\n明治3年閏10月1日</pre>\n\t"
+  :code: "open String\nopen Printf\n\nlet meiji   = \"\\xE6\\x98\\x8E\\xE6\\xB2\\xBB\"\nlet
+    taishou = \"\\xE5\\xA4\\xA7\\xE6\\xAD\\xA3\"\nlet showa   = \"\\xE6\\x98\\xAD\\xE5\\x92\\x8C\"\nlet
+    heisei  = \"\\xE5\\xB9\\xB3\\xE6\\x88\\x90\"\nlet gan     = \"\\xE5\\x85\\x83\"\nlet
+    nen     = \"\\xE5\\xB9\\xB4\"\nlet gatsu   = \"\\xE6\\x9C\\x88\"\nlet nichi   =
+    \"\\xE6\\x97\\xA5\"\nlet uruu    = \"\\xE9\\x96\\x8F\"\n\n        (* M1   Meiji
+    2      Meiji 3       Meiji 4      Meiji 5    *)\nlet tab = \"9009 000990990900
+    900909090jj09 009009090990 909009009092\"\n\nlet errmsg = \"\\xE7\\xAF\\x84\\xE5\\x9B\\xB2\\xE5\\xA4\\x96\"\nlet
+    mtab = [| 0; 31; 29; 31; 30; 31; 30; 31; 31; 30; 31; 30; 31 |]\n\nlet prt1 era
+    y m d =\n    let ystr = if y = 1 then gan else string_of_int y in\n    let leap
+    = if m mod 2 = 1 then uruu else \"\" in\n    sprintf \"%s%s%s%s%d%s%d%s\" era
+    ystr nen leap (m/2) gatsu d nichi\n\nlet prt2 era1 y1 era2 y2 m d = sprintf \"%s
+    \ %s\" (prt1 era1 y1 m d) (prt1 era2 y2 m d)\n\nlet dec i (year, month) = if month
+    - 2 &gt;= i then year    , month - i\n                                            else
+    year - 1, month - i + 24\n\nlet rec search target i r (year, month as date) =\n
+    \   if r &lt; target then year, month, target - r\n        else let r', d' = match
+    tab.[i] with\n            | '0' -&gt; 30, 2 | '9' -&gt; 29, 2 | '2' -&gt; 2, 2
+    | 'j' -&gt; 29, 1 | _ -&gt; 0, 0 in\n            search target (i - 1) (r - r')
+    (dec d' date)\n\nlet taiin year month day =\n    let y, m = if month &lt; 3 then
+    year - 1, month + 12 else year, month in\n    let w = y * 365 + y / 4 - y / 100
+    + y / 400 \n\n\n\n\n<!--\n     FILE ARCHIVED ON 16:46:32 Nov 22, 2008 AND RETRIEVED
+    FROM THE\n     INTERNET ARCHIVE ON 13:21:27 Nov 16, 2013.\n     JAVASCRIPT APPENDED
+    BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.\n\n     ALL OTHER CONTENT MAY
+    ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.\n     SECTION 108(a)(3)).\n-->"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

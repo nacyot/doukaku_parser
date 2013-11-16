@@ -1,0 +1,1383 @@
+---
+:id: '3'
+:title: コインを減らす払い方
+:comments:
+- :id: '3359'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/3359
+  :user_name: にしお
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/03 13:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  いま、あなたの財布の中にはコインがたくさん入っています。これを少しでも減らしたいと思います。\r\n<p>\r\n支払うべき金額と持っているコインの種類と数を与えられたときに、どのコインを何枚出せばおつりを受け取った後のコインの数が最も少なくなるか返す関数を作ってください。おつりは最も枚数が少なくなる方法で渡されます。\r\n</p>\n<p>\r\n例えば、1円玉2枚、10円玉4枚、100円玉3枚を持っていて、147円支払う場合、
+    1円玉2枚と100円玉2枚を渡して50円玉1枚と5円玉1枚を受け取るのが2枚減で最も枚数を減らせます。Pythonで表現するならば下のような挙動をする関数を作ってください。\r\n</p>\n<pre>\r\n&gt;&gt;&gt;
+    pay(147, {1: 2, 10: 4, 100: 3})\r\n{1: 2, 100: 2}\r\n</pre>\r\n2007-07-01追記：　　minkeさんの指摘通り、「手元にある全てのコインを渡せば、結果としてもっとも枚数が少なくなる」\r\nので、「渡した硬貨がおつりで返ってくるような渡し方は禁止」と条件を追加します。\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '21'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/21
+  :user_name: minke
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/28/
+  :language: Ruby
+  :time: 2007/06/30 18:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  結局のところ、手元にある全てのコインを渡せば、結果としてもっとも枚数が少なくなるように返ってくるわけですよね。\r\n\n\t"
+  :code: |
+    class Wallet
+      def initialize(h)
+        h.default = 0
+        @@coins = [500, 100, 50, 10, 5, 1]
+        @cont = Hash.new
+        @@coins.each do |i|
+          @cont[i] = h[i]
+        end
+      end
+      def total
+        sum = 0
+        @cont.each do |k,v|
+          sum += k * v
+        end
+        sum
+      end
+      def calc(n)
+        h = Hash.new
+        @@coins.each do |c|
+          h[c] = n / c
+          n %= c
+        end
+        h
+      end
+      def diff(after)
+        ret = Hash.new
+        @@coins.each do |c|
+          if @cont[c] &gt; after[c]
+            ret[c] = @cont[c] - after[c]
+          end
+        end
+        ret
+      end
+      def pay(expense)
+        raise if total &lt; expense
+        after = calc(total - expense)
+        ret = diff(after)
+        @cont = after
+        ret
+      end
+    end
+
+    p Wallet.new({1=&gt;2, 10=&gt;4, 100=&gt;3}).pay(147)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '22'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/22
+  :user_name: にしお
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/06/30 18:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">&gt;結局のところ、手元にある全てのコインを渡せば、\r\n&gt;結果としてもっとも枚数が少なくなるように返ってくるわけですよね。\r\n\r\norz。その通りです。\r\n「渡した硬貨がおつりで返ってくるような渡し方は禁止」と追記しておきます。\r\nご指摘ありがとうございます。</pre>\n\t"
+  :code: ''
+  :tags:
+  - 修正情報
+  :references:
+    :url: 
+    :title: 
+- :id: '29'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/29
+  :user_name: shiro
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/06/30 21:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Scheme (Gauche) で。\r\n愚直に、総当たりで調べるコードです。\r\n実行例：\r\n\r\ngosh&gt;
+    (pay 147 '((1 2) (10 4) (100 3)))\r\n((1 2) (100 2))\r\n</pre>\n\t"
+  :code: |
+    (use srfi-1)
+    (use util.combinations)
+
+    (define *coins* '(500 100 50 10 5 1))
+
+    (define (changes due)
+      (define (rec r c)
+        (cond ((zero? r) '())
+              ((&lt;= (car c) r) (cons (car c) (rec (- r (car c)) c)))
+              (else (rec r (cdr c)))))
+      (rec due *coins*))
+
+    (define (score coins price)
+      (let ((ch (changes (- (apply + coins) price))))
+        (and (null? (lset-intersection = coins ch))
+             (- (length coins) (length ch)))))
+
+    ;; ((1 2) (10 4) (100 3)) =&gt; (1 1 10 10 10 10 100 100 100) etc.
+    (define (expand coin-list)
+      (append-map (lambda (p) (make-list (cadr p) (car p))) coin-list))
+
+    ;; (1 1 10 10 10 10 100 100 100) =&gt; ((1 2) (10 4) (100 3)) etc.
+    (define (condense coins)
+      (map (lambda (g) (list (car g) (length g))) (group-collection coins)))
+
+    (define (pay price coin-list)
+      (condense
+       (values-ref (fold2 (lambda (payment max-score answer)
+                            (or (and-let* (( (&gt;= (apply + payment) price) )
+                                           (s (score payment price))
+                                           ( (&gt; s max-score) ))
+                                  (values s payment))
+                                (values max-score answer)))
+                          #i-1/0 '()
+                          (power-set* (expand coin-list)))
+                   1)))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '59'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/59
+  :user_name: PHO
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/69/
+  :language: Haskell
+  :time: 2007/07/02 09:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  総当たり、効率悪し。\n\t"
+  :code: "import Data.Maybe\nimport Data.List\n\ncoins :: [Int]\ncoins = [500, 100,
+    50, 10, 5, 1]\n\nnumToCoins :: Int -&gt; [Int]\nnumToCoins 0 = []\nnumToCoins
+    n = let coin = whichCoinToUse n\n               in\n                 coin : numToCoins
+    (n - coin)\n    where\n      whichCoinToUse :: Int -&gt; Int\n      whichCoinToUse
+    n = fromJust $ find (&lt;= n) coins\n\nexpand :: [(Int, Int)] -&gt; [Int]\nexpand
+    []                   = []\nexpand ((coin, quant) : xs) = replicate quant coin
+    ++ expand xs\n\ncollapse :: [Int] -&gt; [(Int, Int)]\ncollapse coins = [(head
+    grp, length grp) | grp &lt;- group $ sort coins]\n\nscore :: Int -&gt; [Int] -&gt;
+    Maybe Int\nscore total coinsToUse\n    | total &gt; sum coinsToUse  -- お金が足りない\n
+    \       = Nothing\n    | otherwise               -- 減った枚数を返す\n        = let changes
+    = numToCoins $ abs $ total - sum coinsToUse\n          in \n            Just $
+    length coinsToUse - length changes\n\npowerSet :: [a] -&gt; [[a]]\npowerSet []
+    \    = [[]]\npowerSet (x:xs) = let xss = powerSet xs\n                  in\n                    map
+    (x:) xss ++ xss\n\npay :: Int -&gt; [(Int, Int)] -&gt; [(Int, Int)]\npay total
+    wallet\n    = let challenges = powerSet $ expand wallet\n          possibles  =
+    catMaybes $ map bindScore challenges\n          bestWay    = last $ sortBy cmp
+    possibles\n      in\n        collapse $ snd bestWay\n    where\n      bindScore
+    :: [Int] -&gt; Maybe (Int, [Int])\n      bindScore challenge\n          = do s
+    &lt;- score total challenge\n               return (s, challenge)\n\n      cmp
+    :: (Int, [Int]) -&gt; (Int, [Int]) -&gt; Ordering\n      cmp (a, as) (b, bs)\n
+    \         | a &lt; b                 = LT\n          | a &gt; b                 =
+    GT\n          | length as &lt; length bs = GT -- 差分枚数が同じならば\n          | length
+    as &gt; length bs = LT -- 払う枚数が少ない方を優先\n          | otherwise             = EQ\n\nmain
+    = print $ pay 147 [(1, 2), (10, 4), (100, 3)]\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '60'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/60
+  :user_name: minke
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/28/
+  :language: Ruby
+  :time: 2007/07/02 10:20 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">短くしてみた。\r\n%= のところでハイライトがおかしくなるのが悲しい。</pre>\n\t"
+  :code: |
+    def pay(e, h)
+      h.default = 0
+      h.each {|c,n| e -= c*n }
+      raise "Money!" if (e *= -1) &lt; 0
+      [500,100,50,10,5,1].each do |c|
+        h[c] -= e/c
+        e %= c
+      end
+      h.reject {|c,n| n &lt;= 0}
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '61'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/61
+  :user_name: satyri
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/76/
+  :language: PHP
+  :time: 2007/07/02 13:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">PHPで書いてみる。</pre>\n\t"
+  :code: "&lt;?php\nfunction payment($price, $wallet){\n\t$coins = array('500' =&gt;
+    0, '100' =&gt; 0, '50' =&gt; 0, '10' =&gt; 0, '5' =&gt; 0, '1' =&gt; 0);\n\t$payment
+    = pay($price, $wallet, $coins);\n\tforeach($coins as $coin=&gt;$value){\n\t\twhile($coin
+    &lt;= $payment['change']){\n\t\t\t$payment['change'] -= $coin;\n\t\t\tif($payment['coins'][$coin]){\n\t\t\t\t$payment['coins'][$coin]--;\n\t\t\t}\n\t\t}\n\t}\n\treturn
+    $payment['coins'];\n}\n\nfunction pay($price, $wallet, $coins){\n\tforeach($wallet
+    as $coin=&gt;$value){\n\t\tfor($i = 0; $i &lt; $value;$i++){\n\t\t\t$price -=
+    $coin;\n\t\t\t$coins[$coin]++;\n\t\t\tif($price &lt;=0){\n\t\t\t\treturn array('coins'=&gt;$coins,'change'=&gt;
+    - $price);\n\t\t\t}\n\t\t}\n\t}\n\techo(\"お金が足りません\");\n}\n$wallet = payment(147,array('1'=&gt;2,'10'=&gt;4,'100'=&gt;3));\nprint_r($wallet);\n?&gt;\n"
+  :tags:
+  - PHP
+  :references:
+    :url: 
+    :title: 
+- :id: '63'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/63
+  :user_name: jmuk
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/19/
+  :language: Ruby
+  :time: 2007/07/02 14:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  いろんな状況を考えてみたんですが、たぶん、可能なかぎり少額のコインを使うようにすると題意を満たすと思います。つまり、10円を払うとき、1円玉が10枚あるなら、10円玉があっても1円玉を使った方がよい。\r\n\r\n失敗するような意地悪な例題をもとむ。\n\t"
+  :code: |
+    $coins = [1, 5, 10, 50, 100, 500]
+
+    def changes(total)
+      ret = {}
+      $coins.sort_by{|a| -a}.each do |coin|
+        if total &gt;= coin
+          num = total / coin
+          total = total - coin * num
+          ret[coin] = num
+        end
+      end
+      ret
+    end
+
+    def pay(expence, wallet)
+      total = 0
+      payment = {}
+      $coins.sort.each do |coin|
+        next  unless wallet[coin]
+        num = [(expence - total) / coin + 1, wallet[coin]].min
+        payment[coin] = num
+        total += coin * num
+        break  if total &gt;= expence
+      end
+      if total &gt; expence
+        change = changes(total - expence)
+        change.each_pair do |coin, num|
+          if payment.has_key?(coin)
+            payment[coin] -= num
+            payment.delete(coin) if payment[coin] &lt;= 0
+          end
+        end
+      end
+      payment
+    end
+
+    # p pay(147, {1 =&gt; 2, 10 =&gt; 4, 100 =&gt; 3})
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '72'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/72
+  :user_name: shuyo
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/84/
+  :language: 
+  :time: 2007/07/03 06:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">おお、短い。すばらしい！\r\nでも……\r\n\r\npay(147, {1=&gt;
+    2, 5=&gt;300, 10=&gt; 4, 100=&gt; 3})\r\n=&gt; {5=&gt;299, 1=&gt;2, 100=&gt;2}\r\n\r\nすいません、意地悪で（苦笑</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '73'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/73
+  :user_name: 匿名
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/07/03 06:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  コード無しで質問なのですが、財布の中身が\r\n{100:10, 1:1}\r\nで支払うべき金額が\r\n1\r\nであった場合、期待される結果は\r\n\r\n{100
+    : 10} or {500 : 2}\r\n\r\nのどちらですか?\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '74'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/74
+  :user_name: yuin
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/82/
+  :language: Python
+  :time: 2007/07/03 07:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">pay(147, {1=&gt; 2, 5=&gt;300, 10=&gt; 4, 100=&gt;
+    3})\r\n=&gt; {5=&gt;299, 1=&gt;2, 100=&gt;2}\r\n\r\nこれあってますよね。\r\nたぶん#73の方と同じ疑問点なのだと思いますが、\r\n\r\n5
+    * 299 + 1 * 2 + 100 * 2 = 1697\r\n1697 - 147 = 1550\r\n\r\nでおつりは500 * 3, 50 *
+    1。確かに一番減ります。こんなお金の出され方したら怒りますけど（笑\r\n\r\nPythonでも同じアルゴリズムで書いてみました。</pre>\n\t"
+  :code: |
+    from operator import *
+    def pay(m, w):
+      r = dict()
+      m = sum((k*w[k] for k in w)) - m
+      if m &lt; 0: raise "money"
+      for c in (500,100,50,10,5,1):
+        r[c] = w.get(c, 0) - m / c
+        m %= c
+      return dict(((k,v) for k,v in r.items() if v &gt; 0))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '76'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/76
+  :user_name: にしお
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/03 12:58 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">なるほど、端的に言うと例えば100円支払う時に100円玉を101枚渡せば\r\n「店員は最も枚数が少なくなる返し方でおつりを返す」という条件から\r\n1万円札が返ってくるわけですね。\r\n\r\n問題条件にそう書いてある以上、\r\n結果がいくら常識に反していても\r\n「100円玉を101枚出す」が正解です。\r\n\r\n出題が甘かったですね～(^^;</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '149'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/149
+  :user_name: sumim
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/07/04 18:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    | 支払額 手持ち 支払 残高 |
+    支払額 := 147.
+    手持ち := 支払 := {1-&gt;2. 10-&gt;4. 100-&gt;3}
+       inject: Bag new
+       into: [:bag :assc | bag add: assc key withOccurrences: assc value; yourself].
+
+    残高 := 手持ち sum - 支払額.
+    #(500 100 50 10 5 1) do: [:コイン |
+       | 枚数 |
+       (枚数 := 残高 // コイン) &gt; 0 ifTrue: [
+          残高 := 残高 \\ (コイン * 枚数).
+          枚数 timesRepeat: [支払 remove: コイン ifAbsent: []]]].
+    ^支払 sortedElements asArray
+
+    "=&gt; {1-&gt;2 . 100-&gt;2} "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '430'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/430
+  :user_name: cats
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/07/10 04:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  差額に対する最小のコイン枚数を引いて出しています。あっているのか不明。\n\t"
+  :code: |
+    using System;
+    class Program
+    {
+      static void Main()
+      {
+        int[] coins = { 1, 5, 10, 50, 100, 500 };
+        int[] res = GetChange(coins, "1:2,10:4,100:3", 147);
+        for (int i = 0; i &lt; res.Length; ++i)
+          if (res[i] &gt; 0) Console.WriteLine("{0}:{1}", coins[i], res[i]);
+      }
+      static int[] GetChange(int[] coins, string data, int amo)
+      {
+        int[] nums = new int[coins.Length];
+        int total = 0;
+        foreach (string s in data.Split(','))
+        {
+          string[] ss = s.Split(':');
+          int p = int.Parse(ss[0]);
+          int n = int.Parse(ss[1]);
+          nums[(int)Math.Log(p, 3)] = n;
+          total += p * n;
+        }
+        int rem = total - amo;
+        int[] res = new int[coins.Length];
+        for (int i = res.Length - 1; i &gt;= 0; --i)
+          while (rem &gt;= coins[i]) { rem -= coins[i]; ++res[i]; }
+        for (int i = 0; i &lt; res.Length; ++i)
+          res[i] = Math.Max(0, nums[i] - res[i]);
+        return res;
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '434'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/434
+  :user_name: にしお
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/10 05:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  「やりとりする枚数が最小になるように」という条件にすればよかったのかもしれませんね…。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '510'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/510
+  :user_name: rubikitch
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/105/
+  :language: Common
+  :time: 2007/07/10 20:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  iterate萌え。\n\t"
+  :code: |
+    (require :iterate)
+    (in-package :iterate)
+    (defparameter *coins* '(500 100 50 10 5 1))
+
+    ;; DRY *coins*
+    (defun combinations (wallet)
+      (labels ((cnt (coin) (or (cdr (assoc coin wallet)) 0)))
+        (iter (for c0 from 0 to (cnt 500)) (appending
+             (iter (for c1 from 0 to (cnt 100)) (appending
+                  (iter (for c2 from 0 to (cnt 50)) (appending
+                       (iter (for c3 from 0 to (cnt 10)) (appending
+                            (iter (for c4 from 0 to (cnt 5)) (appending
+                                 (iter (for c5 from 0 to (cnt 1)) (collecting
+                                      (delete-if (lambda (cons) (zerop (cdr cons)))
+                                                 `((500 . ,c0) (100 . ,c1) (50 . ,c2) (10 . ,c3) (5 . ,c4) (1 . ,c5)))))))))))))))))
+
+    (defun amount (wallet)
+      (iter (for (coin . cnt) in wallet) (sum (* coin cnt))))
+
+    (defun change (amount)
+      (iter (for coin in *coins*)
+            (with cnt)
+            (unless (zerop (setf cnt (floor (/ amount coin))))
+              (decf amount (* coin cnt))
+              (collect (cons coin cnt)))))
+
+    (defun ways-to-pay (amount wallet)
+      (let (changed-coins)
+        (iter (for combination in (combinations wallet))
+              (if (let ((change-amount (- (amount combination) amount)))
+                    (and (&lt;= 0 change-amount)
+                         (iter (for (c-coin . c-cnt) in (setf changed-coins (change change-amount)))
+                               (always (null (assoc c-coin combination))))))
+                  (collect (list :pay combination :change changed-coins))))))
+
+    (defun count-coins (wallet)
+      (iter (for (coin . cnt) in wallet) (sum cnt)))
+
+    ;; wallet: alist
+    (defun pay (amount wallet)
+      (iter (with coins-in-wallet = (count-coins wallet))
+            (for way in (ways-to-pay amount wallet))
+            (finding way minimizing (+ (- coins-in-wallet
+                                          (count-coins (getf way :pay)))
+                                       (count-coins (getf way :change))) into min)
+            (finally (return (getf min :pay)))))
+
+    (pay 147 '((1 . 2) (10 . 4) (100 . 3))) ; =&gt; ((100 . 2) (1 . 2))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '527'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/527
+  :user_name: ココサブ
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/24/
+  :language: C
+  :time: 2007/07/11 04:04 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  http://ja.doukaku.org/comment/63/と同様のアルゴリズムでやってみました。\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+
+    typedef struct {
+        int value; /* お金の価値 */
+        int has;   /* 何枚持っているか */
+    } coin_data;
+
+    void pay(int expense, coin_data *pay_coin, coin_data *coin_case);
+
+    int main()
+    {
+        int i;
+        /* 始めに持っているお金 */
+        coin_data coin_case[6] = {
+            {  1, 2}, {  5, 300}, { 10, 4},
+            { 50, 0}, {100, 3}, {500, 0},
+        };
+        /* 払うお金 */
+        coin_data pay_coin[6] = {
+            {  1, 0}, {  5, 0}, { 10, 0},
+            { 50, 0}, {100, 0}, {500, 0},
+        };
+
+        for (i = 0; i &lt; 6; i++) {
+            printf("%d円玉 : %d枚\n", coin_case[i].value, coin_case[i].has);
+        }
+        pay(147, pay_coin, coin_case);
+        for (i = 0; i &lt; 6; i++) {
+            printf("%d円玉 : %d枚\n", pay_coin[i].value, pay_coin[i].has);
+        }
+
+        return 0;
+    }
+
+    void pay(int expense, coin_data *pay_coin, coin_data *coin_case)
+    {
+        int current_total;
+        int i, j;
+
+        current_total = 0;
+        while (coin_case[5].has &gt; 0) {
+            current_total += coin_case[5].value;
+            coin_case[5].has--;
+            pay_coin[5].has++;
+        }
+        for (i = 4; i &gt;= 0; i--) {
+            while (coin_case[i].has &gt; 0) {
+                current_total += coin_case[i].value;
+                coin_case[i].has--;
+                pay_coin[i].has++;
+            }
+            while ((current_total - coin_case[i+1].value) &gt;= expense
+                &amp;&amp; pay_coin[i+1].has &gt; 0) {
+                current_total -= coin_case[i+1].value;
+                coin_case[i+1].has++;
+                pay_coin[i+1].has--;
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '664'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/664
+  :user_name: yuin
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/07/12 14:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Scalaで。うーん、微妙・・・</pre>\n\t"
+  :code: |
+    import scala.collection.mutable.HashMap
+    import scala.collection.Map.Projection
+    def pay(money:Int, wallet:Map[Int, Int]):Projection[Int,Int] = {
+      var m = money
+      val r = new HashMap[Int,Int]
+      m = wallet.keys./:(0){(r,k) =&gt; r+k*wallet(k)} - m
+      if(m&lt;0) throw new RuntimeException("Money!")
+      List(500, 100, 50, 10, 5, 1).foreach(c =&gt; {
+        r(c) = wallet.getOrElse(c, 0) - m/c
+        m = m%c
+      })
+      r.filterKeys(k =&gt; r(k)&gt;0)
+    }
+    pay(147, Map(1 -&gt; 2, 5 -&gt; 300, 10 -&gt; 4, 100 -&gt; 3)).foreach(p =&gt; print(p._1+":"+p._2+","))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1075'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/1075
+  :user_name: kkobayashi
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2007/07/18 14:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">「手持ちのコインを全て渡す」というのが答えですが、出したコインがそのまま帰ってくるような場合は\r\n出さないようにしています。http://ja.doukaku.org/comment/60/
+    と同じですね・・・\r\n\r\n&gt; purse(pay=147, y1=2, y5=300, y10=4, y100=3)\r\n  1   5 100
+    \r\n  2 299   2 \r\n&gt; purse(pay=147, y1=2, y10=4, y100=3)\r\n  1 100 \r\n  2
+    \  2 </pre>\n\t"
+  :code: |
+    purse &lt;- function(pay=0, y500=0, y100=0, y50=0, y10=0, y5=0, y1=0){
+        m   &lt;- c(y500, y100, y50, y10, y5, y1)
+        l   &lt;- (names(m) &lt;- c(500, 100, 50, 10, 5, 1))
+        ret &lt;- m %*% l - pay
+        n   &lt;- m - (ret %% c(ret+1, l[1:(length(l)-1)]) %/% l)
+        print(rev(n[n&gt;0]))
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1102'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/1102
+  :user_name: katsu
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/117/
+  :language: Prolog
+  :time: 2007/07/19 12:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Prologが無いなんて許せません。\r\n当然、全探索です。\r\n制約論理を使えば、もっとスマートに行くのでしょうか…</pre>\n\t"
+  :code: |
+    coins([500,100,50,10,5,1]).
+
+    change(Sum,C):-coins(Coins),change(Coins,Sum,C).
+    change([],_,[]).
+    change([Co|Cos],Sum,C):-Co&gt;Sum,change(Cos,Sum,C),!.
+    change([Co|Cos],Sum,[c(Co,C)|Cs]):-C is Sum // Co,Sums is Sum mod Co, change(Cos,Sums,Cs).
+
+    takeout([],[],[]).
+    takeout([c(Co,C)|Pos],Pa,R):-countUp(C,C1),plus(C2,C1,C),C1&gt;=0,C2&gt;=0,
+                                 (C1==0-&gt;Pa=Pas;Pa=[c(Co,C1)|Pas]),
+                                 (C2==0-&gt;R=Rs;R=[c(Co,C2)|Rs]),
+                                 takeout(Pos,Pas,Rs).
+
+    countUp(N,I):-countUp(N,0,I).
+    countUp(N,S,S):-S=&lt;N.
+    countUp(N,S,I):-S&lt;N,Ss is S + 1,countUp(N,Ss,I).
+
+    minCoin([A],[A]):-!.
+    minCoin([a(Ca,Pa)|As], B) :-
+            minCoin(As, [a(C,P)|Ps]),
+            (Ca&lt;C-&gt;B=[a(C,P)];
+                   (Ca==C-&gt;B=[a(C,P),a(Ca,Pa)|Ps];
+                           B=[a(C,P)|Ps])).
+
+    total([],0).
+    total([c(Co,C)|Cs],X):-total(Cs, Xs), X is Xs + Co * C.
+
+    try(Sum, Pocket, Pay, Rest, C) :-
+            takeout(Pocket, Pay, Rest0),
+            total(Pay, Total),
+            Total &gt;= Sum,
+            plus(Change, Sum, Total),
+            change(Change, Change0),
+            diffCoin(Pay,Change0),
+            appendCoin(Rest0,Change0,Rest),
+            countCoin(Rest,C).
+
+    coinNumber(c(_,N),N).
+    coinName(c(N,_),N).
+
+    appendCoin([],X,X).
+    appendCoin([c(C,N)|Cs],R0,R):-appendCoinSub(C,N,R0,R1),appendCoin(Cs,R1,R).
+
+    appendCoinSub(C,N,[],[c(C,N)]).
+    appendCoinSub(C,N,[c(C,M)|Cs],[c(C,L)|Cs]):-L is N + M,!.
+    appendCoinSub(C,N,[Cx|Cs],[Cx|Rs]):-appendCoinSub(C,N,Cs,Rs).
+
+    diffCoin(X,Y):-maplist(coinName,X,Xn),maplist(coinName,Y,Yn),intersection(Xn,Yn,[]).
+
+    countCoin([],0).
+    countCoin([c(_,C)|Cs],X) :- countCoin(Cs,Xs), X is Xs + C.
+
+    findAns(Sum,Before,As):-findall(a(C,Pay),try(Sum,Before,Pay,_,C),As0),minCoin(As0,As).
+
+    :-findAns(147,[c(1,2),c(10,4),c(100,3)],A),writeln(A),halt.
+  :tags:
+  - SWI-Prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '1172'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/1172
+  :user_name: 匿名
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/4/
+  :language: JavaScript
+  :time: 2007/07/20 15:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">頭の体操にとJavaScriptで。\r\nアルゴリズムが正しいかどうかは正直自信ありません……。</pre>\n\t"
+  :code: |
+    javascript:function%20pay(pr,pu){var%20su=0,st=[],tk,ci;for(tk%20in%20pu)su+=tk*pu[tk];su=su-pr;if(su&lt;0)return'short';for(ci=0;tk=[500,100,50,10,5,1,0][ci];ci++){var%20tc=pu[tk],nm=Math.floor(su/tk),tp=tc-nm;if(0&lt;tp)st.unshift(tk+':'+tp);su-=tk*nm;}return'{'+st.join(',%20')+'}';}pay(147,{1:2,10:4,100:3})
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1700'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/1700
+  :user_name: tomatsu
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/323/
+  :language: Pnuts
+  :time: 2007/08/02 12:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    function pay(m, w){
+      function integer(a) if (a == null) 0 else int(a)
+      r = map()
+      n = 0
+      for (k,v : w) n += k*v
+      m = n - m
+      if (m &lt; 0) throw("not enough")
+      for (c : [500, 100, 50, 10, 5, 1]){
+         r[c] = integer(w[c]) - m/c
+         m %= c
+      }
+      filter(r, {k,v -&gt; v&gt;0})
+    }
+    println(pay(147, {1=&gt;2, 5=&gt;300, 10=&gt;4, 100=&gt;3}))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1955'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/1955
+  :user_name: Felio
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/354/
+  :language: Groovy
+  :time: 2007/08/06 20:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  全額渡してから、引き算してます。ずるい?\r\n\r\nお金が足りないときには、全額つき返されます。想定外。\n\t"
+  :code: |
+    def pay(price, wallet_coins) {
+      def wallet = wallet_coins.collect { key, value -&gt;
+        key * value
+      }.inject(0) { sum, value -&gt;
+        sum + value
+      }
+
+      def diff_coins = coins(wallet - price)
+      subtract_coins(wallet_coins, diff_coins).findAll { key, value -&gt; value &gt; 0 }
+    }
+
+    def coins(price) {
+      coins = [500,100,50,10,5,1].inject([:]) { sum, coin -&gt;
+        if(price &gt;= coin) {
+          def count = (price / coin).toBigInteger()
+          price = price - coin*count
+          sum[coin] = count
+        }
+        sum
+      }
+    }
+
+    def subtract_coins(xs,ys) {
+      [500,100,50,10,5,1].inject([:]) { result, coin -&gt;
+        xcount = xs[coin] == null ? 0 : xs[coin]
+        ycount = ys[coin] == null ? 0 : ys[coin]
+        result[coin] = xcount - ycount
+        result
+      }
+    }
+
+    println pay(147, [1:2, 10:4, 100:3])
+    println pay(147, [1:2, 10:4, 100:1])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2044'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/2044
+  :user_name: naoya_t
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/348/
+  :language: awk
+  :time: 2007/08/09 12:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">同じ種類の硬貨を20枚以上指定しても、20枚までしか使わないように制限してあります。\r\n関数
+    pay(amount, coins, result) は金額(amount)と所持する硬貨の枚数の配列(coins)を受け取り、おつりを受け取った後のコインの数が最も少なくなる組み合わせ(result)を返します。\r\n\r\n%
+    awk -f otsuri.awk\r\n147 0 3 0 4 0 2\r\n100x2 1x2 (2枚減)\r\n147 1 1 1 1 1 147\r\n100x1
+    50x1 1x17 (17枚減)※同じ種類の硬貨を一度に使えるのは20枚まで\r\n147 0 0 0 0 0 0\r\n持ち金不足\r\n</pre>\n\t"
+  :code: "{\n\tamount = $1\n\n\tcoins[500] = $2\n\tcoins[100] = $3\n\tcoins[50] =
+    $4\n\tcoins[10] = $5\n\tcoins[5] = $6\n\tcoins[1] = $7\n\n\tif (amount &gt; coins[1]
+    + 5*coins[5] + 10*coins[10] + 50*coins[50] + 100*coins[100] + 500*coins[500])
+    {\n\t\tprint \"持ち金不足\"\n\t\tnext\n\t}\n\n\tlimitted = 0\n\tif (coins[500] &gt;
+    20 || coins[100] &gt; 20 || coins[50] &gt; 20 || coins[10] &gt; 20 || coins[5]
+    &gt; 20 || coins[1] &gt; 20) {\n\t\tlimitted = 1\n\t\tif (coins[500] &gt; 20)
+    coins[500] = 20\n\t\tif (coins[100] &gt; 20) coins[100] = 20\n\t\tif (coins[50]
+    &gt; 20) coins[50] = 20\n\t\tif (coins[10] &gt; 20) coins[10] = 20\n\t\tif (coins[5]
+    &gt; 20) coins[5] = 20\n\t\tif (coins[1] &gt; 20) coins[1] = 20\n\t}\n\n\t# 計算〜結果表示\n\tpay(amount,coins,
+    result)\n\n\tif (result[500]) printf(\"500x%d \", result[500])\n\tif (result[100])
+    printf(\"100x%d \", result[100])\n\tif (result[50]) printf(\"50x%d \", result[50])\n\tif
+    (result[10]) printf(\"10x%d \", result[10])\n\tif (result[5]) printf(\"5x%d \",
+    result[5])\n\tif (result[1]) printf(\"1x%d \", result[1])\n\n\tif (result[\"diff\"]
+    == 0) printf(\"(枚数の増減なし)\")\n\telse if (result[\"diff\"] &lt; 0) printf(\"(%d枚減)\",
+    -result[\"diff\"])\n\telse printf(\"(%d枚増)\", result[\"diff\"])\n\n\tif (limitted)
+    print \"※同じ種類の硬貨を一度に使えるのは20枚まで\"\n\telse printf \"¥n\"\n}\n\nfunction pay(amount,coins,result,
+    i,j,k,l,m,n,\n\t\t\t coins_out,coins_out_amount,change,\n\t\t\t coins_in,coins_diff,coins_diff_minimum,coins_diff_minimum_at)\n{\n\tcoins_diff_minimum
+    = 999999\n\tcoins_diff_minimum_at = \"\"\n\n\tif (coins[1] &lt; 1) coins[1] =
+    0\n\tif (coins[5] &lt; 1) coins[5] = 0\n\tif (coins[10] &lt; 1) coins[10] = 0\n\tif
+    (coins[50] &lt; 1) coins[50] = 0\n\tif (coins[100] &lt; 1) coins[100] = 0\n\tif
+    (coins[500] &lt; 1) coins[500] = 0\n\n\tfor (i=0; i&lt;=coins[1]; i++) {\n\t\tfor
+    (j=0; j&lt;=coins[5]; j++) {\n\t\t\tfor (k=0; k&lt;=coins[10]; k++) {\n\t\t\t\tfor
+    (l=0; l&lt;=coins[50]; l++) {\n\t\t\t\t\tfor (m=0; m&lt;=+coins[100]; m++) {\n\t\t\t\t\t\tfor
+    (n=0; n&lt;=coins[500]; n++) {\n\t\t\t\t\t\t\t# 出て行く枚数\n\t\t\t\t\t\t\tcoins_out
+    = i + j + k + l + m + n\n\t\t\t\t\t\t\t# 出て行く金額\n\t\t\t\t\t\t\tcoins_out_amount
+    = i + j*5 + k*10 + l*50 + m*100 + n*500\n\t\t\t\t\t\t\tif (coins_out_amount &lt;
+    amount) continue\n\n\t\t\t\t\t\t\t# お釣り\n\t\t\t\t\t\t\tchange = coins_out_amount
+    - amount\n\t\t\t\t\t\t\t# お釣りの枚数を数える\n\t\t\t\t\t\t\tcoins_in = count_coins(change,change_coins)\n\t\t\t\t\t\t\t#
+    枚数の差分\n\t\t\t\t\t\t\tcoins_diff = coins_in - coins_out\n\n\t\t\t\t\t\t\t# 支払額が異常に多いケースを排除\n\t\t\t\t\t\t\tif
+    (n == 0) { # 500円玉を使っていない\n\t\t\t\t\t\t\t\tif (change_coins[500] &gt; 0) continue
+    # のに釣り銭に500円玉が入っている\n\t\t\t\t\t\t\t\telse if (m == 0) { # 100円玉も使っていない\n\t\t\t\t\t\t\t\t\tif
+    (change_coins[100] &gt; 0) continue # のに釣り銭に100円以上の硬貨が入っている\n\t\t\t\t\t\t\t\t\telse
+    if (l == 0) { # 50円玉も使っていない\n\t\t\t\t\t\t\t\t\t\tif (change_coins[50] &gt; 0)
+    continue # のに釣り銭に50円以上の硬貨が入っている\n\t\t\t\t\t\t\t\t\t\telse if (k == 0) { # 10円玉も使っていない\n\t\t\t\t\t\t\t\t\t\t\tif
+    (change_coins[10] &gt; 0) continue # のに釣り銭に10円以上の硬貨が入っている\n\t\t\t\t\t\t\t\t\t\t\telse
+    if (j == 0) { # 5円玉も使っていない\n\t\t\t\t\t\t\t\t\t\t\t\tif (change_coins[5] &gt; 0)
+    continue # のに釣り銭に5円以上の硬貨が入っている\n\t\t\t\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t}\n\n\t\t\t\t\t\t\t#
+    自分が払ったのと同種のコインが戻って来る組み合わせは排除\n\t\t\t\t\t\t\tif (i &gt; 0 &amp;&amp; change_coins[1]
+    &gt; 0) continue\n\t\t\t\t\t\t\tif (j &gt; 0 &amp;&amp; change_coins[5] &gt; 0)
+    continue\n\t\t\t\t\t\t\tif (k &gt; 0 &amp;&amp; change_coins[10] &gt; 0) continue\n\t\t\t\t\t\t\tif
+    (l &gt; 0 &amp;&amp; change_coins[50] &gt; 0) continue\n\t\t\t\t\t\t\tif (m &gt;
+    0 &amp;&amp; change_coins[100] &gt; 0) continue\n\t\t\t\t\t\t\tif (n &gt; 0 &amp;&amp;
+    change_coins[500] &gt; 0) continue\n\n\t\t\t\t\t\t\t# 新記録。同値の場合は最初に現れた組み合わせが記録される\n\t\t\t\t\t\t\tif
+    (coins_diff &lt; coins_diff_minimum) {\n\t\t\t\t\t\t\t\tcoins_diff_minimum = coins_diff\n\t\t\t\t\t\t\t\tcoins_diff_minimum_at
+    = i \",\" j \",\" k \",\" l \",\" m \",\" n\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n\n\t#
+    結果を result[] に収める\n\tdelete result\n\tsplit(coins_diff_minimum_at, ar, \",\")\n\tif
+    (ar[1] &gt; 0) result[1] = ar[1]\n\tif (ar[2] &gt; 0) result[5] = ar[2]\n\tif
+    (ar[3] &gt; 0) result[10] = ar[3]\n\tif (ar[4] &gt; 0) result[50] = ar[4]\n\tif
+    (ar[5] &gt; 0) result[100] = ar[5]\n\tif (ar[6] &gt; 0) result[500] = ar[6]\n\t\n\tresult[\"diff\"]
+    = coins_diff_minimum # 枚数の増減（減ったら負）\n}\n\nfunction count_coins(amount,change_coins)\n{\n\tdelete
+    change_coins\n\n\tif (amount &gt;= 500) { \n\t\tchange_coins[500] = int(amount
+    / 500)\n\t\tamount -= 500 * change_coins[500]\n\t}\n\tif (amount &gt;= 100) {\n\t\tchange_coins[100]
+    = int(amount / 100)\n\t\tamount -= 100 * change_coins[100]\n\t}\n\tif (amount
+    &gt;= 50) {\n\t\tchange_coins[50] = int(amount / 50)\n\t\tamount -= 50 * change_coins[50]\n\t}\n\tif
+    (amount &gt;= 10) {\n\t\tchange_coins[10] = int(amount / 10)\n\t\tamount -= 10
+    * change_coins[10]\n\t}\n\tif (amount &gt;= 5) {\n\t\tchange_coins[5] = int(amount
+    / 5)\n\t\tamount -= 5 * change_coins[5]\n\t}\n\tif (amount &gt;= 1)\n\t\tchange_coins[1]
+    = amount\n\n\treturn change_coins[500] + change_coins[100] + change_coins[50]
+    + change_coins[10] + change_coins[5] + change_coins[1]\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2072'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/2072
+  :user_name: 匿名
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2007/08/11 23:43 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">この問題は、実際にお店で行われるやり取りを想定したものですよね？ということで\r\n「渡した硬貨がおつりで返ってくるような渡し方は禁止」を\r\n「渡した硬貨が両替されて返ってくるような渡し方は禁止」と読み替えてやってみました☆\r\nC言語は不慣れなのでごちゃごちゃですが題意は満たしていると思います☆</pre>\n\t"
+  :code: |
+    #include&lt;stdio.h&gt;
+    void pay(int price,int y0,int y1,int y2,int y3,int y4,int y5,int y6,int y7,int y8){
+      int possession[]={y0,y1,y2,y3,y4,y5,y6,y7,y8},
+          denomination[]={1,5,10,50,100,500,1000,5000,10000},
+          i,j;
+          //表示。
+          printf("支払額 = %d\n金種　　",price);
+          for(i=0;i&lt;9;i++)
+            printf("%6d",denomination[i]);
+          printf("\n所持枚数");
+          for(i=0;i&lt;9;i++)
+            printf("%6d",possession[i]);
+          //所持枚数を元に支払額を補正（繰上げ）。
+          for(j=0,i=0;i&lt;9;i++){
+            j+=denomination[i]*possession[i];
+            if(i&lt;8&amp;&amp;price%denomination[i+1]&gt;j)
+              price=price-price%denomination[i+1]+price%denomination[i]+denomination[i+1];
+          }
+          //補正された支払額を元に支払枚数を算出。
+          for(price=j-price,i=8;i&gt;=0;i--)
+            if(possession[i]&gt;0&amp;&amp;price&gt;=denomination[i])
+              possession[i]--,
+              price-=denomination[i],
+              i++;
+          //表示。
+          printf("\n支払枚数");
+          for(i=0;i&lt;9;i++)
+            if(price&gt;=0)
+              printf("%6d",possession[i]);
+            else
+              printf(" -----");
+          printf("\n\n");
+    }
+    int main(void){
+      pay(  147,  3,  0,  5,  0,  1,  0,  0,  0,  0);
+      pay(  147,  2,300,  4,  0,  3,  0,  0,  0,  0);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2556'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/2556
+  :user_name: 匿名
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/08/27 16:12 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">#1700 のコメントの方法をそのまま移植しました。</pre>\n\t"
+  :code: |
+    import java.util.TreeMap;
+
+    public class Sample {
+        public static void main(String[] args) {
+            TreeMap&lt;Integer, Integer&gt; purse = new TreeMap&lt;Integer, Integer&gt;();
+            purse.put(1, 2);
+            purse.put(10, 4);
+            purse.put(100, 3);
+            purse.put(500, 5);
+            System.out.println(pay(147, purse));
+        }
+
+        public static TreeMap&lt;Integer, Integer&gt; pay(int price,
+                TreeMap&lt;Integer, Integer&gt; purse) {
+            TreeMap&lt;Integer, Integer&gt; pay = new TreeMap&lt;Integer, Integer&gt;();
+            int n = 0;
+            for (int coin : purse.keySet()) {
+                n += coin * purse.get(coin);
+            }
+            price = n - price;
+            if (price &lt; 0) {
+                throw new IllegalArgumentException("Not enough");
+            }
+            for (int coin : new int[]{500, 100, 50, 10, 5, 1}) {
+                int m = (purse.get(coin) != null) ? purse.get(coin) : 0;
+                pay.put(coin, m - price / coin);
+                price %= coin;
+            }
+            for (int coin : new int[]{500, 100, 50, 10, 5, 1}) {
+                if (pay.get(coin) &lt;= 0) {
+                    pay.remove(coin);
+                }
+            }
+            return pay;
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2570'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/2570
+  :user_name: 匿名
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/08/28 13:08 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  #2566(#1700)の方法は、以下のような非常に巧みなやり方です。\r<br>支払い後の金額を正規化（コインの枚数が最少に）するため、正規化した枚数から現在所持している枚数を引くと正の枚数が支払い枚数、負の枚数がお釣りの枚数になる。\r<br><br>これはほとんどの場合うまくいくのですが、元々の所持金の枚数が著しく偏っていた場合、10円を20枚出して100円を2枚釣りにもらうという普通はやらないような支払い方を行ってしまいます（このような支払い方法を仮に両替的支払いと呼びます）。もちろん、支払い後の枚数を強制的に正規化しようとするのが原因です。\r<br><br>この払い方でも題意は満たしていると思えるのですが、気になったので両替的支払いを行わないように修正してみました。\r<br><br>両替的支払いを以下のように定義します。\r<br>・支払ったコインの最高額が釣りの金額を超える支払い方法\r<br><br>"
+  :code: "import java.util.TreeMap;\n\npublic class Sample {\n    public static void
+    main(String[] args) {\n        TreeMap&lt;Integer, Integer&gt; purse = new TreeMap&lt;Integer,
+    Integer&gt;();\n        purse.put(1, 4);\n        purse.put(10, 4);\n        purse.put(100,
+    3);\n        System.out.println(pay(147, purse));\n    }\n\n    public static
+    TreeMap&lt;Integer, Integer&gt; pay(int price, \n            TreeMap&lt;Integer,
+    Integer&gt; purse) {\n        TreeMap&lt;Integer, Integer&gt; pay = new TreeMap&lt;Integer,
+    Integer&gt;();\n        int n = 0;\n        for (int coin : purse.keySet()) {\n
+    \           n += coin * purse.get(coin);\n        }\n        price = n - price;\n
+    \       if (price &lt; 0) {\n            throw new IllegalArgumentException(\"Not
+    enough\");\n        }\n        int changeVal = 0;\n        boolean change = true;\n
+    \       for (int coin : new int[]{500, 100, 50, 10, 5, 1}) {\n            int
+    m = (purse.get(coin) != null) ? purse.get(coin) : 0;\n            m -= price /
+    coin;\n            if (change &amp;&amp; m &lt; 0) {\n                changeVal
+    -= m * coin;\n            }\n            if (m &gt; 0 &amp;&amp; changeVal &gt;
+    0) {\n                if (m * coin &gt;= changeVal) {\n                    m -=
+    changeVal / coin;\n                    changeVal %= coin;\n                } else
+    {\n                    changeVal -= m * coin;\n                    m = 0;\n                }\n
+    \           }\n            if (m &gt; 0) {\n                pay.put(coin, m);\n
+    \               change = false;\n            }\n            price %= coin;\n        }\n
+    \       return pay;\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2571'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/2571
+  :user_name: 匿名
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/08/28 13:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  両替的支払いの定義が間違っていました。もちろん\r<br>・釣りの金額が支払ったコインの最高額を超える支払い方法\r<br>が正しいです。\r<br>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2871'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/2871
+  :user_name: drop
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/388/
+  :language: Haskell
+  :time: 2007/09/03 12:47 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Java の処理系が入ってないから実行してないけど、そのコードおかしいよ。\r\nむしろバグバグになったようにしか見えない。\r\n\r\n#2556(#1700)で直すべきなのは\r\n\r\n1.
+    26行目 m - price / coin (9行目 r[c] = integer(w[c]) - m/c)\r\n2. 27行目 price %= coin
+    (10行目 m %= c)\r\n3. 29-33行目(12行目 filter(r, {k,v -&gt; v&gt;0}))\r\n\r\nの3箇所で、それぞれ
+    (k = min {m, price/coin} として)\r\n\r\n1. m - k\r\n2. price -= coin * k\r\n3. 削除\r\n\r\nに置き換えるべきなんだと思うぞ。\r\n\r\nというわけでそれを
+    Haskell で書いてみた。\r\nついでにこのお題に投稿されてるコードはバグってるのだらけ\r\n(両替的支払いがいいならそんなことないか)のようなので、説明してみる:\r\n\r\n大きい価格のコインから順に、払う枚数を必要最小限になるように決めていく。\r\n\r\nなにをもって必要最小限と判断するかというと、\r\n余分(extra
+    (#2556, #1700 ではそれぞれ price と m))、\r\nつまり必要の無い支払いというのを考え、余分の範囲内で、\r\nできるだけ払うコインを減らす。\r\n\r\n最初の時点では\r\n\r\n余分
+    = 財布の中身全額 - 支払い\r\n\r\nとなっている。余分の範囲で(減らそうとしてる)できるだけ多い枚数ってのが\r\nextra `div` c (price
+    / coin や m / c)。\r\n\r\nしかし、これだと例えば100円玉を100毎ぐらい持ってて、余分な額が1万近いときに、\r\n500円玉を3枚しか持ってないのに500円玉18枚ぐらい余分とか言われてしまう。そして\r\n\r\n払う枚数
+    (n-k や m - price / coin や integer(w[c]) - m/c)\r\n= 必要な枚数 = 持ってる枚数 - 余分な枚数\r\n\r\nなのでそのままではマイナス枚払うことになる。つまり受け取る。\r\nその分小さいコインを払う。両替的支払い。\r\n\r\nだから、持ってる枚数以上を余分な枚数としないように\r\n\r\n余分な枚数
+    (k) = min {持ってる枚数, さっき言ってた余分な枚数}\r\n\r\nとする。これで、\r\n\r\n支払う枚数 = 持ってる枚数 - k\r\n\r\nとし、また余分な
+    k 枚だけ c 円のコインの支払いを減らしたわけだから\r\n\r\n新しい余分な額 = 余分な額 - k * c\r\n\r\nとして、より小額のコインに対し今やったのを繰り返していけばよい。</pre>\n\t"
+  :code: |
+    import Data.List (sortBy)
+
+    amount :: [(Int,Int)] -&gt; Int
+    amount = sum . map (uncurry (*))
+
+    pay :: Int -&gt; [(Int,Int)] -&gt; [(Int,Int)]
+    pay expense wallet
+     | extra &lt; 0 = error "you need more money!"
+     | otherwise = adjust extra (descend wallet)
+     where
+      extra = amount wallet - expense
+      descend = sortBy (flip compare)
+      adjust _ [] = []
+      adjust extra ((c,n):w) = (c,n-k) : adjust (extra-k*c) w
+       where k = min n (extra `div` c)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2874'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/2874
+  :user_name: nobsun
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/09/03 13:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あれ？お題で示されている例題を食わせると\r\n*Main&gt; pay 147  [(1,2),(10,4),(100,3)]\r\n[(100,2),(10,0),(1,0)]\r\nとなりますが、これが意図した解でしょうか？</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2884'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/2884
+  :user_name: 匿名
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/09/04 03:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  バグっているというよりは、「両替的支払い」を正しく定義できていないのです。正しい定義をして作り直すつもりなのですが、まだ途中なので発表できていません。もう少しお待ちください。\r<br><br>ちなみに正しい定義は、今のところ、次のようになるのではないかと考えています。\r<br><br>両替的支払い：小額のコインを多数支払う事によって高額のコインをお釣りにもらうような支払い方法\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2885'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/2885
+  :user_name: nobsun
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/09/04 03:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">「支払ったコイン一式があったとき、お釣りを両替できてはいけない」\r\nという条件でよさそうですが、どうでしょうか。(あんまり深く考えてないけど。。。)</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2886'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/2886
+  :user_name: nobsun
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/09/04 03:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">先の条件を満して手持ちのコイン数が最小になる支払い。\r\n\r\nうーん。美しさがない定義ですね。だめか。。。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2887'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/2887
+  :user_name: drop
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/388/
+  :language: 
+  :time: 2007/09/04 03:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あー、なんかそれも変ですね。\r\n\r\n前にこの問題考えたとき、結局よくわからなかったんだけど、\r\nやっぱり今回もわかってなかったか…。バカ…。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2888'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/2888
+  :user_name: にしお
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/09/04 05:04 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">支払ったコインの集合をxs、受け取ったコインの集合をysとした時、\r\n「ysの任意の部分集合(空でない)と同じ金額になるxsの部分集合があってはいけない」\r\nというのではどうでしょう。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3786'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/3786
+  :user_name: dankogai
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/09 23:58 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">基本的に\r\n\r\nhttp://ja.doukaku.org/comment/63/\r\n\r\nのport.\r\n\r\nDan
+    the Perl Monger</pre>\n\t"
+  :code: "#!/usr/local/bin/perl\r\nuse strict;\r\nuse warnings;\r\nmy @coins = qw/1
+    5 10 50 100 500/;\r\n\r\nsub changes{\r\n    my $total = shift;\r\n    my %ret;\r\n
+    \   for my $coin (reverse @coins){\r\n        next unless $total &gt;= $coin;\r\n
+    \       my $num = int($total/$coin);\r\n        $total = $total - $coin * $num;\r\n
+    \       $ret{$coin} = $num;\r\n    }\r\n    \\%ret;\r\n}\r\n\r\nsub min{ $_[0]
+    &lt; $_[1] ? $_[0] : $_[1] };\r\n\r\nsub pay{\r\n    my ($expense, $wallet) =
+    @_;\r\n    my $total = 0;\r\n    my %payment;\r\n    for my $coin (@coins){\r\n
+    \       next unless $wallet-&gt;{$coin};\r\n        my $num = min(int(($expense-$total)/$coin
+    + 1), $wallet-&gt;{$coin});\r\n        $payment{$coin} = $num;\r\n        $total
+    += $coin * $num;\r\n        last if $total &gt;= $expense;\r\n    }\r\n    return
+    \\%payment unless $total &gt; $expense;\r\n    my $change = changes($total - $expense);\r\n
+    \   while(my ($coin, $num) = each %$change){\r\n        next unless $payment{$coin};\r\n
+    \       $payment{$coin} -= $num;\r\n        delete $payment{$coin} if $payment{$coin}
+    &lt;= 0;\r\n    }\r\n    \\%payment;\r\n}\r\n\r\nuse Data::Dumper;\r\nprint Dumper
+    (pay(147, {1 =&gt; 2, 10 =&gt; 4, 100 =&gt; 3}))\r\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3900'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/3900
+  :user_name: Kiske
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/202/
+  :language: PHP
+  :time: 2007/11/12 08:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Perl、Rubyで投稿されてるのをPHPに移植してみましたバージョン。\r\nforeachが使えるところはPHPが便利だけど、delete,
+    next unless処理はPHPだとダサいような。。</pre>\n\t"
+  :code: |
+    &lt;?php
+
+    $coins = array(1, 5, 10, 50, 100, 500);
+
+    function changes($total)
+    {
+        global $coins;
+        $ret = array();
+        foreach(array_reverse($coins) as $coin) {
+            if($total &gt;= $coin) {
+                $num = intval($total / $coin);
+                $total = $total - $coin * $num;
+                $ret[$coin] = $num;
+            }
+        }
+        return $ret;
+    }
+    function pay($price, $wallet)
+    {
+        global $coins;
+        $total = 0;
+        $payment = array();
+        foreach ($coins as $coin) {
+            if(!empty($wallet[$coin])) {
+                $num = min(intval($price-$total/$coin+1), $wallet[$coin]);
+                $payment[$coin] = $num;
+                $total += $coin * $num;
+                if( $total &gt;= $price){ break; }
+            }
+        }
+        if($total &gt; $price) {
+            $change = changes($total - $price);
+            foreach($change as $coin =&gt; $num) {
+                if(!empty($payment[$coin])) {
+                    $payment[$coin] -= $num;
+                    if($payment[$coin] &lt;= 0) { unset($payment[$coin]); }
+                }
+            }
+        }
+        return $payment;
+    }
+    //pay( 147, array("1" =&gt; 2, "10" =&gt; 4, "100" =&gt; 3));
+    ?&gt;
+  :tags: []
+  :references:
+    :url: /web/20080406171116/http://ja.doukaku.org/comment/63/
+    :title: http://ja.doukaku.org/comment/63/
+- :id: '5730'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/5730
+  :user_name: まさぽん
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/711/
+  :language: Scheme
+  :time: 2008/02/11 08:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">金額の小さいお金から、できるだけ多く払うようにしています。\r\nどうでしょうか？\r\nエラーチェックは最小限です。\r\n以下実行例:\r\ngosh&gt;
+    (pay-smart 147 '((1 . 2) (10 . 4) (100 . 3)))\r\n((100 . 2) (1 . 2))\r\n\r\n内容解説:\r\n6
+    - 8: 手持ちのお金で払えるかをチェック\r\n10～: 支払い関数 引数: 支払い金額、手持ちのお金(硬貨の額、枚数のペア のリスト)、払う硬貨入れ\r\n12:
+    m &lt;- 硬貨の額\r\n13: n &lt;- 硬貨の枚数\r\n14: b &lt;- 次の硬貨の金額になる枚数(1 円なら 5 枚で 5 円、5
+    円なら 2 枚で 10 円)\r\n15: pay2 &lt;- この硬貨にとっての端数を埋める(10 円玉の支払い順の時に、支払残高が 15 円になっている場合に
+    5 円埋めて 残高を 20 円にする)\r\n16: amari &lt;- この硬貨を支払い後、何枚余るか(支払残高 14 円に対して 1 円を 7 枚持っている場合、4
+    枚払って 3 枚余り。この 3 という数字)\r\n17-18: 硬貨が実在するものかをチェック。53 円玉なんて存在しない\r\n20: 残高 &lt;=
+    金額 * 枚数 -&gt; 全額支払い終了\r\n21-23: 余り &lt; 枚数 -&gt; 支払い可能。\"枚数 - 余り\" の枚数の硬貨を支払って(支払い残高から引いて)次の硬貨の処理へ\r\n24:
+    余り &gt; 枚数 -&gt; 支払い不可。そのまま次の硬貨の処理へ\r\n\r\namari の算出方法はもっとどうにかならんものか。</pre>\n\t"
+  :code: "(define pay-smart\n  (lambda (pay money)\n    (if (not (canpay? pay money))
+    (error \"お金足りてません\"))\n    (do-paying pay (sort money (lambda (x y) (&lt; (car
+    x) (car y)))) '())))\n\n(define canpay? \n  (lambda (pay money)\n    (if (&lt;=
+    pay (apply + (map (lambda (ls) (* (car ls) (cdr ls))) money))) #t #f)))\n\n(define
+    do-paying\n  (lambda (pay money ls)\n    (let* ((m (caar money))\n           (n
+    (cdar money))\n           (b (if (memq m '(5 50 500)) 2 5))\n           (pay2
+    (let1 tmp (modulo pay m) (if (or (= m 1) (= 0 tmp)) pay (+ pay (- m tmp)))))\n
+    \          (amari (modulo (- b (modulo (- (/ pay2 m) n) b)) b)))\n      (if (not
+    (memq m '(1 5 10 50 100 500)))\n          (error (format #f \"~d 円という硬貨はありません\"
+    m))\n      (cond \n       ((&lt;= pay2 (* m n)) (cons (cons m (/ pay2 m)) ls))\n
+    \      ((&gt; n amari) (do-paying (- pay2 (* m (- n amari)))\n                               (cdr
+    money) \n                               (cons (cons m (- n amari)) ls)))\n       (else
+    (do-paying pay2 (cdr money) ls)))))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6104'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/6104
+  :user_name: 匿名
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/03/29 14:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">http://codepad.org/DKipsErM\r\npay(147, {1=&gt;
+    11, 5=&gt; 2, 10=&gt; 1, 100=&gt; 3})\r\n結果:\r\n$VAR1 = {\r\n          '1' =&gt;
+    7,\r\n          '100' =&gt; 2,\r\n          '5' =&gt; 2\r\n        };</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6108'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/6108
+  :user_name: 匿名
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/03/29 19:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  gosh&gt; (pay-smart 14 '((1 . 12) (10 1)))\r<br>((10 . 1) (1 . 9))\r<br><br>(1 . 4) であってほしい。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6125'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/6125
+  :user_name: reeya2007
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/774/
+  :language: Perl
+  :time: 2008/03/31 15:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    #!/usr/bin/perl
+    use strict;
+    use Data::Dumper;
+
+    print Dumper(pay(147,(1 =&gt; 2, 10 =&gt; 4, 100 =&gt; 3)));
+
+    sub pay{
+            my ($pay,%input) = @_;
+            my @money = qw(1 5 10 50 100 500);
+            my $total = 0;
+            my %rtn = ();
+
+            TOTAL:
+            for my $key (@money){
+                    for (1 .. $input{$key}){
+                            $total += $key;
+                            $rtn{$key}++;
+                            last TOTAL if($total &gt;= $pay);
+                    }
+            }
+
+            CHANGE:
+            for my $key (reverse @money){
+                    while($total - $pay &gt;= $key){
+                            $total -= $key;
+                            delete($rtn{$key}) if(--$rtn{$key} &lt;= 0);
+                            last CHANGE if($total &lt;= $pay);
+                    }
+            }
+
+            return \%rtn;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6133'
+  :parent_id: '3'
+  :url: http://ja.doukaku.org/comment/6133
+  :user_name: 匿名
+  :user_url: /web/20080406171116/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/04/02 22:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  print Dumper(pay(147,(1 =&gt; 13, 100 =&gt; 2)));\r<br>$VAR1 = {\r<br>          '1' =&gt; 12,\r<br>          '100' =&gt; 2\r<br>        };\r<br><br>7枚が正しいのでは。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 

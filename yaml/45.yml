@@ -1,0 +1,1448 @@
+---
+:id: '45'
+:title: 分散関数呼び出し
+:comments:
+- :id: '3401'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/3401
+  :user_name: 沢渡 みかげ
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/101/
+  :language: 
+  :time: 2007/08/15 23:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"box\">\r\n分散関数呼び出しを実装してください．\r\n\r\n呼び出される関数は，定価を整数で，割引率(%)を整数で受け取り，\r\n文字列で「販売価格
+    ○円（定価○円から○%引き）」を返すものとします．\r\nまた，数字は3桁のカンマ区切りにするものとします．\r\n\r\nたとえば，pricestring(2000,
+    20) なら\r\n\"販売価格 1,600円 (定価2,000円から20%引き)\"\r\nを返します．\r\n\r\n関数の呼び出し元と，呼び出される側は，物理的に異なる\r\nサーバに配置できることを条件とします．\r\n呼び出し方法は問いませんが，呼び出し方法に名前がある場合，\r\nそれをタグに加えてください．\r\n（XML-RPC，SOAP，CORBA，RMI，など）\r\n\r\nまた，作成した関数を直列に1万回呼び出して，\r\n実行にかかった時間を測定してください．\r\n測定時は別サーバでなくても構いません．\r\n（なるべく別サーバが望ましいです）\r\n\r\n測定環境として，\r\n・サーバとクライアントのCPU・メモリ\r\n・同一サーバ内での実行か別サーバでの実行か\r\n・別サーバの場合，通信経路．（100Mbps
+    Ethernet等）\r\n・言語のバージョン\r\n・ミドルウェアを使用している場合，その名前とバージョン\r\nも併記してください．\r\n\r\n1つの言語で複数の分散関数呼び出しの実装方法がある場合，\r\n複数の回答を歓迎します．\r\n\r\n出題の意図は，様々な分散呼び出し方法の実装例と，\r\nレスポンス速度の確認にあります．\r\n</pre>\r\nこのお題は沢渡
+    みかげさんの投稿です。\r\nまったく手を加えないでいい完成度の投稿で本当に助かります。\r\nありがとうございました。\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2205'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2205
+  :user_name: cats
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/08/16 00:21 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">同一マシンのCoreDuo1.5GHz で1万回11秒</pre>\n\t"
+  :code: |
+    // サーバ
+    using System;
+    using System.Web.Services;
+    [WebService(Namespace = "http://tempuri.org/")]
+    [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+    public class Service : System.Web.Services.WebService
+    {
+      [WebMethod]
+      public string Calc(int n, int r) {
+        int p = n * (100 - r) / 100;
+        return string.Format("販売価格 {0}円 (定価{1}円から{2}%引き)",
+        p.ToString("C").Substring(1), n.ToString("C").Substring(1), r);
+      }
+    }
+
+    // クライアント
+    using System;
+    using System.Diagnostics;
+    using HowWrite.localhost;
+    class Program
+    {
+      static void Main()
+      {
+        Service srv = new Service();
+        Stopwatch st = new Stopwatch();
+        st.Start();
+        string s = "";
+        for (int i = 0; i &lt; 10000; ++i) s = srv.Calc(2000, 20);
+        Console.WriteLine(s);
+        st.Stop();
+        Console.WriteLine(st.ElapsedMilliseconds / 1000);
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2206'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2206
+  :user_name: shiro
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/08/16 00:27 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">まずは一番乗り狙いで、最もナイーブな実装をば。\r\nエラー処理や効率は考えていません。\r\neval-remotelyはリモートホストでインタプリタを起動して評価式を送り込みます。\r\n\r\n実行例:\r\ngosh&gt;
+    (ref (run-sample \"scherzo\" 1) 1)\r\n\"販売価格 1,600円 (定価2,000円から20%引き)\"\r\n\r\nベンチマーク
+    (CPU Pen4 2GHz, メモリ2GB, ループバック使用、Gauche 0.8.11_pre1, ミドルウェア無し)\r\ngosh&gt; (time
+    (run-sample \"scherzo\" 10000) (values))\r\n;(time (run-sample \"scherzo\" 10000)
+    (values))\r\n; real   5.247\r\n; user   0.460\r\n; sys    0.130\r\n</pre>\n\t"
+  :code: |
+    ;; -*- coding: utf-8 -*-
+    (use gauche.process)
+    (use srfi-1)
+
+    (define (eval-remotely host exprs)
+      (let1 p (run-process '(gosh -E "'read-eval-print-loop #f #f #f values'")
+                           :host host :input :pipe :output :pipe)
+        (unwind-protect
+            (map-in-order (lambda (expr)
+                          (write expr (process-input p))
+                          (newline (process-input p))
+                          (read (process-output p)))
+                        exprs)
+          (begin (close-output-port (process-input p))
+                 (process-wait p)))))
+
+    ;; 実行サンプル
+    (define (run-sample host repeat)
+      (eval-remotely host
+                     `((define (pricestring 価格 割引率)
+                         (format "販売価格 ~:d円 (定価~:d円から~d%引き)"
+                                (round-&gt;exact (* 価格 (/. (- 100 割引率) 100)))
+                                価格 割引率))
+                       ,@(make-list repeat '(pricestring 2000 20)))
+                     ))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2208'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2208
+  :user_name: ところてん
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2007/08/16 00:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  とりあえずPython使ってCGIサーバを立てて見ました。\r<br>http://blueeye.bne.jp:7777/cgi-bin/discount.py?2000&amp;33\r<br><br>↑のアドレスにアクセスすると、次のように帰ってきます。\r<br>&gt; 販売価格 1340円（定価2000円から33%引き）\r<br><br>以下の記事を参考にしてHTTPサーバを走らせて、その上で下にあるコードを走らせています。\r<br>http://coreblog.org/ats/python-de-cgi\r<br><br>今日一日くらい、鯖を立てておきますので遊びたい方はご自由に。\r<br>スレッドプールもないようなHTTP鯖なので、それなりに遅いと思いますが、速度測定はそのうちやります。\r<br>（ネットゲームのサーバが動いているので、正確な速度測定は難しいと思います）\n\t"
+  :code: |
+    # -*- coding: utf-8 -*-
+    #-------------------------以下サーバー側コード
+    import sys
+
+    if(len(sys.argv) == 2):
+        (price,discount) = sys.argv[1].split("&amp;")
+        price = int(price)
+        discount = int(discount)
+
+        print "Content-Type: text/plain"
+        print ""
+        print "販売価格 %d円（定価%d円から%d%%引き）" % (int(price * (100.0-discount)/100.0 ), price, discount)
+    else:
+        print "Content-Type: text/plain"
+        print ""
+        print "引数エラー"
+
+
+    # -*- coding: utf-8 -*-
+    #------------------------以下呼び出し側コード
+    import urllib
+    def pricestring(price, discount):
+        return urllib.urlopen("http://blueeye.bne.jp:7777/cgi-bin/discount.py?%d&amp;%d" % (price, discount)).read()
+
+    print unicode(pricestring(2000,20), "utf8")
+  :tags:
+  - CGI
+  :references:
+    :url: 
+    :title: 
+- :id: '2210'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2210
+  :user_name: shiro
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/08/16 00:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ああ、一番争いに敗れた…\r<br>ちょっと追加説明です。\r<br><br>リモートサーバに必要なのは、sshの公開鍵認証でログインできることと、Gaucheがインストールされていることのみです。特別にサーバ側で別コードを走らせる必要はありません。\r<br><br>インターネット越しにベンチマークを取ってみました。ハワイからロサンゼルスにあるサーバを叩くと、1000回呼び出しで82秒でした。\r<br><br>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2214'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2214
+  :user_name: ところてん
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2007/08/16 01:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">何なんだこの遅さは。\r\n直列で100回実験したら18秒強。\r\n10個のスレッドで、並列に10回ずつ取りに行ったら6.5秒。\r\n\r\n多分コンソール周りのPrintに時間食っているのかなぁ。\r\nコンソールを表示しなければ、早くなるのか？\r\nまぁ、裏でネットゲームの鯖が動いているところで、実験ってのが無茶な話ですが。\r\n\r\n鯖のPCのスペックはこんな感じ。\r\nPen4
+    2.8GHz HT\r\nRAM 512MB\r\nOS XP\r\nso-net ADSL12M線\r\nネットゲームのサーバプログラムがCPUパワーの80％を常時消費\r\n\r\n測定したクライアントPC\r\nsinetに接続されている某大学のPC\r\nPen4
+    3.2GHz HT\r\nRAM 2GB\r\nOS XP</pre>\n\t"
+  :code: "# -*- coding: utf-8 -*-\nimport urllib\nimport time\nimport threading\n\ndef
+    pricestring(price, discount):\n    return urllib.urlopen(\"http://blueeye.bne.jp:7777/cgi-bin/discount.py?%d&amp;%d\"
+    % (price, discount)).read()\n\n\nt1 = time.time()\n\nfor x in xrange(100):\n    print
+    unicode(pricestring(x * 1000, 20),\"utf8\")\n\nt2 = time.time()\n\nclass TEST_THREAD(threading.Thread):\n
+    \   def __init__(self, price, discount):\n        threading.Thread.__init__(self)\n
+    \       self.price = price\n        self.discount = discount\n    def run(self):\n
+    \       for x in xrange(10):\n            print unicode(pricestring(self.price,
+    self.discount + x),\"utf8\")\n\nthreadList = []\nfor x in xrange(10):\n    threadList.append(TEST_THREAD(x
+    * 1000 , 20))\n    threadList[-1].start()\n\nfor t in threadList:\n    t.join()\n
+    \      \nt3 = time.time()\n\nprint \"series time\",t2 - t1\nprint \"pararells
+    time\",t3 - t2\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2217'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2217
+  :user_name: 匿名
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/08/16 04:56 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">pythonの標準ライブラリに含まれているXML-RPCを\r\n使ってみました。\r\n\r\nとはいっても、参考にしたIBMのサイトに乗っているサンプル\r\nそのもののような気がしないでもない。\r\n\r\n実は数値のコンマ区切りの方が大変でした。\r\n\r\n測定環境\r\n　同一マシン上で実行\r\n　Athlon
+    XP 1700+ 512MB\r\n　python 2.5\r\n\r\n実行時間\r\n　画面出力を行う　　　　64秒\r\n　画面出力を行わない　　112秒\r\n</pre>\n\t"
+  :code: |
+    #
+    # server.py
+    #
+
+    # -*- coding: utf-8 -*-
+
+    import SimpleXMLRPCServer
+
+    class PliceString:
+      def plicestring(self, p, d):
+        def f(i):
+          s = str(i)
+          n = len(s)
+          return ','.join([s[i&lt;0 and -n or i:i+3] for i in range(n-(n+2)/3*3, n, 3)])
+        return '販売価格 %s円 (定価%s円から%d%%引き)' % (f(int(p*(1-d*0.01))), f(p), d)
+
+    ps = PliceString()
+    sv = SimpleXMLRPCServer.SimpleXMLRPCServer(('localhost', 8888))
+    sv.register_instance(ps)
+    sv.serve_forever()
+
+    #
+    # client.py
+    #
+
+    # -*- coding: utf-8 -*-
+
+    import xmlrpclib
+    import time
+
+    sv = xmlrpclib.ServerProxy('http://localhost:8888/')
+    t0 = time.time()
+    for i in range(10000):
+      sv.plicestring(2000, 20)
+    #  print sv.plicestring(2000, 20)
+    print time.time() - t0
+  :tags:
+  - XML-RPC
+  :references:
+    :url: 
+    :title: 
+- :id: '2223'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2223
+  :user_name: rubikitch
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/105/
+  :language: Ruby
+  :time: 2007/08/16 05:31 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Rubyの分散処理の定番dRuby！\r\nDRB_URIを書き換えることで別サーバでも可能。\r\n\r\nまず\r\nruby
+    45.rb server\r\nでサーバを立ち上げる。そのあと\r\nruby 45.rb\r\nでクライアントの実行。\r\n\r\n・呼び出し10000回にかかった時間
+    7.9秒\r\n・サーバとクライアントのCPU・メモリ  Pentium4 2.66GHz / 1GB\r\n・同一サーバ内での実行か別サーバでの実行か  同一サーバ\r\n・言語のバージョン
+    \ Ruby 1.8.5\r\n</pre>\n\t"
+  :code: |
+    require 'drb'
+    DRB_URI = "druby://localhost:2323"
+
+    if ARGV.first == 'server'
+      obj = Object.new
+      def obj.pricestring(price, cut_rate)
+        comma = lambda{|n| n.to_s.reverse.scan(/\d{1,3}/).join(",").reverse}
+        "販売価格 %s円 (定価%s円から%d%%引き)" % [comma[price*(100-cut_rate)/100], comma[price], cut_rate]
+      end
+      DRb.start_service DRB_URI, obj
+      DRb.thread.join
+
+    else                            # client
+      require 'benchmark'
+      DRb.start_service
+      obj = DRbObject.new(nil, DRB_URI)
+      puts obj.pricestring(2000,20)
+      puts Benchmark.measure { 10000.times{ obj.pricestring(2000,20)  } }.real
+    end
+  :tags:
+  - dRuby
+  :references:
+    :url: 
+    :title: 
+- :id: '2228'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2228
+  :user_name: cats
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/08/16 09:02 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">.NET Remoting版\r\nCoreDuo 1.5GHz の同一マシンで1万回2.7秒</pre>\n\t"
+  :code: "// サーバ用\nusing System;\npublic class Server : MarshalByRefObject\n{\n  public
+    string Calc(int n, int r)\n  {\n    int p = n * (100 - r) / 100;\n    return string.Format(\"販売価格
+    {0}円 (定価{1}円から{2}%引き)\",\n    p.ToString(\"C\").Substring(1), n.ToString(\"C\").Substring(1),
+    r);\n  }\n}\nclass Program\n{\n  static void Main()\n  {\n    System.Runtime.Remoting.Channels.ChannelServices.RegisterChannel(\n
+    \     new System.Runtime.Remoting.Channels.Tcp.TcpChannel(50000), false);\n    System.Runtime.Remoting.RemotingConfiguration\n
+    \     .RegisterWellKnownServiceType(typeof(Server), \"HowWrite\",\n      System.Runtime.Remoting.WellKnownObjectMode.Singleton);\n
+    \   System.Console.ReadKey();\n  }\n}\n\n// クライアント用\nusing System;\nusing System.Diagnostics;\nclass
+    Program\n{\n  static void Main()\n  {\n    Server  svr = (Server)Activator.GetObject(typeof(Server),
+    \n      \"tcp://localhost:50000/HowWrite\");\n    Stopwatch st = new Stopwatch();\n
+    \   st.Start();\n    string s = \"\";\n\tfor (int i = 0; i &lt; 10000; ++i) s
+    = svr.Calc(2000, 20);\n    Console.WriteLine(s);\n    st.Stop();\n    Console.WriteLine(st.ElapsedMilliseconds
+    / 1000.0);\n  }\n}\n"
+  :tags:
+  - .NET_Remoting
+  :references:
+    :url: 
+    :title: 
+- :id: '2233'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2233
+  :user_name: nobsun
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/08/16 10:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">うへぇー rum-process で host を指定できたんだぁ\r\nすげぇーっ</pre>\n\t"
+  :code: ''
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '2235'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2235
+  :user_name: 匿名
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/08/16 14:13 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">RMIの実装です（Java 5ではrmic不要になっているのですね）。\r\n\r\n一万回呼び出しにかかった時間：4782
+    ms\r\n・サーバとクライアントのCPU・メモリ：PowerPC G4 1.67 GHz・メモリ 1GB\r\n・同一サーバ内での実行か別サーバでの実行か：同一サーバ内\r\n・言語のバージョン：Java
+    HotSpot(TM) Client VM build 1.5.0_07-87\r\n・ミドルウェアを使用している場合，その名前とバージョン：使用していない\r\n</pre>\n\t"
+  :code: "共通のインタフェース（Price.java）\n\nimport java.rmi.Remote;\nimport java.rmi.RemoteException;\n\npublic
+    interface Price extends Remote {\n    String priceString(int price, int discunt)
+    throws RemoteException;\n}\n\n\nサーバ側実装（Server.java）\n\nimport java.rmi.registry.*;\nimport
+    java.rmi.server.*;\n\npublic class Server implements Price {\n    public String
+    priceString(int price, int discount) {\n        return String.format(\"販売価格 %,d円（定価
+    %,d円から %d%%引き）\", \n                (int)(double)price * (100 - discount) / 100,
+    price, discount);\n    }\n\n    public static void main(String[] args) throws
+    Exception {\n        Server obj = new Server();\n        Price stub = (Price)
+    UnicastRemoteObject.exportObject(obj, 0);\n        Registry  reg = LocateRegistry.getRegistry();\n
+    \       reg.bind(\"Price\", stub);\n    }\n}\n\n\nクライアント側実装（Client.java）\n\nimport
+    java.rmi.registry.*;\n\npublic class Client {\n    public static void main(String[]
+    args) throws Exception {\n        String host = (args.length &lt; 1)? null : args[0];\n
+    \       Registry reg = LocateRegistry.getRegistry(host);\n        Price stub =
+    (Price) reg.lookup(\"Price\");\n        long now = System.currentTimeMillis();\n
+    \       for (int i = 0; i &lt; 10000; i++) {\n            stub.priceString(1000,
+    20);\n        }\n        System.out.printf(\"%d ms%n\", System.currentTimeMillis()
+    - now);\n    }\n}\n"
+  :tags:
+  - RMI
+  :references:
+    :url: 
+    :title: 
+- :id: '2236'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2236
+  :user_name: miyamuko
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/382/
+  :language: Ruby
+  :time: 2007/08/16 14:29 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Rinda で実装してみました。\r\nまず、ruby ts.rb でタプルスペースを起動します。タプルスペースは黒板みたいなものです。\r\n次に
+    ruby server.rb でサーバを起動。\r\n最後に ruby client.rb でクライアントを起動します。\r\nserver.rb と client.rb
+    の起動順は逆でもokです。\r\nserver.rb を複数個起動することもできます。もちろん複数プロセスで処理しますし、途中から起動してもokです。\r\n#
+    でも全然スケールしないですけど。\r\n\r\n・10000回の実行結果\r\n 　・サーバ1プロセス: 1分 (CPU 使用率 60%ぐらい)\r\n 　・サーバ2プロセス:
+    1分 (同上)\r\n 　　全然スケールしない。。。\r\n・Intel Core Duo 1.66GHz、メモリ1G\r\n・同一サーバ\r\n・ruby
+    1.8.6 (2007-03-13 patchlevel 0) [i386-mswin32]\r\n</pre>\n\t"
+  :code: |
+    --[ts.rb]----------------------------------------
+
+    require 'rinda/tuplespace'
+
+    $ts = Rinda::TupleSpace.new
+    DRb.start_service('druby://:1234', $ts)
+    puts DRb.uri
+    DRb.thread.join
+
+    -- [server.rb] --------------------------------------
+
+    require 'rinda/tuplespace'
+
+    class Integer
+      def commaize
+        to_s.gsub(/(\d)(?=(?:\d\d\d)+(?!\d))/, '\1,')
+      end
+    end
+
+    def pricestring(price, discount)
+      "販売価格 %s円 (定価%s円から%d%%引き)" % [(price*(100-discount)/100).commaize, price.commaize, discount]
+    end
+
+    DRb.start_service
+    $ts = DRbObject.new_with_uri('druby://localhost:1234')
+    loop {
+      req = $ts.take([:pricestring, nil, nil])
+      price, discount = req[1..2]
+      $ts.write([:pricestring_result, price, discount, pricestring(price, discount)])
+      print "."
+    }
+
+    -- [client.rb] ---------------------------------------
+
+    require 'rinda/tuplespace'
+    require "benchmark"
+
+    DRb.start_service
+    $ts = DRbObject.new_with_uri('druby://localhost:1234')
+    puts Benchmark.measure {
+      10000.times {
+        $ts.write([:pricestring, 2000, 20])
+        r = $ts.take([:pricestring_result, 2000, 20, nil])
+        print "."
+      }
+    }
+  :tags:
+  - rinda
+  :references:
+    :url: /web/20090404175547/http://www.druby.org/ilikeruby/d208.html
+    :title: ''
+- :id: '2238'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2238
+  :user_name: yuin
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/08/16 15:35 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>ScalaでActorを使って。\n</p>\n<p>そもそも非同期に使うのがメインなものなので、同期でやるなんて初めてでした。!?とreplyを使うと同期でメッセージを送受信できます。\n</p>\n<p>が・・・直列で使うと遅いですね。\n</p>\n<ul>\n<li>\n
+    \    CPU:Athlon 3000+\n </li>\n\n <li>\n     RAM: 1G\n </li>\n\n <li>\n     同一ホスト\n
+    </li>\n</ul>\n<p>で21218 msでした。直列に呼び出すなら素直にRMI使ったほうがいいですね。\n</p>\n\n\n\n\t"
+  :code: "import scala.actors._\nimport scala.actors.Actor._\nimport scala.actors.remote._\nimport
+    scala.actors.remote.RemoteActor._\nimport java.io.ByteArrayOutputStream\n\nval
+    PORT = 9010\n\nif(args.length&gt;0 &amp;&amp; args(0) == \"server\") {\n//server
+    side\n\n  println(\"server:start\")\n  actor {\n    alive(PORT)\n    register('pricestring,
+    self)\n    loop {\n      react{ \n        case (price:int, p:int) =&gt; \n          val
+    s = new ByteArrayOutputStream\n          Console.withOut[unit](s){\n            printf(\"\\u8ca9\\u58f2\\u4fa1\\u683c
+    {0}\\u5186\\uff08\\u5b9a\\u4fa1{1}\\u5186\\u304b\\u3089{2}%\\u5f15\\u304d\\uff09\",\n
+    \             (price*(1-p.toFloat/100)).ceil, price, p)\n          }\n          reply(s.toString)\n
+    \     }\n    }\n  }\n\n}else {\n//client side\n\n  val clientActor = actor {\n
+    \   val c = select(Node(\"127.0.0.1\", PORT), 'pricestring)\n    loop {\n      react
+    {\n        case r@(i:int,j:int) =&gt; reply((c!?r))\n      }\n    }\n  }\n\n  import
+    scala.testing.Benchmark\n  val test = new Benchmark {\n    def run:unit = {\n
+    \     var i = -1;while({i= i+1; i&lt;10000}) {\n        clientActor !? ((2000,
+    20))\n      }\n      return ()\n    }\n  }\n  println(test.runBenchmark(1)(0)+\"
+    ms\")\n  System.exit(0)\n}\n"
+  :tags:
+  - rolcaol
+  :references:
+    :url: 
+    :title: 
+- :id: '2239'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2239
+  :user_name: 沢渡 みかげ
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/101/
+  :language: Erlang
+  :time: 2007/08/16 15:43 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">普通にErlangのプロセス間通信を使って実装してみました．\r\n夏休み中なのでとりあえず自宅マシンで測定．\r\n\r\n・Intel(R)
+    Xeon(R) CPU 5130  @ 2.00GHz\r\n・同一サーバ内\r\n・Erlang 5.5.4\r\n\r\nで 1.04秒くらいでした．\r\n\r\nErlangのプロセス間通信は関数呼び出しの形になっていないので，\r\n呼び出し側が引数をメッセージで送り，\r\nそれを受け取ったサーバが呼び出し側に戻値をメッセージで\r\n送り返す形で実装しています．\r\n\r\n\r\nサーバ側\r\n&gt;
+    erl -noshell -name server@127.0.0.1 -s rcall_s start\r\n\r\n\r\nクライアント側\r\n&gt;
+    time erl -noshell -name client@127.0.0.1 -s rcall_c main -s init stop\r\nremote
+    pid &lt;4053.36.0&gt;\r\nret = bench_ok\r\n1.044240 sec.\r\n\r\nreal    0m2.352s\r\nuser
+    \   0m0.908s\r\nsys     0m0.156s\r\n</pre>\n\t"
+  :code: |
+    ==== rcall_s.erl
+
+    -module(rcall_s).
+    -export([start/0, init/0]).
+
+    start() -&gt;
+      proc_lib:start(?MODULE, init, []),
+      ok.
+
+    init() -&gt;
+      global:register_name(calc, self()),
+      proc_lib:init_ack(ok),
+      loop().
+
+    loop() -&gt;
+      receive
+        {From, Price, Discount} -&gt;
+          From ! calc(Price, Discount)
+      end,
+      loop().
+
+
+    calc(Price, Discount) -&gt;
+      lists:flatten(io_lib:format("販売価格 ~s円（定価~s円から~w%引き）",
+        [comma(Price * (100-Discount) div 100), comma(Price), Discount])).
+
+
+    comma([N1, N2, N3, N4 | RestN], Acc) -&gt;
+      comma([N4 | RestN], [",", N3, N2, N1 | Acc]);
+    comma(RestN, Acc) -&gt;
+      lists:flatten([lists:reverse(RestN), Acc]).
+
+    comma(N) when is_integer(N) -&gt;
+      comma(lists:reverse(integer_to_list(N)), []).
+
+
+    ==== rcall_c.erl
+
+    -module(rcall_c).
+    -export([main/0, bench/2]).
+
+    main() -&gt;
+      init(),
+      Pid = global:whereis_name(calc),
+      io:format("remote pid ~w~n", [Pid]),
+      {Time, Value} = timer:tc(?MODULE, bench, [Pid, 10000]),
+      io:format("ret = ~w~n~f sec.~n", [Value, Time/1000000]).
+
+    init() -&gt;
+      net_adm:ping('server@127.0.0.1'),
+      global:sync().
+      % すぐにglobalnameが反映されないので，
+      % pingしたあとsyncしてから利用する
+
+    bench(_, 0) -&gt;
+      bench_ok;
+    bench(Pid, N) -&gt;
+      % 送信元のPIDを知らせないと送り返せない
+      Pid ! {self(), 2000, 20},
+      receive
+        _RetValue -&gt;
+          ok
+      end,
+      bench(Pid, N-1).
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2240'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2240
+  :user_name: hamano
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/25/
+  :language: C
+  :time: 2007/08/16 16:31 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">C言語 + libxmlrpc（サーバーは apache 経由のCGI)で実装しました。\r\nサーバーサイドのスペック\r\n*
+    Celeron 1.3GHz\r\n* メモリ1G\r\n* xmlrpc-c-1.11.00\r\n11.285 秒でした\r\n\r\n最初はシリアルに問い合わせてみたのですが目も当てられないぐらい遅かったので非同期dで
+    100発 × 100回 というようにパラレルに問い合わせるようにしました。\r\nあとは apache のチューニングでもう少し早くなりそうです。(prefork
+    だったので)</pre>\n\t"
+  :code: "/* サーバー側 CGIコード */\n#include&lt;stdio.h&gt;\n#include&lt;stdlib.h&gt;\n#include&lt;string.h&gt;\n#include&lt;xmlrpc.h&gt;\n#include&lt;xmlrpc_cgi.h&gt;\n\nstatic
+    void int2cstr(int num, char *str)\n{\n    int i, j;\n    char buf[16];\n    size_t
+    len;\n    snprintf(buf, sizeof(buf), \"%d\", num);\n    len = strlen(buf);\n    for(i=j=0;
+    i&lt;len; i++){\n        str[j++] = buf[i];\n        if(i != len - 1 &amp;&amp;
+    (len - i - 1) % 3 == 0) str[j++] = ',';\n    }\n    str[j] = '\\0';\n}\n\nstatic
+    xmlrpc_value *pricestring(xmlrpc_env *env, xmlrpc_value *param_array,\n                                 void
+    *user_data)\n{\n    xmlrpc_int32 price, discount;\n    int value;\n    char str[256],
+    value_str[16], price_str[16];\n\n    xmlrpc_parse_value(env, param_array, \"(ii)\",
+    &amp;price, &amp;discount);\n    if(env-&gt;fault_occurred) return NULL;\n    value
+    = price - (price * discount / 100);\n\n    int2cstr(price, price_str);\n    int2cstr(value,
+    value_str);\n    snprintf(str, sizeof(str),\n             \"販売価格 %s円 (定価%s円から%d%引き)\",\n
+    \            value_str, price_str, discount);\n    return xmlrpc_build_value(env,
+    \"s\", str);\n}\n\nint main (int argc, char **argv)\n{\n    xmlrpc_cgi_init(XMLRPC_CGI_NO_FLAGS);\n
+    \   xmlrpc_cgi_add_method_w_doc(\"pricestring\", &amp;pricestring, NULL,\n                                \"s:ii\",
+    \"Add two integers.\");\n    xmlrpc_cgi_process_call();\n    xmlrpc_cgi_cleanup();\n
+    \   return EXIT_SUCCESS;\n}\n\n/* クライアント側コード */\n#include &lt;stdio.h&gt;\n#include
+    &lt;stdlib.h&gt;\n#include &lt;xmlrpc.h&gt;\n#include &lt;xmlrpc_client.h&gt;\n\n#define
+    XMLRPC_URL \"http://192.168.0.13/pricestring.cgi\"\n\nstatic void print_state_name_callback
+    (char *server_url,\n                       char *method_name,\n                       xmlrpc_value
+    *param_array,\n                       void *user_data,\n                       xmlrpc_env
+    *env,\n                       xmlrpc_value *result)\n{\n    char *str;\n    if(env-&gt;fault_occurred)
+    return;\n    xmlrpc_parse_value(env, result, \"s\", &amp;str);\n    if(env-&gt;fault_occurred)
+    return;\n    printf(\"%s\\n\", str);\n}\n\nint main (int argc, char **argv)\n{\n
+    \   int i, j;\n    \n    xmlrpc_client_init(XMLRPC_CLIENT_NO_FLAGS, NULL, NULL);\n
+    \   for(i = 0; i &lt; 100; i++){\n        for(j = 0; j &lt; 100; j++){\n            xmlrpc_client_call_asynch(XMLRPC_URL,
+    \"pricestring\",\n                                      print_state_name_callback,
+    NULL,\n                                      \"(ii)\",\n                                      (xmlrpc_int32)2000,
+    (xmlrpc_int32)20);\n        }\n        xmlrpc_client_event_loop_finish_asynch();\n
+    \   }\n    xmlrpc_client_cleanup();\n    return 0;\n}\n"
+  :tags:
+  - XML-RPC
+  :references:
+    :url: 
+    :title: 
+- :id: '2241'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2241
+  :user_name: nobsun
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/16 17:17 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Gaucheのコードを見て思いついた。\r\nサーバー側の  ghci を ssh で起こす。\r\n自宅のクライアントプログラムからインターネットにあるサーバーへアクセスして\r\npricestring
+    を 10000回実行、結果の文字列10000行をプログラムで受けとる。 </pre>\n\t"
+  :code: "-- サーバー側 pricestring.hs\n\nimport qualified Data.UTF8 as U\nimport Data.List\n\npricestring
+    :: Int -&gt; Int -&gt; String\npricestring x y = \"販売価格 \"++h++\" 円 (定価 \"++t++\"
+    円から \"++r++\" %引き)\"\n  where  h = comint (x*(100-y) `div` 100)\n         t =
+    comint x \n         r = comint y\n\ncomint :: Int -&gt; String\ncomint = reverse
+    . concat . intersperse \",\" . slice 3 . reverse . show\n\nslice :: Int -&gt;
+    [a] -&gt; [[a]]\nslice n = unfoldr phi\n   where phi [] = Nothing\n         phi
+    xs = Just $ splitAt n xs\n\n-- クライアント側\n\nmodule Main (main) where\n\nimport Data.List\nimport
+    Data.Char\nimport qualified Data.UTF8 as U\nimport System.IO\nimport System.Process\n\nremote
+    = \"foo.example.org\"\n\nmain :: IO ()\nmain = do { (i,o,e,p) &lt;- runInteractiveCommand
+    \"ssh \"++host++\" ghci -v0 pricestring.hs\"\n          ; cs &lt;- hGetContents
+    o\n          ; es &lt;- hGetContents e\n          ; hPutStrLn i \"U.putStr $ unlines
+    $ map (uncurry pricestring) $ replicate 10000 (2000,20)\"\n          ; hFlush
+    i\n          ; hPutStrLn i \":q\"\n          ; hFlush i\n          ; putStr cs\n
+    \         ; putStr es\n          }\n\nloop0 h = do { l &lt;- getLine\n            ;
+    if \"&gt; \" `isSuffixOf` l then return ()\n              else loop0 h\n            }\n\n--\n{-\n*Main&gt;
+    :main\n販売価格 1,600 円 (定価 2,000 円から 20 %引き)\n販売価格 1,600 円 (定価 2,000 円から 20 %引き)\n販売価格
+    1,600 円 (定価 2,000 円から 20 %引き)\n...\n... 結果が10000行\n...\n(1.04 secs, 183701028
+    bytes)\n-}\n"
+  :tags:
+  - ghci
+  - ssh
+  :references:
+    :url: 
+    :title: 
+- :id: '2242'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2242
+  :user_name: nobsun
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/08/16 17:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あれ？、コードのインデントが変になっちゃった。</pre>\n\t"
+  :code: ''
+  :tags:
+  - インデント
+  :references:
+    :url: 
+    :title: 
+- :id: '2243'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2243
+  :user_name: miyamuko
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/382/
+  :language: 
+  :time: 2007/08/16 18:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">よくよく考えると、このコードだと\r\n以下のような処理がシーケンシャルに\r\n行われるのでスケールしなくて当然ですね。\r\n\r\n1.
+    client が [:pricestring, ...] を write\r\n2. client が [:pricestring_result] を take\r\n3.
+    server が [:pricestring, ...] をtake して処理\r\n4. server が [:pricestring_result, ]
+    を write\r\n5. client の [:pricestring_result] の take が帰ってくる\r\n6. 1 にもどる\r\n\r\n\r\nで、処理を変えて
+    client の [:pricestring] を write する処理と \r\n[:pricestring_result] を take する処理を\r\n別プロセスにしてみたけど、大して変わらなかった。。。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2246'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2246
+  :user_name: 匿名
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/08/17 03:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">別CPUのマシンで試してみました。\r\n\r\n一万回呼び出しにかかった時間：1606
+    ms\r\n・サーバとクライアントのCPU・メモリ： Intel Pentium M processor 1.60GHz・メモリ 2GB\r\n・同一サーバ内での実行か別サーバでの実行か：同一サーバ内\r\n・言語のバージョン：Java
+    HotSpot(TM) Client VM build 1.6.0_02-b06\r\n・ミドルウェアを使用している場合，その名前とバージョン：使用していない</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2247'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2247
+  :user_name: にしお
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/17 04:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">直しておきました。\r\n\r\n原因は部分的にタブ文字が混ざっていたことでした。\r\nどう書くorgではタブ文字をスペース4個で表示しているので、\r\n8スペースの環境でタブとスペースの混在したコードを作ると\r\nタブの所だけへこむことになります。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2248'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2248
+  :user_name: nobsun
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/08/17 04:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">測定結果と環境を書きわすれていました．\r\n\r\n測定\r\n% time runhaskell
+    rpc.hs \r\n...10000行の出力...\r\nrunhaskell rpc.hs  0.93s user 0.47s system 12% cpu
+    10.790 total\r\n\r\n通信\r\n  下り 8Mbps (best effort) の回線でインターネット接続\r\nサーバー\r\n  CPU
+    \   : AMD Sempron 2600+ 1.61 GHz \r\n  メモリ : 500MB\r\n  言語   : ghc-6.6\r\nクライアント\r\n
+    \ CPU    : Intel Pentium M 2.13 GHz\r\n  メモリ : 2GB\r\n  言語   : ghc-6.6.1\r\nミドルウェア\r\n
+    \ ssh\r\n</pre>\n\t"
+  :code: ''
+  :tags:
+  - ghci
+  - ssh
+  :references:
+    :url: 
+    :title: 
+- :id: '2262'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2262
+  :user_name: theoria
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/316/
+  :language: Scheme
+  :time: 2007/08/17 07:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Shiro さんの実装に対抗して速度重視のものを書いてみました。ソケットによって、二つの引数を渡しているだけですが、 RPC ということにしておきます。実験的なコードなので、安全性は考えていません。ソケットを閉じてさえいません。\r<br><br>実行速度はやはり速く、 Celeron 2GHz のマシン(同一)で、 /dev/null  に出力したもので、大体3秒程度でした。実行結果は以下のような感じ。\r<br><br>theo-desktop% cd workspace/doukaku \r<br>theo-desktop% ./rpc-server.scm&amp;\r<br>[1] 22494\r<br>theo-desktop% ./rpc-client.scm\r<br># 一万行の出力を省略\r<br>;(time (dotimes (i *call-times*) (format out \"~d ~d\\n\" (u16vector-ref nv ...\r<br>; real  29.516\r<br>; user   1.170\r<br>; sys    1.100\r<br>theo-desktop% \r<br>[1]  + done       ./rpc-server.scm\r<br>theo-desktop% ./rpc-server.scm&amp;\r<br>[1] 22499\r<br>theo-desktop% ./rpc-client.scm&gt;/dev/null \r<br>;(time (dotimes (i *call-times*) (format out \"~d ~d\\n\" (u16vector-ref nv ...\r<br>; real   3.434\r<br>; user   0.960\r<br>; sys    0.840\r<br>theo-desktop% \r<br>[1]  + done       ./rpc-server.scm\r<br>theo-desktop% \r<br><br>*サーバとクライアントのCPU・メモリ\r<br>  メモリ: 749.1MB\r<br>  プロセッサ: Intel Celeron CPU 2.00 GHz\r<br><br>*同一サーバ内での実行か別サーバでの実行か\r<br>  同一。\r<br><br>*言語のバージョン\r<br>  Gauche scheme interpreter, version 0.8.10 [utf-8,pthreads]\r<br><br>*ミドルウェアを使用している場合，その名前とバージョン\r<br>  特にないと思われる。\r<br><br>このプログラムを書くにあたって Gauche (at Lingr) において、びさん、 rui さん、 masa_edw さん、 leque さんらに相談にのっていただきました。どうもありがとう！\r<br>"
+  :code: ";; クライアント\n#!/usr/bin/env gosh\n(use gauche.net)\n(use srfi-27)\n(use gauche.uvector)\n\n(define
+    *call-times* 10000)\n\n(define (random-integers size maxnum)\n  (let1 v (make-u16vector
+    size)\n    (dotimes (i size)\n      (u16vector-set! v i (random-integer maxnum)))\n
+    \   v))\n\n(define (main args)\n  (let ((nvec (random-integers *call-times* (expt
+    2 16)))\n\t(mvec (random-integers *call-times* 100)))\n    (call-with-client-socket\n\t(make-client-socket
+    'inet \"localhost\" 3000)\n      (lambda (in out)\n\t(time \n\t (dotimes (i *call-times*)\n\t
+    \  (format out\n\t\t   \"~d ~d\\n\"\n\t\t   (u16vector-ref nvec i) (u16vector-ref
+    mvec i))\n\t   (flush out)\n\t   (print (read-line in))\n\t   ))))))\n\n;; サーバー\n\n(let*
+    ((server (make-server-socket 'inet 3000 :reuse-addr? #t))\n       (sock (socket-accept
+    server))\n       (in (socket-input-port sock :buffering :modest))\n       (out
+    (socket-output-port sock)))\n  (with-ports\n   in out #f\n   (lambda ()\n     (do
+    ((n (read) (read))\n          (m (read) (read)))\n         ((or (eof-object? n)
+    (eof-object? m)))\n       (format out \"販売価格 ~,,',,4:d (定価~,,',,4:d円から~d%引き)\"\n
+    \              (ceiling (*. n (/. (-. 100 m) 100)))\n               n m)\n       (newline)\n
+    \      (flush)))))\n"
+  :tags:
+  - UnixSocket
+  :references:
+    :url: 
+    :title: 
+- :id: '2280'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2280
+  :user_name: jz5
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/344/
+  :language: VB
+  :time: 2007/08/17 13:19 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">.NET Remoting です。既にC#で出てますね。\r\n\r\nCPU: Athlon
+    64 X2 5600+  メモリ: 4GB\r\n同一マシン内で14秒ぐらいです。</pre>\n\t"
+  :code: |
+    ' Remote Object
+    Public Class RemoteClass
+        Inherits MarshalByRefObject
+        Public Function PriceString(ByVal value As Integer, ByVal saving As Integer) As String
+            Return String.Format("販売価格 {0}円 (定価{1}円から{2}%引き)", (value * (100 - saving) / 100).ToString("N0"), value.ToString("N0"), saving)
+        End Function
+    End Class
+    　
+    ' Server
+    Imports System.Runtime.Remoting
+    Imports System.Runtime.Remoting.Channels
+
+    Module ServerModule
+        Sub Main()
+            ChannelServices.RegisterChannel(New Http.HttpChannel(8088), False)
+            RemotingServices.Marshal(New RemoteClass, "Price")
+            Console.ReadLine()
+        End Sub
+    End Module
+
+    ' Client
+    Imports System.Runtime.Remoting
+    Imports System.Runtime.Remoting.Channels
+
+    Module ClientModule
+        Sub Main()
+            ChannelServices.RegisterChannel(New Http.HttpChannel, False)
+            Dim t As DateTime = Now
+            For i As Integer = 1 To 10000
+                CType(Activator.GetObject(GetType(RemoteClass), "http://localhost:8088/Price"), RemoteClass).PriceString(2000, 20)
+            Next
+            Console.WriteLine(Now.Subtract(t).TotalMilliseconds)
+        End Sub
+    End Module
+  :tags:
+  - .NET_Remoting
+  - VB8.0
+  :references:
+    :url: 
+    :title: 
+- :id: '2288'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2288
+  :user_name: sumim
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/17 15:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">rST をインストールした Squeak Smalltalk で。\r\n\r\n10000
+    回はきつかったので 1000 回で計測。約 20 秒。\r\n1.0Ghz PowerPC（サーバ）, 1.5Ghz VIA C7M（クライアント）; WiFi
+    11Mbps 経由</pre>\n\t"
+  :code: |
+    "サーバ側定義"
+    Object subclass: #Doukaku
+
+    Doukaku class &gt;&gt; pricestring: priceInt discount: discInt
+        | result data |
+        result := (priceInt * (100 - discInt) / 100) asInteger.
+        data := {result. priceInt. discInt} collect: [:int | int asStringWithCommas].
+        ^'販売価格 {1}円 (定価{2}円から{3}%引き)' format: data
+
+
+    "サーバ側スクリプト"
+    RSTBroker startOnPort: 9999.
+    RSTBroker export: Doukaku named: 'doukaku'
+
+
+    "クライアント側スクリプト"
+    | doukaku timeToRun result |
+    doukaku := 'doukaku@xx.xx.xx.xx:9999' asLocalObject.
+    timeToRun := [1000 timesRepeat: [
+        result := doukaku pricestring: 20000 discount: 20]
+    ] timeToRun.
+    ^{result. timeToRun}
+    "=&gt; #('販売価格 16,000円 (定価20,000円から20%引き)' 19677) "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: /web/20090404175547/http://wiki.squeak.org/squeak/2288
+    :title: rST - Remote Smalltalk
+- :id: '2299'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2299
+  :user_name: 匿名
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/08/18 05:19 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  JAX-WSによる実装です。SOAP1.2に準拠しているとの記述がありますので、タグはSOAPとします（他言語との相互接続は確認していません）。\r<br><br>一万回呼び出しにかかった時間：73255 ms\r<br>・サーバとクライアントのCPU・メモリ：Efficeon 998 MHz・メモリ 232MB\r<br>・同一サーバ内での実行か別サーバでの実行か：同一サーバ内\r<br>・言語のバージョン：Java HotSpot(TM) Client VM build 1.6.0_02-b06\r<br>・ミドルウェアを使用している場合，その名前とバージョン：使用していない\n\t"
+  :code: |
+    サーバ側実装
+
+    package org.example.jaxws;
+
+    import javax.jws.WebService;
+
+    @WebService
+    public class Sample {
+        public String priceString(int price, int discount) {
+            return String.format("販売価格 %,d円 (定価 %,d円から %d%%引き)",
+                            price * (100 - discount) / 100, price, discount);
+        }
+    }
+
+
+    サーバメイン
+
+    package org.example.jaxws;
+
+    import javax.xml.ws.Endpoint;
+
+    public class SampleMain {
+        public static void main(String[] args) {
+            Endpoint.publish("http://localhost:8080/Sample", new Sample());
+        }
+    }
+
+
+    クライアント側実装
+
+    package org.example.jaxws;
+
+    public class Client {
+        public static void main(String[] args) {
+            SampleService service = new SampleService();
+            Sample port = service.getSamplePort();
+            long start = System.currentTimeMillis();
+            for (int i = 0; i &lt; 10000; i++) {
+                port.priceString(2000, 20);
+            }
+            System.out.printf("%d ms%n", System.currentTimeMillis() - start);
+        }
+    }
+  :tags:
+  - SOAP
+  :references:
+    :url: 
+    :title: 
+- :id: '2337'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2337
+  :user_name: 匿名
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/08/20 03:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  別CPUのマシンで試してみました。\r<br><br>一万回呼び出しにかかった時間：24936 ms\r<br>・サーバとクライアントのCPU・メモリ： Intel Pentium M processor 1.60GHz・メモリ 2GB\r<br>・同一サーバ内での実行か別サーバでの実行か：同一サーバ内\r<br>・言語のバージョン：Java HotSpot(TM) Client VM build 1.6.0_02-b06\r<br>・ミドルウェアを使用している場合，その名前とバージョン：使用していない\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2493'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2493
+  :user_name: tea
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/402/
+  :language: Python
+  :time: 2007/08/25 02:30 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Twisted のPerspectiveBroker使ってみました。\r\n----\r\n#
+    1\r\nClient:\r\n OS: OpenBSD\r\n CPU: SUNW,UltraSPARC-IIi (rev 1.2) @ 299.768
+    MHz\r\n Python: 2.5 (r25:51908, Mar 11 2007, 13:48:09) \\n[GCC 3.3.5 (propolice)]\r\n
+    Twisted: 2.5.0\r\n\r\nServer:\r\n OS: FreeBSD release-6.2\r\n CPU: Intel Celeron
+    (634.78-MHz 686-class CPU)\r\n RAM: 254MB\r\n Python 2.4.4 (GCC3.4.6 FreeBSD 20060305)\r\n
+    Twisted: 2.5.0\r\n\r\n経路は100Base-TX\r\n\r\n 89.23s user 8.78s system 86% cpu 1:53.92
+    total\r\n\r\n----\r\n# 2 上記 Client環境、同一ホスト内\r\n 94.81s user 23.25s system 53%
+    cpu 3:42.37 total\r\n----\r\n# 3 同一ホスト内\r\n OS: CentOS\r\n CPU: Intel(R) Xeon(R)
+    2.66GHz\r\n RAM: 2GB\r\n Python: '2.5.1 (r251:54863, Jul 28 2007, 19:05:07) \\n[GCC
+    3.4.6 20060404 (Red Hat 3.4.6-8)]\r\n Twisted: 2.5.0\r\n\r\n 2.95s user 0.25s
+    system 52% cpu 6.133 total\r\n</pre>\n\t"
+  :code: "# ※ 文字コード等は、各環境に合わせて下さい。\n\n## commify.py \n#  参考： http://pleac.sourceforge.net/pleac_python/numbers.html\n#
+    Putting Commas in Numbers\n\ndef simple_glue(*funcs):\n    \"glue functions: simple_glue(f,
+    g, h) -&gt; lambda arg: h(g(f(arg)))\"\n    return lambda arg: reduce(lambda n,m:m(n),
+    funcs, arg)\n\ndef digits_div_by(num):\n    return lambda xs: reduce(lambda (n,m),i:
+    (n+[xs[m:i]],i),\n                             reversed(xrange(len(xs),0,-num)),\n
+    \                            ([],0))[0]\n\ncommify = simple_glue(str, digits_div_by(3),
+    \",\".join)\n\n\n##############################\n# サーバー\n\n# -*- coding: euc-jp
+    -*-\nfrom twisted.spread import pb\nfrom twisted.internet import reactor\nfrom
+    commify import commify\n\nPORT = 10800\nFORMAT = u\"販売価格%(price)s円 (定価 %(original_price)s円から%(discount)d％引き)\"\n\nclass
+    PriceStringService(pb.Root):\n    def remote_pricestring(self, original_price,
+    discount):\n        price = commify(int(original_price * ((100.0 - discount) /
+    100.0)))\n        original_price = commify(original_price)\n        return FORMAT
+    % vars()\n\nif __name__ == '__main__':\n    reactor.listenTCP(PORT, pb.PBServerFactory(PriceStringService()))\n
+    \   reactor.run()\n\n\n##############################\n# クライアント\n# ホスト・アドレス、ポート番号を指定して実行。\n\n#
+    -*- coding: euc-jp -*-\nimport sys\nimport itertools\nfrom twisted.spread.pb import
+    PBClientFactory\nfrom twisted.internet import reactor\n\nif __name__ == '__main__':\n
+    \   host = sys.argv[1]\n    port = int(sys.argv[2])\n\n    def failure(_):\n        reactor.stop()\n\n
+    \   def connected(perspective):\n        counter = itertools.count()\n\n        def
+    callloop():\n            d = perspective.callRemote(\"pricestring\", 2000, 20)\n
+    \           d.addCallbacks(success, failure)\n\n        def success(result):\n
+    \           print result.encode(\"euc-jp\")\n            if counter.next() &lt;
+    10000:\n                callloop()\n            else:\n                reactor.stop()\n\n
+    \       callloop()\n\n    factory = PBClientFactory()\n    reactor.connectTCP(host,
+    port, factory)\n    factory.getRootObject().addCallbacks(connected, failure)\n
+    \   reactor.run()\n"
+  :tags:
+  - Twisted
+  :references:
+    :url: /web/20090404175547/http://ja.doukaku.org/45/flatten/Grokking%20Twisted
+    :title: http://www.artima.com/weblogs/viewpost.jsp?thread=156396
+- :id: '2497'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2497
+  :user_name: Mistfeal
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/153/
+  :language: PHP
+  :time: 2007/08/25 03:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">最初はfsockopenで開いて一行ずつ読み込んでいたのですが、\r\nあまりに遅いのでソケット関数で作り変えました。\r\n\r\n実行結果：23.0054550171
+    秒\r\n\r\n&lt;測定環境&gt;\r\n　サーバサイド\r\n　　CPU: Intel(R) Celeron(R) CPU 2.40GHz\r\n　　MEM:
+    256MB\r\n　　Apache2.0.52 + PHP4.3.9\r\n　クライアントサイド\r\n　　CPU: Intel(R) Celeron(R)
+    CPU 2.80GHz\r\n　　MEM: 512MB\r\n　　PHP4.4.4(Cli)\r\n　通信経路: 100Mbps Ethernet\r\n</pre>\n\t"
+  :code: "// サーバサイド\n&lt;?php\n$lprice = strip_tags($_POST[\"lprice\"]);\n$dcrate
+    = strip_tags($_POST[\"dcrate\"]);\n$dprice = $lprice - ($lprice * ( $dcrate /
+    100 ));\n\necho \"販売価格 \".number_format($dprice).\"円（定価\".number_format($lprice).\"円から\".$dcrate.\"%引き）\\n\";\n?&gt;\n\n//
+    クライアントサイド\n&lt;?php\n$host   = \"192.168.*.*\";\n$script = \"test/test_1.php\";\n$lprice
+    = 2000;\n$dcrate = 20;\n$st_time = msec();\nfor ( $i = 0; $i &lt; 10000; $i++
+    ) {\n\t$postdata = \"lprice=\".urlencode($lprice).\"&amp;dcrate=\".urlencode($dcrate);\n\t$send
+    \ = \"POST /$script HTTP/1.0\\n\";\n\t$send .= \"Content-type: application/x-www-form-urlencoded\\n\";\n\t$send
+    .= \"Content-Length: \".strlen($postdata).\"\\n\\n\";\n\t$send .= $postdata.\"\\n\\n\";\n\t$sct
+    = socket_create(AF_INET,SOCK_STREAM,SOL_TCP);\n\tsocket_connect($sct,$host,80);\n\tsocket_write($sct,$send,strlen($send));\n\t$result
+    = socket_read($sct,4096);\n\tlist($head,$body) = explode(\"\\r\\n\\r\\n\",$result);\n\techo
+    $body;\n\tsocket_close($sct);\n}\n$ed_time = msec();\n$total = $ed_time - $st_time;\necho
+    \"所要時間：$total 秒\\n\";\n\nfunction msec() {\n\tlist($msec,$sec) = explode(\" \",
+    microtime());\n\treturn $sec + $msec;\n}\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2500'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2500
+  :user_name: tea
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/402/
+  :language: Python
+  :time: 2007/08/25 05:22 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">OS: Windows XP sp2\r\nCPU: Intel Celeron 1.4GHz\r\nRAM:
+    480MB\r\nPython: 2.5\r\nPyRO: 3.7\r\n\r\n同一サーバー内。実行時間 20秒</pre>\n\t"
+  :code: |
+    #### Server
+    # -*- coding: utf-8 -*-
+
+    from Pyro.core import ObjBase, Daemon, initServer
+
+    def calc_sales_price(price, discount):
+        return int(price * (1-discount*0.01))
+
+    def commify(amount, num=3, sep=","):
+        def _commify(s):
+            a,b = s[:-num],s[-num:]
+            return commify(a)+sep+b if a else b
+        return _commify(str(amount))
+
+
+    class PriceString(ObjBase):
+        def pricestring(self, price, discount):
+            FORMAT = u"販売価格%(sales_price)s円 (定価 %(price)s円から%(discount)d％引き)"
+            sales_price = commify(calc_sales_price(price, discount))
+            price = commify(price)
+            return FORMAT % vars()
+
+    if __name__ == '__main__':
+        initServer()
+        daemon = Daemon()
+        daemon.connect(PriceString(), "pricestring")
+        daemon.requestLoop()
+
+
+    #### Client
+    from Pyro.core import getProxyForURI
+
+    if __name__ == '__main__':
+        remote = getProxyForURI(r"PYROLOC://localhost:7766/pricestring")
+        for _ in xrange(10000):
+            print remote.pricestring(2000, 20)
+  :tags:
+  - PyRO
+  :references:
+    :url: 
+    :title: 
+- :id: '2501'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2501
+  :user_name: tea
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/402/
+  :language: 
+  :time: 2007/08/25 05:24 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">PyROライブラリのURL書き忘れてました。</pre>\n\t"
+  :code: ''
+  :tags:
+  - PyRO
+  :references:
+    :url: /web/20090404175547/http://pyro.sourceforge.net/
+    :title: Python Remote Objects
+- :id: '2504'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2504
+  :user_name: tea
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/402/
+  :language: Python
+  :time: 2007/08/25 09:45 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Rpyc (Remote Python call) による実装です。\r\n\r\n\r\nOS:
+    Windows XP\r\nCPU: Celeron 1.4GHz\r\nRAM: 480MB\r\nPython: 2.5\r\nRpyc: 2.6\r\n\r\n同一サーバー内でテスト。\r\n実行時間:
+    約12秒</pre>\n\t"
+  :code: |
+    # -*- coding: utf-8 -*-
+
+    # ./pricestring.py
+    # サーバーj実行時のsys.pathの通ったところに置く。
+    # サーバーの実行は、
+    # &gt; python -m Rpyc.Servers.simple_server.py
+
+    def Y(f):
+        "simple Y-combinator"
+        _f = lambda v: f(_f, v)
+        return _f
+
+    def commify(v, num=3, sep=","):
+        return Y(lambda f,s:(lambda a,b:(f(a)+sep+b if a else b))(s[:-num],s[-num:]))(str(v))
+
+    def calc_sales_price(price, discount):
+        return int((price/100.0) * (100-discount))
+
+    def pricestring(price, discount):
+        sales_price = commify(calc_sales_price(price, discount))
+        price = commify(price)
+        return u"販売価格%(sales_price)s円 (定価%(price)s円から%(discount)d%%引き)" % vars()
+
+    #### クライアント
+
+    from time import sleep
+    from Rpyc import SocketConnection, Async
+
+    connection = SocketConnection("localhost")
+    pricestring = Async(connection.modules.pricestring.pricestring)
+    for _ in xrange(10000):
+        c = pricestring(2000,20)
+        while not c.is_ready:
+            sleep(0.1)
+        print c.result
+  :tags:
+  - Rpyc
+  :references:
+    :url: /web/20090404175547/http://rpyc.wikispaces.com/
+    :title: Remote Python Call
+- :id: '2518'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2518
+  :user_name: tea
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/402/
+  :language: Python
+  :time: 2007/08/26 06:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">お題とは関係ないけど、commify関数に使ってる、\r\nY-combinatorの表記の手続きなし版。</pre>\n\t"
+  :code: |
+    def Y(f):
+        return (lambda g: lambda arg: f(g(g),arg))((lambda g: lambda arg: f(g(g),arg)))
+
+
+    # デコレータとしての利用例
+        @Y
+        def fact(f, n):
+            return 1 if n == 0 else n*f(n-1)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2552'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/2552
+  :user_name: tea
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/402/
+  :language: Python
+  :time: 2007/08/27 06:28 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Thrift使ってみました。release-20070401版です。\r\nサーバ／クライアント共にPython。\r\n初めてなので、Thriftの作法等は、まだよく解ってません。\r\n\r\n※注意点：
+    サーバー・クライアントのスクリプト 共に、\r\ngen-py以下をモジュール探索対象のPATHに含めること。\r\nPYTHONPATHに設定、もしくはモジュールのインポート前に、下のコードを追加。\r\nimport
+    sys\r\nsys.path.append(\"./gen-py\")\r\n\r\n※ メモ\r\nC++のTNonblockingServerがlibeventを利用してるので、\r\nkqueueやepollが使える環境だと、パフォーマンス向上が期待できそうです。（未計測）\r\nThriftは、言語以外にも各言語毎にserverやprotocllも組み合わせて使うことが出来るみたいなので、\r\nC++/TNonblockingServer/boost.Pythonもやってみようかな。\r\n</pre>\n\t"
+  :code: "##############################\n# pricestring.thrift\n\nservice PriceStringService
+    {\n  string pricestring(1:i32 price, 2:i32 discount)\n}\n\n##############################\n#
+    Server\nfrom locale import format\n\nclass PriceStringHandler:\n    def pricestring(self,
+    price, discount):\n        calc_sales_price = lambda n,m: n*(1-(m*0.01))\n        commify
+    = lambda n: format(\"%d\", n, grouping=True)\n        template = u\"販売価格%s円 (%s円から%s％引き)\"\n
+    \       return (template % (commify(calc_sales_price(price,discount)), commify(price),
+    discount)).encode('utf-8')\n\nif __name__ == '__main__':\n    from locale import
+    setlocale, LC_NUMERIC\n    setlocale(LC_NUMERIC, '')\n\n    from pricestring import
+    PriceStringService\n    from thrift.transport.TSocket import TServerSocket\n    from
+    thrift.server.TServer import TSimpleServer\n\n    handler = PriceStringHandler()\n
+    \   processor = PriceStringService.Processor(handler)\n    server = TSimpleServer(processor,
+    TServerSocket(9090))\n    server.serve()\n\n##############################\n#
+    Client\n# データはutf-8 で渡ってきます。&lt; client.pricestring\n# 端末に表示する時など、文字コードは適切なものにエンコードしてください。\n\nif
+    __name__ == '__main__':\n \n    from pricestring import PriceStringService\n\n
+    \   from thrift import Thrift\n    from thrift.transport.TSocket import TSocket\n
+    \   from thrift.transport.TTransport import TBufferedTransport\n    from thrift.protocol.TBinaryProtocol
+    import TBinaryProtocol\n\n    transport = TBufferedTransport(TSocket(\"localhost\",
+    9090))\n    protocol = TBinaryProtocol(transport)\n    client = PriceStringService.Client(protocol)\n\n
+    \   transport.open()\n    for _ in xrange(10000):\n        print client.pricestring(2000,
+    20).decode('utf-8')\n    transport.close()\n"
+  :tags:
+  - Thrift
+  :references:
+    :url: /web/20090404175547/http://developers.facebook.com/thrift/
+    :title: Facebook Developers | Thrift
+- :id: '3153'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/3153
+  :user_name: tilde
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/446/
+  :language: Objective
+  :time: 2007/09/21 09:08 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">ＣＰＵ：　1.83 GHz Intel Core Duo\r\nメモリ：　2 GB\r\n実行：　　同一サーバ内\r\n１万回の実行時間：　1.936秒</pre>\n\t"
+  :code: "//--------------------------------------------------------------------------------\n//サーバ側のソースコード\n//ソースファイルのエンコーディングはUTF-8にしてください\n//--------------------------------------------------------------------------------\n\n#import
+    &lt;Foundation/Foundation.h&gt;\n\n@interface Server : NSObject {\n}\n- (NSString*)priceString:(NSNumber*)listPrice
+    :(NSNumber*)discount;\n@end\n\n@implementation Server\n- (NSString*)insertComma:(unsigned)number
+    {\n\tNSMutableString* result = [NSMutableString stringWithString:\n\t\t\t[[NSNumber
+    numberWithUnsignedInt:number] stringValue]];\n\t\n\tint length = [result length];\n\twhile
+    ( length &gt; 3 ) {\n\t\tlength -= 3;\n\t\t[result insertString:@\",\" atIndex:length];\n\t}\n\t\n\treturn
+    result;\n}\n\n- (NSString*)priceString:(NSNumber*)listPrice :(NSNumber*)discount
+    {\n\tNSString* format = [NSString stringWithUTF8String: \"販売価格 %@円 (定価%@円から%d%%%%引き)\"];\n\t\n\tunsigned
+    unsignedListPrice = [listPrice unsignedIntValue];\n\tunsigned unsignedDiscount
+    = [discount unsignedIntValue];\n\tunsigned unsignedRetailPrice = unsignedListPrice
+    * ( 100 - unsignedDiscount ) / 100;\n\t\n\tNSString* listPriceString = [self insertComma:unsignedListPrice];\n\tNSString*
+    retailPriceString = [self insertComma:unsignedRetailPrice];\n\t\n\treturn [NSString
+    stringWithFormat: format, retailPriceString, listPriceString, unsignedDiscount];\n}\n@end\n\nint
+    main (int argc, const char * argv[]) {\n    NSAutoreleasePool * pool = [[NSAutoreleasePool
+    alloc] init];\n\t\n\tServer* server = [[[Server alloc] init] autorelease];\n\tNSConnection*
+    connection = [NSConnection defaultConnection];\n\t[connection setRootObject:server];\n\t\n\tif
+    ( [connection registerName:@\"server\"] )\n\t\t[[NSRunLoop currentRunLoop] run];\n\t\n
+    \   [pool release];\n    return 0;\n}\n\n//--------------------------------------------------------------------------------\n//クライアント側のソースコード\n//コンパイルオプション：-std=gnu99\n//--------------------------------------------------------------------------------\n\n#import
+    &lt;Foundation/Foundation.h&gt;\n\n@protocol ServerProtocol\n- (NSString*)priceString:(NSNumber*)listPrice
+    :(NSNumber*)discount;\n@end\n\nint main (int argc, const char * argv[]) {\n    NSAutoreleasePool
+    * pool = [[NSAutoreleasePool alloc] init];\n\t\n\tNSDistantObject* distantObject
+    = [NSConnection\n\t\t\trootProxyForConnectionWithRegisteredName:@\"server\" host:nil];\n\t[distantObject
+    setProtocolForProxy:@protocol(ServerProtocol)];\n\t\n\tNSNumber* listPrice = [NSNumber
+    numberWithInt:2000];\n\tNSNumber* discount = [NSNumber numberWithInt:20];\n\t\n\tNSLog(
+    @\"start\" );\n\t\n\tfor ( int i = 0; i &lt; 10000; i++ )\n\t\t[distantObject
+    performSelector:@selector(priceString::) withObject:listPrice withObject:discount];\n\t\n\tNSLog(
+    @\"end\" );\n\t\n    [pool release];\n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3167'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/3167
+  :user_name: mc
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2007/09/25 10:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">とりあえず検索して使えそうなコードを探しそれを参考にして切った貼ったで\r\n作りました。\r\nsocket自体良く分かっていないため怪しいものができていると思います^^;\r\n\r\nできるだけ、処理系非依存にしたかったのですが、サーバ側は、SBCLの、\r\nsb-bsd-socketに依存しているので、残念ながらsbclでしか動きません。\r\n色々探している中で、usocketというものが使えそうだったので、クライアン\r\nト側は、usocketを使用して作成しました。こちらは、USOCKETがサポートして\r\nいる処理系なら大丈夫だと思います。\r\nUSOCKETはASDF-INSTALL可能です。\r\n\r\nサーバ:
+    Pentium 1GHz Mem 768MB\r\nクライアント: iBook G4 800MHz Mem 640MB\r\n通信経路: 100Mbps Ethernet\r\n言語:
+    SBCL 1.0.9 (サーバ/クライアント共に)\r\n\r\n参考(サーバ)\r\nhttp://paste.lisp.org/display/1376\r\n\r\n測定コード:\r\n
+    (time \r\n  (dotimes (i 10000)\r\n   (get-pricestring (random 30000) (random 105)
+    \"server\" 2000))\r\n   \r\n10,000回実行にかかった時間\r\n-------------------\r\nreal: 1202秒\r\nuser:
+    \  26秒\r\nsys:    11秒\r\n\r\n同一マシン(サーバ上)で実行\r\n-------------------\r\nreal: 66秒\r\nuser:
+    27秒\r\nsys:  10秒</pre>\n\t"
+  :code: ";; ================================================================\n;;
+    クライアント\n(defpackage doukaku-45 (:use :cl :usocket))\n(in-package :doukaku-45)\n\n(defun
+    get-pricestring (price discount% server port)\n  (with-client-socket (socket stream
+    server port)\n    (format stream \"(~D ~D)~%\" price discount%)\n    (force-output
+    stream)\n    (read-line stream)))\n\n;; ================================================================\n;;
+    サーバ\n;; (ファイルにセーブして、$ sbcl --load server.lisp のように実行し起動させます。\n(require :sb-bsd-sockets)\n(use-package
+    :sb-bsd-sockets)\n\n(defun return-discount-price (stream price discount%)\n  (let
+    ((discount-price (round (* price (/ (- 100 discount%) 100)))))\n    (format stream
+    \"販売価格 ~:D円（定価~:D円から~D%引き）\"\n\t    discount-price price discount%)))\n\n(defun
+    valid-input-p (input)\n  (and (consp input)\n       (= 2 (length input))\n       (every
+    #'numberp input)\n       (every (lambda (x) (&lt;= 0 x)) input)\n       (&lt;=
+    0 (cadr input) 100)))\n\n(defun get-server-socket (hostname port)\n  (let ((socket
+    (make-instance 'inet-socket :type :stream :protocol :tcp)))\n    (setf (sockopt-reuse-address
+    socket) t)\n    (socket-bind socket\n\t\t (host-ent-address (get-host-by-name
+    hostname))\n\t\t port)\n    (socket-listen socket 10)\n    socket))\n\n(defun
+    get-client-socket (server-socket)\n  (socket-accept server-socket))\n\n(defun
+    get-socket-stream (socket)\n  (socket-make-stream socket :input t :output t))\n\n(defun
+    close-socket (socket)\n  (socket-close socket))\n\n(defun doukaku-45-server (port)\n
+    \ (let ((socket (get-server-socket \"doritos\" port)))\n    (handler-case\n        (progn\n
+    \         (format t \"listening on ~D~%\" port)\n\t  (do* ((client (get-client-socket
+    socket) (get-client-socket socket))\n\t\t(stream (get-socket-stream client) (get-socket-stream
+    client)))\n\t       (())\n\t    (let ((in (read-from-string (read-line stream))))\n\t
+    \     (if (valid-input-p in)\n\t\t  (let ((mesg (apply #'return-discount-price
+    nil in)))\n\t\t    (print mesg) (terpri) ;サーバ側確認用\n\t\t    (princ mesg stream))\n\t\t
+    \ (let ((mesg (format nil \"~Sは不正な入力形式です。(価格 値引き率(0〜100%))\" in)))\n\t\t    (print
+    mesg) (terpri) ;サーバ側確認用\n\t\t    (princ mesg stream)))\n\t      (close-socket
+    client))))\n      (condition (c) (format t \"error occured: ~A~%\" c)) )\n    (close-socket
+    socket) ))\n\n;; 2000番ポートでサーバ起動\n(doukaku-45-server 2000)\n"
+  :tags: []
+  :references:
+    :url: /web/20090404175547/http://paste.lisp.org/display/1376
+    :title: 'Lisp Paste #1376'
+- :id: '3767'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/3767
+  :user_name: dankogai
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/08 15:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">これまたPerlのカバレッジを上げるため。\r\n非常にtrivialなAPI.\r\nhttp://host/dir/doukaku_remote/fun/arg/more/args\r\nにアクセスすると、text/plainで\r\nRemote::Server::Trivial::fun(arg,more,args)\r\nの実行結果が返る。\r\n\r\n測定環境として，\r\n・Server:
+    FreeBSD 6.2-Stable; Xeon 2.4GHz; 2GB RAM; apache-1.3.x; mod_perl\r\n・完全remote\r\n・Perl
+    5.8.8\r\n\r\n速度はmod_perlで100req/sほど。Web API、単一serverとしては悪くないかな。\r\n\r\nもっともこの程度のtrivialな作業にHTTPはいささか重たくもあるのではあるけれど。\r\n\r\nDan
+    the Perl Monger</pre>\n\t"
+  :code: "#!/usr/local/bin/perl\n#\n# $Id: doukaku_remote.cgi,v 0.1 2007/11/08 14:49:27
+    dankogai Exp dankogai $\n#\nuse strict;\nuse warnings;\nuse CGI;\nuse URI::Escape;\nuse
+    CGI::Carp qw/fatalsToBrowser/;\n\nsub Remote::Server::Trivial::pricestring{\n
+    \   my ($price, $discount) = @_;\n    my $dprice = $price * (1 - $discount/100);\n
+    \   \"Price: $dprice Yen ($discount% discount from $price Yen)\\n\";\n}\n\nmy
+    (@args)  = split m/\\//, uri_unescape($ENV{PATH_INFO});\nshift @args;\nmy $cmd
+    = shift @args;\nmy $result = eval{ \n    no strict 'refs';\n    &amp;{'Remote::Server::Trivial::'
+    . $cmd}(@args);\n};\ndie $@ if $@;\nuse bytes;\nprint\n    \"Content-Type: text/plain\\n\",\n
+    \   \"Content-Length: \", bytes::length($result), \"\\n\\n\",\n    $result;\n#
+    end of server\n\n#!/usr/local/bin/perl\nuse strict;\nuse warnings;\nuse LWP::Simple;\nmy
+    $times = shift || 10000;\nmy $api_root = 'http://where.ever/you/put/doukaku_remote.cgi';\n\nmy
+    $cmd = \"pricestring\";\n\n$|=1; # autoflush;\nfor (1..$times){\n    my $req =
+    join \"/\", $api_root, $cmd, $_, int(rand(100));\n    my $result = get($req);\n
+    \   chomp $result;\n    print \"$_:$result\\r\"\n}\nprint \"\\n\";\n#end of client\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4375'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/4375
+  :user_name: jijixi
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/582/
+  :language: OCaml
+  :time: 2007/11/23 13:05 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  JoCaml は OCaml に並行プログラミングの概念の一つである join calculus のサポートを組み込んだ言語です。\r<br>並行プログラミングと分散プログラミングがサポートされています。\r<br><br>server.ml を動かした状態で client.ml を動かすことで、サーバ側に定義されている price_string 関数が 10000 回実行されます。\r<br><br>サーバ:\r<br> Mac OS X 10.5 PPC G5/1.8GHz mem:1GB\r<br>クライアント:\r<br> FreeBSD 6.2R Pen3/550MHz mem:256MB\r<br><br>という環境でテストしました。\r<br>まずインタプリタで、\r<br><br> server% jocaml server.ml 10000\r<br> listening address 10.0.1.5\r<br> listening port 10000\r<br><br> client% time jocaml client.ml 10.0.1.5 10000\r<br> jocaml client.ml 10.0.1.5 10000  12.28s user 1.09s system 69% cpu 19.178 total\r<br><br>jocamlopt でネイティブコンパイルしたもので、\r<br><br> server% ./server 10000\r<br><br> client% time ./client 10.0.1.5 10000\r<br> ./client 10.0.1.5 10000  4.84s user 1.17s system 60% cpu 9.930 total\r<br><br>といった感じでした。\r<br>実行される関数はサーバ側に定義されているので、実際の実行はサーバ側でされています。\r<br>それと、JoCaml では for 文が並行実行されるので、client.ml での price_string の呼び出しはおそらく直列には動いていません。\n\t"
+  :code: |
+    (* server.ml *)
+
+    def price_string(value, discount) =
+       let comma_sep () num =
+          let str  = Printf.sprintf "%d" num in
+          let len  = String.length str in
+          let rec s_to_l r i =
+             if i &gt;= len then r
+             else
+                s_to_l (str.[i] :: r) (i + 1)
+          in
+          let str', _ =
+             List.fold_left begin fun (s, i) ch -&gt;
+                match i with
+                | 3 -&gt; (ch :: ',' :: s, 0)
+                | i -&gt; (ch :: s, (i + 1))
+             end ([], 0) (s_to_l [] 0)
+          in
+          List.fold_left begin fun acc ch -&gt;
+             acc ^ (String.make 1 ch)
+          end "" str'
+       in
+       let new_value = value * (100 - discount) / 100 in
+       let msg =
+          Printf.sprintf "販売価格 %a円 (定価%a円から%d%%引き)"
+                         comma_sep new_value comma_sep value discount
+       in
+       reply msg to price_string
+
+    let main () =
+       match Sys.argv with
+       | [|_; listen_port|] -&gt; begin
+            let addr = Join.Site.get_local_addr () in
+            let addr_str = Unix.string_of_inet_addr addr in
+            let sock = Unix.ADDR_INET (addr, int_of_string listen_port) in
+            List.iter print_endline
+               ["listening address " ^ addr_str;
+                "listening port " ^ listen_port];
+            Join.Ns.register Join.Ns.here "price_string" price_string;
+            Join.Site.listen sock;
+            at_exit Join.exit_hook
+         end
+       | _ -&gt;
+            print_endline "usage: command listen_port"
+
+    let () = if not !Sys.interactive then main ()
+
+
+    (* client.ml *)
+
+    let main () =
+       match Sys.argv with
+       | [|_; server_addr; server_port|] -&gt;
+            let addr = Unix.inet_addr_of_string server_addr in
+            let sock = Unix.ADDR_INET (addr, (int_of_string server_port)) in
+            let namespace = Join.Ns.there sock in
+            let price_string : int * int -&gt; string =
+               Join.Ns.lookup namespace "price_string"
+            in
+            for i = 0 to 10000 do
+               ignore (price_string (2000, 20))
+            done;
+            print_endline (price_string (2000, 20))
+       | _ -&gt;
+            print_endline "usage: command server_address server_port"
+
+    let () = if not !Sys.interactive then main ()
+  :tags:
+  - JoCaml
+  :references:
+    :url: /web/20090404175547/http://jocaml.inria.fr/
+    :title: The JoCaml system
+- :id: '4389'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/4389
+  :user_name: jijixi
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/582/
+  :language: diff
+  :time: 2007/11/24 11:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  &gt; それと、JoCaml では for 文が並行実行されるので、client.ml での price_string の呼び出しはおそらく直列には動いていません。\r<br><br>うっかりしてました。\r<br>この話はプロセスコンテキストでは正しいですが、投稿したコードの例では for は式コンテキストで使われているので、この場合は直列に動いているはずです。\r<br><br>この例で並行に動かすなら for の前に spawn を追加すれば良いと思います。(diff 参照)\r<br>その場合 for の内部はプロセスコンテキストになるので、price_string をプロセス扱いにするために空のプロセス 0 を付け足しています。\n\t"
+  :code: |
+    --- client.ml.orig    2007-11-24 20:24:55.000000000 +0900
+    +++ client.ml    2007-11-24 20:31:51.000000000 +0900
+    @@ -9,8 +9,8 @@
+             let price_string : int * int -&gt; string =
+                Join.Ns.lookup namespace "price_string"
+             in
+    -        for i = 0 to 10000 do
+    -           ignore (price_string (2000, 20))
+    +        spawn for i = 0 to 10000 do
+    +           (ignore (price_string (2000, 20)); 0)
+             done;
+             print_endline (price_string (2000, 20))
+        | _ -&gt;
+  :tags:
+  - JoCaml
+  :references:
+    :url: 
+    :title: 
+- :id: '4538'
+  :parent_id: '45'
+  :url: http://ja.doukaku.org/comment/4538
+  :user_name: t_ishida
+  :user_url: /web/20090404175547/http://ja.doukaku.org/user/592/
+  :language: JavaScript
+  :time: 2007/12/01 07:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>テキストのみの通信にしちゃいました。\n   CPU 2.8G\n   MEM 1G\n   WinXP Pro IIS\n</p>\n<p>で実行したところ、\n
+    \  こんな感じです。\n</p>\n<p>販売価格 1,600円 (定価2,000から20%引き)\n   st=1196494169386\n   et=1196494432558\n
+    \  10000回：263.172秒かかってまっせ。\n</p>\n\n\n\n\t"
+  :code: "--HTML側(doukaku.html)\n&lt;html&gt;\n    &lt;meta http-equiv=\"Content-Type\"
+    content=\"text/html; charset=sjis\"&gt;.\n    &lt;body&gt;\n    &lt;script&gt;\n
+    \       var st = new Date().getTime();\n        var ajax = false;\n        if(typeof
+    ActiveXObject != \"undefined\"){\n          try       { ajax = new ActiveXObject(\"Microsoft.XMLHTTP\");
+    }\n          catch (e) { ajax = false; }\n        }\n        if(!ajax &amp;&amp;
+    typeof XMLHttpRequest != \"undefined\")  ajax = new XMLHttpRequest();\n        var
+    i = 0;    \n        for(i = 0; i &lt; 10000; i++){\n            ajax.open( 'GET','doukaku.asp?x=2000&amp;y=20',
+    false );\n            ajax.send( );\n            txt = ajax.responseText;\n        }\n
+    \       var et = new Date().getTime();\n        document.write('&lt;div&gt;' +
+    txt + '&lt;/div&gt;');\n        document.write('&lt;div&gt;st=' + st.toString()
+    + '&lt;/div&gt;' );\n        document.write('&lt;div&gt;et=' + et.toString() +
+    '&lt;/div&gt;' );\n        document.write('&lt;div&gt;' + i.toString() + '回：'
+    +  (et - st) / 1000 + '秒かかってまっせ。&lt;/div&gt;' );\n        &lt;/script&gt;\n    &lt;/body&gt;\n&lt;/html&gt;\n\n--SV側(doukaku.asp)\n\n&lt;%@
+    Language=\"JavaScript\" %&gt;\n&lt;meta http-equiv=\"Content-Type\" content=\"text/html;
+    charset=UTF-8\"&gt;.\n&lt;%\nvar q = Request.QueryString;\nfunction getPricestring(
+    x, y ){\n  x = x - 0; y = y - 0;\n  return \"販売価格 \" + f( ( x * ( 100 - y ) /
+    100 ) ) + \"円 (定価\" + f(x) + \"から\" + y + \"%引き)\";\n  function f( x ){\n    return
+    x.toString().split('').reverse().join('').replace(/(\\d{3})/g, '$1,').split('').reverse().join('');\n
+    \ }\n}\n%&gt;\n&lt;%=getPricestring(q('x'),q('y'))%&gt;\n"
+  :tags:
+  - AJAJA
+  - ASP
+  :references:
+    :url: 
+    :title: 

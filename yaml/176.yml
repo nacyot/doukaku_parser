@@ -1,0 +1,480 @@
+---
+:id: '176'
+:title: 分数の発見
+:comments:
+- :id: '6278'
+  :parent_id: '176'
+  :url: http://ja.doukaku.org/comment/6278
+  :user_name: gandalf
+  :user_url: /web/20091102033936/http://ja.doukaku.org/user/780/
+  :language: 
+  :time: 2008/05/09 23:35 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <p>schemeにはrationalizeという手続きがありますが、これは結果を一つしか返しません。そして、複数の結果が欲しい場合も稀にあります。</p>\n<p>そこで、非負の実数aが一つ与えられたときに、以下の条件を満たす分数b/cをaに近い順に全て表示する手続きを考えてみてください。条件は、\n1.
+    分数b/cよりaに近い分数d/cは存在しない\n2. 分数b/cは既約\n3. cは1桁の整数\nです。</p>\n<p>例をいくつかあげます(あってると思うけど...)。</p>\n<p>a
+    = 1.732051\n12/7 7/4 16/9 5/3 9/5 3/2 2/1</p>\n<p>a = 3.141593\n22/7 25/8 19/6
+    28/9 16/5 13/4 3/1</p>\n<p>a = 1920 / 1080\n16/9 9/5 7/4 11/6 12/7 5/3 2/1</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6282'
+  :parent_id: '176'
+  :url: http://ja.doukaku.org/comment/6282
+  :user_name: horiuchi
+  :user_url: /web/20091102033936/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/05/12 01:40 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>この場合はあまり役に立ってませんが、分数クラスを定義してみました。\nこんな感じでどうでしょうか？</p>\n\n\t"
+  :code: |
+    import java.util.ArrayList;
+    import java.util.Collections;
+    import java.util.Comparator;
+    import java.util.HashMap;
+    import java.util.List;
+    import java.util.Map;
+
+    public class Sample176 {
+
+        public static List&lt;Rational&gt; rationalizes(final double d) {
+            final Map&lt;Rational, Double&gt; map = new HashMap&lt;Rational, Double&gt;();
+            for (int index = 1; index &lt; 10; index++) {
+                int nume = (int) (d * index);
+                Rational r1 = new Rational(nume, index);
+                Rational r2 = new Rational(nume + 1, index);
+                if ((r2.doubleValue() - d) - (d - r1.doubleValue()) &gt; 0) {
+                    map.put(r1, Math.abs(r1.doubleValue() - d));
+                } else {
+                    map.put(r2, Math.abs(r2.doubleValue() - d));
+                }
+            }
+            List&lt;Rational&gt; result = new ArrayList&lt;Rational&gt;(map.keySet());
+            Collections.sort(result, new Comparator&lt;Rational&gt;() {
+                public int compare(Rational o1, Rational o2) {
+                    return Double.compare(map.get(o1), map.get(o2));
+                }
+            });
+            return result;
+        }
+
+        public static void main(String[] args) {
+            System.out.println(rationalizes(1.732051));
+            System.out.println(rationalizes(3.141593));
+            System.out.println(rationalizes((double) 1920 / 1080));
+        }
+
+    }
+
+    class Rational extends Number {
+        public final int numerator;
+        public final int denominator;
+
+        public Rational(int p, int q) {
+            int nume = p;
+            int deno = q;
+            if (deno == 0) {
+                throw new IllegalArgumentException("#N/A");
+            } else if (nume == 0) {
+                deno = 1;
+            } else if (deno &lt; 0) {
+                nume *= -1;
+                deno *= -1;
+            }
+            int r = gcd(nume, deno);
+            numerator = nume / r;
+            denominator = deno / r;
+        }
+
+        private int gcd(int n, int m) {
+            int p = n;
+            int q = m;
+            int r = p % q;
+            while (r &gt; 0) {
+                p = q;
+                q = r;
+                r = p % q;
+            }
+            return q;
+        }
+
+
+        @Override
+        public int intValue() {
+            return numerator / denominator;
+        }
+        @Override
+        public long longValue() {
+            return this.intValue();
+        }
+        @Override
+        public float floatValue() {
+            return (float) this.doubleValue();
+        }
+        @Override
+        public double doubleValue() {
+            return (double) numerator / denominator;
+        }
+
+
+        @Override
+        public int hashCode() {
+            return numerator + denominator * 7;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (!(obj instanceof Rational)) return false;
+            Rational other = (Rational) obj;
+            return this.denominator == other.denominator
+                &amp;&amp; this.numerator == other.numerator;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%d/%d", numerator, denominator);
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '6305'
+  :parent_id: '176'
+  :url: http://ja.doukaku.org/comment/6305
+  :user_name: ytakenaka
+  :user_url: /web/20091102033936/http://ja.doukaku.org/user/35/
+  :language: Common
+  :time: 2008/05/20 07:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">表示が不完全だけど、リストを取り出すだけならば\r\n&gt;(rationalize-list
+    1.732051)\r\n(12/7 7/4 16/9 5/3 9/5 3/2 2)\r\n\r\n分数の時が不完全な表示になります。\r\n&gt;(print-rationalize-list
+    1920/1080 )\r\n16/9 =&gt; 16/9 9/5 7/4 11/6 12/7 5/3 2/1 \r\nNIL\r\n\r\n単にニュートン法の応用です。</pre>\n\t"
+  :code: |
+    (defun check (given fraction min max)
+      (let ((center (floor (/ (+ min max) 2))))
+        (if (or (equal center min) (equal center max))
+        (/ (check-near given fraction (cons min max)) fraction)
+        (if (&gt; (* given fraction) center)
+            (check given fraction center max)
+            (check given fraction min center)))))
+
+    (defun check-near (given fraction list)
+      (if (&gt; (- given (/ (car list) fraction))
+         (- (/ (cdr list) fraction) given))
+          (cdr list)
+          (car list)))
+
+    (defun rationalize-list (given)
+      (let (list)
+        (loop for i from 1 to 9 do
+         (let ((ans (check given i 0 (* (1+ i) given))))
+           (and (not (find ans list))
+            (push ans list))))
+        (sort list
+          #'(lambda(x y)(&lt; (abs (- x given))
+                   (abs (- given y)))))))
+
+    (defun print-rationalize-list (given)
+      (let ((list (rationalize-list given)))
+        (format t "~s =&gt; " given)
+        (loop for v in list do
+         (multiple-value-bind (f r) (floor v)
+           (if (zerop r)
+               (format t "~d/1 " v)
+               (format t "~d " v))))
+           (format t "~%")))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6313'
+  :parent_id: '176'
+  :url: http://ja.doukaku.org/comment/6313
+  :user_name: ocean
+  :user_url: /web/20091102033936/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/05/21 05:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    def gcd(m, n):
+        assert m &gt; 0
+        assert n &gt; 0
+        while n:
+            m, n = n, m % n
+        assert m &gt; 0
+        return m
+
+    class Rational:
+        def __init__(self, b, c):
+            g = gcd(b, c)
+            self.b = b // g
+            self.c = c // g
+
+        def __repr__(self):
+            return "%d/%d" % (self.b, self.c)
+
+        def __cmp__(self, that):
+            return self.b * that.c - self.c * that.b
+
+        def value(self):
+            return float(self.b) / self.c
+
+    def rationalize(a):
+        rationals = []
+        for c in xrange(1, 10):
+            b = int(a * c + 0.5)
+            r = Rational(b, c)
+            if r.b == b:
+                rationals.append(r)
+        rationals.sort(key=lambda r: abs(a - r.value()))
+        return rationals
+
+    def solve(a):
+        print "a = %f" % a, " ".join(repr(r) for r in rationalize(a))
+
+    def main():
+        solve(1.732051)
+        solve(3.141593)
+        solve(1920.0 / 1080)
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6517'
+  :parent_id: '176'
+  :url: http://ja.doukaku.org/comment/6517
+  :user_name: turugina
+  :user_url: /web/20091102033936/http://ja.doukaku.org/user/760/
+  :language: C
+  :time: 2008/06/16 02:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  boost::math::gcd で既約分数のチェックは楽できました。\r\nそれ以外は普通？\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;vector&gt;
+    #include &lt;functional&gt;
+    #include &lt;cmath&gt;
+    #include &lt;iterator&gt;
+    #include &lt;string&gt;
+    #include &lt;stdexcept&gt;
+
+    #include &lt;boost/math/common_factor_rt.hpp&gt;
+    #include &lt;boost/lexical_cast.hpp&gt;
+
+    class rational_t
+    {
+      int n_, d_;
+      double r_;
+
+      public:
+      rational_t(int numerator, int denominator)
+        : n_(numerator), d_(denominator),
+        r_(static_cast&lt;double&gt;(n_)/static_cast&lt;double&gt;(d_)) {}
+
+      double real() const
+      { return r_; }
+      bool isnan() const
+      { return std::isnan(r_); }
+
+      int numerator() const
+      { return n_; }
+      int denominator() const
+      { return d_; }
+    };
+    std::ostream&amp;
+    operator&lt;&lt;(std::ostream&amp; os, const rational_t&amp; r)
+    {
+      return (os &lt;&lt; r.numerator() &lt;&lt; "/" &lt;&lt; r.denominator());
+    }
+
+    class compare_near_to
+    : public std::binary_function&lt;bool, rational_t, rational_t&gt;
+    {
+      double g_;
+      public:
+      compare_near_to(double goal) : g_(goal) {}
+
+      bool operator()(
+          const rational_t&amp; lhs,
+          const rational_t&amp; rhs
+          )
+      {
+        return std::fabs(g_-lhs.real()) &lt; std::fabs(g_-rhs.real());
+      }
+    };
+
+    rational_t
+    find_rational(
+        double  goal,
+        int     denominator
+        )
+    {
+      double min_diff = goal;
+
+      rational_t rat(0, denominator);
+      for ( int n = 1; ; ++n ) {
+        rational_t rat_(n, denominator);
+        double diff = std::fabs(goal - rat_.real());
+
+        if ( diff &gt; min_diff ) break;
+
+        min_diff = diff;
+        rat = rat_;
+      }
+      if ( boost::math::gcd(rat.numerator(), rat.denominator()) != 1 )
+        return rational_t(0,0); // causes real is NaN
+      return rat;
+    }
+
+    int main(int c, char** v)
+    {
+      if ( c != 2 ) {
+        std::cout &lt;&lt; v[0] &lt;&lt; " &lt;real number|rational number&gt;\n";
+        return 0;
+      }
+      double goal;
+      try {
+        std::string val(v[1]);
+        std::string::size_type idx;
+        if ( (idx = val.find("/")) != std::string::npos )
+          goal = boost::lexical_cast&lt;double&gt;(val.substr(0,idx)) /
+                boost::lexical_cast&lt;double&gt;(val.substr(idx+1,val.length()-(idx+1)));
+        else
+          goal = boost::lexical_cast&lt;double&gt;(v[1]);
+
+        if ( goal &lt;= 0.0 )
+          throw std::runtime_error("input number must be positive");
+      }
+      catch (const std::exception&amp; e) {
+        std::cerr &lt;&lt; e.what() &lt;&lt; "\n";
+        return -1;
+      }
+
+      std::vector&lt;rational_t&gt; rationals;
+      for ( int i = 1; i &lt; 10; ++i )
+        rationals.push_back(find_rational(goal, i));
+
+      rationals.erase(
+          std::remove_if(
+            rationals.begin(),
+            rationals.end(),
+            std::mem_fun_ref(&amp;rational_t::isnan) ),
+          rationals.end());
+      std::sort(
+          rationals.begin(),
+          rationals.end(),
+          compare_near_to(goal) );
+
+      std::copy(
+          rationals.begin(),
+          rationals.end(),
+          std::ostream_iterator&lt;rational_t&gt;(std::cout, ", ") );
+
+      return 0;
+    }
+  :tags:
+  - Boost
+  :references:
+    :url: 
+    :title: 
+- :id: '6747'
+  :parent_id: '176'
+  :url: http://ja.doukaku.org/comment/6747
+  :user_name: ISA
+  :user_url: /web/20091102033936/http://ja.doukaku.org/user/845/
+  :language: Ruby
+  :time: 2008/07/16 04:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>同じ値の分数かどうかを「入力との差が等しいかどうか」で判定しているので、入力の値によっては誤差が出るかも……</p>\n\n\t"
+  :code: "def rationalizes value\n  # [入力との差, [分母, 分子]]からなる配列を作成する\n  candidates =
+    (1..9).map do |moderator|\n    numerator  = (value*moderator).round\n    difference
+    = (value-numerator.quo(moderator)).abs\n    [difference, [moderator, numerator]]\n
+    \ end\n  \n  # 入力との差、分母の順に比較してソートすることで、\n  # 入力との差が等しい場合には分母の小さい分数が先に並ぶ\n  # その上で、差が等しい場合は最初の分数のみを選択することで、\n
+    \ # 既約分数のみが返却される\n  latest_difference = nil\n  candidates.sort.inject([]) do |result,
+    (difference, (moderator, numerator))|\n    unless difference == latest_difference\n
+    \     latest_difference = difference\n      result &lt;&lt; \"#{numerator}/#{moderator}\"\n
+    \   end\n    result\n  end\nend\n\np rationalizes(1.732051)      #=&gt; [\"12/7\",
+    \"7/4\", \"16/9\", \"5/3\", \"9/5\", \"3/2\", \"2/1\"]\np rationalizes(3.141593)
+    \     #=&gt; [\"22/7\", \"25/8\", \"19/6\", \"28/9\", \"16/5\", \"13/4\", \"3/1\"]\np
+    rationalizes(1920 / 1080.0) #=&gt; [\"16/9\", \"9/5\", \"7/4\", \"11/6\", \"12/7\",
+    \"5/3\", \"2/1\"]\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6752'
+  :parent_id: '176'
+  :url: http://ja.doukaku.org/comment/6752
+  :user_name: ISA
+  :user_url: /web/20091102033936/http://ja.doukaku.org/user/845/
+  :language: Ruby
+  :time: 2008/07/16 21:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>「差が等しい」だと符号が違う値を同じ分数だとみなしてしまうので、値自体を比較に使用するように修正しました。</p>\n<p>また、条件1には抵触しませんが「近い順に全て」という問いなので、「差が等しく」「分母が同じで」「分子が異なる」分数が検知できないのは間違いだと考えて修正しました。</p>\n<p>※例えば0.7を入力した場合、分母が5の分数は4/5しか見つけられないが、3/5も4/5と同じだけ近いので検出されるべきではないか？　という話</p>\n\n\t"
+  :code: "def rationalizes value\n  # [浮動小数点数, [分母, 分子]]からなる配列を作成する\n  candidates
+    = (1..9).inject([]) do |result, moderator|\n    # 四捨五入すれば分母の近似値が求められるが、\n    #
+    .5の場合は両方を使用する\n    numerator = value * moderator\n    if numerator%1.0 == 0.5\n
+    \     numerators = [numerator.floor, numerator.ceil]\n    else\n      numerators
+    = [numerator.round]\n    end\n    \n    numerators.each do |numerator|\n      float
+    = numerator.quo(moderator)\n      result &lt;&lt; [float, [moderator, numerator]]\n
+    \   end\n    result\n  end\n  \n  # 入力との差、分母、分子の順に比較してソートすることで、\n  # 入力との差が等しい場合には分母、分子の小さい分数が先に並ぶ\n
+    \ candidates = candidates.sort_by do |float, fraction|\n    [(value-float).abs,
+    fraction]\n  end\n  \n  # 浮動小数点数が等しい場合は最初の分数のみを選択することで、\n  # 既約分数のみが返却される\n  latest_float
+    = nil\n  candidates.inject([]) do |result, (float, (moderator, numerator))|\n
+    \   unless float == latest_float\n      latest_float = float\n      result &lt;&lt;
+    \"#{numerator}/#{moderator}\"\n    end\n    result\n  end\nend\n\np rationalizes(1.732051)
+    \     #=&gt; [\"12/7\", \"7/4\", \"16/9\", \"5/3\", \"9/5\", \"3/2\", \"2/1\"]\np
+    rationalizes(3.141593)      #=&gt; [\"22/7\", \"25/8\", \"19/6\", \"28/9\", \"16/5\",
+    \"13/4\", \"3/1\"]\np rationalizes(1920 / 1080.0) #=&gt; [\"16/9\", \"9/5\", \"7/4\",
+    \"11/6\", \"12/7\", \"5/3\", \"2/1\"]\n\np rationalizes(0.7)           #=&gt;
+    [\"5/7\", \"2/3\", \"3/4\", \"3/5\", \"4/5\", \"1/2\", \"1/1\"]\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6753'
+  :parent_id: '176'
+  :url: http://ja.doukaku.org/comment/6753
+  :user_name: leque
+  :user_url: /web/20091102033936/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2008/07/17 00:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>分数が組み込みなので簡単。</p>\n\n\t"
+  :code: |
+    (use srfi-1)
+
+    (define (sort-by xs cmp-fn key-fn)
+      (map car (sort (map (lambda (x) (cons x (key-fn x))) xs)
+                     (lambda (a b) (cmp-fn (cdr a) (cdr b))))))
+
+    (define (main args)
+      (let ((n (string-&gt;number (cadr args))))
+        (for-each
+         print
+         (sort-by (delete-duplicates
+                   (map (lambda (m)
+                          (/ (inexact-&gt;exact (round (* m n))) m))
+                        (iota 9 1)))
+                  &lt;
+                  (lambda (x) (abs (- x n)))))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 

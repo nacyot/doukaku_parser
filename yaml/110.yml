@@ -1,0 +1,784 @@
+---
+:id: '110'
+:title: Meertens数
+:comments:
+- :id: '4710'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4710
+  :user_name: nobsun
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/12/09 23:30 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\r\n\t  <div class=\"section\">\n<p>お題#100「正整数のゲーデル数化？」で定義した goedel を適用すると自分自身になるような数，すなわち
+    goedel (n) == n となるような正整数 n を見つける関数を定義してください．\r</p>\n<p>\r</p>\n<p>このような数のことをMeertens数と言うそうです．\r</p>\n<p>\r</p>\n<p>32bitsの符号なし整数(あるいは10進10桁整数)までの範囲で探すのにどのくらい計算時間がかかったかをCPUのスペックとともに教えてください．また，その実装で64bit符号なし整数(あるいは10進20桁整数)までの範囲で探すのにどのくらい計算時間がかかりそうか見積ってください(もちろん実際に計算して計算時間を示していただくのでもかまいません)．\r</p>\n<p>\r</p>\n</div>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4864'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4864
+  :user_name: nobsun
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/12/18 04:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>補足：</p>\n<p>自分でやってみたHaskellでは30行ほどのプログラムで、10進10桁の範囲までの探索は ghci
+    で 4.56秒(CPU Intel Core 2 Duo 2.6GHz)でした。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4864'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4864
+  :user_name: nobsun
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/12/18 04:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>補足：</p>\n<p>自分でやってみたHaskellでは30行ほどのプログラムで、10進10桁の範囲までの探索は ghci
+    で 4.56秒(CPU Intel Core 2 Duo 2.6GHz)でした。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4865'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4865
+  :user_name: kozima
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/12/18 05:02 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <p>(meertens n) で n 桁以下のものを探します。n=10 のとき、CLISP で1.6秒、SBCL で 0.5秒ほど(Celeron
+    2.66GHz)。</p>\n<p>8～13 で試してみたところ桁数を1増やすごとにほぼ3倍になっているようなので、20桁の場合 SBCL なら単純計算で8時間ぐらいでしょうか。</p>\n\n\t"
+  :code: |
+    (defconstant *primes*
+      '(2 3 5 7 11 13 17 19 23 29 31 37 41 43 47 53 59 61 67 71 73 79 83 89 97))
+
+    (defun primes (n) (loop repeat n for p in *primes* collect p))
+    (defun basis (n) (loop repeat n for x = (expt 10 (1- n)) then (/ x 10) collect x))
+
+    (defun f (primes basis bound prod sum zero-ok)
+      (if primes
+          (loop for i from (if zero-ok 0 1) to 9
+            as dp = (expt (car primes) i) and ds = (* i (car basis))
+            while (&lt;= dp bound) nconc
+            (f (cdr primes) (cdr basis) (floor bound dp)
+               (* prod dp) (+ sum ds)
+               t))
+        (if (= prod sum) (list sum) nil)))
+
+    (defun meertens (n)
+      (loop for i from 1 to n nconc (f (primes i) (basis i) (expt 10 i) 1 0 nil)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4866'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4866
+  :user_name: omoikani
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/374/
+  :language: StandardML
+  :time: 2007/12/18 10:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">MLtonでコンパイルして、符号無し32bit整数までで約2時間40分。64bitでは834174年。遅すぎですね。\r\n\r\n
+    \ mlton meertes.sml\r\n  ./meertes 4294967295</pre>\n\t"
+  :code: |
+    fun goedel n = let
+      open IntInf
+
+      val p = [
+         2,  3,  5,  7, 11, 13, 17, 19, 23, 29,
+        31, 37, 41, 43, 47, 53, 59, 61, 67, 71
+        ]
+      val a = map (valOf o Int.fromString o str) ((explode o toString) n)
+    in
+      ListPair.foldl (fn (x, y, z) =&gt; pow (x, y) * z) 1 (p, a)
+    end
+
+    fun meertens n = let
+      fun loop i =
+        if i &gt; n then ()
+        else
+          if goedel n = n then (print (IntInf.toString n ^ "\n"); loop (i + 1))
+          else loop (i + 1)
+      in
+        loop 0
+      end
+
+    val _ = (meertens o valOf o IntInf.fromString o hd o CommandLine.arguments) ()
+  :tags:
+  - MLton
+  :references:
+    :url: 
+    :title: 
+- :id: '4867'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4867
+  :user_name: SiroKuro
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/540/
+  :language: C
+  :time: 2007/12/18 13:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  うっかり \"{0}\" を書き忘れたまま実行して、２時間を棒に振りました。やりなおしやりなおし。\r<br>32bit 符号無し整数４２億９４９６万７２９６個を、実に２時間１分１８秒で総当たり完了。８桁の数が１個だけヒットしました。\r<br>ちなみに 64bit 符号無しだと、およそ１００万年でしょうか。\r<br><br>……何かが根本的に間違っている気がします orz\r<br>それから、明らかに num.ToString() と Math.Pow が遅いよなぁ……と。\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    static class Program {
+        static void Main() {
+            DateTime before = DateTime.Now;
+            Console.WriteLine("meertens = {0}", string.Join(", ",
+                Array.ConvertAll&lt;long, string&gt;(Meertens(), delegate(long x) { return x.ToString(); })
+            ));
+            Console.WriteLine("time = {0}", DateTime.Now - before);
+        }
+        static long[] Meertens() {
+            int[] primes = Primes(20);
+            List&lt;long&gt; meertens = new List&lt;long&gt;();
+            for(long num = uint.MaxValue; 0 &lt;= num; num--)
+                if (Goedel(num, primes) == num)
+                    meertens.Add(num);
+            return meertens.ToArray();
+        }
+        static double Goedel(long num, int[] primes) {
+            double goedel = 1;
+            string numstr = num.ToString();
+            for(int i = 0; i &lt; numstr.Length; i++)
+                goedel *= Math.Pow(primes[i], numstr[i] - '0');
+            return goedel;
+        }
+        static int[] Primes(int count) {
+            List&lt;int&gt; primes = new List&lt;int&gt;();
+            primes.Add(2);
+            for(int num = 3; primes.Count &lt; count; num += 2) {
+                foreach(int p in primes)
+                    if (num % p == 0)
+                        goto SKIP;
+                primes.Add(num);
+            SKIP:;
+            }
+            return primes.ToArray();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4870'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4870
+  :user_name: omoikani
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/374/
+  :language: 
+  :time: 2007/12/18 16:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>あ、CPUはPentiumD 3.0GHzです。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4871'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4871
+  :user_name: SiroKuro
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/540/
+  :language: diff
+  :time: 2007/12/18 16:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  とりあえず ToString 使わないように改造してみた。３０秒速くなった。変化がねえ(；´Д｀)\n\t"
+  :code: |
+    --- meertens.old.cs     Wed Dec 19 01:16:26 2007
+    +++ meertens.cs Wed Dec 19 01:17:20 2007
+    @@ -18,9 +18,10 @@
+         }
+         static double Goedel(long num, int[] primes) {
+             double goedel = 1;
+    -        string numstr = num.ToString();
+    -        for(int i = 0; i &lt; numstr.Length; i++)
+    -            goedel *= Math.Pow(primes[i], numstr[i] - '0');
+    +        for(int i = Length(num) - 1; 0 &lt;= i; i--) {
+    +            goedel *= Math.Pow(primes[i], num % 10);
+    +            num /= 10;
+    +        }
+             return goedel;
+         }
+         static int[] Primes(int count) {
+    @@ -34,5 +35,14 @@
+             SKIP:;
+             }
+             return primes.ToArray();
+    +    }
+    +    static int Length(long num) {
+    +        long num2 = 10;
+    +        int cnt = 1;
+    +        while(num2 &lt;= num) {
+    +            cnt++;
+    +            num2 *= 10;
+    +        }
+    +        return cnt;
+         }
+     }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4872'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4872
+  :user_name: ところてん
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2007/12/18 16:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">とりあえず、再帰で書いてみた。\r\nsearchMeertens(n)でn桁の範囲で探索します。\r\n8桁で一つ見つかりました。\r\n\r\n8桁を調べるのに160秒かかりました。\r\n桁数が上がるごとに10倍の計算量になるので、\r\n10桁では4時間くらいかなぁ。\r\n\r\nとりあえず、累乗計算をしないようにしたけど、これからどうしようかな。\r\nもうちょっと枝が刈れそうな気がするけど。\r\n\r\nCで書けばもうちょっと早くなるかな。</pre>\n\t"
+  :code: "import time\n\ndef CreatePrimes(n):\n    primes = []\n    c = 2\n    while
+    len(primes) &lt; n:\n        primes.append(c)\n        for x in primes[:-1]:\n
+    \           if c%x == 0:\n                primes.pop();\n                break\n
+    \       c += 1\n    return primes\n\ndef searchMeertens(keta):\n    def _search(keta,count,r,n,primes,first):\n
+    \       n *= 10\n        for x in range(first,10):\n            if x:\n                r
+    *= primes[count]\n                n += 1\n            if r == n:\n                print
+    \"Found Meertens.\",n\n            if keta &gt; 1:\n                _search(keta
+    - 1, count + 1, r ,n ,primes, 0)\n    p = CreatePrimes(20)\n    _search(keta,0,1,0,p,1)\n\n\nketa
+    = 10\nt0 = time.time()\nt1 = t0\n\nfor n in range(1,keta+1):\n    searchMeertens(n)\n
+    \   print n , time.time() - t1 , \"sec\"\n    t1 = time.time()\n    \nprint \"total
+    time\", time.time() - t0\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4873'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4873
+  :user_name: SiroKuro
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/540/
+  :language: 
+  :time: 2007/12/18 16:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  あ、ごめんなさい。CPU は C2D の 2.0GHz です。ただ優先度は通常以下で実行してました。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4874'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4874
+  :user_name: ところてん
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/166/
+  :language: C
+  :time: 2007/12/18 17:09 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Cで書き直したら恐ろしく速くなった。\n10桁実行するのに176秒＠AthlonXP2500+\npythonで書いたのと比較して、だいたい100倍高速化した計算に。</p>\n<p>ゲーテル数って10桁でintの範囲をあっさりと突破するのね・・・バグに気づかなかった。\nunsigned
+    long long int なんて初めて使ったよ。</p>\n\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;time.h&gt;\n\nint primes[] = {2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97};\n\nvoid
+    searchMeertens(int keta, int count, unsigned long long int r, unsigned long long
+    int n, int first){\n    int x;\n    n *= 10;\n    for(x = first; x &lt; 10; x++){\n
+    \       if (x){\n            r *= primes[count];\n            n++;\n        }
+    \   \n        if (r == n){\n            printf(\"Found Meertens %d\\n\",n);\n
+    \       }\n        if (keta &gt; 1){\n            searchMeertens(keta -1, count
+    +1, r, n, 0);\n        }\n    }\n}\n\n\nint main(void)\n{\n    int keta;\n    int
+    x;\n    time_t t;\n    keta = 10;\n    t = time(NULL);\n    for(x = 1; x &lt;=
+    keta; x++){\n        searchMeertens(x,0,1,0,1);\n        printf(\"%d %dsec\\n\",x,
+    time(NULL)-t);\n        t = time(NULL);\n    }\n    printf(\"push anykey to exit.\");\n
+    \   getchar();\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4876'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4876
+  :user_name: ところてん
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/12/18 19:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">一応手元で11桁まで回り終わりましたが、\r\n一桁増えると計算時間も10倍になりました。\r\n(当然と言えば当然ですが)\r\n\r\nなので、google先生に聞いたところ、20桁では\r\n(176
+    * (10^10)) *秒 = 55 772.2258 年\r\nだそうです。\r\n\r\n\r\n\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4877'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4877
+  :user_name: kozima
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/12/19 00:44 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>少し効率化して時間が 2/3 程度になりました。寝てる間に20桁まで探させてみたところ約三時間で終わりましたが、結局一つしか見つからなくてちょっと残念です。</p>\n\n\t"
+  :code: |
+    (defun f (primes basis bound prod sum zero-ok)
+      (declare (optimize (speed 3) (safety 0))
+               (type integer bound prod sum))
+      (loop repeat (if zero-ok 10 9)
+        with p fixnum = (car primes) and prest = (cdr primes)
+        and b integer = (car basis) and brest = (cdr basis)
+        for newbd integer = (if zero-ok bound (floor bound p)) then (floor newbd p)
+        for newprod integer = (if zero-ok prod (* prod p)) then (* newprod p)
+        for newsum integer = (if zero-ok sum (+ sum b)) then (+ newsum b)
+        while (and (plusp newbd) (&lt;= newprod newsum)) nconc
+        (if prest
+            (f prest brest newbd newprod newsum t)
+          (if (= newprod newsum) (list newsum) nil))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4882'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4882
+  :user_name: kozima
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/164/
+  :language: Haskell
+  :time: 2007/12/19 05:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Haskell の勉強にと移植してみました。GHCi で33秒とあんまり速くはありませんが、わりとすっきりしたコードになったので投稿してみます。ついでに中身について少し説明でも。</p>\n<p>上の桁から順に決めていくのですが、その際に桁数を固定することでゲーデル数化する前と後の数(sum,
+    prod)の両方を部分的に計算でき、枝刈りがやりやすくなります。</p>\n<p>実際にやっているのは次の二つですが、他にも末尾の 0 の数で刈れたりするかもしれません。</p>\n<ul
+    class=\"simple\">\n<li>積&gt;和 になったら打ち切り(積のほうが速く増えるので)</li>\n<li>bound にまだ決まっていない部分の積の上限を保持し、それを超えたら打ち切り</li>\n</ul>\n<p>後者のは実質「積が
+    10^i を超えたら」なのですが、上のようにした方が速いようです。(扱う数が fixnum に収まりやすい？)</p>\n\n\t"
+  :code: |
+    primes = flip take [2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
+                         31, 37, 41, 43, 47, 53, 59, 61, 67, 71]
+    basis n = map (\x -&gt; 10^x) [n-1,n-2..0]
+
+    f :: [Integer] -&gt; [Integer] -&gt; Integer -&gt; Integer -&gt; Integer -&gt; Integer -&gt; [Integer]
+    f [] [] _ prod sum _
+        | prod == sum = [sum]
+        | otherwise   = []
+    f (p:ps) (b:bs) bound prod sum start
+        | start == 0 &amp;&amp; prod &gt; sum = []
+        | otherwise =
+            [x | i &lt;- [start..9], p^i &lt;= bound,
+                 x &lt;- f ps bs (div bound $ p^i) (prod * p^i) (sum + b * i) 0]
+
+    meertens n = [x | i &lt;- [1..n], x &lt;- f (primes i) (basis i) (10^i) 1 0 1]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4885'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4885
+  :user_name: ところてん
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/12/19 10:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あーそうか。桁数を固定すればよかったのか。\r\nそうすればかなりの量が枝狩りできますね。\r\n\r\n桁数可変で探索してたから、枝がまったく狩れなかった。\r\n\r\nちょっと書き直してみよう。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4886'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4886
+  :user_name: 梅紫蘇
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/596/
+  :language: C
+  :time: 2007/12/19 10:15 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <p>多倍長演算を意識する・しないかで言語間の格差が出ますなぁ。</p>\n<p>各桁の素数を0～9で乗算したテーブル作成＋論理演算＋枝切り。\n残念ながら20桁だとunsigned
+    long long(64bit)を溢れてしまうので、19桁までしか計算できません。\nこれ以上は面倒なので勘弁してくださいorz</p>\n<p>10桁の計算結果は、1つ(81312000)。\n計算時間は23.203[秒]（BITSET_SIZE=136,
+    Pen4 3.06GHz, WinXP SP2, VS2005）。ゲーデル数チェック時に使用するbitset(のbit数)に依存する割合が高いので、適正なbit数にすればちょびっと速くなります（10桁を72bitで計算して10.156[秒]）。</p>\n<p>枝切りもあるので断定できませんが、テーブル生成時間がほぼ0なので\n20桁は10桁の時間×（10の10乗）ぐらいなのかなと。</p>\n\n\t"
+  :code: |
+    #include &lt;time.h&gt;
+    #include &lt;iostream&gt;
+    #include &lt;bitset&gt;
+
+    #ifndef ARRAYSIZE
+    #define ARRAYSIZE(x)  (sizeof(x)/sizeof(x[0]))
+    #endif
+
+    #define BITSET_SIZE (64*2+8)
+    //#define BITSET_SIZE (32*2+8)
+
+    static unsigned long long digit_base[] = {
+    0x0000000000000001, 0x000000000000000a,
+    0x0000000000000064, 0x00000000000003E8,
+    0x0000000000002710, 0x00000000000186A0,
+    0x00000000000F4240, 0x0000000000989680,
+    0x0000000005F5E100, 0x000000003B9ACA00,
+    0x00000002540BE400, 0x000000174876E800,
+    0x000000E8D4A51000, 0x000009184E72A000,
+    0x00005AF3107A4000, 0x00038D7EA4C68000,
+    0x002386F26FC10000, 0x016345785D8A0000,
+    0x0DE0B6B3A7640000, 0x8AC7230489E80000 };
+
+    static unsigned long long prime[20] = {
+     2,  3,  5,  7, 11, 13, 17, 19, 23, 29,
+    31, 37, 41, 43, 47, 53, 59, 61, 67, 71 };
+
+    static std::bitset&lt;BITSET_SIZE&gt; PRIME_TABLE[ARRAYSIZE(prime)][10];
+
+    int CompareBitset(std::bitset&lt;BITSET_SIZE&gt; a, std::bitset&lt;BITSET_SIZE&gt; b) {
+        for (int n = BITSET_SIZE - 1; n &gt;= 0; n--) {
+            if (a[n] != b[n]) { return a[n] ? 1 : -1; }
+        }
+        return 0;
+    }
+
+    std::bitset&lt;BITSET_SIZE&gt; bitset_add(std::bitset&lt;BITSET_SIZE&gt; a, std::bitset&lt;BITSET_SIZE&gt; b) {
+        std::bitset&lt;BITSET_SIZE&gt; c = (a &amp; b) &lt;&lt; 1;
+        if (c.any()) { return bitset_add((a ^ b), c); }
+        else         { return (a ^ b); }
+    }
+
+    std::bitset&lt;BITSET_SIZE&gt; bitset_multi(std::bitset&lt;BITSET_SIZE&gt; a, std::bitset&lt;BITSET_SIZE&gt; b) {
+        std::bitset&lt;BITSET_SIZE&gt; ans;
+        if (a.any() &amp;&amp; b.any()) {
+            for (int i = 0; a.any() &amp;&amp; (i &lt; BITSET_SIZE); i++, a &lt;&lt;= 1) {
+                if (b[i]) { ans = bitset_add(ans, a); }
+            }
+        }
+        return ans;
+    }
+
+    std::bitset&lt;BITSET_SIZE&gt; bitset_pow(std::bitset&lt;BITSET_SIZE&gt; a, unsigned int n) {
+        std::bitset&lt;BITSET_SIZE&gt; v((unsigned long)1);
+        while (n != 0) {
+            if (n &amp; 0x1)       { v = bitset_multi(v, a); }
+            if ((n /= 2) != 0) { a = bitset_multi(a, a); }
+        }
+        return v;
+    }
+
+    unsigned int digit(unsigned long long n, unsigned int base)
+    {
+        unsigned int d = 1;
+        for (; n &gt; (base - 1); n /= base) { d++; }
+        return d;
+    }
+
+    std::bitset&lt;BITSET_SIZE&gt; ulonglong2bitset(unsigned long long v) {
+        std::bitset&lt;BITSET_SIZE&gt; high((unsigned long)(v &gt;&gt; (sizeof(v)*4)));
+        std::bitset&lt;BITSET_SIZE&gt; low((unsigned long)v);
+        return ((high &lt;&lt; (sizeof(v)*4)) | low);
+    }
+
+    void InitPrimeTable() {
+        for (int i = 0; i &lt; ARRAYSIZE(PRIME_TABLE); i++) {
+            for (int j = 0; j &lt; ARRAYSIZE(PRIME_TABLE[0]); j++) {
+                PRIME_TABLE[i][j] = bitset_pow(ulonglong2bitset(prime[i]), j);
+            }
+        }
+    }
+
+    int CheckMeertensNumber(unsigned long long n) {
+        std::bitset&lt;BITSET_SIZE&gt; m = ulonglong2bitset(n);
+        std::bitset&lt;BITSET_SIZE&gt; g(1UL);
+        for (unsigned int d = digit(n, 10); d &gt; 0; d--, n /= 10) {
+            unsigned int p = (unsigned int)(n % 10);
+            if (CompareBitset(PRIME_TABLE[d - 1][p], m) &gt; 0)
+                return 1;
+            g = bitset_multi(g, PRIME_TABLE[d - 1][p]);
+            if (CompareBitset(g, m) &gt; 0)
+                return 1;
+        }
+        return (m == g) ? 0 : -1;
+    }
+
+    int SearchMeertensNumber(unsigned long long base, unsigned int d, int&amp; cnt) {
+        if (d &lt;= 0) {
+            int ret = CheckMeertensNumber(base);
+            if (ret == 0) {
+                std::cout &lt;&lt; base &lt;&lt; std::endl;
+                cnt++;
+            }
+            return ret;
+        }
+        if (SearchMeertensNumber(base, d - 1, cnt) &gt; 0)
+            return (base == 0) ? 0 : 1;
+        for (unsigned long long i = 1; i &lt; 10; i++) {
+            base += digit_base[d - 1];
+            if (SearchMeertensNumber(base, d - 1, cnt) &gt; 0)
+                break;
+        }
+        return 0;
+    }
+
+    void main(int argc, char* argv[]) {
+        unsigned int nDigit = 10;
+        int nCount = 0;
+
+        std::cout &lt;&lt; "---" &lt;&lt; std::endl;
+        std::cout &lt;&lt; "bitsize=" &lt;&lt; BITSET_SIZE &lt;&lt; std::endl;
+        std::cout &lt;&lt; "digit  =" &lt;&lt; nDigit &lt;&lt; std::endl;
+
+        clock_t st = clock();
+        InitPrimeTable();
+        clock_t mt = clock();
+        SearchMeertensNumber(0, nDigit, nCount);
+        clock_t et = clock();
+
+        std::cout &lt;&lt; "count=" &lt;&lt; nCount &lt;&lt; std::endl;
+        std::cout &lt;&lt; "init[s]:" &lt;&lt; ((double)(mt-st)/CLOCKS_PER_SEC) &lt;&lt; std::endl;
+        std::cout &lt;&lt; "calc[s]:" &lt;&lt; ((double)(et-mt)/CLOCKS_PER_SEC) &lt;&lt; std::endl;
+        std::cout &lt;&lt; "full[s]:" &lt;&lt; ((double)(et-st)/CLOCKS_PER_SEC) &lt;&lt; std::endl;
+    }
+  :tags:
+  - 中途半端
+  :references:
+    :url: 
+    :title: 
+- :id: '4898'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4898
+  :user_name: 梅紫蘇
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/596/
+  :language: C
+  :time: 2007/12/20 08:52 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>コンパイラの最適化具合によるかもしれませんが、リファクタリングによって少し速度が改善されたので訂正。</p>\n<p>bitサイズ136で、10桁
+    5.25[秒]，11桁 19.75[秒]，12桁 66.343[秒]，13桁 222.078[秒]。\n（ちなみにbitサイズ72で、10桁 3.469[秒]）</p>\n<p>どうも1桁あたり10倍ではなく、3.5～4.0倍になってるようなので、20桁で18日～60日程度と予想（幅ありすぎ）。</p>\n\n\t"
+  :code: |
+    //ソースは置換する関数のみ
+    #include &lt;limits&gt;
+
+    int CompareBitset(std::bitset&lt;BITSET_SIZE&gt; a, std::bitset&lt;BITSET_SIZE&gt; b) {
+        std::bitset&lt;BITSET_SIZE&gt; mask( std::numeric_limits&lt;unsigned long&gt;::max() );
+        int ans = 0;
+        while (a.any() || b.any()) {
+            unsigned long an = (a &amp; mask).to_ulong();
+            unsigned long bn = (b &amp; mask).to_ulong();
+            if      (an &gt; bn) { ans =  1; }
+            else if (an &lt; bn) { ans = -1; }
+            a &gt;&gt;= std::numeric_limits&lt;unsigned long&gt;::digits;
+            b &gt;&gt;= std::numeric_limits&lt;unsigned long&gt;::digits;
+        }
+        return ans;
+    }
+
+    std::bitset&lt;BITSET_SIZE&gt; bitset_multi(std::bitset&lt;BITSET_SIZE&gt; a, std::bitset&lt;BITSET_SIZE&gt; b) {
+        std::bitset&lt;BITSET_SIZE&gt; ans;
+        for (;a.any() &amp;&amp; b.any(); b &gt;&gt;= 1, a &lt;&lt;= 1) {
+            if (b[0]) { ans = bitset_add(ans, a); }
+        }
+        return ans;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4903'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4903
+  :user_name: omoikani
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/374/
+  :language: StandardML
+  :time: 2007/12/20 18:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">SMLにも移植。爆速になったけど、MLtonでもSBCLより遅い。。。\r\n10桁で0.79秒、20桁で9時間56分。\r\n\r\n
+    \ ./110 10  0.79s user 0.00s system 99% cpu 0.795 total\r\n  ./110 20  35746.36s
+    user 4.25s system 99% cpu 9:56:05.18 total</pre>\n\t"
+  :code: |
+    val p = [
+       2,  3,  5,  7, 11, 13, 17, 19, 23, 29,
+      31, 37, 41, 43, 47, 53, 59, 61, 67, 71
+      ] : IntInf.int list
+
+    fun basis n = (rev o map (fn x =&gt; IntInf.pow (10, x)) o List.tabulate) (n, fn x =&gt; x)
+
+    fun meertens n = let
+      val lst = List.tabulate (n, fn x =&gt; x + 1)
+
+      open IntInf
+
+      fun loop _ [] _ prod sum _ =
+        if prod = sum then print (toString sum ^ "\n") else ()
+        | loop (p::ps) (b::bs) bound prod sum start = let
+          fun f x = let
+            val pp = pow (p, x)
+          in
+            if pp &lt;= bound then
+              loop ps bs (bound div pp) (prod * pp) (sum + b * fromInt x) 0
+            else ()
+          end
+
+          open Int
+          val lst = List.tabulate (10 - start, fn x =&gt; x + start)
+        in
+          app f lst
+        end
+    in
+      app (fn i =&gt; loop p (basis i) (IntInf.pow (10, i)) 1 0 1) lst
+    end
+
+    val _ = (meertens o valOf o Int.fromString o hd o CommandLine.arguments) ()
+  :tags:
+  - MLton
+  :references:
+    :url: 
+    :title: 
+- :id: '4905'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4905
+  :user_name: ところてん
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/166/
+  :language: C
+  :time: 2007/12/20 20:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">とりあえず40秒くらいまで縮まったけど、\r\n他の人が何で爆速なのかが分からない。\r\nあとどんな枝狩りすりゃいいねん。\r\n\r\n枝狩りで分岐予測がこける関係で、Pen4系では遅いと思う。\r\n\r\n関数型言語は読めないよ・・・</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;time.h&gt;\n\nint primes[] = {2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97};\n\nvoid
+    _searchMeertens(int keta, int count, unsigned long long int r, unsigned long long
+    int n){\n    int x;\n    n *= 10;\n    for(x = (count == 0); x &lt; 10; x++){\n
+    \       if (x){\n            r *= primes[count];\n            n++;\n        }
+    \   \n        if (keta == 0){\n            if(r &gt; n){        //枝狩り\n                return;
+    \   \n            }\n            else if (r == n){\n                printf(\"Found
+    Meertens %d\\n\",n);\n            }\n        }else{\n            _searchMeertens(keta
+    -1, count +1, r, n);\n        }\n    }\n}\n\nvoid searchMeertens(int keta)\n{\n
+    \   int x;\n    time_t t;\n    t = time(NULL);\n    for(x = 0; x &lt; keta; x++){\n
+    \       _searchMeertens(x,0,1,0);\n        printf(\"keta = %d time = %d\\n\",
+    x+1, time(NULL) - t);\n        t = time(NULL);\n    }\n}\n\nint main(void)\n{\n
+    \   int keta;\n    time_t t;\n\n    keta = 10;\n    t = time(NULL);\n    searchMeertens(keta);\n
+    \   printf(\"%dsec\\n\", time(NULL)-t);\n\n    printf(\"push anykey to exit.\");\n
+    \   getchar();\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4908'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4908
+  :user_name: 梅紫蘇
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/596/
+  :language: Other
+  :time: 2007/12/21 01:37 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <p>r が、その桁の最大値を超えたときを狩れば結構削れますよ。</p>\n\n\t"
+  :code: |
+    void _searchMeertens(int keta, int count, unsigned long long int r, unsigned long long int n, unsigned long long int nmax)
+    {
+        int x;
+        n *= 10;
+        for (x = (count == 0); x &lt; 10; x++) {
+            if (x) {
+                r *= primes[count];
+                if (r &gt; nmax)    /* 枝狩り2 */
+                    return;
+                n++;
+            }
+            if (keta == 0) {
+                if(r &gt; n)       /* 枝狩り*/
+                    return;
+                if (r == n)
+                    printf("Found Meertens %d\n", n);
+            }else{
+                _searchMeertens(keta -1, count + 1, r, n, nmax);
+            }
+        }
+    }
+
+    void searchMeertens(int keta)
+    {
+        int x;
+        unsigned long long int nmax;
+        time_t t;
+        t = time(NULL);
+        for (x = 0; x &lt; keta; x++) {
+            nmax = (unsigned long long)pow(10.0, x + 1) - 1UL;
+            _searchMeertens(x, 0, 1, 0, nmax);
+            printf("keta = %d time = %d\n", x + 1, time(NULL) - t);
+            t = time(NULL);
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4909'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4909
+  :user_name: nobsun
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/12/21 02:30 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">ghcでコンパイルすると\r\n桁数 : 時間\r\n10 :   0.6s\r\n11
+    :   1.9s\r\n12 :   6.1s\r\n13 :  18.0s\r\n14 :  52.4s\r\n15 : 150.1s\r\n1桁増えるごとに約3倍
+    20桁なら10時間かな?\r\n\r\nMeertens数は81312000しか知られていないらしいです。\r\n他にあるかどうかも未知らしい。</pre>\n\t"
+  :code: |
+    module Main (main) where
+
+    import Data.Tree
+    import System.Environment
+
+    primes :: [Integer]
+    primes = sieve [2..] where sieve (p:xs) = p:sieve [x | x &lt;- xs, x `mod` p /= 0]
+
+    type Label = (Integer, Integer)
+
+    powers :: Integer -&gt; [Integer]
+    powers = flip iterate 1 . (*)
+
+    mktree :: Int -&gt; Label -&gt; [[Integer]] -&gt; Tree Label
+    mktree k l pss = unfoldTree phi (l,pss)
+      where phi (x,[])     = (x,[])
+            phi (x,ps:pps) = (x,zip (labels x ps) (repeat pps))
+            labels (n,g) ps = zip (map (10*n +) [0..9]) (takeWhile (10^k &gt;) (map (g*) ps))
+
+    gtree :: Int -&gt; Tree Label
+    gtree k = snip $ mktree k (0,1) $ map powers $ take k primes
+     where snip (Node x ts) = Node x (tail ts)
+
+    meertens :: Int -&gt; [Integer]
+    meertens k = [ n | (n,g) &lt;- flatten $ gtree k, n == g ]
+
+    main :: IO ()
+    main = putStr . unlines . map show . meertens . read . head =&lt;&lt; getArgs
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4910'
+  :parent_id: '110'
+  :url: http://ja.doukaku.org/comment/4910
+  :user_name: ところてん
+  :user_url: /web/20081204130303/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/12/21 02:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">なるほどなーと納得しました。\r\n\r\n手元の奴で10桁が1秒未満で完了した・・・。\r\n確かにそうすればよかったのかと後悔してます。\r\n\r\nちなみに私の環境での実行結果。\r\nあまり時間が無かったので、18桁まで実行させましたが、20桁は20分くらいですね。\r\nなのでトータルタイムは30分くらいでしょうか。\r\n\r\nketa
+    = 1 time = 0\r\nketa = 2 time = 0\r\nketa = 3 time = 0\r\nketa = 4 time = 0\r\nketa
+    = 5 time = 0\r\nketa = 6 time = 0\r\nketa = 7 time = 0\r\nFound Meertens 81312000\r\nketa
+    = 8 time = 0\r\nketa = 9 time = 0\r\nketa = 10 time = 0\r\nketa = 11 time = 0\r\nketa
+    = 12 time = 0\r\nketa = 13 time = 1\r\nketa = 14 time = 2\r\nketa = 15 time =
+    6\r\nketa = 16 time = 16\r\nketa = 17 time = 45\r\nketa = 18 time = 127</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 

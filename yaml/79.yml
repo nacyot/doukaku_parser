@@ -1,0 +1,411 @@
+---
+:id: '79'
+:title: ICPC2007アジア地区予選A
+:comments:
+- :id: '3776'
+  :parent_id: '79'
+  :url: http://ja.doukaku.org/comment/3776
+  :user_name: にしお
+  :user_url: /web/20080221112909/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/09 14:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>ACM/ICPC 2007 アジア地区予選Aの問題を解いてみました。\n問題はこちらのPDFにあります。</p>\n<p><a
+    class=\"reference\" href=\"/web/20080221112909/http://www.logos.ic.i.u-tokyo.ac.jp/icpc2007/regional/problems.pdf\">http://www.logos.ic.i.u-tokyo.ac.jp/icpc2007/regional/problems.pdf</a></p>\n<p>Aの問題は簡単に言うと「1からnまでの数字が書かれた札が時計回りに並べられていて、例えば3からスタートして、まず3のカードを取り除き、時計回りに5個数えて5番目の8のカードを取り除き、次にそこから5番目の6のカードを取り除き…とどんどん取っていったときに最後に残るのは何か？」という問題です。\n上の例の「3からスタート」の3がmで、「5番目」の5がkです。\nこのn,
+    k, mが与えられたときに、最後に残るカードの数字を答える関数を作ってください。</p>\n<p>なお、10000, 10000, 10000の時に答えは2019になります。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3777'
+  :parent_id: '79'
+  :url: http://ja.doukaku.org/comment/3777
+  :user_name: にしお
+  :user_url: /web/20080221112909/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2007/11/09 14:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Python版。Pythonのリストは配列がバックエンドになっているので1個取り除く処理は軽くはないよなぁと思いつつ、連結リストにすると今度はたどる処理が重たいよなぁと悩んだので、素朴な実装をしてみたら意外とすんなり解けました。</p>\n<p>(10000,
+    10000, 10000)の時に0.18秒、試しに10倍にして(100000, 100000, 100000)にしてみたら18秒でした。このノリだと100万の時は1800秒(30分)ですね。これが現実的な時間で求まるコードも余裕があれば書いてみたいです。</p>\n<p>ちなみに10万の時の答えは66029でした。</p>\n\n\t"
+  :code: |
+    def mamakodate(n, k, m):
+        k -= 1
+        m -= 1
+        xs = range(1, n + 1)
+        cur = m
+        while len(xs) &gt; 1:
+            del xs[cur]
+            n -= 1
+            cur = (cur + k) % n
+
+        print xs[0]
+
+    mamakodate(8, 5, 3)
+    mamakodate(100, 9999, 98)
+    mamakodate(10000, 10000, 10000)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3779'
+  :parent_id: '79'
+  :url: http://ja.doukaku.org/comment/3779
+  :user_name: にしお
+  :user_url: /web/20080221112909/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2007/11/09 15:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">高速化途中…\r\n\r\n1\r\n0.0641880462463\r\n93\r\n0.0122504396531\r\n2019\r\n0.148369974395\r\n66029\r\n12.2751668159\r\n\r\n頭が遅くなったけど、かかる時間の伸びが緩やかになったね。\r\n後は本質的に配列を持つ必要がないので\r\nそこを削れば劇的に早くなるはず。</pre>\n\t"
+  :code: |
+    from time import clock
+    def calc(n, k, m):
+        t = clock()
+        xs = [0]
+        r = 0
+        for i in range(1, n):
+    #        print xs
+            r -= k
+            r %= i
+            xs.insert(r + 1, i)
+            r += 1
+
+    #    print xs
+    #    print xs.index(0),
+    #    print xs.index(n - 1)
+        print m - xs.index(n - 1) + xs.index(0)
+        print clock() - t
+
+    calc(8, 5, 3)
+    calc(100, 9999, 98)
+    calc(10000, 10000, 10000)
+    calc(100000, 100000, 100000)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3780'
+  :parent_id: '79'
+  :url: http://ja.doukaku.org/comment/3780
+  :user_name: にしお
+  :user_url: /web/20080221112909/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2007/11/09 15:19 GMT
+  :vote_count: '5'
+  :vote_score: '5'
+  :body: "\n\t  <pre class=\"compact\">あ、配列の処理を取り除くの面倒かと思ったけど\r\n実は配列の頭が常に0なんだな。\r\nじゃぁ数行削るだけか。\r\n途中経過書く必要なかったかも。\r\n10万の問題が0.12秒で解けたので100万の問題にも挑戦。1.2秒で解けた。\r\n\r\n1\r\n0.0604054425894\r\n93\r\n0.01122125857\r\n2019\r\n0.0276099336625\r\n66029\r\n0.129980206981\r\n485401\r\n1.26358070649\r\n</pre>\n\t"
+  :code: |
+    from time import clock
+    def calc(n, k, m):
+        t = clock()
+        r = 0
+        for i in xrange(1, n):
+            r -= k
+            r %= i
+            r += 1
+
+        print m - r
+        print clock() - t
+
+    calc(8, 5, 3)
+    calc(100, 9999, 98)
+    calc(10000, 10000, 10000)
+    calc(100000, 100000, 100000)
+    calc(1000000, 1000000, 1000000)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3781'
+  :parent_id: '79'
+  :url: http://ja.doukaku.org/comment/3781
+  :user_name: あにす
+  :user_url: /web/20080221112909/http://ja.doukaku.org/user/504/
+  :language: VB
+  :time: 2007/11/09 18:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  n = 100000\r<br>m = 100000\r<br>k = 100000\r<br>66029\r<br>4.921875秒\n\t"
+  :code: |2
+        Private Function mamakodate(ByVal n As Integer, ByVal k As Integer, ByVal m As Integer) As Integer
+            'カードを並べる
+            Dim List As New List(Of Integer)
+            For i As Integer = 0 To n - 1
+                List.Add(i + 1)
+            Next
+
+            Dim index As Integer = m - 1
+            While List.Count &lt;&gt; 1
+                List.RemoveAt(index)
+
+                index += k - 1
+                While index &gt; List.Count - 1
+                    index -= List.Count
+                End While
+            End While
+            Return List(0)
+        End Function
+  :tags:
+  - VB.NET2005
+  - VB2005
+  :references:
+    :url: 
+    :title: 
+- :id: '3782'
+  :parent_id: '79'
+  :url: http://ja.doukaku.org/comment/3782
+  :user_name: sumim
+  :user_url: /web/20080221112909/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/11/09 18:21 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Squeak Smalltalk で。\n\t"
+  :code: |
+    | solveA |
+    solveA := [:n :k :m |
+        | circle |
+        circle := (1 to: n) asOrderedCollection.
+        [circle size &gt; 1] whileTrue: [
+            circle removeAt: m.
+            m := (m - 1 + k - 1) \\ circle size + 1].
+        circle first].
+
+    solveA valueWithArguments: #(8 5 3).   "=&gt; 1 "
+    solveA valueWithArguments: #(100 9999 98).   "=&gt; 93 "
+    solveA valueWithArguments: #(10000 10000 10000).   "=&gt; 2019 "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '3790'
+  :parent_id: '79'
+  :url: http://ja.doukaku.org/comment/3790
+  :user_name: にしお
+  :user_url: /web/20080221112909/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/10 05:21 GMT
+  :vote_count: '6'
+  :vote_score: '6'
+  :body: "\n\t  <p>一応簡単に解説を書いておきます。</p>\n<p>まずこの問題でどこからスタートするかっていうのはまったく後の展開に影響しないので端から無視します。(最初そんな簡単な問題のはずがないと思っていたので取ったカードに書かれていた数だけ進むんだと思ってしまいましたｗ)</p>\n<p>そうすると問題は「n個並んだカードをk個飛ばして取っていったときに、最後に残るカードは最初に取ったカードから何番目の位置か」というものに変わります。</p>\n<p>あと、この二つはどうして思いついたか説明せよと言われてもできないのですが：</p>\n<ul
+    class=\"simple\">\n<li>逆順にしてカードが1枚ある状態から追加していく方がシンプルだ</li>\n<li>求められているのは最初と最後だけなので他のカードがどの位置に入ったかをリストで持っておく必要はない。リストの処理は丸ごと省けるはず。</li>\n</ul>\n<p>という思いつきが降ってきたので、それに従ってまずは素朴にリストに追加していくコードを書きました。カードが
+    i 枚ある状態で、新しいカードがどこにはいるべきかというと最後に入ったカードから k 枚さかのぼった位置なので、 - k  して、端を越えたときのために %
+    i する、と。</p>\n<p>で、実行して出力されるリストを正しい挙動と付き合わせてバグをつぶします。\nたとえば最初は「i個のカードがある場合に0番目からi
+    + 1番目までのi + 1通りの入る場所がある」と書いていたのですが環状になっているので0番目とi + 1番目は同じですね。\nあとは8行目のr += 1を忘れていて結果がずれていたり。</p>\n<p>最終的に、最後に残るカードの位置は0番目固定になるので保持すべきなのは最後に入ったカードの位置rだけになり、ビックリするほどシンプルなコードになりました。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3791'
+  :parent_id: '79'
+  :url: http://ja.doukaku.org/comment/3791
+  :user_name: eeweiga
+  :user_url: /web/20080221112909/http://ja.doukaku.org/user/537/
+  :language: Perl
+  :time: 2007/11/10 06:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>素朴に書きました。\n</p>\n\n\n\n\t"
+  :code: "use strict;\nuse warnings;\n\nmy ($n, $k, $m) = @ARGV;\nmy @cards = (1..$n);\nmy
+    $target = $m - 1;    #カードの数字は1から始まる\n\nsub choice {\n    my ($start, $step) =
+    @_;\n    $step %= @cards;\n    $start += $step;\n    $start %= @cards;\n    $start;\n}\n\n#一枚になるまで繰り返す\nwhile
+    (@cards != 1) {\n    #カードを取り除く\n    my $deleted = delete $cards[$target];\n    @cards
+    = grep { defined($_) } @cards;\n    #print $deleted, \" is deleted.\\n\";    \n
+    \   #取り除くカードを選ぶ\n    $target = choice($target-1, $k);\n}\n\nprint @cards, \" remained.\\n\";\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3799'
+  :parent_id: '79'
+  :url: http://ja.doukaku.org/comment/3799
+  :user_name: kozima
+  :user_url: /web/20080221112909/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/11/10 11:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">素朴に循環リストで。遅いです。</pre>\n\t"
+  :code: |
+    (defun A (n k m)
+      (let ((ring (loop for i from 1 to n collect i)))
+        (setf (cdr (last ring)) ring
+              ring (nthcdr (- m 2) ring))
+        (dotimes (x (1- n) (print (cadr ring)))
+          (pop (cdr ring))
+          (setf ring (nthcdr (1- k) ring)))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3822'
+  :parent_id: '79'
+  :url: http://ja.doukaku.org/comment/3822
+  :user_name: sybian
+  :user_url: /web/20080221112909/http://ja.doukaku.org/user/217/
+  :language: JavaScript
+  :time: 2007/11/10 19:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Firebugで確認。\r\nvar plusは自分でも何が起きてるのかよくわかってません。</pre>\n\t"
+  :code: |
+    function reduce(r,m,k){
+        var deck=[];
+        for(var i=0; i&lt;r; i++){
+            deck.push(i+1);
+        }
+        var flatten=function(ary,result){
+            for(var i=0,len=ary.length; i&lt;len; i++){
+                if(typeof ary[i] == "number"){
+                    result.push(ary[i]);
+                }else{
+                    arguments.callee(ary[i],result);
+                }
+            }
+            return result;
+        }
+        var plus=function(index,plus){
+            var len=deck.length;
+            if(index == len+1)index=0;
+            var result=((index+plus)%len) -1;
+            return (result &lt; 0) ? len : result;
+        }
+        var pick=function(deck,index){
+            if(index == 0){
+                return deck.splice(1);
+            }
+            if(index == deck.length){
+                deck.pop();
+                return deck;
+            }
+            return [deck.splice(0,index),deck.splice(1)].join(",").split(",");
+            return flatten([deck.splice(0,index),deck.splice(1)],[]);
+        }
+        var index=k-1;
+        deck=pick(deck,index);
+        while(deck.length &gt; 1){
+            index=plus(index,m);
+            deck=pick(deck,index);
+        }
+        return deck[0];
+    }
+
+    reduce(8,5,3); // 1
+    reduce(100,9999,98); // 93
+    reduce(10000,10000,10000); // 2019
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3870'
+  :parent_id: '79'
+  :url: http://ja.doukaku.org/comment/3870
+  :user_name: nobsun
+  :user_url: /web/20080221112909/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/11/11 17:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">なるほど、なるほど、\r\nそのままHaskellに移しました</pre>\n\t"
+  :code: |
+    mamakotate n k m = iter 0 1
+      where iter r c
+              | c == n    = m - r
+              | otherwise = (iter $! (r-k) `mod` c + 1) $! c+1
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4086'
+  :parent_id: '79'
+  :url: http://ja.doukaku.org/comment/4086
+  :user_name: raynstard
+  :user_url: /web/20080221112909/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2007/11/15 23:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">極論すると構造は循環リストだけどn番目の中身はnだから\r\n参照する添え字の位置だけを計算すれば良い\r\nと言うことなのですかね？\r\n\r\nでも
+    「r -= k」 の部分がわかんねっす。\r\n一瞬、開始位置の分ずらしてる？とか思ったんだけど\r\n開始位置は関係ないみたいですし。。。\r\n# うぅ計算は苦手だぁ(涙</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4094'
+  :parent_id: '79'
+  :url: http://ja.doukaku.org/comment/4094
+  :user_name: にしお
+  :user_url: /web/20080221112909/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/16 02:53 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">これは「k個目」のkで、rは「最後に挿入された石の位置」です。\r\nk番目を順番に差し込んで行っていて、その位置がrなんです。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4191'
+  :parent_id: '79'
+  :url: http://ja.doukaku.org/comment/4191
+  :user_name: horiuchi
+  :user_url: /web/20080221112909/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2007/11/18 05:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Javaで素朴な実装をしてみました。100000 で約6秒でした。\n最初は、LinkedListで実装したのですが計測したところArrayListの方が早かったです。</p>\n\n\t"
+  :code: |
+    import java.util.ArrayList;
+    import java.util.List;
+
+    public class Answer79 {
+        public static int choice(int count, int start, int move) {
+            List&lt;Integer&gt; list = new ArrayList&lt;Integer&gt;();
+            for (int index = 0; index &lt; count; index++) list.add(index);
+
+            for (int index = (start - 1) % count; list.size() &gt; 1; index = (index - 1 + move) % list.size()) {
+                list.remove(index);
+            }
+            return list.get(0) + 1;
+        }
+
+        public static void main(String[] args) {
+            System.out.println(choice(8, 5, 3));
+            System.out.println(choice(10000, 10000, 10000));
+            System.out.println(choice(100000, 100000, 100000));
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '4252'
+  :parent_id: '79'
+  :url: http://ja.doukaku.org/comment/4252
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20080221112909/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2007/11/19 11:44 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <pre class=\"compact\">（foldl ではなく）正格評価する foldl' を使ったバージョンです。\r\nm
+    は本質的でないので勝手に「札には 0 から n-1 までの数字が書かれていて\r\n0 からスタート」という問題にしました。\r\n\r\nさらに効率アップする規則がないか少し考えたんですが見つけられませんでした。\r\n（c
+    が k よりかなり大きいときは r `divMod` (k-1) した方が得ですが\r\nあまり本質的ではないですね）\r\n\r\nただし k == 2
+    のときは面白い規則があり「たけしのコマネチ大学数学科」\r\nでも取り上げられたようです。\r\n</pre>\n\t"
+  :code: |
+    import Data.List (foldl')
+
+    mamakotate n k = n - (foldl' (\r c -&gt; (r-k) `mod` c + 1) 0 [1..n-1])
+  :tags: []
+  :references:
+    :url: 
+    :title: 

@@ -1,0 +1,834 @@
+---
+:id: '47'
+:title: ビンゴの結果を整形表示
+:comments:
+- :id: '3403'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/3403
+  :user_name: raynstard
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2007/08/18 12:17 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  「<a href=\"/web/20081120011530/http://ja.doukaku.org/46/\">重複無し乱数</a>」の続編です。\r\n<p>\r\n「重複無し乱数」で作ったbingo関数の結果を下のように「何番目の乱数か」とセットにして10個ずつ折り返して表示するコードを書いてください。\r\n</p>\n<pre>\r\n&gt;&gt;&gt;
+    bingo(30)\r\n  1  2  3  4  5  6  7  8  9 10\r\n 29 14 16 13 30 15 22 11 25  9\r\n\r\n
+    11 12 13 14 15 16 17 18 19 20\r\n 23  4 18  5 28 17  8 12 21 20\r\n\r\n 21 22
+    23 24 25 26 27 28 29 30\r\n 26  6  2 19  1  7 10 27  3 24\r\n\r\n&gt;&gt;&gt;
+    bingo(35)\r\n  1  2  3  4  5  6  7  8  9 10\r\n  7 15  3 32  1 16 17 28  6 29\r\n\r\n
+    11 12 13 14 15 16 17 18 19 20\r\n 19 23 30 26 20  5 12  2 25 31\r\n\r\n 21 22
+    23 24 25 26 27 28 29 30\r\n 35 13 24 18 11  8 10 34 22 21\r\n\r\n 31 32 33 34
+    35\r\n  9  4 27 33 14\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2302'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2302
+  :user_name: lkr
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/393/
+  :language: Ruby
+  :time: 2007/08/18 12:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">enumeratorで</pre>\n\t"
+  :code: "def bingo(num)\n\t(1..num).to_a.sort_by{ rand }\nend\n\nrequire 'enumerator'\nbingo(35).enum_slice(10).each_with_index{
+    |e,index|\n\tnum=index * 10 + 1\n\ttmpl=([\"%02s\"] * e.size).join(' ')\n\n\tputs
+    tmpl % (num .. num + e.size).to_a\n\tputs tmpl % e\n\tputs \"\"\n}\n"
+  :tags:
+  - ruby
+  :references:
+    :url: 
+    :title: 
+- :id: '2304'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2304
+  :user_name: 匿名
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/08/18 13:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  リストを選んだ意味があまりなくなってしまいましたが、前のお題にそのまま出力機能を加えました。\n\t"
+  :code: |
+    import java.util.*;
+
+    public class Sample2 {
+        public static List&lt;Integer&gt; bingo(int num) {
+            Integer[] deck = new Integer[num];
+            for (int i = 0; i &lt; num; i++) {
+                deck[i] = i + 1;
+            }
+            List&lt;Integer&gt; nums = (List&lt;Integer&gt;) Arrays.asList(deck);
+            Collections.shuffle(nums);
+            return nums;
+        }
+
+        public static void printBingo(int num) {
+            List&lt;Integer&gt; nums = bingo(num);
+            for (int j = 0; j &lt; num; j += 10) {
+                for (int i = j; i &lt; j + 10 &amp;&amp; i &lt; num; i++) {
+                    System.out.printf("%3d", i + 1);
+                }
+                System.out.println();
+                for (int i = j; i &lt; j + 10 &amp;&amp; i &lt; num; i++) {
+                    System.out.printf("%3d", nums.get(i));
+                }
+                System.out.printf("%n%n");
+            }
+        }
+
+        public static void main(String[] args) {
+            printBingo(Integer.parseInt(args[0]));
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2305'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2305
+  :user_name: nobsun
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/18 13:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">showBingoがビンゴの整数リストを文字列に変換する\r\n関数。第一引数は数字の最大桁数\r\nshuffle
+    は前回と同じだけど再掲\r\n</pre>\n\t"
+  :code: |
+    module Main (main) where
+
+    import Data.List
+    import System.Environment
+    import System.Random
+    import Text.Printf
+
+    shuffle :: [a] -&gt; StdGen -&gt; Int -&gt; [a] -&gt; [a]
+    shuffle acc _ 0 _  = acc
+    shuffle acc g n xs = case randomR (0,n-1) g of
+     (i,g') -&gt; case splitAt i xs of
+                 (ys,z:zs) -&gt; shuffle (z:acc) g' (n-1) (ys++zs)
+
+    main :: IO ()
+    main = do { x:_ &lt;- getArgs
+              ; g0  &lt;- getStdGen
+              ; let n = read x
+              ; putStr $ showBingo (length x)
+              $ shuffle [] g0 n [1..n]
+              }
+
+    showBingo :: Int -&gt; [Int] -&gt; String
+    showBingo w = unlines . map (showLines w) . map unzip . slice 10 . zip [1..]
+
+    slice :: Int -&gt; [a] -&gt; [[a]]
+    slice n = unfoldr phi
+      where phi [] = Nothing
+            phi xs = Just $ splitAt n xs
+
+    showLines :: Int -&gt; ([Int],[Int]) -&gt; String
+    showLines n (xs,ys) = unlines [ unwords $ map (pr n) xs
+                                  , unwords $ map (pr n) ys]
+
+    pr :: Int -&gt; Int -&gt; String
+    pr w = printf $ "%"++show w++"d"
+
+    {-
+    % ./bingo 30
+     1  2  3  4  5  6  7  8  9 10
+    19 26  2  6 11 17 23  8  7  5
+
+    11 12 13 14 15 16 17 18 19 20
+    18 13 16 12 22 24  4 21  1 25
+
+    21 22 23 24 25 26 27 28 29 30
+     3 29 10 27 15  9 28 14 20 30
+
+    % ./bingo 35
+     1  2  3  4  5  6  7  8  9 10
+    20 32 18  3 29 13 33  1 24 21
+
+    11 12 13 14 15 16 17 18 19 20
+    17 12 34  4 25  8 31 30 14 35
+
+    21 22 23 24 25 26 27 28 29 30
+    10 11  7 16 19 15 23 27  9 22
+
+    31 32 33 34 35
+     2 28  5  6 26
+    -}
+  :tags:
+  - Text.Printf
+  :references:
+    :url: 
+    :title: 
+- :id: '2306'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2306
+  :user_name: ocean
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/08/18 13:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">bingo(100)でも動作するようにしたつもり。</pre>\n\t"
+  :code: |
+    import random
+    import itertools
+
+    division = 10
+
+    def bingo(count):
+        a = [i + 1 for i in xrange(count)]
+        random.shuffle(a)
+        width = len(str(count)) + 1
+        it = ((i + 1, n) for (i, n) in enumerate(a))
+        while 1:
+            b = list(itertools.islice(it, division))
+            if not b:
+                break
+            for i in xrange(2):
+                print "".join(str(c[i]).rjust(width) for c in b)
+            print
+
+    def main():
+        bingo(30)
+        bingo(35)
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2307'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2307
+  :user_name: nobsun
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/08/18 13:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">showBingo に (length x) を渡したけど、\r\n(length (show
+    n))を渡す方がよいかもです。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2310'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2310
+  :user_name: naoya_t
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/348/
+  :language: awk
+  :time: 2007/08/18 14:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">表示方法のみの変更なので show() 関数だけ変更</pre>\n\t"
+  :code: "BEGIN {\n\tsrand\n}\n\n{\n\tn = $1\n\n\tbingo(n,ar)\n\tshow(n,ar)\n}\n\nfunction
+    show(n,ar, i,j,k,s1,s2)\n{\n\ts1 = s2 = \"\"\n\tk = length(n)\n\n\tfor (i=1; i&lt;=n;
+    i++) {\n\t\ts1 = s1 sprintf(\" %\"k\"d\", i+j)\n\t\ts2 = s2 sprintf(\" %\"k\"d\",
+    ar[i+j])\n\t\tif (i % 10 == 0) {\n\t\t\tprint s1\n\t\t\tprint s2\n\t\t\tprint
+    \"\"\n\t\t\ts1 = s2 = \"\"\n\t\t}\n\t}\n\tif (s1 !~ /^$/) { # n % 10 &gt; 0\n\t\tprint
+    s1\n\t\tprint s2\n\t\tprint \"\"\n\t}\n}\n\nfunction rand_between_1_and_n(n, x)\n{\n\tx
+    = 1 + int(rand * n)\n\treturn (x &lt;= n)? x : rand_between_1_and_n(n)\n}\n\nfunction
+    bingo(n,ar,  i,x,y,t)\n{\n\tdelete ar;\n\tfor (i=1; i&lt;=n; i++) ar[i] = i\n\n\tfor
+    (i=n*2; i&gt;0; i--) {\n\t\tx = rand_between_1_and_n(n)\n\t\ty = rand_between_1_and_n(n)\n\t\tif
+    (x == y) continue\n\n\t\tt = ar[x] ; ar[x] = ar[y] ; ar[y] = t\n\t}\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2311'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2311
+  :user_name: naoya_t
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/348/
+  :language: 
+  :time: 2007/08/18 14:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">出力はこんな感じ\r\n% awk -f bingo2.awk\r\n5\r\n 1
+    2 3 4 5\r\n 1 4 5 2 3\r\n\r\n10\r\n  1  2  3  4  5  6  7  8  9 10\r\n  3  8  2
+    \ 7  1  5  4  9 10  6\r\n\r\n15\r\n  1  2  3  4  5  6  7  8  9 10\r\n  9  5 13
+    \ 2 15 14  6 11  4 12\r\n\r\n 11 12 13 14 15\r\n  8 10  3  1  7\r\n\r\n19\r\n
+    \ 1  2  3  4  5  6  7  8  9 10\r\n  5 11 10  1 12 15  3  7 17  9\r\n\r\n 11 12
+    13 14 15 16 17 18 19\r\n 19 18  8  6  2  4 16 14 13\r\n\r\n20\r\n  1  2  3  4
+    \ 5  6  7  8  9 10\r\n  1  4 10  9 14 20  3  6 18 19\r\n\r\n 11 12 13 14 15 16
+    17 18 19 20\r\n 17 15  8 16 13  5 12  2  7 11\r\n\r\n21\r\n  1  2  3  4  5  6
+    \ 7  8  9 10\r\n  5 16 11  4 10 15 18  2  1  9\r\n\r\n 11 12 13 14 15 16 17 18
+    19 20\r\n 19  7  6  8 13  3 12 14 21 17\r\n\r\n 21\r\n 20\r\n\r\n30\r\n  1  2
+    \ 3  4  5  6  7  8  9 10\r\n 21 26  7 24 23  5 17 10 16  9\r\n\r\n 11 12 13 14
+    15 16 17 18 19 20\r\n 11 20 12 30  1 14 18  4 15  6\r\n\r\n 21 22 23 24 25 26
+    27 28 29 30\r\n 22  8  3 25 28 19 27 29 13  2\r\n\r\n100\r\n   1   2   3   4   5
+    \  6   7   8   9  10\r\n  55  98  44  13  99  81  53  61  56  87\r\n\r\n  11  12
+    \ 13  14  15  16  17  18  19  20\r\n  82  24  52  92  66  51  18  70  19  58\r\n\r\n
+    \ 21  22  23  24  25  26  27  28  29  30\r\n  41  47  39  43  94   8  80  59  42
+    \ 79\r\n\r\n  31  32  33  34  35  36  37  38  39  40\r\n  27  73  36  12  62  37
+    \ 83   9  54  96\r\n\r\n  41  42  43  44  45  46  47  48  49  50\r\n  69  84  45
+    \ 17  26 100  50  67   6   1\r\n\r\n  51  52  53  54  55  56  57  58  59  60\r\n
+    \ 15  65   4  33  16   5  78  23  74  75\r\n\r\n  61  62  63  64  65  66  67  68
+    \ 69  70\r\n  63  38  40  28  91  89  72  34  77  35\r\n\r\n  71  72  73  74  75
+    \ 76  77  78  79  80\r\n  11   2  21  30  49   3  71  57  25  31\r\n\r\n  81  82
+    \ 83  84  85  86  87  88  89  90\r\n  14  10  93  60  85  90  46  88  48  32\r\n\r\n
+    \ 91  92  93  94  95  96  97  98  99 100\r\n  22  95   7  68  29  20  64  97  86
+    \ 76\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2312'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2312
+  :user_name: 匿名
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/08/18 14:44 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">bingo関数自体は#2255からいただきました。\r\n</pre>\n\t"
+  :code: |
+    from random import shuffle
+
+    def bingo(n):
+      l = range(1, n+1)
+      shuffle(l)
+      return l
+
+    def bingo_print(l):
+      fmt = '%%%sd' % len(str(len(l)))
+      a = range(1, len(l)+1)
+      for i in range(0, len(l), 10):
+        print ' '.join([fmt % j for j in a[i:i+10]])
+        print ' '.join([fmt % j for j in l[i:i+10]]) + '\n'
+
+    bingo_print(bingo(30))
+    bingo_print(bingo(35))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2314'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2314
+  :user_name: iwk
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/49/
+  :language: OCaml
+  :time: 2007/08/18 15:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    #light
+    let rec bingo n = shuffle [1..n]
+    and  shuffle ls =
+        let rnd = new System.Random()
+        List.sort (fun x y-&gt; rnd.Next(-1,2)) ls
+
+    let printLine ln n =
+        let rec len (m:int) = ( m.ToString() ).Length
+        and mk (m:int) = (String.make ((len n) - (len m)) ' ') ^ m.ToString()
+        and (|SplitAt|) m xs = List.partition (fun (x,i) -&gt; i &lt;= m) xs
+        and mkLns c = function
+            | [] -&gt; []
+            | SplitAt c (head,tail) -&gt; (List.unzip head)::mkLns (c+ln) tail
+        and concatMap f xs = String.concat " " &lt;| List.map f xs
+        and bs = mkLns ln (List.zip (bingo n) [1..n])
+        [for (xs,ids) in bs -&gt; (concatMap mk xs) ^ "\n" ^ (concatMap mk ids)]
+        |&gt; String.concat "\n"
+        |&gt; printf "%s\n"
+
+    let bingoPr = fun n -&gt; printLine 10 n
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '2315'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2315
+  :user_name: iwk
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/49/
+  :language: 
+  :time: 2007/08/18 15:11 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">修正。\r\n|&gt; String.concat \"\\n\"\r\nじゃなくて\r\n|&gt;
+    String.concat \"\\n\\n\"\r\nとしないとお題のようにならないですね。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2317'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2317
+  :user_name: yuin
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/08/18 15:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\n\n\n\t"
+  :code: |
+    import scala.util.Sorting.stableSort
+
+    def bingo(n:int) = {
+      type PList = List[Pair[int,int]]
+      val lst = stableSort[int,double](1 to n,x=&gt;Math.random).zipWithIndex.toList
+      val w = lst.size.toString.size+1
+      def format(n:int) = String.format("%"+w+"d",Array(n.asInstanceOf[AnyRef]))
+
+      def printline(x:PList) = {
+        println(x.map(y=&gt;format(y._2+1)).mkString(""))
+        println(x.map(y=&gt;format(y._1)).mkString("")+"\n")
+      }
+
+      def show(l:PList):unit = l.splitAt(10) match {
+        case (l,Nil) =&gt; printline(l)
+        case (l,ls) =&gt;  printline(l);show(ls)
+      }
+
+      show(lst)
+    }
+
+    bingo(30)
+    bingo(35)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2319'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2319
+  :user_name: jz5
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/344/
+  :language: VB
+  :time: 2007/08/18 15:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">bingo関数自体が結果を出力していたので出力部分を変更。\r\nリストに何番目かの値もInsertして出力してます。全然短くできず。</pre>\n\t"
+  :code: |
+    Public Sub bingo(ByVal n As Integer)
+        Dim list As New List(Of Integer)
+        For i As Integer = 1 To n
+            list.Add(i)
+        Next
+        Dim r As New Random
+        For i As Integer = 1 To n * 2
+            Dim index As Integer = r.Next(0, n)
+            list.Add(list(index))
+            list.RemoveAt(index)
+        Next
+
+        For i As Integer = 0 To n - 1
+            list.Insert((i \ 10) * 20 + i Mod 10, i + 1)
+        Next
+
+        For i As Integer = 1 To list.Count - 1
+            Console.Write(list(i - 1).ToString.PadLeft(n.ToString.Length) &amp; Space(-CInt(CBool(i Mod 10 &lt;&gt; 0))))
+            If i Mod 10 = 0 OrElse i = list.Count - n Mod 10 Then
+                Console.WriteLine(New String(ControlChars.Lf, -CInt(CBool(i Mod 20 = 0))))
+            End If
+        Next
+        Console.WriteLine(list(list.Count - 1))
+    End Sub
+  :tags:
+  - VB8.0
+  :references:
+    :url: 
+    :title: 
+- :id: '2320'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2320
+  :user_name: nskj77
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/375/
+  :language: Haskell
+  :time: 2007/08/18 17:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ちょっとゴチャゴチャしてる。</pre>\n\t"
+  :code: "import Random (randomRIO)\nimport Data.List ((\\\\),elemIndex)\nimport Data.Maybe
+    (fromJust)\nimport Control.Monad (zipWithM_)\n\nbingo :: Int -&gt; IO [Int]\nbingo
+    n = b [1..n] n []\n  where b [] n     ret = return ret \n        b xs (n+1) ret
+    = do\n          r &lt;- randomRIO (0,n)\n          let m = xs !! r in b (xs \\\\
+    [m]) n (ret ++ [m])\n\nshowBingo :: Int -&gt; IO ()\nshowBingo n = bingo n &gt;&gt;=
+    \\xs -&gt; zipWithM_ printBingo (f idxs) (f (t xs))\n  where idxs = [1..n]\n        f
+    = map concat . map u . s \n        s xs = if xs == [] then [] else let (h,t) =
+    splitAt 10 xs in h:s t\n        t xs = map ((1+) . fromJust . (\\x -&gt; x `elemIndex`
+    idxs)) xs\n        u xs = let len = length (show n) in map (surpress (len + 1)
+    . show) xs\n        surpress n xs = reverse $ take n $ reverse xs ++ cycle \"
+    \" \n        printBingo x y = putStrLn x &gt;&gt; putStrLn y &gt;&gt; putStrLn
+    \"\"\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2321'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2321
+  :user_name: sumim
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/18 17:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Squeak Smalltalk で。</pre>\n\t"
+  :code: "| n size bingo streams |\nn := 35.\nsize := n printString size + 1.\nbingo
+    := (1 to: n) asArray shuffled readStream.\nstreams := {String new writeStream.
+    String new writeStream}.\nWorld findATranscript: nil.\n1 to: n do: [:idx |\n\t{idx.
+    bingo next} with: streams do: [:int :strm |\n\t\tstrm nextPutAll: (int printPaddedWith:
+    $  to: size)].\n\t((idx isDivisibleBy: 10) or: [idx = n]) ifTrue: [\n\t\tTranscript
+    cr.\n\t\tstreams do: [:strm | Transcript cr; show: strm contents. strm reset]]]\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '2322'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2322
+  :user_name: shiro
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/08/18 18:38 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">シーケンスのshuffleはライブラリに追加しようかなあ。\r\n\r\n今回のお題はshow-bingo関数で実装してます。\r\n</pre>\n\t"
+  :code: |
+    (use srfi-1)
+    (use srfi-27)
+    (use srfi-42)
+    (use gauche.sequence)
+    (use util.list)
+
+    (define (shuffle! seq)
+      (do-ec (: n (- (size-of seq) 1) 0 -1)
+             (let1 p (random-integer (+ n 1))
+               (unless (= p n)
+                 (let1 tmp (ref seq n)
+                   (set! (ref seq n) (ref seq p))
+                   (set! (ref seq p) tmp)))))
+      seq)
+
+    (define (bingo n)  (shuffle! (iota n 1)))
+
+    (define (show-bingo lis)
+      (do-ec (: row (slices (zip (iota (length lis) 1) lis) 10))
+             (begin
+               (do-ec (: p row) (format #t "~3d" (car p))) (newline)
+               (do-ec (: p row) (format #t "~3d" (cadr p))) (newline) (newline))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '2323'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2323
+  :user_name: matyr
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/08/18 23:18 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\"> ブラウザとCScriptに対応。</pre>\n\t"
+  :code: |
+    Array.prototype.$huffle = function(){
+      for(var $, r, i = this.length; i;)
+        $ = this[r = Math.random() * i-- | 0], this[r] = this[i], this[i] = $;
+      return this;
+    };
+    function bingo(n, w){
+      if(!w) w = 10;
+      for(var a = [], i = 1; i &lt;= n;) a[a.length] = i++;
+      var b = a.concat().$huffle(), r = [], l = (' '+ n).length;
+      while(a.length) r[r.length] = a.splice(0, w).join(' ') +'\n'+ b.splice(0, w).join(' ');
+      r = r.join('\n\n').replace(/ *\d+/g, function($){ while($.length &lt; l) $ = ' '+ $; return $ });
+      if(typeof WSH != 'undefined') WSH.stdOut.write(r);
+      else document.write('&lt;pre&gt;'+ r +'&lt;/pre&gt;');
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2324'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2324
+  :user_name: 匿名
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/08/19 03:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">出力データをまとめてprintしてみた。</pre>\n\t"
+  :code: |
+    from random import shuffle
+
+    def bingo(n):
+      l = range(1, n+1)
+      shuffle(l)
+      return l
+
+    def bingo_print(l):
+      fmt = '%%%sd' % len(str(len(l)))
+      a = [fmt % i for i in range(1, len(l)+1)]
+      b = [fmt % i for i in l]
+      print '\n'.join(['%s\n%s\n' % (' '.join(a[i:i+10]), ' '.join(b[i:i+10])) for i in range(0, len(l), 10)])
+
+    bingo_print(bingo(30))
+    bingo_print(bingo(35))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2325'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2325
+  :user_name: cats
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/08/19 06:00 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    using System;
+    using System.Text;
+    class Program
+    {
+      static void Main()
+      {
+        PrintBingo(35);
+      }
+      static void PrintBingo(int n)
+      {
+        Random r = new Random();
+        int[] a = new int[n];
+        for (int i = 0; i &lt; n; ++i) a[i] = i + 1;
+        for (int i = n; i &gt; 1; --i)
+        {
+          int k = r.Next(i);
+          int tmp = a[i - 1];
+          a[i - 1] = a[k];
+          a[k] = tmp;
+        }
+        for (int i = 0; i &lt; n; i++)
+        {
+          if (i % 10 == 0)
+          {
+            if (i &gt; 0) Console.WriteLine("\n");
+            for (int j = i; j &lt; Math.Min(n, i + 10); j++)
+              Console.Write("{0,3}", j + 1);
+            Console.WriteLine();
+          }
+          Console.Write("{0,3}", a[i]);
+        }
+        Console.WriteLine();
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2327'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2327
+  :user_name: smeghead
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/31/
+  :language: Common
+  :time: 2007/08/19 10:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  bingo関数自体#2289から少し変更しました。\r<br>(print-bingo (bingo 25))\n\t"
+  :code: "(defun bingo (n)\n  (let ((*random-state* (make-random-state t)))\n    (loop
+    repeat n\n          for rand = (loop \n                       (let ((rand (1+
+    (random n))))\n                         (if (not (member rand lst))\n                           (return
+    rand))))\n          collect rand into lst\n          finally (return lst))))\n\n(defun
+    print-bingo (lst)\n  (let ((index 0)\n        (format-string (concatenate \n                         'string\n
+    \                        \"~{~\"\n                         (princ-to-string (1+
+    (length (princ-to-string (length lst)))))\n                         \"d~}~%\"
+    )))\n    (loop for elements on lst by #'(lambda (x) (nthcdr 10 x))\n          do
+    (loop repeat 10\n                   for e in elements\n                   collect
+    (incf index) into column-name\n                   collect e into column-value\n
+    \                  finally (format t format-string column-name)\n                           (format
+    t format-string column-value)\n                           (terpri)))))\n"
+  :tags:
+  - clisp
+  :references:
+    :url: 
+    :title: 
+- :id: '2329'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2329
+  :user_name: matyr
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/343/
+  :language: 
+  :time: 2007/08/19 12:12 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  ブックマークレット版： javascript:(function(n,w,a,b,r,l,i,$){for(a=[],l=('_'+n).length,i=0;i&lt;n;a.push(++i));for(b=a.concat();n;$=b[i=Math.random()*n--|0],b[i]=b[n],b[n]=$);for(r=[];a.length;r.push(a.splice(0,w).join('
+    ')+'\\n'+b.splice(0,w).join(' ')));return'&lt;pre&gt;'+r.join('\\n\\n').replace(/
+    *\\d+/g,function($){while($.length&lt;l)$=' '+$;return $})+'&lt;/pre&gt;'})(35,10)\n\t"
+  :code: ''
+  :tags:
+  - Bookmarklet
+  :references:
+    :url: 
+    :title: 
+- :id: '2330'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2330
+  :user_name: raynstard
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/127/
+  :language: Perl
+  :time: 2007/08/19 14:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">出力用の関数を追加。\r\nちょっとドロくさいかな？</pre>\n\t"
+  :code: |
+    sub bingo($;)
+    {
+        my $x = shift ;
+        my @num = (1 .. $x);
+        my $r;
+        for( my $n = $x; $n&gt;0; $n --)
+        {
+            $r = rand; $r *= 1000;
+            push(@num, splice(@num, $r % $n, 1) );
+        }
+        return @num;
+    }
+
+    sub printTable(@)
+    {
+        my @T = @_;
+        my $N, $K;
+
+        printf("[%d] =&gt; \n", $#T+1);
+        for( $N=0; $N&lt;=$#T; $N = $K + 1)
+        {
+            # 番号
+            for( $K=$N; $K&lt;$#T; $K ++ )
+            {
+                last if ($K-$N) &gt;= 9;
+                printf("%2d ", $K+1);
+            }
+            printf("%2d\n", $K+1);
+
+            # 乱数
+            for( $K=$N; $K&lt;$#T; $K ++ )
+            {
+                last if ($K-$N) &gt;= 9;
+                printf("%2d ", $T[$K]);
+            }
+            printf("%2d\n", $T[$K]);
+
+            printf("\n");
+        }
+    }
+
+    my @table;
+
+    srand;
+    @table = bingo(30); ::printTable(@table);
+    @table = bingo(35); ::printTable(@table);
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2332'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2332
+  :user_name: hirataka
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/233/
+  :language: PHP
+  :time: 2007/08/19 15:15 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: "&lt;?php\nfunction bingo($n){\n\t$a = range(1, $n);\n\tshuffle($a);\n\t\n\treturn
+    $a;\n}\n\nfunction show($a){\n\t$max = strlen(max($a));\n\t$html = array(\"&lt;pre&gt;\\n\");\n\t\n\tfor($i=0;
+    $i&lt;count($a); $i+=10){\n\t\tfor($j=$i, $number=$counter=array(); $j&lt;$i+10;
+    $j++){\n\t\t\tif($j&gt;=count($a)) break;\n\t\t\t\n\t\t\t$counter[] = sprintf(\"%
+    {$max}d\", $j+1);\n\t\t\t$number[] = sprintf(\"% {$max}d\", $a[$j]);\n\t\t}\n\t\t\n\t\t$html[]
+    = sprintf(\"%s\\n%s\\n\\n\", join(\" \", $counter), join(\" \", $number));\n\t}\n\t\n\t$html[]
+    = \"&lt;/pre&gt;\";\n\t\n\treturn join(\"\", $html);\n}\n\necho show(bingo(30));\necho
+    show(bingo(35));\n?&gt;\n"
+  :tags:
+  - PHP3.0.8
+  - PHP4
+  - PHP5
+  :references:
+    :url: 
+    :title: 
+- :id: '2343'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2343
+  :user_name: kzfm
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/106/
+  :language: Perl
+  :time: 2007/08/20 11:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">10個ずつspliceすれば綺麗に書けると思ったんだけど、なんかごちゃごちゃしてしまった。</pre>\n\t"
+  :code: |
+    use List::Util qw/shuffle/;
+    sub bingo {p(shuffle(1..$_[0]));}
+
+    sub p {
+     my $i = 1;
+     while(my @sublist = splice(@_,0,10)){
+       for my $seq ($i..$i+scalar(@sublist)-1){printf "%3d", $seq;};
+       print "\n";
+       for my $num (@sublist){printf "%3d", $num;};
+       print "\n\n";
+       $i = $i + scalar(@sublist);
+     }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2344'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2344
+  :user_name: kzfm
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/106/
+  :language: 
+  :time: 2007/08/20 11:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あら、しまった。言語をperlにし忘れた。修正できん。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2348'
+  :parent_id: '47'
+  :url: http://ja.doukaku.org/comment/2348
+  :user_name: hamano
+  :user_url: /web/20081120011530/http://ja.doukaku.org/user/25/
+  :language: C
+  :time: 2007/08/20 13:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">混ざり具合は良くないですが(-_-</pre>\n\t"
+  :code: |-
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+
+    static int cmp(const void *p1, const void *p2)
+    {
+        return (rand() % 2)?1:-1
+  :tags: []
+  :references:
+    :url: 
+    :title: 

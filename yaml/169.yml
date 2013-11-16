@@ -1,0 +1,1233 @@
+---
+:id: '169'
+:title: メソッドのフック
+:comments:
+- :id: '6017'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6017
+  :user_name: todogzm
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/550/
+  :language: 
+  :time: 2008/03/17 07:30 GMT
+  :vote_count: '9'
+  :vote_score: '1'
+  :body: "\r\n\t  <p>例えば、あるクラスのあるメソッドを実行する前に他の処理を呼びたい(例えばログやトランザクション開始など)。\nまた、そのメソッドの終了後にも何らかの後処理を呼びたい(トランザクション終了など)。</p>\n<p>そのような、メソッドに対するフック処理を書いてください。\nライブラリを使用してメソッドのフックを実現した場合は\nライブラリの名前を紹介してくれると助かります。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6028'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6028
+  :user_name: 匿名
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/03/21 05:49 GMT
+  :vote_count: '8'
+  :vote_score: '-4'
+  :body: "\n\t  <p>そういう特定の環境やパラダイムに特化したお題はこの場にふさわしくないと思いますが。\nそういうお題ならcodeなにがしの方が向いているのでは？</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6029'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6029
+  :user_name: sawat
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/322/
+  :language: JavaScript
+  :time: 2008/03/21 05:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  こんなでいいですか？\n\t"
+  :code: "function addHock(obj, method_name, before, after) {\n  var orignal = obj[method_name];\n
+    \ obj[method_name] = function() {\n    var error, ret;\n    before.apply(this,
+    arguments);\n    try {\n      ret = orignal.apply(this, arguments);\n    } catch
+    (e) {\n      error = e;\n    }\n    after.call(this, arguments, ret, error);\n
+    \   if (error) throw error;\n    return ret;\n  };\n  return orignal;\n}\n\naddHock(String.prototype,
+    \"split\", \n    function(ptn){alert(\"split:\"+ptn);}, \n    function(args,ret,e){alert(\"return:\"+ret);});\n\n\"hogehoge\".split(\"g\");\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6030'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6030
+  :user_name: tenka
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/664/
+  :language: C
+  :time: 2008/03/21 06:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">C#ってデフォルト引数使えないの初めて知った・・・。\r\n仕方ないのでnullかどうかで判別</pre>\n\t"
+  :code: "using System;\n\ndelegate void func();\n\nclass OpenFile\n{\n    public
+    OpenFile() { }\n\n    public void readFile(string filename,\n                         func
+    begin,\n                         func end)\n    {\n        if (begin != null)\n
+    \           begin();\n        else\n            dummy();\n\n        try\n        {\n
+    \           Console.WriteLine(\n                new System.IO.StreamReader(\n
+    \                   filename\n                ).ReadToEnd()\n            );\n
+    \       }\n        catch\n        { \n        \n        }\n\n        if (end !=
+    null)\n            end();\n        else\n            dummy();\n    }\n    private
+    void dummy() { Console.WriteLine(\"dummy!\"); }\n    public void Begin() { Console.WriteLine(\"Begin!\");
+    }\n    public void End() { Console.WriteLine(\"End!\"); }\n}\n\nclass Program\n{\n
+    \   static void Main(string[] args)\n    {\n        OpenFile of = new OpenFile();\n
+    \       string filename = @\"C:\\a.txt\";\n        \n        of.readFile(filename,
+    null, null);\n        Console.WriteLine();\n        of.readFile(filename, of.Begin,
+    null);\n        Console.WriteLine();\n        of.readFile(filename, null, of.End);\n
+    \       Console.WriteLine();\n        of.readFile(filename, of.Begin, of.End);\n
+    \       Console.WriteLine();  \n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6031'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6031
+  :user_name: todogzm
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/550/
+  :language: Java
+  :time: 2008/03/21 06:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>空気を読まんと投稿。\njava.lang.reflectパッケージを使用します。\nInvocationHandlerインタフェースのinvoke()メソッドで前処理、後処理を実装します。\nProxy.newProxyInstance()
+    で受け取ったインスタンスのメソッドを実行したときに、\nInvocationHandler.invoke()が動作します。</p>\n<p>インタフェースに対してのみ適用可能であることをお忘れなく。</p>\n<p>実行結果。</p>\n<p>proxy
+    = class test.hook.$Proxy0</p>\n<p>method called. name = execute</p>\n<p>ServiceImpl.execute()
+    called.</p>\n<p>method returned.</p>\n<p>return value = Hello, world.</p>\n\n\t"
+  :code: |
+    package test.hook;
+
+    import java.lang.reflect.InvocationHandler;
+    import java.lang.reflect.Method;
+    import java.lang.reflect.Proxy;
+
+    public class Hook {
+
+        public Hook() {
+            InvocationHandler handler = new TestInvocationHandler(new ServiceImpl());
+            Service service = (Service) Proxy.newProxyInstance(ServiceImpl.class.getClassLoader(), new Class[]{Service.class}, handler);
+
+            System.out.println("return value = " + service.execute());
+        }
+
+        public static void main(String[] args) {
+            new Hook();
+        }
+    }
+
+    /** サービスのインタフェース */
+    interface Service {
+
+        public String execute();
+    }
+
+    /** サービスの実装クラス */
+    class ServiceImpl implements Service {
+
+        public String execute() {
+            System.out.println("ServiceImpl.execute() called.");
+            return "Hello, world.";
+        }
+    }
+
+    /** メソッドのフックに使用するハンドラ */
+    class TestInvocationHandler implements InvocationHandler {
+
+        private Service service;
+
+        public TestInvocationHandler(Service service) {
+            this.service = service;
+        }
+
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            Object result;
+            System.out.println("proxy = " + proxy.getClass().toString());
+            System.out.println("method called. name = " + method.getName());  //前処理
+            result = method.invoke(service, args);  //実際の処理
+            System.out.println("method returned.");  //後処理
+            return result;
+        }
+    }
+  :tags: []
+  :references:
+    :url: /web/20090910034546/http://java.sun.com/j2se/1.5.0/ja/docs/ja/api/java/lang/reflect/Proxy.html
+    :title: Proxy (Java 2 Platform SE 5.0)
+- :id: '6032'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6032
+  :user_name: lieutar
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/618/
+  :language: Perl
+  :time: 2008/03/21 06:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>メソッドって言うか, 関数に対して. (勿論メソッドにも適用可能)\r</p>\n<p>無い関数に対しては,
+    勝手に作っちゃうけど良いっすか?</p>\n</div>\n\t"
+  :code: |
+    use warnings;
+    use strict;
+
+    {
+      my %hooks   = ();
+
+      sub add_hook($$&amp;;$){
+        my ($class, $meth, $sub, $is_after) = @_;
+        my $key = "$class\0$meth";
+        my $orig = UNIVERSAL::can($class, $meth) || sub(@){};
+        unless(exists $hooks{$key}){
+          my $pre   = [];
+          my $after = [];
+          my $hook  = [$pre, $after];
+          $hooks{$key} = $hook;
+          {
+            no strict;
+            no warnings;
+            my $proto = defined(prototype $orig) ? "(".prototype($orig).")" : "";
+            *{"${class}::${meth}"} =  eval qq{ sub ${proto}{
+              use strict;
+              foreach my \$fun (\@\$pre)
+                {
+                  \$fun-&gt;();
+                }
+
+              my \@R = ();
+              my \$R = undef;
+              if(wantarray)
+                {
+                  \@R = \$orig-&gt;(\@_);
+                }
+              else
+                {
+                  \$R = \$orig-&gt;(\@_);
+                }
+
+              foreach my \$fun (\@\$after)
+                {
+                  \$fun-&gt;();
+                }
+              wantarray ? \@R : \$R;
+            } };
+          }
+        }
+        push @{$hooks{$key}-&gt;[$is_after ? 1 : 0]}, $sub;
+      }
+    }
+
+
+    # TEST
+    use Data::Dumper;
+    {
+      package hoge;
+      sub hemo(){
+        print "HEMO\n";
+        (wantarray ? (1,2,3) : [1,2,3])
+      }
+    }
+
+    add_hook(hoge =&gt; hemo =&gt; sub(){
+               print "pre1\n";
+             });
+    add_hook(hoge =&gt; hemo =&gt; sub(){
+               print "pre2\n";
+             });
+
+    add_hook(hoge =&gt; hemo =&gt; sub(){
+               print "after1\n";
+             },1);
+    add_hook(hoge =&gt; hemo =&gt; sub(){
+               print "after2\n";
+             },1);
+
+    print join "-", hoge::hemo;
+    print "\n\n\n";
+    print Dumper scalar hoge::hemo;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6033'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6033
+  :user_name: 匿名
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/4/
+  :language: Common
+  :time: 2008/03/21 07:36 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">CLOS だと、単に:before, :after で追加定義するだけ。</pre>\n\t"
+  :code: "(defclass name () ())\n\n(defmethod say ((n name) string)\n  (format t \"~A\"
+    string))\n  \n(defmethod say :before ((n name) string)\n  (princ \"Hello,\"))\n(defmethod
+    say :after ((n name) string)\n  (princ \" speaking.\"))\n\n(say (make-instance
+    'name) \"Bobby\")\n;Hello,Bobby speaking.\n"
+  :tags:
+  - ＣＬＯＳ
+  :references:
+    :url: 
+    :title: 
+- :id: '6034'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6034
+  :user_name: sawat
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/322/
+  :language: 
+  :time: 2008/03/21 08:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>やってもうた。ハズカシス。\n×addHock → ○ addHook</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20090910034546/http://dictionary.goo.ne.jp/search.php?MT=Hock&amp;kind=all&amp;mode=0&amp;kwassist=0
+    :title: goo辞書
+- :id: '6035'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6035
+  :user_name: sumim
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/03/21 08:54 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Squeak Smalltak で。AOP 拡張を施す AspectS というパッケージを用います（Squeak3.7 用）。\r<br><br>AsAspect を継承した AsFoo に次のメソッドを定義します。この例では、クラス Foo のインスタンスに #bar というメソッドを起動させたとき、トランスクリプトに時刻を出力します。\r<br><br>使用例：\r<br>| aspect |\r<br>aspect := AsFoo new.\r<br>aspect install\r<br>Foo new bar.   \"=&gt; 時刻出力\"\r<br>aspect uninstall\n\t"
+  :code: |
+    AsFoo &gt;&gt; adviceBefore
+        ^ AsBeforeAfterAdvice
+            qualifier: (AsAdviceQualifier attributes: #(receiverClassSpecific))
+            pointcut: [{AsJoinPointDescriptor targetClass: Foo targetSelector: #bar}]
+            beforeBlock: [:rcvr :args :aspect :client | Transcript cr; show: Time now]
+  :tags:
+  - AspectS
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '6037'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6037
+  :user_name: fujidig
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/507/
+  :language: Ruby
+  :time: 2008/03/22 00:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  #6029を参考にしました。\n\t"
+  :code: |
+    def add_hook( klass, method, before, after )
+        klass.instance_eval do
+            original = instance_method( method )
+            define_method( method ) do |args|
+                before.call( self, args )
+                begin
+                    result = original.bind( self ).call( *args )
+                rescue Exception =&gt; e
+                    after.call( self, args, result, e )
+                else
+                    after.call( self, args, result, nil )
+                end
+                result
+            end
+        end
+    end
+
+    add_hook( String, :split, proc{|s,*|puts "split:#{s}"},
+        proc{|s,a,r,e|puts"return:#{r.inspect}"} )
+
+    p 'hoge'.split(//)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6038'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6038
+  :user_name: fujidig
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/507/
+  :language: 
+  :time: 2008/03/22 00:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  あ、rescueした後、再度同じ例外を発生されるのを忘れていました＞＜\r<br>rescue Exception =&gt; e\r<br>    after.call( self, args, result, e )\r<br>の後にraiseをつけます。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6039'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6039
+  :user_name: fujidig
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/507/
+  :language: 
+  :time: 2008/03/22 01:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  すいません、さらにもう一つ。\r<br><br>define_method( method ) do |args|\r<br>は引数が0個や1個の場合でも配列で得るように\r<br>define_method( method ) do |*args|\r<br>の方がよいですね。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6043'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6043
+  :user_name: talo
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/237/
+  :language: Java
+  :time: 2008/03/22 10:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>before/after は各 setter 経由で渡す。\nなんか他の見てると、題意から外れてる気がしなくもない・・。</p>\n\n\t"
+  :code: "public class HookSample {\n\n    private Runnable before = new Runnable()
+    { \n        public void run() { }\n    };\n    private Runnable after = new Runnable()
+    {\n        public void run() { }\n    };\n\n    public void call() {\n        before.run();\n
+    \       process();\n        after.run();\n    }\n\n    protected void process()
+    {\n        System.out.println(\"main process...\");\n    }\n\n    public void
+    setBefore(Runnable r) {\n        if (r != null) {\n            before = r;\n        }\n
+    \   }\n\n    public void setAfter(Runnable r) {\n        if (r != null) {\n            after
+    = r;\n        }\n    }\n\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6044'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6044
+  :user_name: syat
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/766/
+  :language: C
+  :time: 2008/03/22 15:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Cのマクロです。\r<br>define を関数定義の前にするとコンパイル通りません。\r<br>なんとか戻り値を取りたくて or にしました。\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+
+    int func(int n, char *s)
+    {
+      printf("n = %d  s = %s\n", n, s);
+      return n;
+    }
+
+    int before()
+    {
+      puts("入るよー");
+      return 0;
+    }
+    int after()
+    {
+      puts("出たよー");
+      return 0;
+    }
+
+    #define func(n,s) (before() | func(n,s) | after())
+
+    int main(void)
+    {
+      int ret = 0;
+      ret = func(3, "文字列");
+      printf("戻り値：%d\n", ret);
+      return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6048'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6048
+  :user_name: 匿名
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/03/23 02:09 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  その書き方ではCの言語仕様上では必ずbefore,func,afterの順に呼び出されることを保証できないのではないでしょうか。\r\n評価が記述されている順番に行われることが保証されているのは条件演算子(?:),論理和演算子(||),論理積演算子(&amp;&amp;),カンマ演算子(,)のみだったと記憶しています。\r\n(カンマ演算子以外は必ずしも全ての被演算子が評価されるとは限らないのでこのように列挙するのは微妙な気もしますが)\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6051'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6051
+  :user_name: 匿名
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/03/23 08:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>こんにちは。</p>\n<p>C++で関数テンプレートです。\n方法は、スレッドにすでに投稿されてる方々の方法を参考にしています。\n実際本気でやろうと思ったら、OSのAPI使うか、アセンブリいじる羽目になるので低級なほどシビアですね。</p>\n\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    ///////////////////////////////////////////
+    class Functer{
+        char* str_;
+    public:
+        Functer(char* str){str_ = str;}
+        int operator ()(){
+            printf("%s",str_);
+            return 0;
+        }
+    };
+    ///////////////////////////////////////////
+    int func(){
+        printf("I am Main Process!\n");
+        return 0;
+    }
+    ///////////////////////////////////////////
+    template&lt;class F1,class F2,class F3&gt;
+    int Call(F1&amp; Before,F2&amp; Main,F3&amp; After){
+        int ret;
+        Before();
+        ret = Main();
+        After();
+        return ret;
+    }
+    ////////////////////////////////////////////
+    int main(){
+        Functer F1("Before Process!\n"),F3("After Process!!\n");
+        Call(F1,func,F3);//関数形式で呼べれば何も問題ない。はず。
+        return 0;
+    }
+  :tags:
+  - C++
+  - VC2008
+  :references:
+    :url: 
+    :title: 
+- :id: '6052'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6052
+  :user_name: syat
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2008/03/23 10:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  あ、ほんとだ。\r<br>左からの評価が保証されるのは、&amp;&amp; 、 || 、カンマ演算子の「 , 」、三項演算子の「 :? 」だけみたいですね。（参考ページより)\r<br>gcc でコンパイルしてサクッと動いたからよしとしてしまいました。\r<br>コンマで戻り値を返すにはどうしたらよいでしょう?\r<br>Cだとその場で変数を宣言できないし…。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20090910034546/http://www.st.rim.or.jp/~phinloda/cqa/cqa7.html#Q15
+    :title: ''
+- :id: '6054'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6054
+  :user_name: syat
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2008/03/23 11:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>参考ページを貼り損ねてしまった・・・</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20090910034546/http://www.st.rim.or.jp/~phinloda/cqa/cqa7.html#Q15
+    :title: 初級C言語Q&amp;A
+- :id: '6055'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6055
+  :user_name: 匿名
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2008/03/23 12:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  題意を、呼び側も呼ばれ側も改造する事なく、開始終了のフックを行う事と解釈しました。\r<br><br>アスペクト指向を Java 上で実現する AspectJ を用いてメソッドの開始と終了にフックを行うサンプルです。下記の Sample クラスの printMessage メソッドに対するフックを行います。\r<br><br>public class Sample {\r<br>    public static void main(String[] args) {\r<br>        new Sample().printMessage(\"Hello, world.\");\r<br>    }\r<br><br>    public void printMessage(String message) {\r<br>        System.out.println(message);\r<br>    }\r<br>}\r<br><br>言語は AspectJ と言った方が良いかも知れません。\r<br>"
+  :code: |
+    public aspect Trace {
+
+        pointcut message(): call(* Sample.printMessage(..));
+
+        before(): message() {
+            System.out.println("*** begin of printMessage() ***");
+        }
+
+        after(): message() {
+            System.out.println("*** end of printMessage() ***");
+        }
+    }
+  :tags:
+  - AspectJ
+  :references:
+    :url: 
+    :title: 
+- :id: '6057'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6057
+  :user_name: 匿名
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/03/23 15:11 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>メソッド限定</p>\n\n\t"
+  :code: |
+    class Hoge(object):
+        def process(self):
+            print 'Hoge::process'
+
+    class HogeHook(Hoge):
+        def process(self):
+            print 'begin HogeHook::process'
+            super(HogeHook, self).process()
+            print 'end HogeHook::process'
+
+    Hoge = HogeHook
+
+    a = Hoge()
+    a.process()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6061'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6061
+  :user_name: syat
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2008/03/24 12:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  #6044（Cの関数フックもどき）について補足。\r<br>関数の戻り値を返せるようにするには、グローバル変数を使うのが簡単そうです。\r<br>または、afterで関数の戻り値を参照できたほうが便利なので、\r<br>( before(), after(func()) )\r<br>とするとよいかも。afterは引数をそのまま返します。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6062'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6062
+  :user_name: sekia
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/588/
+  :language: Perl
+  :time: 2008/03/24 14:35 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Perlの関数アトリビュートを使ってみました。</p>\n\n\t"
+  :code: |
+    #!/usr/bin/perl
+
+    use strict;
+    use warnings;
+
+    package HookAttribute;
+
+    use Attribute::Handlers;
+
+    sub Hook: ATTR(CODE) {
+      my (undef, undef, $referent, undef, $args) = @_;
+      $args = [$args] unless ref($args) eq "ARRAY";
+      my $hook_before = shift(@$args) eq "Before";
+
+      no strict "refs";
+      no warnings "redefine";
+      for my $funcname (@$args) {
+        next unless defined *{$funcname}{CODE};
+
+        my $funcref = \&amp;{$funcname};
+        *$funcname = $hook_before
+                   ? sub { $referent-&gt;(@_); goto &amp;$funcref }
+                   : sub { $funcref-&gt;(@_); $referent-&gt;(@_) }; #callerなどが狂う
+      }
+    }
+
+    #テストコード
+    package Foo;
+
+    use Perl6::Say;
+
+    sub new { bless {}, shift }
+    sub foo { say "foo" }
+
+    package FooHooks;
+
+    use base qw/HookAttribute/;
+    use Perl6::Say;
+
+    sub bar: Hook("Before", qw/Foo::foo/) { say "bar" }
+    sub baz: Hook("After", qw/Foo::foo/) { say "baz" }
+
+    Foo-&gt;new-&gt;foo;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6063'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6063
+  :user_name: みずしま
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/371/
+  :language: Scala
+  :time: 2008/03/24 16:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>traitを使ってみました。フックを差し込むクラスは\nfinalでない必要があります。\n参考URL：\n<a class=\"reference\"
+    href=\"/web/20090910034546/http://jonasboner.com/2008/02/06/aop-style-mixin-composition-stacks-in-scala/\">http://jonasboner.com/2008/02/06/aop-style-mixin-composition-stacks-in-scala/</a></p>\n\n\t"
+  :code: |
+    trait ReaderInterceptor {
+      def read() :Int
+    }
+
+    trait ReaderInterceptorExample extends ReaderInterceptor {
+      abstract override def read() :Int = {
+        val result = super.read
+        if(result != -1) println("character: " + result.toChar)
+        result
+      }
+    }
+
+    object Main extends Application {
+      import java.io._
+      val reader = new StringReader("ABCDE") with ReaderInterceptorExample
+      var ch :Int = 0
+      while({ch = reader.read; ch != -1}){}
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6066'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6066
+  :user_name: nori
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/59/
+  :language: Python
+  :time: 2008/03/25 03:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  decoratorを使ってmultithreadでクリティカルセクションを守るコードです。try/finallyを使っているのでlockのreleaseもれもないはずです。\r\naccessorでどのようにlockにアクセスするか指定できます。\n\t"
+  :code: |
+    def synchronized_with(accessor):
+      def bind(critical_section):
+        def synchronized(self, *args, **kw):
+          lock = accessor(self, *args, **kw)
+          lock.acquire()
+          try:
+            ret = critical_section(self, *args, **kw)
+          finally:
+            lock.release()
+          return ret
+        return synchronized
+      return bind
+  :tags: []
+  :references:
+    :url: /web/20090910034546/http://mail.python.org/pipermail/baypiggies/2007-November/002742.html
+    :title: ''
+- :id: '6073'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6073
+  :user_name: ocean
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/03/26 04:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>デコレータを使って。トランザクションとのことなので、一応例外が出ても \"after\" が表示されることを確認。</p>\n\n\t"
+  :code: |
+    def test(f):
+        def wrap(*a, **kw):
+            print "before"
+            try:
+                return f(*a, **kw)
+            finally:
+                print "after"
+        return wrap
+
+    class Foo:
+        @test
+        def foo(self, x, exc=False):
+            print x
+            if exc:
+                raise RuntimeError("foo")
+
+    if __name__ == '__main__':
+        Foo().foo(3)
+        Foo().foo(4, exc=True)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6075'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6075
+  :user_name: nori
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/59/
+  :language: Python
+  :time: 2008/03/26 14:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">どう使うかを追加。でないとpythonのdecoratorをしらない人に不親切すぎ。\r\n\r\nfooの中身がlock不要に見えるのは気にしないでください。</pre>\n\t"
+  :code: |
+    import threading
+
+    class class_level_lock:
+      _lock = threading.RLock()
+      lock = lambda self, *args, **kw : self._lock
+
+      @synchronized_with(lock)
+      def foo(self, x):
+        return x*2
+
+    class instance_level_lock:
+      lock = lambda self, *args, **kw : self._lock
+      def __init__(self):
+        self._lock = threading.RLock()
+
+      @synchronized_with(lock)
+      def foo(self, x):
+        return x*2
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6116'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6116
+  :user_name: nobsun
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/03/30 17:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>Haskellでは、フックするということを、関数に前処理、後処理を追加すると読み替えることになるのかなぁ。いくつかのパターンがありそうだけど、とりあえず、一般の関数、モナドの例をあげておきましょう。</p>\n</div>\n\t"
+  :code: |
+    import Control.Monad
+
+    addBeforeHook :: (a -&gt; a) -&gt; (a -&gt; b) -&gt; (a -&gt; b)
+    addAfterHook  :: (b -&gt; b) -&gt; (a -&gt; b) -&gt; (a -&gt; b)
+
+    addBeforeHook h f = f . h
+    addAfterHook  h f = h . f
+
+    addBeforeHookM :: Monad m =&gt; (a -&gt; m a) -&gt; (a -&gt; m b) -&gt; (a -&gt; m b)
+    addAfterHookM  :: Monad m =&gt; (b -&gt; m b) -&gt; (a -&gt; m b) -&gt; (a -&gt; m b)
+
+    addBeforeHookM h f x = h x &gt;&gt;= f
+    addAfterHookM  h f x = f x &gt;&gt;= h
+  :tags:
+  - Control.Monad
+  :references:
+    :url: 
+    :title: 
+- :id: '6124'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6124
+  :user_name: tt25
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/772/
+  :language: JavaScript
+  :time: 2008/03/31 12:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Functionを拡張すれば簡単なはずだ、という当初の妄念が色濃く残ったコードと相成りました。</p>\n<p>Linux版のFirefox,同Opera
+    weekly buildで動作を確認。</p>\n\n\t"
+  :code: |
+    String.prototype.hook=function(fnBefore,fnAfter,scopeMagic){
+        var target=this;
+        var str=[
+            "var orig=",target,";\n",
+                target,"=function(){\n",
+                ,((fnBefore) ? ["(",fnBefore,").apply(this,arguments);"].join("") : ""),
+                ,"\nvar ret=orig.apply(this,arguments);\n",
+                ,((fnAfter) ? ["(",fnAfter,").apply(this,arguments);"].join("") : ""),
+                "\nreturn ret;}"
+        ].join("")
+        if(scopeMagic){
+            eval(str.replace(new RegExp(target,"g"),"scopeMagic"));
+            return scopeMagic;
+        }else{
+            eval(str);
+        }
+    }
+
+    // グローバル空間
+    var aa=[3,2,4];
+    "aa.sort".hook(
+        function(){
+            alert("global: before: "+this);
+        }
+        ,function(){
+            alert("global: after: "+this);
+        }
+    );
+    aa.sort();
+
+    // どっかのスコープ内
+    (function(){
+        var a=[1,6,2,3];
+
+        a.sort="a.sort".hook(
+            function(){
+                alert("before: "+this);
+            }
+            ,function(){
+                alert("after: "+this);
+            }
+            ,a.sort
+        );
+
+        a.sort();
+    })();
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6127'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6127
+  :user_name: kh
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2008/04/01 05:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  RTTIの仮想関数テーブルを書き換えてみます。\r<br>D言語では明示的にfinalと指定しない限り、外から見えるメソッドはすべて仮想関数ですが、最適化によってインライン化された場合はダメかもしれません。\r<br>Testクラスのvtblを書き換えるだけなので、継承すると元に戻ります。\n\t"
+  :code: "private import std.stdio: writeln;\n\nclass Test {\n    void print() {\n
+    \       writeln(\"CTest.print\");\n    }\n}\n\nstatic class Test_hook {\n    private
+    static void* old_print;\n    \n    static this() {\n        old_print = cast(void*)&amp;Test.print;\n
+    \       \n        foreach(ref fp; Test.classinfo.vtbl) {\n            if(fp ==
+    old_print) {\n                fp = cast(void*)&amp;typeof(this).print;\n            }\n
+    \       }\n    }\n    \n    private void print() {\n        writeln(\"CTest_hook.print
+    before\");\n        (cast(void function(void*))old_print)(cast(void*)this);\n
+    \       writeln(\"CTest_hook.print after\");\n    }\n    \n}\n\nvoid main() {\n
+    \   auto o = new Test();\n    o.print;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6128'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6128
+  :user_name: Nemo
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/685/
+  :language: PostScript
+  :time: 2008/04/01 13:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">PostScript です。\r\nなんか、もっと簡単に書く方法がありそうな。\r\nTestFunction,
+    EnterFunction, LeaveFunction が定義されているとして、\r\n/TestFunction (Label) /EnterFunction
+    /LeaveFunction AddHook\r\nのようにして使用します。(ネスト可)\r\n外すときには\r\n/TestFunction RemoveHook
+    \r\nで、TestFunction に関して最後に指定したものから1段階外れます。\r\n</pre>\n\t"
+  :code: "%!PS\n\n/HookExec { % {Function} (Memo) {EnterFunction} {LeaveFunction}
+    \ HookExec  -\n    2 index 3 -1 roll cvx exec\n    currentdict /HookFunctions-temp
+    known not\n    {\n        /HookFunctions-temp [] def\n    } if\n    HookFunctions-temp
+    aload length dup\n    3 add -2 roll\n    3 -1 roll 2 add array astore\n    /HookFunctions-temp
+    exch def\n\n    cvx exec\n    \n    HookFunctions-temp aload length 2 sub 3 1
+    roll cvx\n    exec\n\n    array astore\n    /HookFunctions-temp exch def\n} bind
+    def\n\n\n/AddHook { % {Function} (Memo) {EnterFunction} {LeaveFunction}  AddHook
+    \ -\n    currentdict 4 index known\n    {\n        currentdict 4 index get\n        4
+    1 roll\n        currentdict exch 2 copy known {\n            get cvx\n        }
+    {\n            cvx exch pop\n        } ifelse\n        exch\n        currentdict
+    exch 2 copy known {\n            get cvx\n        } {\n            cvx exch pop\n
+    \       } ifelse\n        exch\n\n        /HookExec cvx\n        % /TestLoop2
+    {Func} (Memo) {Enter} {Leave}\n        5 array astore\n        % /TestLoop2 [
+    \ ]\n        cvx currentdict 3 1 roll put\n    } {\n        (Can't hook ) print
+    pop pop print ( / ) print =\n    } ifelse\n} bind def\n\n\n/RemoveHook { % /Function
+    Name RemoveHook\n    dup currentdict exch known\n    {\n        dup currentdict
+    exch get\n        dup length 5 eq {\n            dup 4 get /HookExec eq {\n                0
+    get \n                def\n            } {\n                (Remove Hook: Invalid
+    data ) print pop =\n            } ifelse\n        } {\n            (Remove Hook
+    : Ignored ) print pop =\n        } ifelse\n    } {\n        (Remove Hook : Unknown
+    Operator) print =\n    } ifelse\n} bind def\n\n% ----------------- Test Code ----------------\n/EnterHook
+    { % (Label) EnterHook -  \n    (Enter: ) print dup =\n    currentdict /ProfilingTimer
+    known not {\n        /ProfilingTimer  10 dict def\n    } if\n    ProfilingTimer
+    exch 2 copy known {\n        get\n    } {\n        [0 0] dup 4 1 roll put\n    }
+    ifelse\n    1 usertime 1000 div put \n} bind def\n\n/LeaveHook { % (Label) LeaveHook
+    -  \n    (Leave: ) print dup print ( : ) print\n    \n    currentdict /ProfilingTimer
+    known {\n        ProfilingTimer exch 2 copy known\n        {\n            get\n
+    \           aload 3 1 roll\n            usertime 1000 div sub neg\n            dup
+    10 string cvs print ( sec  Total =) print\n            add\n            dup 10
+    string cvs print ( sec) =\n            0 exch put\n        } {\n            pop
+    pop\n        } ifelse\n    } {\n        pop\n    } ifelse\n} bind def\n\n/TestLoop2
+    { % Count  TestLoop2 -\n    10000 mul {\n        1000 {\n        } repeat\n    }
+    repeat\n} def \n\n/TestLoop { % - TestLoop -\n    0 1 5 {\n        TestLoop2\n
+    \   } for\n} def\n\n/TestLoop2 (Loop2) /EnterHook /LeaveHook AddHook \n% 2nd level
+    hook\n/TestLoop2 (Loop2) {(Enter ) print =} {(Leave ) print =} AddHook\n\n/TestLoop
+    (Loop) /EnterHook /LeaveHook AddHook \n\nTestLoop\n\n%Remove top level hook\n\n/TestLoop2
+    RemoveHook\n\nTestLoop\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6638'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6638
+  :user_name: genzou
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/07/01 17:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ProxyMetaClass を利用しました。\r\nただし、指定したクラスの\r\n・コンストラクタ\r\n・メソッド\r\nの呼び出しの両方にインターセプタが実行されるので、\r\n対象メソッドをどれにするか列挙する必要がありますね。</pre>\n\t"
+  :code: |
+    class MyClass{
+        def MyClass(s){
+            println "CONSTRUCTING"
+        }
+        def sayHello(name){
+            println "Hello " + name
+        }
+    }
+
+    class MyClassInterceptor implements Interceptor{
+        Object beforeInvoke(Object object, String methodName, Object[] arguments){
+            if( methodName == 'sayHello' ){
+                println "  BEFORE"
+            }
+        }
+
+        boolean doInvoke(){ true }
+
+        Object afterInvoke(Object object, String methodName, Object[] arguments,
+                         Object result){
+            if( methodName == 'sayHello' ){
+                println "  AFTER"
+            }
+            result
+        }
+    }
+
+    def proxy= ProxyMetaClass.getInstance( MyClass )
+    proxy.interceptor= new MyClassInterceptor()
+
+    proxy.use{
+        def invoice= new MyClass('trade')
+        invoice.sayHello('GENZOU  ')
+    }
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '6726'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6726
+  :user_name: queck
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/681/
+  :language: Other
+  :time: 2008/07/13 16:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>Forth にはメソッドはないのですが、再定義前のワードを使えるのでこんな感じでしょうか。\n</p>\n<pre><code>before\nprimary\nafter\n</code></pre>\n<p>と出力されます。再帰するわけではありません。\n</p>\n\n\n\n\t"
+  :code: |
+    : f ." primary" cr ;
+    : f ." before" cr f ;
+    : f f ." after" cr ;
+  :tags:
+  - Forth
+  :references:
+    :url: 
+    :title: 
+- :id: '6756'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/6756
+  :user_name: leque
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2008/07/17 01:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>少しオーバースペックですが dynamic-wind を使うと関数への出入り（通常の呼び出し・終了、継続を使った脱出・再入）にフックをかけることができます。</p>\n\n\t"
+  :code: |
+    (define (add-hook body before after)
+      (lambda args
+        (dynamic-wind
+            before
+            (lambda () (apply body args))
+            after)))
+
+    (define f
+      (add-hook display
+                (lambda () (display "I have "))
+                (lambda () (display " sisters.") (newline))))
+
+    (f 19)
+    ；； -| I have 19 sisters.
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7067'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/7067
+  :user_name: ytakenaka
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/35/
+  :language: Ruby
+  :time: 2008/08/09 05:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ログの開始などだろうから、その物には影響を与えない形でしてみます。もちろん返り値には影響を与えません。利用したものはyieldを使ったブロック構文です。こうすると、メソッドチェーンの間に含めることで逐次変数の変化を見ることが出来ますね。お題のように、ログの開始終了もブロックの中に記述すればいいですね。\r<br><br>例）\r<br>irb(main):014:0&gt; \"1\".hook{|x| p x}.to_f.hook{|x| p x}.to_i.hook{|x| p x}\r<br>\"1\"\r<br>1.0\r<br>1\r<br>1\n\t"
+  :code: |
+    def hook
+      yield self
+      self
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7632'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/7632
+  :user_name: emasaka
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/09/13 13:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>bashやPOSIX-shでは、外部コマンドや内部コマンドよりシェル関数が優先して呼ばれます。いっぽう、commandコマンドを使うことにより、シェル関数を省いて外部コマンドや内部コマンドを呼べます。</p>\n<p>これを組み合わせると、下のコードのようにして、外部コマンドをシェル関数でフックできます。</p>\n<p>ただし、シェル関数はこの方法ではフックできません。</p>\n\n\t"
+  :code: |
+    ls() {
+        # before
+        echo '***** start *****'
+
+        # command itself
+        command ls "$@"
+        local result=$?
+
+        # after
+        echo '***** end *****'
+
+        return $result
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9405'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/9405
+  :user_name: egtra
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/759/
+  :language: VB
+  :time: 2009/07/22 15:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  .NET Frameworkには透過プロクシという機能があります。これを使えばメソッド呼出時にフックができるというわけです。このお題、C#での投稿は別の方が別の方法で存在するので、私のものはVB.NETに移植しました。なので、あまりVB.NETっぽくないと思います。DirectCastとか(Of
+    T)なんかでは、慣れているC#のほうがいいなあと感じました。\n\t"
+  :code: |
+    Imports System
+    Imports System.Runtime.Remoting.Proxies
+    Imports System.Runtime.Remoting.Messaging
+
+    Interface IHoge
+        Sub Piyo()
+    End Interface
+
+    Class BeforeAfterProxy(Of T)
+        Inherits RealProxy
+
+        Public Sub New(obj As T, before As Action, after As Action)
+            MyBase.New(GetType(T))
+            Me.obj = obj
+            Me.before = before
+            Me.after = after
+        End Sub
+
+        Public Overrides Function Invoke(msg As IMessage) As IMessage
+            Dim mm = DirectCast(msg, IMethodMessage)
+            before()
+            mm.MethodBase.Invoke(obj, mm.Args)
+            after()
+            Invoke = New ReturnMessage( _
+                Nothing, Nothing, 0, mm.LogicalCallContext, DirectCast(msg, IMethodCallMessage))
+        End Function
+
+        private obj As T
+        private before As Action
+        private after As Action
+    End Class
+
+    Class HogeImpl
+        Implements IHoge
+
+        Sub Piyo() Implements IHoge.Piyo
+            Console.WriteLine("piyo")
+        End Sub
+
+        Shared Sub Before()
+            Console.WriteLine("Before")
+        End Sub
+
+        Shared Sub After()
+            Console.WriteLine("After")
+        End Sub
+
+        Shared Sub Main()
+            Dim hoge = New HogeImpl()
+            Dim xHoge = New BeforeAfterProxy(Of IHoge)(hoge, AddressOf Before, AddressOf After)
+            Dim tHoge = DirectCast(xHoge.GetTransparentProxy(), IHoge)
+            tHoge.Piyo()
+        End Sub
+    End Class
+  :tags: []
+  :references:
+    :url: /web/20090910034546/http://ufcpp.net/study/csharp/sm_proxy.html
+    :title: '[サンプル] 透過プロキシ'
+- :id: '9406'
+  :parent_id: '169'
+  :url: http://ja.doukaku.org/comment/9406
+  :user_name: egtra
+  :user_url: /web/20090910034546/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2009/07/22 15:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  VB.NETに移す前の元のC#のコードも一応投稿しておくことにします。そういえば、VB.NETは戻り値のないラムダ式が書けないので、メソッドにするしかなかったのでした。\n\t"
+  :code: |
+    using System;
+    using System.Runtime.Remoting.Proxies;
+    using System.Runtime.Remoting.Messaging;
+
+    interface IHoge
+    {
+        void Piyo();
+    }
+
+    public class BeforeAfterProxy&lt;T&gt; : RealProxy
+    {
+        public BeforeAfterProxy(T obj, Action before, Action after)
+            : base(typeof(T))
+        {
+            this.obj = obj;
+            this.before = before;
+            this.after = after;
+        }
+
+        public override IMessage Invoke(IMessage msg)
+        {
+            var mm = (IMethodMessage)msg;
+            before();
+            mm.MethodBase.Invoke(obj, mm.Args);
+            after();
+            return new ReturnMessage(
+                null, null, 0, mm.LogicalCallContext, (IMethodCallMessage)msg);
+        }
+
+        private T obj;
+        private Action before;
+        private Action after;
+    }
+
+    class HogeImpl : IHoge
+    {
+        public void Piyo() {Console.WriteLine("piyo");}
+
+        static void Main()
+        {
+            var hoge = new HogeImpl();
+            var xHoge = new BeforeAfterProxy&lt;IHoge&gt;(hoge,
+                () =&gt; Console.WriteLine("Before"),
+                () =&gt; Console.WriteLine("After"));
+
+            var tHoge = (IHoge)xHoge.GetTransparentProxy();
+            tHoge.Piyo();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 

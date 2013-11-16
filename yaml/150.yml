@@ -1,0 +1,563 @@
+---
+:id: '150'
+:title: 不動点演算子
+:comments:
+- :id: '5680'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/5680
+  :user_name: matarillo
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/136/
+  :language: 
+  :time: 2008/02/04 23:16 GMT
+  :vote_count: '4'
+  :vote_score: '2'
+  :body: "\r\n\t  <p>不動点演算子とは、関数を引数に取り、その関数の不動点を返すような関数です。\nつまり、不動点演算子である関数gが関数fを引数に取るとき、\nf(g(f))
+    = g(f)\nとなります。</p>\n<p>お題は不動点演算子を実装することです。（Yコンビネータを実装しても結構ですが、それ以外でも、コンビネータになっていなくてもOKとします）</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20090411101942/http://en.wikipedia.org/wiki/Y_combinator
+    :title: Wikipedia
+- :id: '5731'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/5731
+  :user_name: sumim
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/02/11 10:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: "| fix factMaker fact |\n\nfix := [:f | [:g | f value: [:arg | (g value:
+    g) value: arg]] \n    value: [:g | f value: [:arg | (g value: g) value: arg]]].\n\nfactMaker
+    := [:myself | [:n | n &lt; 2 ifTrue: [1] ifFalse: [n * (myself value: n - 1)]]].\nfact
+    := fix value: factMaker.\n\n^fact value: 10   \"=&gt; 3628800 \"\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '5732'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/5732
+  :user_name: yuin
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/02/11 10:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Scalaで。</p>\r\n\n\t"
+  :code: "def Y[A,B](f:((A=&gt;B),A)=&gt;B,x:A):B = f((x1:A)=&gt;Y(f,x1),x)\r\n\r\ndef
+    factMaker(self:(int)=&gt;int, n:int) = {\r\n  if(n &lt; 2) { 1 }\r\n  else{ n
+    * self(n-1)}\r\n}\r\n\r\nprint(Y(factMaker, 10)) //=&gt; 3628800\r\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5733'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/5733
+  :user_name: heita
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/713/
+  :language: Ruby
+  :time: 2008/02/11 11:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Yコンビネータを愚直に実装しただけです。\r\n    f = lambda {|g|
+    lambda {|n| if n == 0 then 1 else n * g[n-1] end}}\r\n    Y[f][5]  # =&gt; 120\r\nとかやって遊びます。</pre>\n\t"
+  :code: |
+    Y = lambda {|f|
+      g = lambda {|x| lambda {|*n| (f[x[x]])[*n]}}
+      g[g]
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5734'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/5734
+  :user_name: kozima
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/164/
+  :language: OCaml
+  :time: 2008/02/11 11:46 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <p>#2929 に書いたものそのままですが。</p>\n<p>OCaml は正格評価なので y f = f (y f) と書くと止まりませんが、仮引数
+    x を与えてやって関数本体の計算開始を遅らせれば大丈夫です。</p>\n\n\t"
+  :code: |
+    let rec y f x = f (y f) x
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5735'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/5735
+  :user_name: kozima
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/164/
+  :language: Haskell
+  :time: 2008/02/11 11:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Haskell は、まあほぼ自明なやつですが……</p>\n<p>ついでに実行例でも:</p>\n<pre class=\"literal-block\">\nPrelude&gt;
+    let y f = f $ y f\nPrelude&gt; let fib_maker f x = if x &lt;= 2 then 1 else f
+    (x-1) + f (x-2)\nPrelude&gt; let fib = y fib_maker\nPrelude&gt; map fib [1..10]\n[1,1,2,3,5,8,13,21,34,55]\n</pre>\n\n\t"
+  :code: |
+    let y f = f $ y f
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5737'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/5737
+  :user_name: uti
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/673/
+  :language: Java
+  :time: 2008/02/11 12:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  わざわざJavaで書く意味がないですね（笑）\n\t"
+  :code: |
+    public class FixedPointOperator {
+
+        // 任意の関数型 T を定義します
+        abstract class T {
+            abstract T apply(final T arg);
+        }
+
+        // 整数型を定義します
+        class Int extends T {
+            int val;
+            Int(int val) { this.val = val; }
+            // 整数型の apply が呼ばれることはありません
+            T apply(final T arg) { throw new RuntimeException(); }
+        }
+
+        // 不動点オペレータを定義します
+        // Y = (g=&gt;(s=&gt;g (x=&gt;(s s) x))(s=&gt;g (x=&gt;(s s) x)))
+        //               ------------  ここを tmp2 としています
+        //         ------------------- ここを tmp1 としています
+        final T Y = new T() {
+            T apply(final T g) {
+                final T tmp1 = new T() {
+                    T apply(final T s) {
+                        final T tmp2 = new T() {
+                            T apply(final T x) {
+                                return s.apply(s).apply(x);
+                            }
+                        };
+                        return g.apply(tmp2);
+                    }
+                };
+                return tmp1.apply(tmp1);
+            }
+        };
+
+        // 階乗を求める関数です (サンプル)
+        // factRec = (f=&gt;(x=&gt;(if x = 0 then 1 else x * (f (x - 1)))))
+        final T factRec = new T() {
+            T apply(final T f) {
+                return new T() {
+                    T apply(final T x) {
+                        int i = ((Int) x).val;
+                        if (i == 0) {
+                            return new Int(1);
+                        } else {
+                            return new Int(i * ((Int) f.apply(new Int(i - 1))).val);
+                        }
+                    }
+                };
+            }
+        };
+
+        // 不動点オペレータ Y を factRec に適用して再帰的関数を作成
+        // ためしに fact(5) を計算します
+        public void exec() {
+            T fact = Y.apply(factRec);
+            Int five = new Int(5);
+            Int result = (Int) fact.apply(five);
+            System.out.println("fact(" + five.val + ") = " + result.val);
+        }
+
+        public static void main(String args[]) {
+            new FixedPointOperator().exec();
+        }
+    }
+  :tags:
+  - JDK1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '5740'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/5740
+  :user_name: matyr
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/343/
+  :language: Io
+  :time: 2008/02/11 17:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>括弧の拡張機能を使って <a href=\"/web/20090411101942/http://ja.doukaku.org/comment/5731\">#5731</a>
+    と <a href=\"/web/20090411101942/http://ja.doukaku.org/comment/5731\">#5733</a>
+    の写経。(Yコンビネータは理解してない。)\n</p>\n\n\n\n\t"
+  :code: |
+    Object do( curlyBrackets  := getSlot("block"))
+    Block  do( squareBrackets := getSlot("call"))
+
+    Y := { f,
+      { g, f[{ a, g[g][a] }] }[
+      { g, f[{ a, g[g][a] }] }]
+    }
+
+    Y[{ b, { n, if(n &lt; 2, 1, n * b[n - 1]) } }][10] println
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5747'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/5747
+  :user_name: dankogai
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2008/02/13 00:40 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n<p>Y CombinatorのApplicative Order版のZ Combinatorと、名前付きのものと双方。\n</p>\n<p>詳しくは\n</p>\n<p><a
+    href=\"/web/20090411101942/http://blog.livedoor.jp/dankogai/archives/50458503.html\">TuringとChurchの狭間で</a>\n</p>\n<p>を参照のこと。\n</p>\n\n\n\n\t"
+  :code: "sub fix {\n  my $G = shift; \n  return $G-&gt;( sub { my $x = shift; return
+    fix($G)-&gt;($x);} ); \n} \n\nour $Z = sub { my $f = shift;\n               sub
+    { my $x = shift; \n                     sub { my $y = shift;\n                           $f-&gt;($x-&gt;($x))\n
+    \                    }\n                 }-&gt;(sub { my $x = shift; \n                           sub
+    { my $y = shift; \n                                 $f-&gt;($x-&gt;($x)) \n                           }\n
+    \                    })\n         };\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5750'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/5750
+  :user_name: xsd
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/154/
+  :language: C
+  :time: 2008/02/13 13:38 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  let rec fix f = f (fix f)型の不動点演算子をCで実現してみました。\r<br>stdcall呼び出しの関数(引数は右から左にスタックにプッシュ、スタックの後始末は呼び出された側で実施)を渡すと、不動点(実体は遅延評価のためのThunk)を作って返します。\r<br><br>任意個の引数の関数に対応しています。\r<br>また、Visual C++/GCCの両方で使用可能です。\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;string.h&gt;
+
+    #ifdef __GNUC__
+    #ifndef __stdcall
+    #define __stdcall __attribute__((stdcall))
+    #endif
+    #endif
+
+    #define SET(p,a) *(void**)(p+a)
+
+    void* __stdcall fix(void *f)
+    {
+        char *thunk = strdup("hack!\xba....\xff\xd2ZPR\xb8....\xff\xe0");
+        SET(thunk,  1) = f;
+        SET(thunk,  6) = fix;
+        SET(thunk, 16) = f;
+        return thunk;
+    }
+
+    typedef int (__stdcall *FUNC2)(int, int);
+
+    int __stdcall gcd_maker(FUNC2 f, int a, int b)
+    {
+        return a % b == 0 ? b : f(b, a % b);
+    }
+
+    int main(int argc, char**argv)
+    {
+        FUNC2 gcd = (FUNC2)fix(gcd_maker);
+
+        printf("gcd(2520,3840) = %d\n",             gcd(2520,       3840));
+        printf("gcd(1836311903,1134903170) = %d\n", gcd(1836311903, 1134903170));
+
+        return 0;
+    }
+  :tags:
+  - IA-32
+  :references:
+    :url: 
+    :title: 
+- :id: '5783'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/5783
+  :user_name: kozima
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2008/02/19 08:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>labels で無名再帰関数作りました。</p>\n<p>こういうのは変数と関数の名前空間が分かれてると読みにくいですね。</p>\n\n\t"
+  :code: "(defun fix (f) (labels ((g (x) (funcall (funcall f #'g) x))) #'g))\n\n(defun
+    fib-maker (f)\n  (lambda (x) \n    (if (&lt;= x 2) 1 (+ (funcall f (1- x)) (funcall
+    f (- x 2))))))\n\n(let ((fib (fix #'fib-maker)))\n  (mapcar fib '(1 2 3 4 5 6
+    7 8 9 10)))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5784'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/5784
+  :user_name: kozima
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/164/
+  :language: 
+  :time: 2008/02/19 09:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>もしかしたらマクロの方がきれいに書けるかと思っていろいろ試してみましたが、結局 alambda みたいなものにたどり着きました。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20090411101942/http://www.bookshelf.jp/texi/onlisp/onlisp_15.html#SEC100
+    :title: 'Onlisp: Anaphoric Macros'
+- :id: '5845'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/5845
+  :user_name: yuin
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/02/26 00:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>言語タグを間違えたので･･･</p>\n\n\t"
+  :code: |
+    def Y[A,B](f:((A=&gt;B),A)=&gt;B,x:A):B = f((x1:A)=&gt;Y(f,x1),x)
+
+    def factMaker(self:(int)=&gt;int, n:int) = {
+      if(n &lt; 2) { 1 }
+      else{ n * self(n-1)}
+    }
+
+    print(Y(factMaker, 10)) //=&gt; 3628800
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5921'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/5921
+  :user_name: 匿名
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/4/
+  :language: Lua
+  :time: 2008/03/02 03:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">以下のサイトが分かりやすかったです。\r\n結果的に#5733さんのコードそのままになりました。\r\n</pre>\n\t"
+  :code: |
+    Y = function(f)
+      g = function(proc) return f(function(arg) return proc(proc)(arg) end) end
+      return g(g)
+    end
+
+    print(Y(function(f) return function(n) if n &lt; 2 then return 1 else return n * f(n - 1) end end end)(10))
+  :tags: []
+  :references:
+    :url: /web/20090411101942/http://www.loveruby.net/ja/misc/ycombinator.html
+    :title: Y Combinator
+- :id: '5926'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/5926
+  :user_name: 匿名
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/03/03 03:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    def Y(f):
+      g = lambda proc: f(lambda arg: proc(proc)(arg))
+      return g(g)
+
+    print Y(lambda f: lambda n: 1 if n &lt; 2 else n * f(n - 1))(10)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6006'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/6006
+  :user_name: matarillo
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/136/
+  :language: C
+  :time: 2008/03/12 23:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>お題を出したものなので回答は控える。\n参考リンクだけ提示。おまいらコード書け。</p>\n<p><a class=\"reference\"
+    href=\"/web/20090411101942/http://blogs.msdn.com/wesdyer/archive/2007/02/02/anonymous-recursion-in-c.aspx\">http://blogs.msdn.com/wesdyer/archive/2007/02/02/anonymous-recursion-in-c.aspx</a>\n<a
+    class=\"reference\" href=\"/web/20090411101942/http://blogs.msdn.com/madst/archive/2007/05/11/recursive-lambda-expressions.aspx\">http://blogs.msdn.com/madst/archive/2007/05/11/recursive-lambda-expressions.aspx</a></p>\n\n\t"
+  :code: |
+    // (snip)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7283'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/7283
+  :user_name: leque
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2008/08/20 21:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p><a href=\"/web/20090411101942/http://ja.doukaku.org/comment/5783\">#5783</a>
+    を Scheme で写経。\n</p>\n\n\n\n\t"
+  :code: |
+    (define (fix f)
+      (rec (g x) ((f g) x)))
+
+    (let ((fib (fix (lambda (f)
+                      (lambda (x)
+                        (if (&lt;= x 2)
+                            1
+                            (+ (f (- x 1)) (f (- x 2)))))))))
+      (display (map fib '(1 2 3 4 5 6 7 8 9 10)))
+      (newline))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7670'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/7670
+  :user_name: ika
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2008/09/18 02:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>テンプレート引数の推論を使って型無しラムダっぽく。</p>\n\n\t"
+  :code: "import std.stdio;\n\nvoid main() {    \n    auto Y = new class {\n        auto
+    opCall(_)(_ f) {\n            return (new class {\n                auto opCall(_)(_
+    g) {\n                    return new class {\n                        auto opCall(_)(_
+    x) {\n                            return f(g(g))(x);\n                        }\n
+    \                   };\n                }\n            })(new class {\n                auto
+    opCall(_)(_ g) {\n                    return new class {\n                        auto
+    opCall(_)(_ x) {\n                            return f(g(g))(x);\n                        }\n
+    \                   };\n                }\n            });\n        };\n    };\n
+    \   \n    auto F = new class {\n        auto opCall(_)(_ f) {\n            return
+    new class {\n                auto opCall(_)(_ x) {\n                    if (x
+    == 0) {\n                        return cast(_)1;\n                    } else
+    {\n                        return x * f(x - 1);\n                    }\n                }\n
+    \           };\n        }\n    };\n\n    auto factorial = Y(F);\n    writeln(\"fact(5)
+    = \", factorial(10));\n    writeln(\"fact(5) = \", factorial(20L));\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7751'
+  :parent_id: '150'
+  :url: http://ja.doukaku.org/comment/7751
+  :user_name: egtra
+  :user_url: /web/20090411101942/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2008/10/04 12:16 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n<p>折角なのでBoost.MPLでやりました。Boost 1.36.0使用。\n   VC++ 9 SP1, VC++ 8 SP1,
+    gcc 4.3.1 (Cygwin), gcc 3.4.4 (Cygwin付属)で確認。\n</p>\n<p>うまくいかずあれこれ悩んでいましたが、<a href=\"/web/20090411101942/http://ja.doukaku.org/comment/5921/\"
+    title=\"#5921\">#5921</a>を見たらあっというまに出来上がりました。ありがとうございます。参考ページは自分が理解するのに役立ちました。\n</p>\n<p>coutではなくprintfを使っている理由は、コンパイル時計算されて定数展開されているのをアセンブリ出力を見て確かめるときに分かりやすいからです（さすがにprintfはインライン展開されないですから）。\n</p>\n\n\n\n\t"
+  :code: |
+    #include &lt;cstdio&gt;
+    #include &lt;boost/mpl/int.hpp&gt;
+    #include &lt;boost/mpl/times.hpp&gt;
+    #include &lt;boost/mpl/plus.hpp&gt;
+    #include &lt;boost/mpl/next_prior.hpp&gt;
+    #include &lt;boost/mpl/less_equal.hpp&gt;
+    #include &lt;boost/mpl/eval_if.hpp&gt;
+    #include &lt;boost/mpl/bind.hpp&gt;
+    #include &lt;boost/mpl/less_equal.hpp&gt;
+
+    namespace mpl = boost::mpl;
+
+    template&lt;typename F&gt;
+    struct Y
+    {
+        struct G
+        {
+            template&lt;typename P&gt;
+            struct apply
+            {
+                struct U
+                {
+                    template&lt;typename A&gt;
+                    struct apply : P::template apply&lt;P&gt;::type::template apply&lt;A&gt;
+                    {};
+                };
+                typedef mpl::bind&lt;F, U, mpl::_1&gt; type;
+            };
+        };
+        typedef typename G::template apply&lt;G&gt;::type type;
+    };
+
+    struct FactorialBase
+    {
+        template&lt;typename F, typename X&gt;
+        struct apply
+        {
+            struct X_Times_X_minus_1 :
+                mpl::times
+                &lt;
+                    X,
+                    typename F::template apply&lt;typename mpl::template prior&lt;X&gt;::type&gt;::type
+                &gt;
+            {};
+            typedef typename mpl::eval_if
+            &lt;
+                mpl::less_equal&lt;X, mpl::int_&lt;1&gt; &gt;,
+                mpl::int_&lt;1&gt;,
+                X_Times_X_minus_1
+            &gt;::type type;
+        };
+    };
+
+    struct FibonacciBase
+    {
+        template&lt;typename F, typename X&gt;
+        struct apply
+        {
+            typedef typename mpl::template prior&lt;X&gt;::type PriorX;
+            struct X_minus_2_Plus_X_minus_1 :
+                mpl::plus
+                &lt;
+                    typename F::template apply&lt;typename mpl::template prior&lt;PriorX&gt;::type&gt;::type,
+                    typename F::template apply&lt;PriorX&gt;::type
+                &gt;
+            {};
+            typedef typename mpl::eval_if
+            &lt;
+                mpl::less_equal&lt;X, mpl::int_&lt;1&gt; &gt;,
+                X,
+                X_minus_2_Plus_X_minus_1
+            &gt;::type type;
+        };
+    };
+
+    int main()
+    {
+        typedef Y&lt;FactorialBase&gt;::type Factorial;
+        typedef Factorial::apply&lt;mpl::int_&lt;10&gt; &gt;::type result1;
+        typedef Y&lt;FibonacciBase&gt;::type Fibonacci;
+        typedef Fibonacci::apply&lt;mpl::int_&lt;10&gt; &gt;::type result2;
+        std::printf("%d\n", result1::value);
+        std::printf("%d\n", result2::value);
+    }
+  :tags:
+  - Boost
+  - Boost.MPL
+  :references:
+    :url: /web/20090411101942/http://d.hatena.ne.jp/tanakh/20040813
+    :title: 不動点演算子 - 純粋関数型雑記帳

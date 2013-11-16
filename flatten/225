@@ -1,0 +1,4241 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja"> 
+  <head>
+
+<script type="text/javascript" src="/static/js/analytics.js" ></script>
+<link type="text/css" rel="stylesheet" href="/static/css/banner-styles.css"/>
+
+
+
+
+    <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+    <title>
+エレベータの制御(基本編)
+どう書く？org </title>
+
+    <link rel="stylesheet" type="text/css"
+	href="/web/20090512165515cs_/http://ja.doukaku.org/static/style/reset-fonts-grids.css" />
+    <link rel="stylesheet" type="text/css"
+	href="/web/20090512165515cs_/http://ja.doukaku.org/static/style/style.css?20071211?20071207" />
+	
+    <link rel="stylesheet" type="text/css"
+	href="/web/20090512165515cs_/http://ja.doukaku.org/static/style/pygments.css" />
+
+
+	
+<meta name="robots" content="noindex,nofollow">
+
+    <!--<script src="/web/20090512165515/http://ja.doukaku.org/static/js/ieerbug/ieerbug.js" type="text/javascript"></script>-->
+
+
+<!--<script src="/web/20090512165515/http://ja.doukaku.org/static/js/ieerbug/ieerbug.js" type="text/javascript"></script>-->
+<script src="/web/20090512165515js_/http://ja.doukaku.org/static/js/jquery-1.1.3.1.js" type="text/javascript"></script>
+<script src="/web/20090512165515js_/http://ja.doukaku.org/static/js/rating.js" type="text/javascript"></script>
+<script src="/web/20090512165515js_/http://ja.doukaku.org/static/js/addtag.js?20071129" type="text/javascript"></script>
+
+<script type="text/javascript">
+is_key_navigation_enable = true;
+</script>
+<script src="/web/20090512165515js_/http://ja.doukaku.org/static/js/utils.js?~~~" type="text/javascript"></script>
+
+</head>
+
+
+<body id="doukaku_org">
+<!-- BEGIN WAYBACK TOOLBAR INSERT -->
+<script> if (window.archive_analytics) { window.archive_analytics.values['server_name']="wwwb-app3.us.archive.org";}; </script>
+
+<script type="text/javascript" src="/static/js/disclaim-element.js" ></script>
+<script type="text/javascript" src="/static/js/graph-calc.js" ></script>
+<script type="text/javascript" src="/static/jflot/jquery.min.js" ></script>
+<script type="text/javascript">
+//<![CDATA[
+var firstDate = 820454400000;
+var lastDate = 1388534399999;
+var wbPrefix = "/web/";
+var wbCurrentUrl = "http:\/\/ja.doukaku.org\/225\/flatten\/";
+
+var curYear = -1;
+var curMonth = -1;
+var yearCount = 18;
+var firstYear = 1996;
+var imgWidth = 450;
+var yearImgWidth = 25;
+var monthImgWidth = 2;
+var trackerVal = "none";
+var displayDay = "12";
+var displayMonth = "May";
+var displayYear = "2009";
+var prettyMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function showTrackers(val) {
+	if(val == trackerVal) {
+		return;
+	}
+	if(val == "inline") {
+		document.getElementById("displayYearEl").style.color = "#ec008c";
+		document.getElementById("displayMonthEl").style.color = "#ec008c";
+		document.getElementById("displayDayEl").style.color = "#ec008c";		
+	} else {
+		document.getElementById("displayYearEl").innerHTML = displayYear;
+		document.getElementById("displayYearEl").style.color = "#ff0";
+		document.getElementById("displayMonthEl").innerHTML = displayMonth;
+		document.getElementById("displayMonthEl").style.color = "#ff0";
+		document.getElementById("displayDayEl").innerHTML = displayDay;
+		document.getElementById("displayDayEl").style.color = "#ff0";
+	}
+   document.getElementById("wbMouseTrackYearImg").style.display = val;
+   document.getElementById("wbMouseTrackMonthImg").style.display = val;
+   trackerVal = val;
+}
+function getElementX2(obj) {
+	var thing = jQuery(obj);
+	if((thing == undefined) 
+			|| (typeof thing == "undefined") 
+			|| (typeof thing.offset == "undefined")) {
+		return getElementX(obj);
+	}
+	return Math.round(thing.offset().left);
+}
+function trackMouseMove(event,element) {
+
+   var eventX = getEventX(event);
+   var elementX = getElementX2(element);
+   var xOff = eventX - elementX;
+	if(xOff < 0) {
+		xOff = 0;
+	} else if(xOff > imgWidth) {
+		xOff = imgWidth;
+	}
+   var monthOff = xOff % yearImgWidth;
+
+   var year = Math.floor(xOff / yearImgWidth);
+	var yearStart = year * yearImgWidth;
+   var monthOfYear = Math.floor(monthOff / monthImgWidth);
+   if(monthOfYear > 11) {
+       monthOfYear = 11;
+   }
+   // 1 extra border pixel at the left edge of the year:
+   var month = (year * 12) + monthOfYear;
+   var day = 1;
+	if(monthOff % 2 == 1) {
+		day = 15;
+	}
+	var dateString = 
+		zeroPad(year + firstYear) + 
+		zeroPad(monthOfYear+1,2) +
+		zeroPad(day,2) + "000000";
+
+	var monthString = prettyMonths[monthOfYear];
+	document.getElementById("displayYearEl").innerHTML = year + 1996;
+	document.getElementById("displayMonthEl").innerHTML = monthString;
+	// looks too jarring when it changes..
+	//document.getElementById("displayDayEl").innerHTML = zeroPad(day,2);
+
+	var url = wbPrefix + dateString + '/' +  wbCurrentUrl;
+	document.getElementById('wm-graph-anchor').href = url;
+
+   //document.getElementById("wmtbURL").value="evX("+eventX+") elX("+elementX+") xO("+xOff+") y("+year+") m("+month+") monthOff("+monthOff+") DS("+dateString+") Moy("+monthOfYear+") ms("+monthString+")";
+   if(curYear != year) {
+       var yrOff = year * yearImgWidth;
+       document.getElementById("wbMouseTrackYearImg").style.left = yrOff + "px";
+       curYear = year;
+   }
+   if(curMonth != month) {
+       var mtOff = year + (month * monthImgWidth) + 1;
+       document.getElementById("wbMouseTrackMonthImg").style.left = mtOff + "px";
+       curMonth = month;
+   }
+}
+//]]>
+</script>
+
+<style type="text/css">body{margin-top:0!important;padding-top:0!important;min-width:800px!important;}#wm-ipp a:hover{text-decoration:underline!important;}</style>
+<div id="wm-ipp" lang="en" class="__wb_banner_div" style="display:none; position:relative;padding:0 5px;min-height:70px;min-width:800px">
+
+
+<div id="wm-ipp-inside" class="__wb_banner_div" style="position:fixed;padding:0!important;margin:0!important;width:97%;min-width:780px;border:5px solid #000;border-top:none;background-image:url(/static/images/toolbar/wm_tb_bk_trns.png);text-align:center;-moz-box-shadow:1px 1px 3px #333;-webkit-box-shadow:1px 1px 3px #333;box-shadow:1px 1px 3px #333;font-size:11px!important;font-family:'Lucida Grande','Arial',sans-serif!important;">
+   <table style="border-collapse:collapse;margin:0;padding:0;width:100%;"><tbody><tr>
+   <td style="padding:10px;vertical-align:top;min-width:110px;">
+   <a href="/web/" title="Wayback Machine home page" style="background-color:transparent;border:none;"><img src="/static/images/toolbar/wayback-toolbar-logo.png" alt="Wayback Machine" width="110" height="39" border="0"/></a>
+   </td>
+   <td style="padding:0!important;text-align:center;vertical-align:top;width:100%;">
+
+       <table style="border-collapse:collapse;margin:0 auto;padding:0;width:570px;"><tbody><tr>
+       <td style="padding:3px 0;" colspan="2">
+       <form target="_top" method="get" action="/web/form-submit.jsp" name="wmtb" id="wmtb" style="margin:0!important;padding:0!important;"><input type="text" name="url" id="wmtbURL" value="http://ja.doukaku.org/225/flatten/" style="width:400px;font-size:11px;font-family:'Lucida Grande','Arial',sans-serif;" onfocus="javascript:this.focus();this.select();" /><input type="hidden" name="type" value="replay" /><input type="hidden" name="date" value="20090512165515" /><input type="submit" value="Go" style="font-size:11px;font-family:'Lucida Grande','Arial',sans-serif;margin-left:5px;width: inherit !important" /><span id="wm_tb_options" style="display:block;"></span></form>
+       </td>
+       <td style="vertical-align:bottom;padding:5px 0 0 0!important;" rowspan="2">
+           <table style="border-collapse:collapse;width:110px;color:#99a;font-family:'Helvetica','Lucida Grande','Arial',sans-serif;"><tbody>
+			
+           <!-- NEXT/PREV MONTH NAV AND MONTH INDICATOR -->
+           <tr style="width:110px;height:16px;font-size:10px!important;">
+           	<td style="padding-right:9px;font-size:11px!important;font-weight:bold;text-transform:uppercase;text-align:right;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+                       Apr
+                       
+               </td>
+               <td id="displayMonthEl" style="background:#000;color:#ff0;font-size:11px!important;font-weight:bold;text-transform:uppercase;width:34px;height:15px;padding-top:1px;text-align:center;" title="You are here: 16:55:15 May 12, 2009">MAY</td>
+				<td style="padding-left:9px;font-size:11px!important;font-weight:bold;text-transform:uppercase;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+                       Jun
+                       
+               </td>
+           </tr>
+
+           <!-- NEXT/PREV CAPTURE NAV AND DAY OF MONTH INDICATOR -->
+           <tr>
+               <td style="padding-right:9px;white-space:nowrap;overflow:visible;text-align:right!important;vertical-align:middle!important;" nowrap="nowrap">
+               
+                       <img src="/static/images/toolbar/wm_tb_prv_off.png" alt="Previous capture" width="14" height="16" border="0" />
+                       
+               </td>
+               <td id="displayDayEl" style="background:#000;color:#ff0;width:34px;height:24px;padding:2px 0 0 0;text-align:center;font-size:24px;font-weight: bold;" title="You are here: 16:55:15 May 12, 2009">12</td>
+				<td style="padding-left:9px;white-space:nowrap;overflow:visible;text-align:left!important;vertical-align:middle!important;" nowrap="nowrap">
+               
+                       <img src="/static/images/toolbar/wm_tb_nxt_off.png" alt="Next capture" width="14" height="16" border="0"/>
+                       
+			    </td>
+           </tr>
+
+           <!-- NEXT/PREV YEAR NAV AND YEAR INDICATOR -->
+           <tr style="width:110px;height:13px;font-size:9px!important;">
+				<td style="padding-right:9px;font-size:11px!important;font-weight: bold;text-align:right;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+                       2008
+                       
+               </td>
+               <td id="displayYearEl" style="background:#000;color:#ff0;font-size:11px!important;font-weight: bold;padding-top:1px;width:34px;height:13px;text-align:center;" title="You are here: 16:55:15 May 12, 2009">2009</td>
+				<td style="padding-left:9px;font-size:11px!important;font-weight: bold;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+                       2010
+                       
+				</td>
+           </tr>
+           </tbody></table>
+       </td>
+
+       </tr>
+       <tr>
+       <td style="vertical-align:middle;padding:0!important;">
+           <a href="/web/20090512165515*/http://ja.doukaku.org/225/flatten/" style="color:#33f;font-size:11px;font-weight:bold;background-color:transparent;border:none;" title="See a list of every capture for this URL"><strong>1 captures</strong></a>
+           <div class="__wb_banner_div" style="margin:0!important;padding:0!important;color:#666;font-size:9px;padding-top:2px!important;white-space:nowrap;" title="Timespan for captures of this URL">12 May 09 - 12 May 09</div>
+       </td>
+       <td style="padding:0!important;">
+       <a style="position:relative; white-space:nowrap; width:450px;height:27px;" href="" id="wm-graph-anchor">
+       <div class="__wb_banner_div" id="wm-ipp-sparkline" style="position:relative; white-space:nowrap; width:450px;height:27px;background-color:#fff;cursor:pointer;border-right:1px solid #ccc;" title="Explore captures for this URL">
+			<img id="sparklineImgId" style="position:absolute; z-index:9012; top:0px; left:0px;"
+				onmouseover="showTrackers('inline');" 
+				onmouseout="showTrackers('none');"
+				onmousemove="trackMouseMove(event,this)"
+				alt="sparklines"
+				width="450"
+				height="27"
+				border="0"
+				src="/web/jsp/graph.jsp?graphdata=450_27_1996:-1:000000000000_1997:-1:000000000000_1998:-1:000000000000_1999:-1:000000000000_2000:-1:000000000000_2001:-1:000000000000_2002:-1:000000000000_2003:-1:000000000000_2004:-1:000000000000_2005:-1:000000000000_2006:-1:000000000000_2007:-1:000000000000_2008:-1:000000000000_2009:4:000010000000_2010:-1:000000000000_2011:-1:000000000000_2012:-1:000000000000_2013:-1:000000000000"></img>
+			<img id="wbMouseTrackYearImg" 
+				style="display:none; position:absolute; z-index:9010;"
+				width="25" 
+				height="27"
+				border="0"
+				src="/static/images/toolbar/transp-yellow-pixel.png"></img>
+			<img id="wbMouseTrackMonthImg"
+				style="display:none; position:absolute; z-index:9011; " 
+				width="2"
+				height="27" 
+				border="0"
+				src="/static/images/toolbar/transp-red-pixel.png"></img>
+       </div>
+		</a>
+
+       </td>
+       </tr></tbody></table>
+   </td>
+   <td style="text-align:right;padding:5px;width:65px;font-size:11px!important;">
+       <a href="javascript:;" onclick="document.getElementById('wm-ipp').style.display='none';" style="display:block;padding-right:18px;background:url(/static/images/toolbar/wm_tb_close.png) no-repeat 100% 0;color:#33f;font-family:'Lucida Grande','Arial',sans-serif;margin-bottom:23px;background-color:transparent;border:none;" title="Close the toolbar">Close</a>
+       <a href="http://faq.web.archive.org/" style="display:block;padding-right:18px;background:url(/static/images/toolbar/wm_tb_help.png) no-repeat 100% 0;color:#33f;font-family:'Lucida Grande','Arial',sans-serif;background-color:transparent;border:none;" title="Get some help using the Wayback Machine">Help</a>
+   </td>
+   </tr></tbody></table>
+
+</div>
+</div>
+<script type="text/javascript">
+ var wmDisclaimBanner = document.getElementById("wm-ipp");
+ if(wmDisclaimBanner != null) {
+   disclaimElement(wmDisclaimBanner);
+ }
+</script>
+<!-- END WAYBACK TOOLBAR INSERT -->
+
+
+<div id="page_head" class="compact">
+  <h1 class="compact">
+    <a href="/web/20090512165515/http://ja.doukaku.org/">どう書く？org</a><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/beta.png" alt="beta">
+  </h1>
+</div>
+
+<div id="page_body" class="compact">
+<div id="content" class="compact">
+
+
+
+
+<h2 class="compact">
+<img src='/web/20090512165515im_/http://ja.doukaku.org/static/image/star_gold.png' alt=お題(出題済み)>
+<a href="/web/20090512165515/http://ja.doukaku.org/225/">エレベータの制御(基本編)</a>
+</h2>
+
+    
+
+
+
+
+
+<div class="comment" id="comment8289">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/127/" target="_top">raynstard</a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8289/">#8289</a>(<script language="JavaScript">print_time(new Date("2009/01/06 09:14 GMT"));</script><noscript>2009/01/06 09:14 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffdfdf;">-2/2=-1.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>エレベータを制御して、5階建てのビルの各階にいる人たちを、
+「効率よく」1階のエントランスまで運んでください。
+
+作成時の条件は次の通りです。
+  1. 各階において、人が残っていることはわかるが、
+     あと何人残っているかまではわからないものとする。
+     # 人が残っているところは常に呼び出しのボタンが押された状態を
+     # 仮定して問題ありません。
+  2. 稼働しているエレベータは1機のみとする
+  3. 降車するたびに、変化がわかるような出力をしてください。
+  4. すべての人を運搬終わったら、最後に次の情報を出力してください。
+     - 運搬を始めてからの経過時間(ラウンド数)
+     - 一番長く放置されていた階の待ち時間(ラウンド数)
+     - エレベータの移動距離合計数
+
+エレベータの機能は次の通りです。
+  - 搭載人数は最大3人までとする。
+  - 移動には、1つの階につき「2」ラウンドかかる。
+  - 人の乗降には、1回につき「5」ラウンドかかる。
+
+※ 「ラウンド」は包括された時間だと思ってください。
+   単純に「秒」と読み替えてもよいです
+
+
+各階の人数は次の通りです。
+5階  7人
+4階 11人
+3階  3人
+2階  7人
+1階  0人
+
+冒頭では、「効率よく」なんて曖昧な表現をしようしましたが、
+何について効率よくしたのか、設計についての見解を
+コメントしていただけるとうれしいです。
+
+たとえば、
+下記のサンプル出力では、各階の待ち時間を最小とすることで
+効率よいとしました。(利用者の視点)
+ぱっと思いつくところでは、ほかにも2-3種類あるとおもいます。
+
+さて、あなたならどう書く？(笑
+// 自分で作ったやつは250L位になってしまいましたorz
+
+INIT --------------------
+ [5]th Floor: [ 7] / last_round:[   0]
+ [4]th Floor: [11] / last_round:[   0]
+ [3]th Floor: [ 3] / last_round:[   0]
+ [2]th Floor: [ 7] / last_round:[   0]
+ [1]th Floor: [ 0] / last_round:[   0] 
+
+IN(5) [7] → [4] OUT
+IN(4) [11] → [8] OUT
+IN(3) [3] → [0] OUT
+IN(2) [7] → [4] OUT
+IN(5) [4] → [1] OUT
+IN(4) [8] → [5] OUT
+IN(2) [4] → [1] OUT
+IN(5) [1] → [0] IN(4) [5] → [3] OUT
+IN(2) [1] → [0] OUT
+IN(4) [3] → [0] OUT
+
+END --------------------
+ [5]th Floor: [ 0] / last_round:[ 174]
+ [4]th Floor: [ 0] / last_round:[ 229]
+ [3]th Floor: [ 0] / last_round:[  58]
+ [2]th Floor: [ 0] / last_round:[ 213]
+ [1]th Floor: [ 0] / last_round:[   0] 
+       経過時間:[257]
+   最大待ち時間:[100]
+ 移動距離合計数:[52]
+</pre>
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8289/addtag/" class="addtag" id="addtag_8289">タグ</a>:
+	
+    
+    <a href="/web/20090512165515/http://ja.doukaku.org/tag/%E5%88%B6%E5%BE%A1%E7%B3%BB/">制御系</a>
+    
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffdfdf;"
+  >-2/2=-1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8289"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8289"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8289"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  <a href="/web/20090512165515/http://ja.doukaku.org/comment/8289/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8289/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+    <div class="indent compact" style="position: relative;">
+      <img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/1x1dark_green.png" width=10 style="position: absolute;top:-10px;margin-left:8px;">
+      
+
+
+
+
+
+<div class="comment" id="comment8320">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/127/" target="_top">raynstard</a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8320/">#8320</a>(<script language="JavaScript">print_time(new Date("2009/01/13 05:00 GMT"));</script><noscript>2009/01/13 05:00 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090512165515/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>長いからとサンプルコードはしょってしまったのでいろいろと不都合がでてしまいました。
+
+last_round は僕のデバックの都合上のものなので出力に関しては気にしないでください。
+ごめんなさい。
+お題を間違えてCのまま投稿してしまったので
+言語設定せずに投稿します。
+
+gcc -Wall -std=c99 doukaku225.c
+
+# ところで、これ投稿したの一昨日くらいなのですが、
+  公開のカウントって下書きした段階ではじまってる？</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247</pre></td><td class="code"><div class="highlight"><pre>#include &lt;stdio.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;assert.h&gt;
+
+#define CARRYING_LIMIT      (3)
+#define CARRYING_MOVE_COST  (5)
+#define ELEVATOR_MOVE_COST  (2)
+
+typedef struct tagFloor
+{
+    bool called;            /*  */
+    int  floor_Nth;         /*  */
+    int  carry_remain;      /*  */
+    long last_round;        /*  */
+    struct tagFloor *down;  /*  */
+    struct tagFloor *up;    /*  */
+} FLOOR;
+
+typedef struct tagElevatorBox
+{
+    int     carrying;       /*  */
+    int     cool_time;      /*  */
+    FLOOR * now_floor;      /*  */
+    FLOOR * target_floor;   /*  */
+} ELEVATOR;
+
+static long round          = 0;
+static long round_wait_max = 0;
+static long move_total     = 0;
+
+/* エレベータ内が搭載可能人数を返す */
+int elevator_getCarryAvailed( const ELEVATOR *elevator )
+{
+    return (CARRYING_LIMIT - elevator-&gt;carrying);
+}
+
+/* 目的の階に到着していれば真 */
+bool elevator_isTargetFloor( const ELEVATOR *elevator)
+{
+    if( elevator-&gt;now_floor == elevator-&gt;target_floor )
+    {
+        return true;
+    }
+    return false;
+}
+
+/* エレベータに乗車させる */
+int elevator_carrying_in( ELEVATOR *elevator )
+{
+    int avail = 0;
+    const int oldremain = elevator-&gt;now_floor-&gt;carry_remain;
+    avail = elevator_getCarryAvailed(elevator);
+    if(  avail &gt; 0 )
+    {
+        if( elevator-&gt;now_floor-&gt;carry_remain &gt; avail )
+        {
+            elevator-&gt;now_floor-&gt;carry_remain -= avail;
+            elevator-&gt;carrying += avail;
+        }
+        else
+        {
+            elevator-&gt;carrying += elevator-&gt;now_floor-&gt;carry_remain;
+            elevator-&gt;now_floor-&gt;called = false;
+            elevator-&gt;now_floor-&gt;carry_remain = 0;
+        }
+        elevator-&gt;cool_time = CARRYING_MOVE_COST;
+        printf(&quot;IN(%d) [%d] → [%d] &quot;
+                ,elevator-&gt;now_floor-&gt;floor_Nth,oldremain, elevator-&gt;now_floor-&gt;carry_remain);
+    }
+    return 0;
+}
+
+/* エレベータから降車させる */
+int elevator_carrying_out( ELEVATOR *elevator )
+{
+    if( elevator-&gt;carrying &gt; 0 )
+    {
+        elevator-&gt;carrying = 0;
+        elevator-&gt;cool_time = CARRYING_MOVE_COST;
+        printf(&quot;OUT &quot;);
+    }
+    return 0;
+}
+
+/* エレベータを移動する */
+int elevator_update(ELEVATOR *elevator)
+{
+    if( elevator-&gt;cool_time &gt; 0 )
+    {
+        elevator-&gt;cool_time --;
+        return 1;
+    }
+    if( elevator_isTargetFloor(elevator) == true )
+    {
+        return 0;
+    }
+    else
+    {
+        /* エレベータの移動 */
+        move_total ++;
+        assert( elevator-&gt;now_floor-&gt;floor_Nth != elevator-&gt;target_floor-&gt;floor_Nth );
+        if( elevator-&gt;now_floor-&gt;floor_Nth &lt; elevator-&gt;target_floor-&gt;floor_Nth )
+        {
+            elevator-&gt;now_floor = elevator-&gt;now_floor-&gt;up;
+         }
+        else
+        {
+            elevator-&gt;now_floor = elevator-&gt;now_floor-&gt;down;
+        }
+        elevator-&gt;cool_time = ELEVATOR_MOVE_COST;
+    }
+    return 0;
+}
+
+/* 次に停止するべき階を選択する */
+int floor_select( FLOOR **next, const FLOOR *floor, const long round )
+{
+    long wait_max;
+    FLOOR *cursor;
+
+    *next = NULL; /* 最上階 */
+    wait_max = -1;
+    cursor = (FLOOR *)floor;
+    while( true )
+    {
+        if( cursor-&gt;called == true &amp;&amp; (round - cursor-&gt;last_round) &gt; wait_max )
+        {
+            *next = cursor;
+            wait_max = (round - cursor-&gt;last_round);
+            if( (round - cursor-&gt;last_round) &gt; round_wait_max )
+            {
+                round_wait_max = (round - cursor-&gt;last_round);
+            }
+        }
+        if( cursor == cursor-&gt;down )
+        {
+            break;
+        }
+        cursor = cursor-&gt;down;
+    }
+
+    if( *next == NULL )
+    {
+        /* 1階ならばすべて運び終わっている */
+        *next = cursor;
+        return 1;
+    }
+    (*next)-&gt;last_round = round;
+    return 0;
+}
+
+/*  */
+int floor_print(const ELEVATOR* elevator, const FLOOR *floor)
+{
+    printf(&quot;--------------------\n&quot;);
+    while( true )
+    {
+        printf(&quot; [%d]th Floor: [%2d] / last_round:[%4ld] %c %c\n&quot;
+            , floor-&gt;floor_Nth, floor-&gt;carry_remain,floor-&gt;last_round
+            , (floor==elevator-&gt;target_floor)?&#39;=&#39;:&#39; &#39;
+            , (floor==elevator-&gt;now_floor)?&#39;*&#39;:&#39; &#39;);
+        if( floor == floor-&gt;down )
+        {
+            break;
+        }
+        floor = floor-&gt;down;
+    }
+    return 0;
+}
+
+/*  */
+int main(int argc, char *argv[])
+{
+    static FLOOR floor[] = 
+            {
+                {false, 1,  0, 0, &amp;floor[0], &amp;floor[1]}
+                ,{true, 2,  7, 0, &amp;floor[0], &amp;floor[2]}
+                ,{true, 3,  3, 0, &amp;floor[1], &amp;floor[3]}
+                ,{true, 4, 11, 0, &amp;floor[2], &amp;floor[4]}
+                ,{true, 5,  7, 0, &amp;floor[3], &amp;floor[4]}
+            };
+    static FLOOR *top_floor = &amp;floor[4];
+    static ELEVATOR schindler = { 0, 0, &amp;floor[0], &amp;floor[0] };
+
+    FLOOR *next = NULL;
+
+    /* 初期状態の出力*/
+    printf(&quot;INIT &quot;);
+    floor_print(&amp;schindler, top_floor);
+
+    /* 運搬開始 */
+    round = 0;
+    round_wait_max = 0;
+    move_total = 0;
+    while( true )
+    {
+        round ++;
+        elevator_update(&amp;schindler);
+        if( schindler.cool_time &gt; 0 )
+        {
+            continue;
+        }
+        if( elevator_isTargetFloor(&amp;schindler) == true )
+        {
+            /* 目的の階に到着 */
+            if( schindler.now_floor-&gt;floor_Nth == 1 )
+            {
+                elevator_carrying_out(&amp;schindler);
+                /* 次の停止回を最上階から検索する */
+                floor_select( &amp;next, top_floor, round );
+                if( next-&gt;floor_Nth == 1 )
+                {
+                    /* もうない */
+                    break;
+                }
+                //floor_print(&amp;schindler, top_floor);
+                printf(&quot;\n&quot;);
+             }
+            else
+            {
+                elevator_carrying_in(&amp;schindler);
+                if( elevator_getCarryAvailed( &amp;schindler ) &gt; 0 )
+                {
+                    /* まだ搭載できるので移動のついでに追加搭載する */
+                    floor_select( &amp;next, schindler.now_floor, round );
+                }
+                else
+                {
+                    /* もう限界なので1階を目的地にする */
+                    next = &amp;floor[0];
+                }
+                //floor_print(&amp;schindler, top_floor);
+            } /* end of if(1階か) */
+            /* 次の停止階を設定する */
+            schindler.target_floor = next;
+        } /* end of if(到着しているか) */
+    } /* end of while( 残っているか )  */
+
+    printf(&quot;\n\nEND &quot;);
+    floor_print(&amp;schindler, top_floor);
+    printf(&quot;%15s:[%ld]\n&quot;, &quot;経過時間&quot;, round);
+    printf(&quot;%15s:[%ld]\n&quot;, &quot;最大待ち時間&quot;, round_wait_max);
+    printf(&quot;%15s:[%ld]\n&quot;, &quot;移動距離合計数&quot;, move_total);
+
+    return 0;
+}
+/* EOF */
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8320/addtag/" class="addtag" id="addtag_8320">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090512165515/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8320/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8320/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8320"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8320"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8320"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8289/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8320/root/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8320/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+    </div>
+  
+
+
+
+<div class="indent">
+<a href="/web/20090512165515/http://ja.doukaku.org/225/post_comment/">
+投稿する
+</a>
+</div>
+
+
+<h2>投稿されたコメント - フラット表示</h2>
+<a href="/web/20090512165515/http://ja.doukaku.org/225/nested/">ネスト表示</a>
+<a href="/web/20090512165515/http://ja.doukaku.org/225/">非表示</a> 
+
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8313">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8313/">#8313</a>(<script language="JavaScript">print_time(new Date("2009/01/12 11:08 GMT"));</script><noscript>2009/01/12 11:08 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  エレベータの初期位置は１Ｆと仮定するのでしょうか？
+あるいはランダムな位置なのでしょうか？
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8313/addtag/" class="addtag" id="addtag_8313">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8313"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8313"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8313"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  <a href="/web/20090512165515/http://ja.doukaku.org/comment/8313/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8313/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8314">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8314/">#8314</a>(<script language="JavaScript">print_time(new Date("2009/01/12 14:09 GMT"));</script><noscript>2009/01/12 14:09 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <pre class='compact'>どっかで似た問題を見たなぁと思ってちょっと記憶をたどって探してみたら、一応見つかった。
+東大の創造情報学の2008年2月の入試問題がよく似ている。
+http://www.i.u-tokyo.ac.jp/edu/course/ci/admission.shtml
+</pre>
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8314/addtag/" class="addtag" id="addtag_8314">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8314"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8314"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8314"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  <a href="/web/20090512165515/http://ja.doukaku.org/comment/8314/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8314/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8317">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/948/" target="_top">oz3</a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8317/">#8317</a>(<script language="JavaScript">print_time(new Date("2009/01/13 01:48 GMT"));</script><noscript>2009/01/13 01:48 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>質問です。
+END時のlast_roundの数値は何を表示していますか？
+最大待ち時間 = 100 ということなので、各階の待ち時間ではないですよね。</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8317/addtag/" class="addtag" id="addtag_8317">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8317"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8317"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8317"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  <a href="/web/20090512165515/http://ja.doukaku.org/comment/8317/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8317/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8318">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/322/" target="_top">sawat</a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8318/">#8318</a>(<script language="JavaScript">print_time(new Date("2009/01/13 02:42 GMT"));</script><noscript>2009/01/13 02:42 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  「下記のサンプル出力」の経過時間が手計算と合わなのですが、間違っていませんか?<br/><br/>[4]th&nbsp;Floor:&nbsp;[&nbsp;0]&nbsp;/&nbsp;last_round:[&nbsp;229]<br/>を「4Fに最後に訪れたラウンドが229」と解釈すると、そのあとは、乗せる(5)、3F下降(6)、下ろす(5)だけのはずなのに総経過時間(257)まであと28もかかっています。<br/><br/>1Fからスタートして、4Fにいる3人を1Fに下ろすラウンド数は<br/>2*(4-1)&nbsp;+&nbsp;5&nbsp;+&nbsp;2*(4-1)&nbsp;+&nbsp;5&nbsp;=&nbsp;22<br/>であっていますか?<br/>
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8318/addtag/" class="addtag" id="addtag_8318">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8318"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8318"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8318"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  <a href="/web/20090512165515/http://ja.doukaku.org/comment/8318/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8318/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8319">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/88/" target="_top">sumim</a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8319/">#8319</a>(<script language="JavaScript">print_time(new Date("2009/01/13 04:41 GMT"));</script><noscript>2009/01/13 04:41 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090512165515/http://ja.doukaku.org/lang/smalltalk/">
+	  Smalltalk
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>Squeak Smalltalk で。</p>
+<p>あまりよい方法を思いつかなかったので、よくあるエレベータのオーソドックスな動きのシミュレートだけしてみました。</p>
+<p>待っている人がいる階では常に「↓」ボタンが押されていると仮定します。つまり、さらに上の階に呼ばれてそちらに向かっているエレベータを止めることはできません。</p>
+<p>したがって、１階で人を降ろして空になった（あるいは初期状態で１階待機の）ボックスは、呼んでいる階のうち最上階に直行します。</p>
+<p>停止階で人を乗せたボックスは１階に向かう途中、余裕があれば次の呼ばれている階に停まります。最大搭載人数に達した場合は途中で停止せず、１階に直行します。</p>
+<p>老婆心ながら、このオーソドックスな動きだけをまずは基本編として出題されたほうが良かったのではないかな⋯と思いました。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89</pre></td><td class="code"><div class="highlight"><pre>| 各階待ち人数 階数 最大搭乗人数 ボックス内人数 ボックス停止階 
+  ラウンド数 移動数 完了ラウンド数 放置ラウンド数 ボックス移動 状態出力 |
+
+各階待ち人数 := #(0 7 3 11 7).
+階数 := 各階待ち人数 size.
+最大搭乗人数 := 3.
+ボックス内人数 := 0.
+ボックス停止階 := 1.
+ラウンド数 := 0.
+移動数 := 0.
+完了ラウンド数 := Array new: 階数 withAll: 0.
+放置ラウンド数 := Array new: 階数 withAll: 0.
+放置ラウンド数 at: 1 put: -1.
+World findATranscript: nil.
+
+ボックス移動 := [:行き先階 |
+    ラウンド数 := ラウンド数 + ((行き先階 - ボックス停止階) abs * 2) + 5.
+    移動数 := 移動数 + (行き先階 - ボックス停止階) abs.
+    (放置ラウンド数 at: 行き先階) = 0
+        ifTrue: [放置ラウンド数 at: 行き先階 put: ラウンド数].
+    行き先階 = 1 ifTrue: [ボックス停止階 := 1. ボックス内人数 := 0] ifFalse: [
+        | 待ち人数 搭乗者数 残り人数 |
+        待ち人数 := 各階待ち人数 at: 行き先階.
+        搭乗者数 := 待ち人数 min: 最大搭乗人数 - ボックス内人数.
+        残り人数 := 待ち人数 - 搭乗者数.
+        ボックス停止階 = 1 ifTrue: [Transcript cr].
+        ボックス停止階 := 行き先階.
+        Transcript
+            show: ボックス停止階; show: &#39;階: &#39;; show: 待ち人数; show: &#39; -&gt; &#39;;
+            show: (各階待ち人数 at: ボックス停止階 put: 残り人数); show: &#39;. &#39;.
+        &quot;Transcript
+            show: &#39; (ラウンド: &#39;, ラウンド数 printString, &#39;, 移動数: &#39;, 移動数 printString, &#39;)&#39;.&quot;
+        ボックス内人数 := ボックス内人数 + 搭乗者数.
+        残り人数 = 0 ifTrue: [完了ラウンド数 at: ボックス停止階 put: ラウンド数]]].
+
+状態出力 := [
+    Transcript cr.
+    5 to: 1 by: -1 do: [:ｎ |
+        Transcript cr; show: ｎ; show: &#39;階; &#39;;
+            show: (各階待ち人数 at: ｎ);
+            show: &#39; 人 / 完了ラウンド: &#39;;
+            show: (完了ラウンド数 at: ｎ)].
+    Transcript cr].
+
+状態出力 value.
+
+[   ボックス内人数 = 最大搭乗人数 ifTrue: [ボックス移動 value: 1] ifFalse: [
+        | 呼び出し階 |
+        呼び出し階 := 各階待ち人数 findLast: [:各階 | 各階 &gt; 0].
+        呼び出し階 = 0
+            ifTrue: [ボックス移動 value: 1]
+            ifFalse: [ボックス移動 value: 呼び出し階]].
+    ボックス停止階 &gt; 1 or: [各階待ち人数 anySatisfy: [:各階 | 各階 &gt; 0]]
+] whileTrue.
+
+状態出力 value.
+
+Transcript cr; show: &#39;経過時間: &#39;; show: ラウンド数.
+&quot;Transcript cr; show: &#39;階別の放置時間一覧: &#39;; show: 放置ラウンド数.&quot;
+Transcript cr; show: &#39;階別の最大放置時間: &#39;; show: 放置ラウンド数 max.
+Transcript cr; show: &#39;のべ移動階数: &#39;; show: 移動数
+
+&quot;出力 =&gt; 
+5階; 7 人 / 完了ラウンド: 0
+4階; 11 人 / 完了ラウンド: 0
+3階; 3 人 / 完了ラウンド: 0
+2階; 7 人 / 完了ラウンド: 0
+1階; 0 人 / 完了ラウンド: 0
+
+5階: 7 -&gt; 4. 
+5階: 4 -&gt; 1. 
+5階: 1 -&gt; 0. 4階: 11 -&gt; 9. 
+4階: 9 -&gt; 6. 
+4階: 6 -&gt; 3. 
+4階: 3 -&gt; 0. 
+3階: 3 -&gt; 0. 
+2階: 7 -&gt; 4. 
+2階: 4 -&gt; 1. 
+2階: 1 -&gt; 0. 
+
+5階; 0 人 / 完了ラウンド: 65
+4階; 0 人 / 完了ラウンド: 138
+3階; 0 人 / 完了ラウンド: 158
+2階; 0 人 / 完了ラウンド: 202
+1階; 0 人 / 完了ラウンド: 0
+
+経過時間: 209
+階別の最大放置時間: 174
+のべ移動階数: 52 &quot;
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8319/addtag/" class="addtag" id="addtag_8319">タグ</a>:
+	
+    
+    <a href="/web/20090512165515/http://ja.doukaku.org/tag/Squeak_Smalltalk/">Squeak_Smalltalk</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20090512165515/http://ja.doukaku.org/lang/smalltalk/">
+		Smalltalk
+      </a>]
+	  
+      [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8319/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8319/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8319"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8319"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8319"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  <a href="/web/20090512165515/http://ja.doukaku.org/comment/8319/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8319/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8320">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/127/" target="_top">raynstard</a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8320/">#8320</a>(<script language="JavaScript">print_time(new Date("2009/01/13 05:00 GMT"));</script><noscript>2009/01/13 05:00 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090512165515/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <pre class='compact'>長いからとサンプルコードはしょってしまったのでいろいろと不都合がでてしまいました。
+
+last_round は僕のデバックの都合上のものなので出力に関しては気にしないでください。
+ごめんなさい。
+お題を間違えてCのまま投稿してしまったので
+言語設定せずに投稿します。
+
+gcc -Wall -std=c99 doukaku225.c
+
+# ところで、これ投稿したの一昨日くらいなのですが、
+  公開のカウントって下書きした段階ではじまってる？</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247</pre></td><td class="code"><div class="highlight"><pre>#include &lt;stdio.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;assert.h&gt;
+
+#define CARRYING_LIMIT      (3)
+#define CARRYING_MOVE_COST  (5)
+#define ELEVATOR_MOVE_COST  (2)
+
+typedef struct tagFloor
+{
+    bool called;            /*  */
+    int  floor_Nth;         /*  */
+    int  carry_remain;      /*  */
+    long last_round;        /*  */
+    struct tagFloor *down;  /*  */
+    struct tagFloor *up;    /*  */
+} FLOOR;
+
+typedef struct tagElevatorBox
+{
+    int     carrying;       /*  */
+    int     cool_time;      /*  */
+    FLOOR * now_floor;      /*  */
+    FLOOR * target_floor;   /*  */
+} ELEVATOR;
+
+static long round          = 0;
+static long round_wait_max = 0;
+static long move_total     = 0;
+
+/* エレベータ内が搭載可能人数を返す */
+int elevator_getCarryAvailed( const ELEVATOR *elevator )
+{
+    return (CARRYING_LIMIT - elevator-&gt;carrying);
+}
+
+/* 目的の階に到着していれば真 */
+bool elevator_isTargetFloor( const ELEVATOR *elevator)
+{
+    if( elevator-&gt;now_floor == elevator-&gt;target_floor )
+    {
+        return true;
+    }
+    return false;
+}
+
+/* エレベータに乗車させる */
+int elevator_carrying_in( ELEVATOR *elevator )
+{
+    int avail = 0;
+    const int oldremain = elevator-&gt;now_floor-&gt;carry_remain;
+    avail = elevator_getCarryAvailed(elevator);
+    if(  avail &gt; 0 )
+    {
+        if( elevator-&gt;now_floor-&gt;carry_remain &gt; avail )
+        {
+            elevator-&gt;now_floor-&gt;carry_remain -= avail;
+            elevator-&gt;carrying += avail;
+        }
+        else
+        {
+            elevator-&gt;carrying += elevator-&gt;now_floor-&gt;carry_remain;
+            elevator-&gt;now_floor-&gt;called = false;
+            elevator-&gt;now_floor-&gt;carry_remain = 0;
+        }
+        elevator-&gt;cool_time = CARRYING_MOVE_COST;
+        printf(&quot;IN(%d) [%d] → [%d] &quot;
+                ,elevator-&gt;now_floor-&gt;floor_Nth,oldremain, elevator-&gt;now_floor-&gt;carry_remain);
+    }
+    return 0;
+}
+
+/* エレベータから降車させる */
+int elevator_carrying_out( ELEVATOR *elevator )
+{
+    if( elevator-&gt;carrying &gt; 0 )
+    {
+        elevator-&gt;carrying = 0;
+        elevator-&gt;cool_time = CARRYING_MOVE_COST;
+        printf(&quot;OUT &quot;);
+    }
+    return 0;
+}
+
+/* エレベータを移動する */
+int elevator_update(ELEVATOR *elevator)
+{
+    if( elevator-&gt;cool_time &gt; 0 )
+    {
+        elevator-&gt;cool_time --;
+        return 1;
+    }
+    if( elevator_isTargetFloor(elevator) == true )
+    {
+        return 0;
+    }
+    else
+    {
+        /* エレベータの移動 */
+        move_total ++;
+        assert( elevator-&gt;now_floor-&gt;floor_Nth != elevator-&gt;target_floor-&gt;floor_Nth );
+        if( elevator-&gt;now_floor-&gt;floor_Nth &lt; elevator-&gt;target_floor-&gt;floor_Nth )
+        {
+            elevator-&gt;now_floor = elevator-&gt;now_floor-&gt;up;
+         }
+        else
+        {
+            elevator-&gt;now_floor = elevator-&gt;now_floor-&gt;down;
+        }
+        elevator-&gt;cool_time = ELEVATOR_MOVE_COST;
+    }
+    return 0;
+}
+
+/* 次に停止するべき階を選択する */
+int floor_select( FLOOR **next, const FLOOR *floor, const long round )
+{
+    long wait_max;
+    FLOOR *cursor;
+
+    *next = NULL; /* 最上階 */
+    wait_max = -1;
+    cursor = (FLOOR *)floor;
+    while( true )
+    {
+        if( cursor-&gt;called == true &amp;&amp; (round - cursor-&gt;last_round) &gt; wait_max )
+        {
+            *next = cursor;
+            wait_max = (round - cursor-&gt;last_round);
+            if( (round - cursor-&gt;last_round) &gt; round_wait_max )
+            {
+                round_wait_max = (round - cursor-&gt;last_round);
+            }
+        }
+        if( cursor == cursor-&gt;down )
+        {
+            break;
+        }
+        cursor = cursor-&gt;down;
+    }
+
+    if( *next == NULL )
+    {
+        /* 1階ならばすべて運び終わっている */
+        *next = cursor;
+        return 1;
+    }
+    (*next)-&gt;last_round = round;
+    return 0;
+}
+
+/*  */
+int floor_print(const ELEVATOR* elevator, const FLOOR *floor)
+{
+    printf(&quot;--------------------\n&quot;);
+    while( true )
+    {
+        printf(&quot; [%d]th Floor: [%2d] / last_round:[%4ld] %c %c\n&quot;
+            , floor-&gt;floor_Nth, floor-&gt;carry_remain,floor-&gt;last_round
+            , (floor==elevator-&gt;target_floor)?&#39;=&#39;:&#39; &#39;
+            , (floor==elevator-&gt;now_floor)?&#39;*&#39;:&#39; &#39;);
+        if( floor == floor-&gt;down )
+        {
+            break;
+        }
+        floor = floor-&gt;down;
+    }
+    return 0;
+}
+
+/*  */
+int main(int argc, char *argv[])
+{
+    static FLOOR floor[] = 
+            {
+                {false, 1,  0, 0, &amp;floor[0], &amp;floor[1]}
+                ,{true, 2,  7, 0, &amp;floor[0], &amp;floor[2]}
+                ,{true, 3,  3, 0, &amp;floor[1], &amp;floor[3]}
+                ,{true, 4, 11, 0, &amp;floor[2], &amp;floor[4]}
+                ,{true, 5,  7, 0, &amp;floor[3], &amp;floor[4]}
+            };
+    static FLOOR *top_floor = &amp;floor[4];
+    static ELEVATOR schindler = { 0, 0, &amp;floor[0], &amp;floor[0] };
+
+    FLOOR *next = NULL;
+
+    /* 初期状態の出力*/
+    printf(&quot;INIT &quot;);
+    floor_print(&amp;schindler, top_floor);
+
+    /* 運搬開始 */
+    round = 0;
+    round_wait_max = 0;
+    move_total = 0;
+    while( true )
+    {
+        round ++;
+        elevator_update(&amp;schindler);
+        if( schindler.cool_time &gt; 0 )
+        {
+            continue;
+        }
+        if( elevator_isTargetFloor(&amp;schindler) == true )
+        {
+            /* 目的の階に到着 */
+            if( schindler.now_floor-&gt;floor_Nth == 1 )
+            {
+                elevator_carrying_out(&amp;schindler);
+                /* 次の停止回を最上階から検索する */
+                floor_select( &amp;next, top_floor, round );
+                if( next-&gt;floor_Nth == 1 )
+                {
+                    /* もうない */
+                    break;
+                }
+                //floor_print(&amp;schindler, top_floor);
+                printf(&quot;\n&quot;);
+             }
+            else
+            {
+                elevator_carrying_in(&amp;schindler);
+                if( elevator_getCarryAvailed( &amp;schindler ) &gt; 0 )
+                {
+                    /* まだ搭載できるので移動のついでに追加搭載する */
+                    floor_select( &amp;next, schindler.now_floor, round );
+                }
+                else
+                {
+                    /* もう限界なので1階を目的地にする */
+                    next = &amp;floor[0];
+                }
+                //floor_print(&amp;schindler, top_floor);
+            } /* end of if(1階か) */
+            /* 次の停止階を設定する */
+            schindler.target_floor = next;
+        } /* end of if(到着しているか) */
+    } /* end of while( 残っているか )  */
+
+    printf(&quot;\n\nEND &quot;);
+    floor_print(&amp;schindler, top_floor);
+    printf(&quot;%15s:[%ld]\n&quot;, &quot;経過時間&quot;, round);
+    printf(&quot;%15s:[%ld]\n&quot;, &quot;最大待ち時間&quot;, round_wait_max);
+    printf(&quot;%15s:[%ld]\n&quot;, &quot;移動距離合計数&quot;, move_total);
+
+    return 0;
+}
+/* EOF */
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8320/addtag/" class="addtag" id="addtag_8320">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090512165515/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8320/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8320/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8320"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8320"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8320"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8289/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8320/root/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8320/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8321">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/127/" target="_top">raynstard</a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8321/">#8321</a>(<script language="JavaScript">print_time(new Date("2009/01/13 05:01 GMT"));</script><noscript>2009/01/13 05:01 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>今回、エレベータの移動距離を出力するので
+1Fスタートにしていただければと思います。</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8321/addtag/" class="addtag" id="addtag_8321">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8321"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8321"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8321"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8313/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8321/root/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8321/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8322">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/127/" target="_top">raynstard</a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8322/">#8322</a>(<script language="JavaScript">print_time(new Date("2009/01/13 05:09 GMT"));</script><noscript>2009/01/13 05:09 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <pre class='compact'>まさか東大の入試問題になっているとは思いませんでしたが、
+プログラムの勉強をする上でわりとポピュラーなものです。
+
+ほかにポピュラーなものとして
+自動販売機の釣り銭勘定(基本ロジックの勉強によい)、
+電卓(スタック操作の勉強にいい)等があるのですが、
+エレベータの制御が抜けているのに気がついたので投稿しました。
+ちなみに、これは本来並列処理や計算量の見積もり訓練の勉強にしようします。
+GUIで作ると結構楽しいんですけどね^^;;</pre>
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8322/addtag/" class="addtag" id="addtag_8322">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8322"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8322"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8322"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8314/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8322/root/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8322/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8323">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/127/" target="_top">raynstard</a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8323/">#8323</a>(<script language="JavaScript">print_time(new Date("2009/01/13 05:10 GMT"));</script><noscript>2009/01/13 05:10 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <pre class='compact'>ごめんなさい。これは僕のデバッグ用出力です。
+
+最後に更新(乗車)したときのroundです。
+
+あまり気にしないでください。</pre>
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8323/addtag/" class="addtag" id="addtag_8323">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8323"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8323"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8323"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8317/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8323/root/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8323/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8324">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/127/" target="_top">raynstard</a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8324/">#8324</a>(<script language="JavaScript">print_time(new Date("2009/01/13 05:23 GMT"));</script><noscript>2009/01/13 05:23 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <pre class='compact'>はい、バグってました。
+# しかもそのまま投稿しちゃってる^^;
+
+予定では、目的地についたとき、時間を更新するつもりだったのですが
+ロジック的に、降車した段階で次の目的となる階を決定した段階でlast_roundを設定していました。
+
+つまり、1Fから4Fまでの移動時間(6ラウンド)が空白になります。
+
+論理的なもの、僕が想定しているものはsawat氏の考えているとおりです。
+失礼しました。
+</pre>
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8324/addtag/" class="addtag" id="addtag_8324">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8324"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8324"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8324"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8318/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8324/root/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8324/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8325">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/127/" target="_top">raynstard</a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8325/">#8325</a>(<script language="JavaScript">print_time(new Date("2009/01/13 05:46 GMT"));</script><noscript>2009/01/13 05:46 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <pre class='compact'>やっぱ、上から下へ運ぶだけのお題にしてしまえばよかったんですかねぇ。
+移動距離だけ計算して。。。
+
+このお題を投稿する時点でもなやんだのですよ。
+実はこの基本すら飛ばして応用だけにしてしまうかとか。
+
+今にして思えば、このお題の前後をお題にすればちょうどよかった気がしてきましたorz</pre>
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8325/addtag/" class="addtag" id="addtag_8325">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8325"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8325"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8325"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8319/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8325/root/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8325/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8326">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/856/" target="_top">fumokmm</a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8326/">#8326</a>(<script language="JavaScript">print_time(new Date("2009/01/13 09:58 GMT"));</script><noscript>2009/01/13 09:58 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090512165515/http://ja.doukaku.org/lang/groovy/">
+	  Groovy
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <pre class='compact'>Groovyで。
+
+待ってる人の待ち時間を少なくなるよう勤めました。
+（経過時間と移動距離合計数は無駄に増えます）
+乗降を開始した時点で各階の待ち時間をリセットしています。
+
+動きとしては以下のような感じです。
+(1) 待っている人がいる最上階に移動
+(2) 1人乗せる
+(3) 1階降りて止まる
+(4) 1人降ろす
+(5) 1階にたどり着くまで、(2)～(4)を繰り返す
+(6) 1階に到着したら、1人降ろす
+
+
+出力結果
+INIT --------------------
+[5]th Floor: [ 7] / last_round:[0]
+[4]th Floor: [11] / last_round:[0]
+[3]th Floor: [ 3] / last_round:[0]
+[2]th Floor: [ 7] / last_round:[0]
+[1]th Floor: [ 0] / last_round:[0]
+-------------------------
+Elevator move from [1 → 5]
+Person get on at [5]th Floor / Floor's member [7 → 6]
+Elevator move from [5 → 4]
+Person get off at [4]th Floor / Floor's member [11 → 12]
+Person get on at [4]th Floor / Floor's member [12 → 11]
+Elevator move from [4 → 3]
+　　・
+　　・(途中省略)
+　　・
+Elevator move from [2 → 1]
+Person get off at [1]th Floor / Floor's member [26 → 27]
+Elevator move from [1 → 2]
+Person get on at [2]th Floor / Floor's member [1 → 0]
+Elevator move from [2 → 1]
+Person get off at [1]th Floor / Floor's member [27 → 28]
+END --------------------
+[5]th Floor: [ 0] / last_round:[51]
+[4]th Floor: [ 0] / last_round:[46]
+[3]th Floor: [ 0] / last_round:[46]
+[2]th Floor: [ 0] / last_round:[46]
+[1]th Floor: [28] / last_round:[0]
+      経過時間:[1036]
+  最大待ち時間:[51]
+移動距離合計数:[148]
+</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141</pre></td><td class="code"><div class="highlight"><pre>/** エレベータ */
+class Elevator {
+  static final int MOVE_COST       = 2 // 移動コスト
+  static final int GETTING_ON_COST = 5 // 乗降コスト
+  static final int MAX_PERSONS     = 3 // 最大人数
+  def floors                           // フロア
+  int currentFloor                     // 現在のフロア
+  int persons                          // 乗っている人数
+  int elapsedRound = 0                 // 経過ラウンド
+  int moved        = 0                 // 総移動距離
+
+  /** 階を移動する */
+  def moveTo(toFloor) {
+    int movin = Math.abs(toFloor - currentFloor)
+    println(&quot;Elevator move from [${currentFloor + 1} → ${toFloor + 1}]&quot;)
+    moved += movin
+    currentFloor = toFloor
+    elapseByMove(movin * MOVE_COST)
+  }
+
+  /** フロアからエレベータへ一人乗せる */
+  def getOn() {
+    if (persons &lt; MAX_PERSONS &amp;&amp; floors[currentFloor].persons) {
+      persons++
+      int before = floors[currentFloor].persons--
+      elapseByGettingOn(GETTING_ON_COST)
+      println(&quot;Person get on at [${currentFloor + 1}]th Floor / &quot;
+      + &quot;Floor&#39;s member [${before} → ${floors[currentFloor].persons}]&quot;)
+    }
+  }
+
+  /** エレベータからフロアへ一人降ろす */
+  def getOff() {
+    if (persons) {
+      persons--
+      int before = floors[currentFloor].persons++
+      elapseByGettingOn(GETTING_ON_COST)
+      println(&quot;Person get off at [${currentFloor + 1}]th Floor / &quot;
+      + &quot;Floor&#39;s member [${before} → ${floors[currentFloor].persons}]&quot;)
+    }
+  }
+
+  /** 移動によるラウンドの経過 */
+  def elapseByMove(round) {
+    floors.each{ it.elapse(round) }
+    elapsedRound += round
+  }
+  
+  /** 乗降によるラウンドの経過 */
+  def elapseByGettingOn(round) {
+    floors.eachWithIndex{ f, idx -&gt;
+      if (currentFloor == idx) {
+        f.resetRound()
+      } else {
+        f.elapse(round)
+      }
+    }
+    elapsedRound += round
+  }
+  
+  /** フロア情報を出力 */
+  def dispFloorsInfo(){
+    (1..floors.size()).reverseEach{
+      println(&quot;[${it}]th Floor: &quot;
+      + &quot;[${(floors[it-1].persons as String).padLeft(2)}] /&quot;
+      + &quot; last_round:[${floors[it-1].maxWaitRound}]&quot;)
+    }
+  }
+  
+  /** ラウンド情報を出力 */
+  def dispRoundInfo() {
+    println &quot;&quot;&quot;\
+      経過時間:[${elapsedRound}]
+  最大待ち時間:[${floors*.maxWaitRound.max()}]
+移動距離合計数:[${moved}]&quot;&quot;&quot;
+  }
+
+}
+
+/** フロア */
+class Floor {
+  int persons          // 待っている人数
+  int waitRound    = 0 // 待っているラウンド
+  int maxWaitRound = 0 // 最大待ちラウンド
+  boolean noRound      // ラウンド経過なし
+
+  /** ラウンド経過 */
+  def elapse(round) {
+    if (persons &amp;&amp; !noRound) {
+      waitRound += round
+      maxWaitRound = [maxWaitRound, waitRound].max()
+    }
+  }
+  
+  /** ラウンドリセット */
+  def resetRound() {
+    waitRound = 0
+  }
+}
+
+
+def elev = new Elevator(
+  floors:[
+    new Floor(persons: 0, noRound:true), // 1階 (ラウンド経過なし)
+    new Floor(persons: 7              ), // 2階
+    new Floor(persons: 3              ), // 3階
+    new Floor(persons:11              ), // 4階
+    new Floor(persons: 7              )  // 5階
+  ],
+  currentFloor: 0,
+  persons     : 0
+)
+
+// メイン処理
+println &#39;INIT --------------------&#39;
+elev.dispFloorsInfo()
+println &#39;-------------------------&#39;
+
+// 1階以外で待っている人がいる間繰り返す
+while(elev.floors.tail()*.persons.sum()) {
+  // 待っている人がいる最上階を探す
+  def nextList = []
+  elev.floors.tail()*.persons.eachWithIndex{ item, idx -&gt;
+    nextList &lt;&lt; [idx+1, item]
+  }
+  def topFloor = nextList.findAll{ it[1] != 0 }.last()[0]
+
+  // 上から順に一人ずつスライドさせてくる
+  for (i in topFloor..0) {
+    elev.moveTo(i)
+    switch (i) {
+      case topFloor:                elev.getOn();  break
+      case        0: elev.getOff();                break
+      default      : elev.getOff(); elev.getOn();  break
+    }
+  }
+}
+
+println &#39;END --------------------&#39;
+elev.dispFloorsInfo()
+elev.dispRoundInfo()
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8326/addtag/" class="addtag" id="addtag_8326">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090512165515/http://ja.doukaku.org/lang/groovy/">
+		Groovy
+      </a>]
+	  
+      [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8326/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8326/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8326"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8326"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8326"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8326/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8328">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/322/" target="_top">sawat</a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8328/">#8328</a>(<script language="JavaScript">print_time(new Date("2009/01/13 19:47 GMT"));</script><noscript>2009/01/13 19:47 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090512165515/http://ja.doukaku.org/lang/javascript/">
+	  JavaScript
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  #8319と同じアプローチで。<br/>主にプログラム作成の容易さについて効率化しました(笑)<br/>総移動距離は最短になります。<br/><br/>階数表記は英国式(0Fが地階)です。<br/>----実行結果----<br/>4F[7-&gt;4]&nbsp;-&gt;&nbsp;0F.&nbsp;(Round:&nbsp;26)<br/>4F[4-&gt;1]&nbsp;-&gt;&nbsp;0F.&nbsp;(Round:&nbsp;52)<br/>4F[1-&gt;0]&nbsp;-&gt;&nbsp;3F[11-&gt;9]&nbsp;-&gt;&nbsp;0F.&nbsp;(Round:&nbsp;83)<br/>3F[9-&gt;6]&nbsp;-&gt;&nbsp;0F.&nbsp;(Round:&nbsp;105)<br/>3F[6-&gt;3]&nbsp;-&gt;&nbsp;0F.&nbsp;(Round:&nbsp;127)<br/>3F[3-&gt;0]&nbsp;-&gt;&nbsp;0F.&nbsp;(Round:&nbsp;149)<br/>2F[3-&gt;0]&nbsp;-&gt;&nbsp;0F.&nbsp;(Round:&nbsp;167)<br/>1F[7-&gt;4]&nbsp;-&gt;&nbsp;0F.&nbsp;(Round:&nbsp;181)<br/>1F[4-&gt;1]&nbsp;-&gt;&nbsp;0F.&nbsp;(Round:&nbsp;195)<br/>1F[1-&gt;0]&nbsp;-&gt;&nbsp;0F.&nbsp;(Round:&nbsp;209)<br/>Finish.<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Total&nbsp;time:&nbsp;209<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Total&nbsp;move:&nbsp;52<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Max&nbsp;wait:&nbsp;&nbsp;&nbsp;174
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77</pre></td><td class="code"><div class="highlight"><pre><span class="k">function</span> <span class="nx">log</span><span class="p">(</span><span class="nx">str</span><span class="o">,</span> <span class="nx">lineContinue</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c">// for Rhino</span>
+    <span class="nx">java</span><span class="p">.</span><span class="nx">lang</span><span class="p">.</span><span class="nx">System</span><span class="p">.</span><span class="nx">out</span><span class="p">.</span><span class="nx">print</span><span class="p">(</span><span class="nx">str</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">lineContinue</span><span class="p">)</span> <span class="nx">java</span><span class="p">.</span><span class="nx">lang</span><span class="p">.</span><span class="nx">System</span><span class="p">.</span><span class="nx">out</span><span class="p">.</span><span class="nx">println</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="k">function</span> <span class="nx">Elevator</span><span class="p">(</span><span class="nx">capacity</span><span class="o">,</span> <span class="nx">t1</span><span class="o">,</span> <span class="nx">t2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">capacity</span> <span class="o">=</span> <span class="nx">capacity</span><span class="o">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">t1</span> <span class="o">=</span> <span class="nx">t1</span><span class="o">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">t2</span> <span class="o">=</span> <span class="nx">t2</span><span class="o">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">init</span><span class="p">([]);</span>
+<span class="p">}</span>
+
+<span class="nx">Elevator</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">simulate</span><span class="o">:</span> <span class="k">function</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">init</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+        <span class="k">var</span> <span class="nx">c</span><span class="o">;</span>
+        <span class="k">while</span> <span class="p">(</span><span class="nx">c</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">callingFrom</span><span class="p">())</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">upTo</span><span class="p">(</span><span class="nx">c</span><span class="p">);</span>
+            <span class="k">while</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">floor</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">down</span><span class="p">();</span>
+        <span class="p">}</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">printResult</span><span class="p">();</span>
+    <span class="p">}</span><span class="o">,</span>
+    <span class="nx">printResult</span><span class="o">:</span> <span class="k">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Finish.&quot;</span><span class="p">);</span>
+        <span class="nx">log</span><span class="p">(</span><span class="s2">&quot;\tTotal time: &quot;</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">round</span><span class="p">);</span>
+        <span class="nx">log</span><span class="p">(</span><span class="s2">&quot;\tTotal move: &quot;</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">move</span><span class="p">);</span>
+        <span class="nx">log</span><span class="p">(</span><span class="s2">&quot;\tMax wait:   &quot;</span> <span class="o">+</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">max</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="kc">null</span><span class="o">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">waitTime</span><span class="p">));</span>
+    <span class="p">}</span><span class="o">,</span> 
+    <span class="nx">init</span><span class="o">:</span> <span class="k">function</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">floor</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="c">// 英国式</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">count</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">round</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">move</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">waitTime</span> <span class="o">=</span> <span class="p">[];</span>
+        <span class="k">for</span><span class="p">(</span><span class="k">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="o">,</span><span class="nx">n</span><span class="o">=</span><span class="nx">data</span><span class="p">.</span><span class="nx">length</span><span class="o">+</span><span class="mi">1</span><span class="o">;</span><span class="nx">i</span><span class="o">&lt;</span><span class="nx">n</span><span class="o">;</span><span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">waitTime</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">data</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">concat</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+    <span class="p">}</span><span class="o">,</span>
+    <span class="nx">upTo</span><span class="o">:</span> <span class="k">function</span> <span class="p">(</span><span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">round</span> <span class="o">+=</span> <span class="k">this</span><span class="p">.</span><span class="nx">t1</span> <span class="o">*</span> <span class="p">(</span><span class="nx">f</span> <span class="o">-</span> <span class="k">this</span><span class="p">.</span><span class="nx">floor</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">move</span> <span class="o">+=</span> <span class="p">(</span><span class="nx">f</span> <span class="o">-</span> <span class="k">this</span><span class="p">.</span><span class="nx">floor</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">aliveAt</span><span class="p">(</span><span class="nx">f</span><span class="p">);</span>
+    <span class="p">}</span><span class="o">,</span>
+    <span class="nx">down</span><span class="o">:</span> <span class="k">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">round</span> <span class="o">+=</span> <span class="k">this</span><span class="p">.</span><span class="nx">t1</span><span class="o">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">move</span><span class="o">++;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">aliveAt</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">floor</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span><span class="o">,</span>
+    <span class="nx">aliveAt</span><span class="o">:</span> <span class="k">function</span> <span class="p">(</span><span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">floor</span> <span class="o">=</span> <span class="nx">f</span><span class="o">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">floor</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">round</span> <span class="o">+=</span> <span class="k">this</span><span class="p">.</span><span class="nx">t2</span><span class="o">;</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">count</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+            <span class="nx">log</span><span class="p">(</span><span class="s2">&quot;0F. (Round: &quot;</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">round</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">var</span> <span class="nx">n</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">min</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">capacity</span> <span class="o">-</span> <span class="k">this</span><span class="p">.</span><span class="nx">count</span><span class="o">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">data</span><span class="p">[</span><span class="nx">f</span><span class="p">]);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">n</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">round</span> <span class="o">+=</span> <span class="k">this</span><span class="p">.</span><span class="nx">t2</span><span class="o">;</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">data</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span> <span class="o">-=</span> <span class="nx">n</span><span class="o">;</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">count</span> <span class="o">+=</span> <span class="nx">n</span><span class="o">;</span>
+                <span class="k">if</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">waitTime</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">waitTime</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">round</span><span class="o">;</span>
+                <span class="nx">log</span><span class="p">(</span><span class="nx">f</span> <span class="o">+</span> <span class="s2">&quot;F[&quot;</span> <span class="o">+</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">data</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span> <span class="o">+</span> <span class="nx">n</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;-&gt;&quot;</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">data</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;] -&gt; &quot;</span><span class="o">,</span> <span class="kc">true</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span><span class="o">,</span>
+    <span class="nx">callingFrom</span><span class="o">:</span> <span class="k">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="k">var</span> <span class="nx">f</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="nx">f</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">;</span> <span class="nx">f</span><span class="o">--</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">data</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="nx">f</span><span class="o">;</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">new</span> <span class="nx">Elevator</span><span class="p">(</span><span class="nx">arguments</span><span class="p">.</span><span class="nx">shift</span><span class="p">()</span><span class="o">*</span><span class="mi">1</span><span class="o">,</span> <span class="nx">arguments</span><span class="p">.</span><span class="nx">shift</span><span class="p">()</span><span class="o">*</span><span class="mi">1</span><span class="o">,</span> <span class="nx">arguments</span><span class="p">.</span><span class="nx">shift</span><span class="p">()</span><span class="o">*</span><span class="mi">1</span><span class="p">).</span><span class="nx">simulate</span><span class="p">(</span><span class="nx">arguments</span><span class="p">);</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="k">new</span> <span class="nx">Elevator</span><span class="p">(</span><span class="mi">3</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">5</span><span class="p">).</span><span class="nx">simulate</span><span class="p">([</span><span class="mi">7</span><span class="o">,</span> <span class="mi">3</span><span class="o">,</span> <span class="mi">11</span><span class="o">,</span> <span class="mi">7</span><span class="p">]);</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8328/addtag/" class="addtag" id="addtag_8328">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090512165515/http://ja.doukaku.org/lang/javascript/">
+		JavaScript
+      </a>]
+	  
+      [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8328/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8328/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8328"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8328"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8328"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  <a href="/web/20090512165515/http://ja.doukaku.org/comment/8328/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8328/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8342">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/127/" target="_top">raynstard</a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8342/">#8342</a>(<script language="JavaScript">print_time(new Date("2009/01/16 07:17 GMT"));</script><noscript>2009/01/16 07:17 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>ども、raynstardです。
+コメントにもありますが、ロジックを単純にするとエレベータの移動距離が最小限になります。</p>
+<p>いってみれば、消費エネルギーの効率をよくしたということです。
+つまり、エコですよ！(笑</p>
+<p>そして、また、テストデータがあまかったorz
+予定では、単純なロジックにすると移動距離がへるはずだったんだけどなぁ^^；；</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8342/addtag/" class="addtag" id="addtag_8342">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8342"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8342"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8342"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8328/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8342/root/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8342/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8380">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/685/" target="_top">Nemo</a><a href="/web/20090512165515/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8380/">#8380</a>(<script language="JavaScript">print_time(new Date("2009/01/21 15:25 GMT"));</script><noscript>2009/01/21 15:25 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090512165515/http://ja.doukaku.org/lang/postscript/">
+	  PostScript
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>とりあえず、サンプル通りのやつと、自分なりに最適化したのを1本づつ。
+方針としては、トータルの待ち時間の最小化です。
+各人が1階まで降りる時間*人数の合計が最小になるように、という方針です。</p>
+<p>実際のところは、下の階層から優先的に運び出してしまって、上の階層は後回し、ということです。定員まで余裕があれば、更に上の階層へ寄り道、という手順になります。</p>
+<p>サンプルプログラム(FindNext2)の手順だと、
+Score =3464
+Time  =209
+Run   =52
+ですが、この手順(FindNext1)ですと、
+Score =2931
+Time  =222
+Run   =56
+となり、若干エレベータの移動量(Run)及び所要時間(Time)が増えるものの、大幅に合計待ち時間(Score)が短縮されます。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118</pre></td><td class="code"><div class="highlight"><pre>%!PS
+
+% [[待ち人] 現在位置 乗員 定員 時刻 評価]   Check1  [...]
+/Check1 {
+    dup 0 get true exch { 0 eq and } forall % 待ち無し
+    1 index 1 get 0 eq and                  % 地上階    
+} bind def
+
+% [[待ち人] 現在位置....] FindNext1 num
+/FindNext1 {
+    0 2 getinterval aload
+    0 get length 1 sub 1 exch {
+        2 copy get 0 gt {
+            exch pop true exit
+        } if
+        pop
+    } for
+    true ne {
+        0
+    } if
+} bind def
+
+/FindNext2 {
+    (==) = ppstack (==)=
+    0 get
+    dup length 1 sub -1 1
+    {
+        2 copy get 0 gt {
+            exch pop true exit
+        } if
+        pop
+    } for
+    true ne {
+        0
+    } if
+} bind def
+
+/AddVal { % [] pos tt  AddVal  []
+    2 index 2 index get add 2 index 3 1 roll put
+} bind def
+
+% [[待ち人] 現在位置 乗員 定員 時刻 評価]  /Next  Move1  [...]
+/Move1 {
+    exch
+    (Move: ) print dup 1 get 1 add 3 string cvs print ( ==&gt; ) print
+
+    (==) = ppstack
+    dup 2 2 getinterval aload pop lt {
+        dup 3 -1 roll cvx exec
+        1 index 1 get
+        2 index 2 index 1 exch put
+        sub abs
+        2 copy 6 exch AddVal pop
+        MoveTime mul 4 exch AddVal
+    } {
+        exch pop
+        dup 1 get
+        2 copy 6 exch AddVal pop
+        MoveTime mul 4 exch AddVal
+        dup 1 0 put
+    } ifelse
+    dup 1 get 1 add 3 string cvs =
+    dup ===
+} bind def
+/RideOn {
+    % [[] ... ] n RideOn [[] ...]
+    1 index 0 get 2 index 1 get 2 index neg
+    AddVal pop
+    2 exch AddVal
+} bind def
+/IO1 {
+    dup 1 get 0 eq {
+        (Floor 1 =[Out]= ) print dup 2 get =
+        dup 2 get 0 gt {
+            4 IOTime AddVal
+            dup 2 get exch dup 4 get 3 -1 roll mul
+            5 exch AddVal
+            dup 2 0 put
+        }if
+        dup ===
+    } {
+        (Floor ) print dup 1 get 1 add 3 string cvs print ( =[In]= ) print
+        dup 1 get exch dup 0 get 3 -1 roll get
+        exch dup 2 get exch dup 3 get 3 -1 roll sub
+        3 copy 3 -1 roll lt {
+            pop 3 -1 roll pop
+        } {
+            pop pop exch
+        } ifelse
+        dup 0 gt {
+            dup =
+            RideOn
+            4 IOTime AddVal
+        } {
+            (noop) =
+        } ifelse
+    } ifelse
+} bind def
+
+
+/Run {
+    exch
+    {
+        Check1 { exit } if
+        1 index Move1
+    IO1
+    } loop
+    (Score =) print dup 5 get =
+    (Time  =) print dup 4 get =
+    (Run   =) print dup 6 get =
+    pop pop
+} bind def
+
+% ===== Test Code =====
+/MoveTime 2 def
+/IOTime 5 def
+[[0 7 3 11 7] 0 0 3 0 0 0] /FindNext2 Run
+[[0 7 3 11 7] 0 0 3 0 0 0] /FindNext1 Run
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8380/addtag/" class="addtag" id="addtag_8380">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090512165515/http://ja.doukaku.org/lang/postscript/">
+		PostScript
+      </a>]
+	  
+      [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8380/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8380/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8380"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8380"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8380"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8380/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8409">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/497/" target="_top">Otter</a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8409/">#8409</a>(<script language="JavaScript">print_time(new Date("2009/01/29 07:47 GMT"));</script><noscript>2009/01/29 07:47 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090512165515/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <div class="section">
+<p>Haskellでやってみました。</p>
+<p></p>
+<p>全ての可能性を試して最小稼働時間で全員を１階に運ぶようにしています。一番単純なので…あと、一番長く放置されていた階の待ち時間まで手が回ってません。</p>
+<p>出力はかなりいい加減です：</p>
+<p></p>
+<p>(209," +1 *3 -1 / +1 *3 -1 / +2 *3 -2 / +3 *3 -3 / +3 *3 -3 / +3 *3 -3 / +3 *2 +</p>
+<p>1 *1 -4 / +4 *3 -4 / +4 *3 -4 / +1 *1 -1 /")</p>
+<p></p>
+<p>最初の数字はラウンド数、次の文字列はエレベーターのシークエンスで、＋、－はそれぞれ相対移動階数、＊はその階で乗った人の人数、/は１階で全員降りたしるしです…つまり、"+1 *3 -1 /"は（１階から）一つ上に上がって、３人乗って、ひとつ下に降りて、（一階で）全員おろしたということになります…</p>
+<p></p>
+<p>モナドコンビネータはパーサーだけじゃなくてこうゆう問題をやるのにも使えますね…</p>
+</div>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104</pre></td><td class="code"><div class="highlight"><pre>module Main where
+
+import Data.Array.Unboxed (UArray, listArray, assocs, (//), (!))
+import Control.Monad.State
+import Data.Function (on)
+import Data.List (minimumBy)
+import Data.Ord (compare)
+
+-- Data Types --
+data Elevator = E {
+    cPassenger :: Int,
+    iFloor :: Int
+    } deriving Show
+
+data Wait = W {
+    unW :: (UArray Int Int)
+    } deriving Show
+
+type Cost = (Int, String)
+
+type ElevState = (Cost, (Elevator, Wait))
+
+type ElevM = State (Elevator, Wait) Cost
+
+-- Data --
+initialWait = W $ listArray (1, 5) [0, 7, 3, 11, 7]
+initialElev = E 0 1
+
+initial = ((0, &quot;&quot;), (initialElev, initialWait))
+
+-- Primitives --
+isFull :: Elevator -&gt; Bool
+isFull (E p fl) = p == 3
+
+comb :: Cost -&gt; Cost -&gt; Cost
+comb (c1, st1) (c2, st2) = (c1 + c2, st1 ++ &quot; &quot; ++ st2)
+
+waitingFloor :: Wait -&gt; [Int]
+waitingFloor = map (fst) . filter ((/=0).snd) . assocs . unW
+
+-- (Quasi) Monadic Combinators --
+combM :: Cost -&gt; ElevM -&gt; ElevM
+combM c m = m &gt;&gt;= \c&#39; -&gt; return $ c `comb` c&#39;
+
+(&lt;*&gt;) :: ElevM -&gt; ElevM -&gt; ElevM
+a1 &lt;*&gt; a2 = a1 &gt;&gt;= \c1 -&gt; combM c1 a2
+
+ifFull :: ElevM -&gt; Cost -&gt; ElevM
+ifFull ifM c = State $ \i@(e, w) -&gt; case (isFull e) of
+    False     -&gt; (c, i)
+    otherwise -&gt; runState (combM c ifM) i
+
+ifFullM :: ElevM -&gt; ElevM -&gt; ElevM
+ifFullM pM tM = pM &gt;&gt;= \c -&gt; ifFull tM c
+
+-- Monadic Primitive Elevator Operations --
+pickupM :: ElevM
+pickupM = State $ _pickup
+
+_pickup (E p fl, W ar) = ((5, str), (E p&#39; fl, W ar&#39;))
+    where
+        ar&#39; = ar//[(fl, cWaiting - cPickup)]
+        p&#39; = p + cPickup
+        cWaiting = ar!fl
+        cPickup = min cWaiting (3 - p)
+        str = &#39;*&#39; : (show cPickup)
+        
+dropM :: ElevM
+dropM = State $ \(E p fl, w) -&gt; case (p) of
+    0         -&gt; ((0, &quot;&quot;),  (E 0 fl, w))
+    otherwise -&gt; ((5, &quot;/&quot;), (E 0 fl, w))
+
+moveByM :: Int -&gt; ElevM
+moveByM d =  State $ \((E p fl), w) -&gt; (c, (E p $ fl + d,  w))
+    where
+        c = (abs $ d * 2, cat d)
+        cat  d
+            | d == 0 = &quot;&quot;
+            | d &lt; 0 = show d
+            | otherwise = &#39;+&#39; : (show d)
+
+-- Composit Monadic Operations --
+takeHomeM :: ElevM
+takeHomeM = State $ \i@((E _ fl), _) -&gt; (runState $ (moveByM $ 1 - fl) &lt;*&gt; dropM) i
+
+goM :: Int -&gt; ElevM
+goM flTo = State $ \i@((E _ fl), _) -&gt; (runState $ moveByM $ flTo - fl) i
+
+turnM :: Int -&gt; ElevM
+turnM flTo = ((goM flTo) &lt;*&gt; pickupM) `ifFullM` takeHomeM
+
+-- Permutation Traversers --
+tryAll :: ElevState -&gt; [ElevState]
+tryAll (c, i@(_, w)) 
+    | fls == [] = [runState (combM c takeHomeM) i]
+    | otherwise = map (\fl -&gt; runState (combM c $ turnM fl) i) fls &gt;&gt;= tryAll
+    where
+        fls = waitingFloor w
+
+-- Main --
+main = (print.fst . minimumBy (byCost) . tryAll) initial
+    where
+        byCost :: ElevState -&gt; ElevState -&gt; Ordering
+        byCost = compare `on` (fst . fst)
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8409/addtag/" class="addtag" id="addtag_8409">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090512165515/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8409/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8409/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8409"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8409"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8409"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  <a href="/web/20090512165515/http://ja.doukaku.org/comment/8409/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8409/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8410">
+  <p class="banner"><a href="/web/20090512165515/http://ja.doukaku.org/user/497/" target="_top">Otter</a>
+
+	
+	&nbsp;
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8410/">#8410</a>(<script language="JavaScript">print_time(new Date("2009/01/29 07:54 GMT"));</script><noscript>2009/01/29 07:54 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090512165515/http://ja.doukaku.org/lang/haskell/">
+	  Haskell
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>Haskellでやったんですよー言語タグをつけるの忘れました…</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3</pre></td><td class="code"><div class="highlight"><pre><span class="kr">module</span> <span class="n">Main</span> <span class="kr">where</span>
+
+<span class="nv">main</span> <span class="o">=</span> <span class="nv">putStrLn</span> <span class="s">&quot;see my previous post&quot;</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090512165515/http://ja.doukaku.org/comment/8410/addtag/" class="addtag" id="addtag_8410">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090512165515/http://ja.doukaku.org/lang/haskell/">
+		Haskell
+      </a>]
+	  
+      [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8410/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090512165515/http://ja.doukaku.org/comment/8410/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8410"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8410"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8410"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8409/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20090512165515/http://ja.doukaku.org/comment/8410/root/"><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20090512165515/http://ja.doukaku.org/225/reply_to/8410/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+
+
+
+
+
+
+</div>
+
+<div id="side_menu" class="compact">
+
+<iframe src="/web/20090512165515if_/http://ja.doukaku.org/login_info/" frameborder=0 width=100% id="login_info">
+iframe required
+</iframe>
+
+<h4 class="semi_compact">一覧</h4>
+
+<ul>
+<!--<li><a href="/web/20090512165515/http://ja.doukaku.org/user/">ユーザ</a>-->
+<li><a href="/web/20090512165515/http://ja.doukaku.org/lang/">言語</a>
+<li><a href="/web/20090512165515/http://ja.doukaku.org/challenge/">お題</a>
+<li><a href="/web/20090512165515/http://ja.doukaku.org/topic/">トピック</a>
+<li><a href="/web/20090512165515/http://ja.doukaku.org/comment/">投稿</a>
+<li><a href="/web/20090512165515/http://ja.doukaku.org/good_comments/">評価の高い投稿</a>
+<li><a href="/web/20090512165515/http://ja.doukaku.org/tag/">タグ</a>
+</ul>
+
+<h4 class="compact">フィード</h4>
+<ul>
+<li><a href="/web/20090512165515/http://ja.doukaku.org/feeds/challenges/">最新のお題</a><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/feed_icon.png">
+<li><a href="/web/20090512165515/http://ja.doukaku.org/feeds/topics/">最新のトピック</a><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/feed_icon.png">
+<li><a href="/web/20090512165515/http://ja.doukaku.org/feeds/comments/">新着投稿</a><img src="/web/20090512165515im_/http://ja.doukaku.org/static/image/feed_icon.png">
+</ul>
+
+
+
+
+
+
+
+<h4 class="compact">その他</h4>
+<ul>
+<li><a href="/web/20090512165515/http://ja.doukaku.org/qa/">Q&A</a>
+<li><a href="/web/20090512165515/http://ja.doukaku.org/feedback/">フィードバック</a>
+<!--<li><a href="/web/20090512165515/http://ja.doukaku.org/terms">用語集</a>-->
+</ul>
+
+
+<h4 class="compact">リンク</h4>
+<ul>
+<li><a href="/web/20090512165515/http://www.lingr.com/room/doukaku_ja">チャットルーム(Lingr)</a>
+<li><a href="/web/20090512165515/http://labs.cybozu.co.jp/">サイボウズ・ラボ</a>
+<li><a href="/web/20090512165515/http://www.djangoproject.com/">Django</a>
+</ul>
+
+<h4 id="pathtraq" class="compact"><a href="/web/20090512165515/http://pathtraq.com/analytics?url=http%3A%2F%2Fja.doukaku.org%2Fcomment%2F*%2F%20desc%3A%E3%81%A9%E3%81%86%E6%9B%B8%E3%81%8Forg&m=popular">Pathtraq</a></h4>
+<div class="indent">
+<span id="pathtraq_sentinel">loading...</span>
+</div>
+
+
+</div>
+</div>
+
+
+<div id="page_foot" class="bordered">
+
+<a rel="license" href="/web/20090512165515/http://creativecommons.org/licenses/by/2.1/jp/">
+<img alt="Creative Commons License" style="border-width:0" src="/web/20090512165515im_/http://i.creativecommons.org/l/by/2.1/jp/88x31.png" /></a>
+このサイトの内容は、
+<a rel="license" href="/web/20090512165515/http://creativecommons.org/licenses/by/2.1/jp/">クリエイティブ・コモンズ・ライセンス</a>の下でライセンスされています。
+<a href="/web/20090512165515/http://ja.doukaku.org/qa/#licence">[詳細]</a>
+
+</div>
+
+</body>
+
+
+
+
+<script type="text/javascript">
+$(document).ready(function(){$("#doukaku_org").after("<script src='/web/20090512165515/http://api.pathtraq.com/pages?url=http%3A%2F%2Fja.doukaku.org%2Fcomment%2F*%2F%20desc%3A%E3%81%A9%E3%81%86%E6%9B%B8%E3%81%8Forg&api=json&callback=addPathtraq'><" + "/script>")});
+</script>
+
+<script src="/web/20090512165515js_/http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-2136157-1";
+urchinTracker();
+</script>
+
+
+
+
+</html>
+
+
+
+
+
+<!--
+     FILE ARCHIVED ON 16:55:15 May 12, 2009 AND RETRIEVED FROM THE
+     INTERNET ARCHIVE ON 12:51:07 Nov 16, 2013.
+     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+     SECTION 108(a)(3)).
+-->

@@ -1,0 +1,1067 @@
+---
+:id: '179'
+:title: 出力の一時停止と再開
+:comments:
+- :id: '6346'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6346
+  :user_name: nobsun
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2008/05/27 02:53 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\r\n\t  \n<p>起動すると、標準出力に1秒毎に'a'の1文字を出力し続けるプログラムで、\n   以下の条件を満たすものを「どう書く？」\n</p>\n<ul>\n<li>\n
+    \    'q'キーが押されるとプログラムは終了する\n </li>\n\n <li>\n     出力中に'p'キーが押されると一時停止する\n </li>\n\n
+    <li>\n     一時停止中に'p'キーが押されると出力を再開する\n </li>\n</ul>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6347'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6347
+  :user_name: 匿名
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/05/27 00:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>こんにちは。\nこのコードは環境に依存しています。標準ではありません。\nでも、C/C++だとstdioもiosteamもブロッキングされちゃうのでこういうコード書くしか手がないと思われます。\n抜け道募集。</p>\n\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;conio.h&gt;
+
+    int main(){
+        bool Output=true;
+        int ch=0;
+        do{
+            ch = 0;
+            if(_kbhit()) ch  = _getch();//環境依存コード。
+            if(ch == 'p') Output = !Output;
+            if(Output) printf("A");
+        }while(ch != 'q');
+
+    }
+  :tags:
+  - VC++2008Express
+  :references:
+    :url: 
+    :title: 
+- :id: '6348'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6348
+  :user_name: horiuchi
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/05/27 00:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Javaでは、STDINがバッファされてしまうため Enterが押下されるまで読み込めません。\nそのため、下記のコードでは
+    p + Enterと、q + EnterでSuspendとQuitします。</p>\n\n\t"
+  :code: |
+    public class Sample179 implements Runnable {
+
+        private final Object lockObj_ = new Object();
+
+        private boolean isSuspend_ = false;
+
+        public boolean getSuspend() {
+            synchronized (lockObj_) {
+                return isSuspend_;
+            }
+        }
+        public void changeSusupend() {
+            synchronized (lockObj_) {
+                isSuspend_ = !isSuspend_;
+                if (isSuspend_) {
+                    lockObj_.notifyAll();
+                }
+            }
+        }
+
+        @Override
+        public void run() {
+            try {
+                while (Thread.currentThread().isAlive()) {
+                    synchronized (lockObj_) {
+                        while (getSuspend()) {
+                            lockObj_.wait(1000);
+                        }
+                    }
+                    System.out.print('a');
+                    Thread.sleep(1000);
+                }
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+
+        public static void main(String[] args) {
+            final Sample179 sample = new Sample179();
+            Thread thread = new Thread(sample);
+            thread.setDaemon(true);
+            thread.start();
+            try {
+                while (true) {
+                    char c = (char) System.in.read();
+                    if (c == 'q') break;
+                    if (c == 'p') {
+                        sample.changeSusupend();
+                    }
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6350'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6350
+  :user_name: sumim
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/05/27 03:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    | process |
+    process := [
+        World findATranscript: nil.
+        [   Transcript show: $a.
+            (Delay forSeconds: 1) wait
+        ] repeat
+    ] fork.
+
+    [   ActiveHand checkForMoreKeyboard ifNotNilDo: [:event |
+            event keyCharacter = $q ifTrue: [^process terminate].
+            event keyCharacter = $p ifTrue: [
+                process isSuspended
+                    ifTrue: [process resume]
+                    ifFalse: [process suspend]]].
+        Processor yield.
+    ] repeat
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '6351'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6351
+  :user_name: こう。
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2008/05/27 03:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">適当に拡張性を考えて書いてみた。</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;conio.h&gt;\n#include &lt;time.h&gt;\n\n#define
+    STATE_RUN  0\n#define STATE_WAIT 1\n#define STATE_QUIT 2\n\n\nint main(){\n    time_t
+    now,last;\n    int c;\n    int state=STATE_RUN;\n    \n    last=time(NULL);\n
+    \   do{\n        if(kbhit()){\n            c=getch();\n            switch(c){\n
+    \           case 'q':\n                state=STATE_QUIT;\n                break;\n
+    \           case 'p':\n                if(state==STATE_RUN){\n                    state=STATE_WAIT;\n
+    \               }else{\n                    state=STATE_RUN;\n                }\n
+    \           }\n        }\n        \n        switch(state){\n        case STATE_RUN:\n
+    \           now=time(NULL);\n            if(last-now!=0){\n                last=now;\n
+    \               printf(\"a\");\n                fflush(stdout);\n            }\n
+    \       }\n    }while(state!=STATE_QUIT);\n    \n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6352'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6352
+  :user_name: lieutar
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/618/
+  :language: Perl
+  :time: 2008/05/27 05:49 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>fork ってみた</p>\n\n\t"
+  :code: |
+    use strict;
+    use warnings;
+    use POSIX qw( SIGKILL SIGINT );
+    BEGIN { system 'stty -echo -icanon &gt;/dev/tty' }
+    END{    system 'stty echo icanon   &gt;/dev/tty' }
+
+    my $pid = fork;
+    if($pid) {
+      for(;;){
+        my $a = getc;
+        if($a eq 'q') {
+          kill SIGKILL , $pid;
+          exit;
+        }
+        elsif($a eq 'p') {
+          kill SIGINT , $pid;
+        }
+      }
+    }
+    else {
+      my $flag = 1;
+      local $| = 1;
+      local $SIG{INT} = sub(){ $flag = !$flag };
+      for(;;){
+        print "a" if $flag;
+        sleep 1;
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6353'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6353
+  :user_name: kzfm
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/106/
+  :language: Perl
+  :time: 2008/05/27 06:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  threadを使った\n\t"
+  :code: |
+    use strict;
+    use threads;
+    use threads::shared;
+    use Term::ReadKey;
+    $| = 1;
+
+    my $f : shared;
+
+    sub observe {
+      ReadMode 'cbreak';
+      while(1){
+        my $key;
+        while(1){ last if $key = ReadKey(0) }
+        {
+          lock $f;
+          if ($key eq 'q'){ ReadMode 'restore'; exit;}
+          if ($key eq 'p'){ $f == 1 ? $f-- : $f++;}
+        }
+      }
+    }
+
+    sub print_a {
+      while(1){
+        if($f == 1){
+          print "a";
+          sleep 1;
+        }
+      }
+    }
+
+    $f = 1;
+    my $ob = threads-&gt;create(\&amp;observe);
+    my $pr = threads-&gt;create(\&amp;print_a);
+
+    $ob-&gt;join;
+    $pr-&gt;join;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6354'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6354
+  :user_name: crane
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/458/
+  :language: Other
+  :time: 2008/05/27 07:49 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">標準出力といえるかかなり微妙ですが、Processing で。ウィンドウ中央に適当な色で
+    a を書き続けます。</pre>\n\t"
+  :code: "boolean pause = false;\n\nvoid setup(){\n  size(200,200);\n  frameRate(1);\n
+    \ // \"Processing -&gt; Tools -&gt; Create Font ...\" and save \"Courier-48.vlw\"
+    \n  PFont font = loadFont(\"Courier-48.vlw\");\n  textFont(font, 48);\n  textAlign(CENTER);\n}\n\nvoid
+    draw() {\n  if (! pause) {\n    fill(random(255),random(255),random(255));\n    text(\"a\",
+    width/2, height/2);\n  }\n}\n\nvoid keyPressed() {\n  switch (key) {\n    case
+    'p':\n      pause = !pause;\n      break;\n    case 'q':\n      fill(0, 30);\n
+    \     text(\"quit\", width/2, height/2);\n      exit();\n      break;\n  }\n}\n"
+  :tags:
+  - Processing
+  :references:
+    :url: /web/20081010165805/http://processing.org/
+    :title: Processing
+- :id: '6355'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6355
+  :user_name: susu
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/218/
+  :language: OCaml
+  :time: 2008/05/27 08:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  これもleditは付けずに実行してください。\n\t"
+  :code: "#load \"unix.cma\";;\nopen Unix;;\n\n(*エコー、行バッファoff*)\nlet x = tcgetattr
+    Unix.stdout in\n  tcsetattr Unix.stdout TCSADRAIN {x with\n    c_icanon = false;
+    \ c_vmin = 1; c_echo = false; };\n  at_exit (fun () -&gt; tcsetattr Unix.stdout
+    TCSADRAIN x;);\n\n(*一秒ごとのa*)\nSys.set_signal Sys.sigalrm (Sys.Signal_handle \n
+    \ (fun _ -&gt; print_char 'a'; flush Pervasives.stdout));\n\n(*本編*)\nlet t = ref
+    (setitimer ITIMER_REAL {it_interval=1.0; it_value=1.0}) in\n  while true do\n
+    \   match input_char Pervasives.stdin with\n    | 'q' -&gt; exit 0\n    | 'p'
+    -&gt; t := setitimer ITIMER_REAL !t\n    | _ -&gt; ()\n  done;;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6356'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6356
+  :user_name: いげ太
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/399/
+  :language: Other
+  :time: 2008/05/27 09:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ざっくりと。</p>\n\n\t"
+  :code: "module Doukaku179 = begin\n    type PeriodicAutoWriter = class\n        val
+    mutable timer : System.Threading.Timer\n        new() = { timer = null }\n        member
+    t.Start()  = t.timer &lt;- new System.Threading.Timer(\n                              (fun
+    _ -&gt; printf \"%s\" \"a\"), null, 0, 1000)\n        member t.Stop()   = if t.timer
+    &lt;&gt; null then (t.timer.Dispose();\n                                                     t.timer
+    &lt;- null)\n                                               else ()\n        member
+    t.Toggle() = if t.timer = null then t.Start() else t.Stop()\n    end\n    \n    let
+    read_char () = System.Console.ReadKey().KeyChar\n    let keep_read () = seq {
+    while true do yield read_char () done }\n    let run () = let writer = new PeriodicAutoWriter()
+    in\n                 writer.Start ();\n                 seq { for c in keep_read
+    () do\n                         yield (match c with\n                                  'q'
+    -&gt; writer.Stop();   false\n                                | 'p' -&gt; writer.Toggle();
+    true\n                                | _   -&gt; true)\n                       done
+    }\n                 |&gt; Seq.find ((=) false)\n                 |&gt; (fun _
+    -&gt; printfn \"%s\" \"\");;\nend;;\n\n#if COMPILED\nlet _ = Doukaku179.run ();;\n#endif\n"
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '6358'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6358
+  :user_name: eban
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/97/
+  :language: Bash
+  :time: 2008/05/27 12:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>man bashしたらいけることがわかったので作ってみました</p>\n\n\t"
+  :code: |
+    stty -echo
+    while echo -n a &amp;&amp; read -t 1 -n 1 a || [ "$a" != q ]; do
+      if [ "$a" = p ]; then
+        while read -n 1 a &amp;&amp; [ "$a" != p ]; do :; done
+        a=
+      fi
+    done
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6359'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6359
+  :user_name: あにす
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/05/27 19:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  こんなんで題意に添えているでしょうか？\r<br>System.Timers.Timerクラスを使用しています。Timerクラスは指定した間隔でイベントを発生させます。\r<br>後はループを回して、その中でTimerの停止、再開を切り替えています。\n\t"
+  :code: |
+    using System;
+    using System.Timers;
+
+    class Program {
+        static void Main(string[] args) {
+            using(Timer timer = new Timer(1000)) {
+                timer.Elapsed += new ElapsedEventHandler(timer_Elapsed);
+                timer.Start();
+                bool flag = true;
+                while(flag) {
+                    ConsoleKeyInfo conKeyInfo = Console.ReadKey(true);
+                    ConsoleKey conKey = conKeyInfo.Key;
+                    switch(conKey) {
+                    case ConsoleKey.P:
+                        timer.Enabled = !timer.Enabled;
+                        break;
+                    case ConsoleKey.Q:
+                        flag = false;
+                        break;
+                    }
+                }
+               timer.Close();
+            }
+        }
+
+        static void timer_Elapsed(object sender, ElapsedEventArgs e) {
+            Console.Out.WriteLine("a");
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6360'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6360
+  :user_name: kawauchi
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/14/
+  :language: Ruby
+  :time: 2008/05/27 20:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    require 'Win32API'
+
+    GetKeyState = Win32API.new('user32', 'GetKeyState', 'I', 'I')
+
+    pause = false
+
+    Thread.start {
+      loop {
+        print 'a' unless pause
+        sleep 1
+      }
+    }
+
+    loop {
+      key_state = {:p =&gt; (GetKeyState.call(?P)[7] == 1),
+                   :q =&gt; (GetKeyState.call(?Q)[7] == 1)
+      }
+      exit if key_state[:q]
+      if key_state[:p]
+        pause = !pause
+        sleep 0.3
+      else
+        sleep 0.1
+      end
+    }
+  :tags:
+  - windows
+  :references:
+    :url: 
+    :title: 
+- :id: '6361'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6361
+  :user_name: あにす
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/05/27 20:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  もしかして、こっちの方が期待通り？と思い、自前でマルチスレッドで書いてみました。\r<br>Timerクラス使うのと大差ないコード量ですね、若干挙動は違いますが。\n\t"
+  :code: |
+    using System;
+    using System.Threading;
+
+    class Program {
+        static void Main(string[] args) {
+            Thread thread = new Thread(new System.Threading.ThreadStart(tick));
+            thread.IsBackground = true;
+            thread.Start();
+            bool flag = true;
+            while(flag) {
+                switch(Console.ReadKey(true).Key) {
+                case ConsoleKey.P:
+                    switch_ = !switch_;
+                    break;
+                case ConsoleKey.Q:
+                    flag = false;
+                    break;
+                }
+            }
+        }
+        static bool switch_ = true;
+        static void tick() {
+            while(true) {
+                if(switch_) {
+                    Console.Out.Write("a");
+                }
+                Thread.Sleep(1000);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6362'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6362
+  :user_name: kawauchi
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/14/
+  :language: Ruby
+  :time: 2008/05/27 21:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>pキーの長押し時、動作に不具合があったので修正しました。</p>\n\n\t"
+  :code: |
+    require 'Win32API'
+
+    GetKeyState = Win32API.new('user32', 'GetKeyState', 'I', 'I')
+
+    pause = false
+    can_toggle_pause = true
+
+    Thread.start {
+      loop {
+        unless pause
+          print 'a'
+          sleep 1
+        else
+          sleep 0.1
+        end
+      }
+    }
+
+    loop {
+      key_state = {:p =&gt; (GetKeyState.call(?P)[7] == 1),
+                   :q =&gt; (GetKeyState.call(?Q)[7] == 1)
+      }
+      exit if key_state[:q]
+      if key_state[:p]
+        if can_toggle_pause
+          pause = !pause
+          can_toggle_pause = false
+        end
+      else
+        can_toggle_pause = true
+      end
+      sleep 0.05
+    }
+  :tags:
+  - windows
+  :references:
+    :url: 
+    :title: 
+- :id: '6363'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6363
+  :user_name: 匿名
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/05/27 21:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    import curses
+
+    w = curses.initscr()
+
+    try:
+      curses.noecho()
+      w.timeout(1000)
+      flg = True
+      while True:
+        c = w.getch()
+        if c == -1 and flg:
+          w.addch('a')
+        elif c == ord('q'):
+          break
+        elif c == ord('p'):
+          flg = not flg
+    except:
+      pass
+
+    curses.endwin()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6364'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6364
+  :user_name: ytakenaka
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/35/
+  :language: Common
+  :time: 2008/05/28 06:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">sbcl依存のthreadパッケージを利用しています。一つわからない\r\nことがあって、それはdefpackage
+    - in-packageの流れでパッケー\r\nジ化すると、うまく動かないところです。\r\n\r\nthread programmingははじめてなので、変数の取り扱いの\r\n注意点が抜けてるみたいです。</pre>\n\t"
+  :code: |
+    (defun print-a ()
+      (format *standard-output* "a")
+      (finish-output)
+      (sleep 1))
+
+    (defmacro read-thread(res)
+      `(sb-thread:make-thread
+        (lambda()(setf ,res (read *standard-input*)))))
+
+    (defun main ()
+      (let* ((res nil)
+         (stop nil)
+         (thread (read-thread res)))
+        (loop do
+         (if (null (sb-thread:thread-alive-p thread))
+             (case res
+               ((q)
+            (return))
+               ((p)
+            (and stop (print-a))
+            (setf stop (not stop)
+                  thread (read-thread res)))
+               (otherwise
+            (unless stop (print-a))
+            (setf thread (read-thread res))))
+             (unless stop (print-a))))))
+  :tags:
+  - sbcl
+  :references:
+    :url: 
+    :title: 
+- :id: '6365'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6365
+  :user_name: ytakenaka
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/35/
+  :language: diff
+  :time: 2008/05/28 08:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">threadを扱うときに変数の入り方がわかりにくかったですね。\r\n\r\nq&lt;return&gt;すると
+    resの中には'common-lisp-user::q と入力さ\r\nれていました。こんなことあるんですね。</pre>\n\t"
+  :code: "0a1,4\n&gt; (defpackage :dokaku179\n&gt;   (:use :common-lisp :sb-thread))\n&gt;
+    (in-package :dokaku179)\n&gt; \n8c12,14\n&lt;     (lambda()(setf ,res (read *standard-input*)))))\n---\n&gt;
+    \    (lambda()(progn\n&gt;            (in-package :dokaku179)\n&gt;            (setf
+    ,res (read *standard-input*))))))\n"
+  :tags:
+  - sbcl
+  :references:
+    :url: 
+    :title: 
+- :id: '6366'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6366
+  :user_name: 匿名
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/4/
+  :language: Haskell
+  :time: 2008/05/29 01:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Haskellでも多言語同様にコンソール入力がエンターを押すまで読めない病にかかっています。</p>\n\n\t"
+  :code: "module Main where\n\nimport System\nimport System.IO\nimport System.IO.Error\nimport
+    Control.Monad\n\nweaveIO :: (IO Bool) -&gt; IO a -&gt; (a -&gt; IO a) -&gt; IO
+    a\nweaveIO w m f = do\n    a &lt;- m \n    b &lt;- w\n    if b then f a\n        else
+    return a\n\ngetChar' :: IO Char\ngetChar' = getLine &gt;&gt;= return.head.(++\"
+    \")\n\nnonBlockingGetCh :: IO (Maybe Char)\nnonBlockingGetCh = do\n    f &lt;-
+    hReady stdin\n    if (not f) then return Nothing\n        else do\n            getChar'
+    &gt;&gt;= return.Just\n\nrespondToKey :: IO Bool\nrespondToKey = nonBlockingGetCh
+    &gt;&gt;= evalCh\n    where\n        evalCh Nothing = return True\n        evalCh
+    (Just 'q') = print \"+++ quitting +++\" &gt;&gt; return False\n        evalCh
+    (Just 'p') = waitForP ' '\n        evalCh _ = return True\n        waitForP 'p'
+    = return True\n        waitForP 'q' = print \"+++ quitting +++\" &gt;&gt; return
+    False\n        waitForP _ = print \"+++ paused, hit 'p' again +++\" &gt;&gt; getChar'
+    &gt;&gt;= waitForP\n\n\nshowLineWeave :: Handle -&gt; IO ()\nshowLineWeave h =
+    weaveIO (respondToKey) (hGetLine h &gt;&gt;= putStrLn) (\\_ -&gt; showLineWeave
+    h)\n    \n\nmain = do\n    args &lt;- getArgs\n    withFile (head args) ReadMode
+    $ \\h -&gt;\n        catch (showLineWeave h) (\\e -&gt; if (isEOFError e) then
+    return () else ioError e)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6367'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6367
+  :user_name: Otter
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/497/
+  :language: 
+  :time: 2008/05/29 01:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>あー、匿名で投稿してしもた...</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6371'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6371
+  :user_name: Otter
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/497/
+  :language: 
+  :time: 2008/05/29 02:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>これ、題意からそれてますねぇ…一秒後との出力じゃないし…</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6372'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6372
+  :user_name: Otter
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2008/05/29 03:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>こちらが題意に沿ったものになります</p>\n\n\t"
+  :code: "module Main where\n\nimport System\nimport System.IO\nimport System.IO.Error\nimport
+    Control.Monad\nimport Control.Concurrent\n\nweaveIO :: (IO Bool) -&gt; IO a -&gt;
+    (a -&gt; IO a) -&gt; IO a\nweaveIO w m f = do\n    a &lt;- m \n    b &lt;- w\n
+    \   if b then f a\n        else return a\n\ngetChar' :: IO Char\ngetChar' = getLine
+    &gt;&gt;= return.head.(++\" \")\n\nnonBlockingGetCh :: IO (Maybe Char)\nnonBlockingGetCh
+    = do\n    f &lt;- hReady stdin\n    if (not f) then return Nothing\n        else
+    do\n            getChar' &gt;&gt;= return.Just\n\nrespondToKey :: IO Bool\nrespondToKey
+    = nonBlockingGetCh &gt;&gt;= evalCh\n    where\n        evalCh Nothing = return
+    True\n        evalCh (Just 'q') = print \"+++ quitting +++\" &gt;&gt; return False\n
+    \       evalCh (Just 'p') = waitForP ' '\n        evalCh _ = return True\n        waitForP
+    'p' = return True\n        waitForP 'q' = print \"+++ quitting +++\" &gt;&gt;
+    return False\n        waitForP _ = print \"+++ paused, hit 'p' again +++\" &gt;&gt;
+    getChar' &gt;&gt;= waitForP\n\n\nshowLineWeave :: IO ()\nshowLineWeave = weaveIO
+    (respondToKey) (putStr \"a\" &gt;&gt; hFlush stdout &gt;&gt; threadDelay 1000000)
+    (\\_ -&gt; showLineWeave)\n    \n\nmain = showLineWeave\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6373'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6373
+  :user_name: syat
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/766/
+  :language: BASIC
+  :time: 2008/05/29 04:17 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>スレッド？ そりゃ食いもんか？</p>\n<p>BASIC の INKEY$ はブロッキングしないので、ゲームとか作るのに便利です。</p>\n\n\t"
+  :code: |
+    100 *Init           '*** 初期化 ***
+    110   cls
+    120   t$=time$
+    130   active=1      ' タイマー実行中フラグ
+    140 *MainLoop       '*** メインループ ***
+    150   ' キー入力を１文字読み込む
+    160   c$=inkey$
+    170   ' ｑで終了、ｐで停止／再開
+    180   if c$="q" then end
+    190   if c$="p" then active=1-active
+    200   ' time$ (=hh:mm:ss) が変化したらタイマー発動
+    210   if t$=time$ then goto *MainLoop
+    220   t$=time$
+    230   if active=1 then gosub *OnTimer
+    240   goto *MainLoop
+    250 *OnTimer        '*** タイマーイベントハンドラ ***
+    260   print "a"
+    270   return
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6375'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6375
+  :user_name: Nemo
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/685/
+  :language: PostScript
+  :time: 2008/05/29 08:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>無謀にも PostScript で。\nGhostScript 7.07 のファイル関連のオペレーターのbug だか仕様だかに泣かされました...</p>\n<p>どうにもならなかったので
+    ghostscript 2本並列実行で文字入力と表示を役割分担しています。\nプロセス間通信は名前付きファイルで...\n激しくファイルの open/close
+    をしますので実用的ではありません。</p>\n\n\t"
+  :code: "%% Terminal 1\n%   stty raw &lt; /dev/tty\n%   gs -sDEVICE=nullpage echoback.ps
+    \n\n%% Terminal 2\n%   gs -sDEVICE=nullpage pause.ps \n\n%------------------ echoback.ps
+    ----- Cut Here ---------\n%!PS\n\n/Stdin (%stdin) (r) file def\n(/tmp/test) (w)
+    file closefile\n\n% p: 112, q: 113\n{\n    Stdin read\n    {\n        (/tmp/test)
+    (w) file dup 2 index write closefile\n        113 eq { exit } if\n    } {exit}
+    ifelse\n} loop\nquit\n\n\n\n%--------------------  pause.ps ------  Cut Here  ---------\n%!PS\n\n/Sleep
+    { % OutputFlag Timer  Sleep   OutputFlag'\n    realtime\n    {\n        realtime
+    1 index sub\n        2 index ge {exit} if\n        (/tmp/test) (r) file dup read
+    \n        {\n            exch closefile (/tmp/test) (w) file exch\n            dup
+    113 eq { quit } if\n            112 eq { 4 -1 roll not 4 1 roll } if\n        }
+    if\n        closefile\n    } loop\n    pop\n    pop\n} def\n\n\ntrue \n{\n    1000
+    Sleep\n    dup {(a) print flush} if\n} loop\n"
+  :tags:
+  - Ghostscript
+  :references:
+    :url: 
+    :title: 
+- :id: '6377'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6377
+  :user_name: shimakuma
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2008/05/29 09:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    &lt;script src="jquery-1.2.6.js"&gt;&lt;/script&gt;&lt;script&gt;
+    $(function(){
+      var stdout = $(document.body);
+      var pause  = false
+      var loop   = setInterval(function(){ pause || stdout.append('a') }, 1000);
+      $().bind('keydown', function(e){ e = String.fromCharCode(e.keyCode);
+        'P' == e ? pause = !pause :
+        'Q' == e ? clearInterval(loop) : 0;
+      });
+    })
+    &lt;/script&gt;
+  :tags:
+  - jQuery
+  :references:
+    :url: /web/20081010165805/http://jquery.com/
+    :title: jQuery
+- :id: '6378'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6378
+  :user_name: ika
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2008/05/29 23:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>どう見てもCです。本当にありがとうございました。</p>\n<p>標準ライブラリphobosの整備を急いでほしいです</p>\n\n\t"
+  :code: |
+    private import std.stdio, std.c.time;
+
+    void main() {
+        bool running = true;
+        for(;;) {
+            sleep(1);
+            if(kbhit) {
+                switch(getch) {
+                    case 'p':
+                        running = !running;
+                        break;
+                    case 'q':
+                        return;
+                    default:
+                }
+            }
+            if(running) {
+                write('a');
+                fflush(stdout);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6381'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6381
+  :user_name: 匿名
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/05/30 09:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>うーん。こんにちは。\nえらそうなこと言っておきながら仕様満たしてなかったですね。\n1秒毎に表示するようにしました。\nほかの方などがいわれてるの見て気づいたんですけど、あるぅぇえええ？？って感じです。（汗</p>\n\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;time.h&gt;
+    #include &lt;conio.h&gt;
+
+    int main(){
+        bool IsOutput=true;
+        int ch=0;
+        int TimeCount=0,TimeOld=0;
+        do{
+            ch = 0;
+            if(_kbhit()) ch  = _getch();//環境依存コード。
+            if(ch == 'p') IsOutput = !IsOutput;
+            if(IsOutput){
+                TimeCount = time(NULL);
+                if(TimeCount != TimeOld){
+                    printf("A");
+                    TimeOld = TimeCount;
+                }
+            }
+        }while(ch != 'q');
+        return 0;
+    }
+  :tags:
+  - VC2008Express
+  :references:
+    :url: 
+    :title: 
+- :id: '6404'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6404
+  :user_name: nobsun
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/06/01 23:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ghc-6.8.2 の System.Timeout を使ってみた\r\n標準入出力をNoBufferingモードで使う\r\nユーザキー入力はechoしないようにする\r\nWindowsで動くかどうかは未確認\r\n</pre>\n\t"
+  :code: |
+    module Main where
+    import System.IO
+    import System.Posix
+    import System.Timeout
+
+    main :: IO ()
+    main =  do { hSetBuffering stdin NoBuffering
+               ; hSetBuffering stdout NoBuffering
+               ; at &lt;- getTerminalAttributes stdInput
+               ; setTerminalAttributes stdInput (withoutMode at EnableEcho) Immediately
+               ; loop False
+               }
+
+    loop :: Bool -&gt; IO ()
+    loop False = do {
+     ; mc &lt;- timeout (10^6) (hGetChar stdin)
+     ; case mc of
+         Nothing  -&gt; hPutChar stdout 'a' &gt;&gt; loop False
+         Just 'p' -&gt; loop True
+         Just 'q' -&gt; return ()
+         Just _   -&gt; loop False
+     }
+    loop True = do {
+     ; c &lt;- hGetChar stdin
+     ; case c of
+         'p' -&gt; loop False
+         'q' -&gt; return ()
+         _   -&gt; loop True
+     }
+  :tags:
+  - System.Posix
+  - System.Timeout
+  - ghc-6.8.2
+  :references:
+    :url: 
+    :title: 
+- :id: '6409'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6409
+  :user_name: howking
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/744/
+  :language: Erlang
+  :time: 2008/06/02 11:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">p[enter]しないと止まりません。。。\r\nopen_portとかも見てみたのですが、、、誰か教えてください。。。\r\n\r\nerl
+    -noshell -s intter -s init stop</pre>\n\t"
+  :code: |
+    -module(intter).
+    -export([start/0,puta/1]).
+
+    start()-&gt;
+        P  = spawn(intter,puta,"a"),
+        loop(P).
+
+    loop(P) -&gt;
+        case io:get_chars('',1) of
+            "q" -&gt;
+                halt();
+            I -&gt;
+                P ! I,
+                loop(P)
+        end.
+
+    puta(Status)-&gt;
+        receive
+            "p" -&gt;
+                case Status of
+                    "p" -&gt;
+                        io:format("a"),
+                        puta("a");
+                    _ -&gt;
+                        puta("p")
+                end
+        after 1000 -&gt;
+                case Status of
+                    "p"-&gt;
+                        ok;
+                    _ -&gt;
+                        io:format("a")
+                end,
+                puta(Status)
+        end.
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6470'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6470
+  :user_name: genzou
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/06/12 14:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  groovyで組んでみました。\r\nスレッド処理はまともに書くこともないので、\r\n誤りなどあったらレスよろしくです。\n\t"
+  :code: |
+    def stop = false
+    def outThread = new Thread({
+        while(true){
+            Thread.sleep(1000)
+            while(stop){
+                Thread.sleep(1000)
+            }
+            print 'a'
+        }
+    } as Runnable).start()
+
+    while(true){
+        switch(System.in.newReader().readLine()){
+        case "q":
+            System.exit(0)
+            break;
+        case "p":
+            stop = !stop
+            break;
+        }
+    }
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '6602'
+  :parent_id: '179'
+  :url: http://ja.doukaku.org/comment/6602
+  :user_name: raynstard
+  :user_url: /web/20081010165805/http://ja.doukaku.org/user/127/
+  :language: C
+  :time: 2008/06/28 09:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ども、raynstardです。\r\n入力がブロッキングされてしまうのは\r\n入力モードを変更してあげないからですね。\r\n\r\nUNIXでgetche()の作り方というのを調べるといろいろと出てくると思います。\r\nポイントはtermiosでカノニカルモードを解除してあげていることと\r\n標準出力のバッファリングをなしにしているところでしょうか？\r\n標準入力の方はおまけです。\r\n//
+    gcc -Wall -std=c99 doukaku179.c</pre>\n\t"
+  :code: |-
+    #include &lt;stdio.h&gt;
+    #include &lt;stdboo
+
+
+
+
+    <!--
+         FILE ARCHIVED ON 16:58:05 Oct 10, 2008 AND RETRIEVED FROM THE
+         INTERNET ARCHIVE ON 13:06:16 Nov 16, 2013.
+         JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+         ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+         SECTION 108(a)(3)).
+    -->
+  :tags: []
+  :references:
+    :url: 
+    :title: 

@@ -1,0 +1,687 @@
+---
+:id: '109'
+:title: 与えられた並べ替えを実現するあみだくじの生成
+:comments:
+- :id: '4704'
+  :parent_id: '109'
+  :url: http://ja.doukaku.org/comment/4704
+  :user_name: shiro
+  :user_url: /web/20081204133044/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/12/09 13:00 GMT
+  :vote_count: '13'
+  :vote_score: '13'
+  :body: "\r\n\t  \n<p>お題#4476を見て思いつきました。\n</p>\n<p>0からn (n&gt;=1) までの数字を任意の順で並べたリストが与えられた時、0からnまでが順に並んだ状態から出発して、与えられたリストの順で結果が得られるようなあみだくじを作成して出力するプログラムを書いてください。\n</p>\n<p>与えられたリストが
+    (3 5 2 4 0 1) の場合、出力の1例を示します：\n</p>\n<pre><code> 0 1 2 3 4 5\n | | |-| |-|\n |
+    |-| |-| |\n |-| |-| | |\n | |-| |-| |\n | | |-| |-|\n | | | |-| |\n 3 5 2 4 0
+    1\n</code></pre>\n<p>一応、制約条件を示しておきます。\n</p>\n<ul>\n<li>\n     あみだの横棒は縦棒をまたぐことはできません。常に隣接する縦棒同士の交換となります\n
+    \    。\n </li>\n\n <li>\n     同じ行に複数の横棒があっても良いですが、ひとつの縦棒の同じ点からふたつ横棒が出ることはありません。\n
+    </li>\n</ul>\n<p>一つのリストに対して複数の解があり得ます。ナイーブな解に飽き足らなければ出力行数をなるべく少なくする解を求める方法を考えてみてください。\n</p>\n\n\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4839'
+  :parent_id: '109'
+  :url: http://ja.doukaku.org/comment/4839
+  :user_name: kozima
+  :user_url: /web/20081204133044/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/12/16 03:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>行数減らす工夫は何もしてないのに表示の方が長い……</p>\n\n\t"
+  :code: |
+    (defun make-amida (list)
+      (unless (equal list '(0))
+        (let ((n (1- (length list))))
+          (nconc (make-amida (remove n list))
+                 (loop for x from (1- n) downto (position n list) collect x)))))
+
+    (defun print-amida (x result)
+      (let ((n (1- (length result))))
+        (format t "~{~D~^ ~}~&amp;" (loop for x from 0 to n collect x))
+        (dolist (i x)
+          (let ((str (format nil "~V@{| ~}|" n t)))
+            (setf (aref str (+ i i 1)) #\-)
+            (write-line str)))
+        (format t "~{~D~^ ~}~&amp;" result)))
+
+    (let ((list '(3 5 2 4 0 1)))
+      (print-amida (make-amida list) list))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4840'
+  :parent_id: '109'
+  :url: http://ja.doukaku.org/comment/4840
+  :user_name: naranja
+  :user_url: /web/20081204133044/http://ja.doukaku.org/user/448/
+  :language: D
+  :time: 2007/12/16 04:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">とりあえずこんな感じ。\r\n\r\n0 1 2 3 4 5\r\n| |-| | |
+    |\r\n|-| |-| |-|\r\n| |-| |-| |\r\n|-| |-| |-|\r\n| |-| |-| |\r\n3 5 2 4 0 1</pre>\n\t"
+  :code: |
+    import std.stdio;
+    import std.string;
+
+    void amidaSort(uint[] origList){
+        auto sortedList = origList.dup.sort;
+        auto tmpList = origList.dup;
+        auto amidaRowProto = cast(char[])repeat("| ", origList.length)[0..($ - 1)];
+        string[] amida;
+        while(tmpList != sortedList){
+            for(uint start; start &lt;= 1; start++){
+                uint[] swap;
+                for(uint i = start; i &lt; tmpList.length - 1; i += 2){
+                    if(tmpList[i] &gt; tmpList[i + 1]){
+                        swap ~= i;
+                        auto tmp = tmpList[i + 1];
+                        tmpList[i + 1] = tmpList[i];
+                        tmpList[i] = tmp;
+                    }
+                }
+                if(swap.length){
+                    auto amidaRow = amidaRowProto.dup;
+                    foreach(i; swap){
+                        amidaRow[(i * 2) + 1] = '-';
+                    }
+                    amida ~= cast(string)amidaRow;
+                }
+            }
+        }
+        string[] s;
+        foreach(n; sortedList){
+            s ~= toString(n);
+        }
+        string[] o;
+        foreach(n; origList){
+            o ~= toString(n);
+        }
+        if(!amida.length){
+            amida ~= cast(string)amidaRowProto.dup;
+        }
+        writefln((s.join(" ") ~ amida.reverse ~ o.join(" ")).join("\n"));
+    }
+
+    void main(){
+        amidaSort([3, 5, 2, 4, 0, 1]);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4845'
+  :parent_id: '109'
+  :url: http://ja.doukaku.org/comment/4845
+  :user_name: SiroKuro
+  :user_url: /web/20081204133044/http://ja.doukaku.org/user/540/
+  :language: C
+  :time: 2007/12/16 10:01 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">ごくナイーブにバブルソート。出力は長いです。バブルソートそのまんまの結果がでてきます。\r\n3
+    5 2 4 0 1\r\n| | | |-| |\r\n| | |-| | |\r\n| |-| | | |\r\n|-| | | | |\r\n| | |
+    | |-|\r\n| | | |-| |\r\n| | |-| | |\r\n| |-| | | |\r\n| | | |-| |\r\n| | |-| |
+    |\r\n| | | | |-|\r\n0 1 2 3 4 5</pre>\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    static class Program {
+        static void Main() {
+            List&lt;string&gt; data = new List&lt;String&gt;(new string[]{"3", "5", "2", "4", "0", "1"});
+            Console.WriteLine(String.Join(" ", data.ToArray()));
+            Console.WriteLine(String.Join("\n", AmidaSort(data)));
+            Console.WriteLine(String.Join(" ", data.ToArray()));
+        }
+        static string[] AmidaSort&lt;T&gt;(List&lt;T&gt; data) where T: IComparable {
+            List&lt;string&gt; result = new List&lt;string&gt;();
+            for(int i = 0; i &lt; data.Count - 1; i++){
+                for(int j = data.Count - 1; i &lt; j; j--){
+                    if(data[j].CompareTo(data[j - 1]) &lt; 0) {
+                        result.Add(Swap(data, j - 1));
+                    }
+                }
+            }
+            return result.ToArray();
+        }
+        static string Swap&lt;T&gt;(List&lt;T&gt; data, int index) where T: IComparable {
+            T temp = data[index];
+            data[index] = data[index + 1];
+            data[index + 1] = temp;
+            string[] amida = new string[data.Count - 1];
+            for(int i = 0; i &lt; amida.Length; i++) {
+                amida[i] = i == index ? "-" : " ";
+            }
+            return "|" + String.Join("|", amida) + "|";
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4846'
+  :parent_id: '109'
+  :url: http://ja.doukaku.org/comment/4846
+  :user_name: minke
+  :user_url: /web/20081204133044/http://ja.doukaku.org/user/28/
+  :language: Ruby
+  :time: 2007/12/16 11:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">お題の例と同じ出力になります。\r\n高さは極小にはなりますが、最小とは限らない気がします。</pre>\n\t"
+  :code: |
+    def ins(pos, amida, n)
+      idx = amida.size
+      amida.reverse_each do |row|
+        break if row[pos,1] == '-' ||
+          pos-2 &gt; 0 &amp;&amp; row[pos-2,1] == '-' ||
+          pos+2 &lt; row.size &amp;&amp; row[pos+2,1] == '-'
+        idx -= 1
+      end
+      if idx == amida.size
+        amida.push(Array.new(n, '|').join(' '))
+      end
+      amida[idx][pos] = '-'
+    end
+
+    def make_amida(goal)
+      n = goal.size
+      amida = []
+      cur = Array.new(n) {|i| i}
+      puts cur.join(' ')
+      for i in 0...n
+        j = cur.index(goal[i])
+        while j &gt; i
+          cur[j], cur[j-1] = cur[j-1], cur[j]
+          ins(2*j-1, amida, n)
+          j -= 1
+        end
+      end
+      puts amida
+      puts goal.join(' ')
+    end
+
+    make_amida [3, 5, 2, 4, 0, 1]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4848'
+  :parent_id: '109'
+  :url: http://ja.doukaku.org/comment/4848
+  :user_name: xsd
+  :user_url: /web/20081204133044/http://ja.doukaku.org/user/154/
+  :language: OCaml
+  :time: 2007/12/16 22:24 GMT
+  :vote_count: '4'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">全探索を行って、最も行数が少なく、横線の本数が少ない解答を出力します。\r\n\r\n[xsd@celldev
+    dk109]$ ./dk109\r\n0 1 2 3 4 5\r\n| |-| | | |\r\n|-| |-| |-|\r\n| |-| |-| |\r\n|-|
+    |-| |-|\r\n| |-| |-| |\r\n3 5 2 4 0 1\r\nHeight=5, Lines=11</pre>\n\t"
+  :code: |
+    let comb n =
+        let rec comb1 mask cost acc = function
+            | 0 -&gt; if cost = 0 then acc else (mask, cost) :: acc
+            | x -&gt;
+                let acc = comb2 (mask lor x) (cost+1) acc (x lsr 1) in
+                          comb1  mask         cost    acc (x lsr 1)
+        and comb2 mask cost acc = function
+            | 0 -&gt; (mask, cost) :: acc
+            | x -&gt; comb1 mask cost acc (x lsr 1) in
+        comb1 0 0 [] (1 lsl (n - 2))
+
+    let apply mask cost (state, (c1, c2)) =
+        let rec apply' prev mask = function
+            | []    -&gt; [ prev ]
+            | head :: tail -&gt;
+                if (mask land 1)=1 then head :: apply' prev (mask lsr 1) tail
+                                   else prev :: apply' head (mask lsr 1) tail in
+        (match state with
+        | []       -&gt; []
+        | hd :: tl -&gt; apply' hd mask tl), (c1 + 1, c2 + cost)
+
+    let drawamida mask n =
+        let rec amida s mask = function
+            | 0 -&gt; s
+            | x -&gt; if (mask land 1) = 0 then amida (s ^ " |") (mask lsr 1) (x-1)
+                                        else amida (s ^ "-|") (mask lsr 1) (x-1) in
+        amida "|" mask (n - 1)
+
+    let rec equal arg1 arg2 = match arg1, arg2 with
+        | [], []                -&gt; true
+        | h1 :: t1, h2 :: t2    -&gt; if h1 &lt;&gt; h2 then false else equal t1 t2
+        | _, _                  -&gt; false
+
+    let solve targetstate options limitcost initstate =
+        let rec loop target options best current =
+            let bestsoln, bestcost  = best in
+            let curstate, curoption, cursoln, curcost = current in
+            let costcomp (c1, c2) (m1, m2) = c1 &gt;= m1 ||  c2 &gt;= m2 in
+            if (costcomp curcost bestcost) then best else (
+                if equal target curstate then cursoln, curcost else (
+                    match curoption with
+                        | []       -&gt; best
+                        | (mask, cost) :: tl -&gt;
+                            let newstate, newcost = apply mask cost (curstate, curcost) in
+                            let best =  loop target options best (newstate, options, (mask :: cursoln), newcost) in
+                                        loop target options best (curstate, tl, cursoln, curcost)
+                )
+            ) in
+        loop targetstate options ([], limitcost) (initstate, options, [], (0, 0))
+
+    let main target =
+        let rec prt = function | [] -&gt; print_endline "" | hd :: tl -&gt; let _ = Printf.printf "%d " hd in prt tl in
+        let rec seq n   = function [] -&gt; [] | _ :: tl -&gt; n :: (seq (n+1) tl) in
+        let len         = List.length target in
+        let start       = seq 0 target in
+        let _           = prt start in
+        let best, (c,d) = solve target (comb len) (len, len * len) start in
+        let rec prt2 n  = function [] -&gt; () | hd :: tl -&gt; (print_endline (drawamida hd n); prt2 n tl) in
+        let _           = prt2 len (List.rev best) in
+        let _           = prt target  in
+        Printf.printf "Height=%d, Lines=%d\n" c d
+
+    let _ = main [ 3; 5; 2; 4; 0; 1]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4849'
+  :parent_id: '109'
+  :url: http://ja.doukaku.org/comment/4849
+  :user_name: shiro
+  :user_url: /web/20081204133044/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/12/16 23:13 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <p>おお、すごい。</p>\n<p>ちなみに、横棒の数の最小値は、与えられたリストをpermutationと見た場合のinversionの数と同じであることが知られているそうです。(inversionとは、リストのi番目の要素をa_iと書く時、
+    i &lt; j かつ a_i &gt; a_j となっている箇所。(3 5 2 4 0 1) の場合は、(3,2) (3,0) (3,1) (5,2) (5,4)
+    (5,0) (5,1) (2,0) (2,1) (4,0) (4,1) の11個。)</p>\n\n\t"
+  :code: ''
+  :tags:
+  - 参考になる
+  :references:
+    :url: 
+    :title: 
+- :id: '4851'
+  :parent_id: '109'
+  :url: http://ja.doukaku.org/comment/4851
+  :user_name: SiroKuro
+  :user_url: /web/20081204133044/http://ja.doukaku.org/user/540/
+  :language: 
+  :time: 2007/12/17 02:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  あ、しまった出力が逆だ。適当にひっくり返しておこう。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4854'
+  :parent_id: '109'
+  :url: http://ja.doukaku.org/comment/4854
+  :user_name: naoto
+  :user_url: /web/20081204133044/http://ja.doukaku.org/user/572/
+  :language: Scheme
+  :time: 2007/12/17 08:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あんまり綺麗じゃないけど。\r\n\r\ngosh&gt; (amida  '(3 5
+    2 4 0 1))\r\n0 1 2 3 4 5\r\n| |-| | | |\r\n|-| |-| |-|\r\n| |-| |-| |\r\n|-| |-|
+    |-|\r\n| |-| |-| |\r\n3 5 2 4 0 1\r\n</pre>\n\t"
+  :code: |
+    (define (amida-sort1 state)
+      (define (loop prev lis acc strs skip)
+        (cond ((null? lis)
+               (values (reverse (cons prev acc))
+                       (reverse strs)))
+              ((or skip (&lt; prev (car lis)))
+               (loop (car lis) (cdr lis) (cons prev acc)
+                     (cons " " strs) #f))
+              ((&gt; prev (car lis))
+               (loop prev (cdr lis) (cons (car lis) acc)
+                     (cons "-" strs) #t))
+              (else
+               (error "must not happen"))))
+      (loop (car state) (cdr state) '() '() #f))
+
+    (define (amida-sort final-state)
+      (define (loop state strs)
+        (cond ((apply &lt; state) strs)
+              (else
+               (receive (state1 strs1) (amida-sort1 state)
+                 (loop state1 (cons strs1 strs))))))
+      (loop final-state '()))
+
+    (define (make-amidakuji strs-list)
+      (define (line strs)
+        (string-append "|" (string-join strs "|") "|"))
+      (string-join (map line strs-list) "\n"))
+
+    (define (amida final-state)
+      (define (numbers-&gt;line nums)
+        (string-join (map number-&gt;string nums) " "))
+      (let ((start (numbers-&gt;line (iota (length final-state))))
+            (end   (numbers-&gt;line final-state)))
+        (print start)
+        (print (make-amidakuji (amida-sort final-state)))
+        (print end)))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '4856'
+  :parent_id: '109'
+  :url: http://ja.doukaku.org/comment/4856
+  :user_name: xsd
+  :user_url: /web/20081204133044/http://ja.doukaku.org/user/154/
+  :language: diff
+  :time: 2007/12/17 14:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>(5 4 3 2 1 0)でテストしたところ、正しく解を見つけないバグがあったので、修正します。</p>\n<p>プラス評価いただいていたのに申し訳ないです。</p>\n<p>コメント元の投稿は自分でマイナスしておきました。</p>\n\n\t"
+  :code: |
+    --- dk109.bug.ml        2007-12-17 23:28:16.000000000 +0900
+    +++ dk109.ml    2007-12-17 23:28:55.000000000 +0900
+    @@ -38 +38 @@
+    -        let costcomp (c1, c2) (m1, m2) = c1 &gt;= m1 ||  c2 &gt;= m2 in
+    +        let costcomp (c1, c2) (m1, m2) = c1 &gt; m1 ||  c2 &gt; m2 in
+    @@ -57 +57 @@
+    -    let best, (c,d) = solve target (comb len) (len, len * len) start in
+    +    let best, (c,d) = solve target (comb len) (len+1, len * len) start in
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4859'
+  :parent_id: '109'
+  :url: http://ja.doukaku.org/comment/4859
+  :user_name: xsd
+  :user_url: /web/20081204133044/http://ja.doukaku.org/user/154/
+  :language: OCaml
+  :time: 2007/12/17 16:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  問題を一般化して考えてみます。\r<br>あみだくじは、ある状態から別の状態への遷移関数と考えることができます。\r<br>すると、この問題は初期状態と目的の状態が与えられたときに遷移関数を求めよ、という問題と解釈することができます。\r<br><br>ただし遷移関数を0から作るのではなく、与えられた部分遷移関数群を組み合わせて目的の遷移関数を作り出すことを考えます。\r<br>また、関数同士の同一性を比較するのは困難なので、同じ初期状態から同じ目的状態に達成する関数が最小コストで合成できたら完了とします。\r<br>目的状態に達成できたかは与えられたユニットテストが通るかどうかで判断します。\r<br><br>簡単にいうと、初期状態と部分関数群とユニットテストを与えると、ユニットテストが通るような(最小コストの)関数を合成して返すような関数を作ってみました。\r<br><br>下のコードのsolve関数がその関数で、関数群(options)、ユニットテスト(unittest)、コスト比較関数(costfunc)、制限コスト(limitcost)、初期状態(initstate)、初期コスト(initcost)、初期解(initsoln)を渡すと、最小コストと最良解のタプルを返します。\r<br><br>実際にはどんな関数でも合成できるわけではなく、あみだくじのように取りうる状態が限られているものだから適用できるのだと思いますが、可能性として面白いと感じました。\n\t"
+  :code: |
+    let solve options unittest costfunc limitcost ((initstate, initcost, initsoln) as initcontext) =
+        let rec loop ((bestcost, bestsoln) as best) ((curstate, curcost, cursoln) as current) = function
+            | []            -&gt; best
+            | func :: tail  -&gt; (match costfunc curcost bestcost, unittest curstate with
+                | true, _   -&gt; best
+                | _,   true -&gt; curcost, cursoln
+                | _,   _    -&gt; let best = loop best current tail in loop best (func current) options
+            ) in
+        loop (limitcost, initsoln) initcontext options
+
+    let comb n =
+        let apply mask cost (state, (c1, c2), soln) =
+            let rec apply' prev mask = function
+                | []    -&gt; [ prev ]
+                | head :: tail -&gt;
+                    if (mask land 1)=1 then head :: apply' prev (mask lsr 1) tail
+                                       else prev :: apply' head (mask lsr 1) tail in
+            (match state with
+            | []       -&gt; []
+            | hd :: tl -&gt; apply' hd mask tl), (c1 + 1, c2 + cost), (mask :: soln) in
+
+        let rec comb1 mask cost acc = function
+            | 0 -&gt; if cost = 0 then acc else (apply mask cost) :: acc
+            | x -&gt;
+                let acc = comb2 (mask lor x) (cost+1) acc (x lsr 1) in
+                          comb1  mask         cost    acc (x lsr 1)
+        and comb2 mask cost acc = function
+            | 0 -&gt; (apply mask cost) :: acc
+            | x -&gt; comb1 mask cost acc (x lsr 1) in
+        comb1 0 0 [] (1 lsl (n - 2))
+
+    let main target =
+        let drawamida mask n =
+            let rec amida s mask = function
+                | 0 -&gt; s
+                | x -&gt; if (mask land 1) = 0 then amida (s ^ " |") (mask lsr 1) (x-1)
+                                            else amida (s ^ "-|") (mask lsr 1) (x-1) in
+            amida "|" mask (n - 1) in
+
+        let rec equal arg1 arg2 = match arg1, arg2 with
+            | [], []            -&gt; true
+            | h1 :: t1, h2 :: t2-&gt; if h1 &lt;&gt; h2 then false else equal t1 t2
+            | _, _              -&gt; false in
+
+        let rec prt = function
+            | []        -&gt; print_newline ()
+            | hd :: tl  -&gt; (Printf.printf "%d " hd; prt tl) in
+
+        let rec prt2 n = function
+            | []       -&gt; ()
+            | hd :: tl -&gt; let _ = prt2 n tl in print_endline (drawamida hd n) in
+
+        let start =
+            let rec seq n = function
+                | [] -&gt; []
+                | _  :: tl -&gt; n :: (seq (n+1) tl) in
+            seq 0 target in
+
+        let costfunc (c1, c2) (m1, m2) = c1 &gt; m1 || c2 &gt; m2 in
+
+        let len         = List.length target in
+        let (c,d), best = solve (comb len) (equal target) costfunc (len+1, len * len) (start, (0, 0), []) in
+        let _ = prt start       in
+        let _ = prt2 len best   in
+        let _ = prt target      in
+        Printf.printf "Height=%d, Lines=%d\n" c d
+
+    let _ = main [ 5; 4; 3; 2; 1; 0]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4893'
+  :parent_id: '109'
+  :url: http://ja.doukaku.org/comment/4893
+  :user_name: nobsun
+  :user_url: /web/20081204133044/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/12/20 01:32 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">ああそうか．\r\ninversion を求めて，隣接するものを採用，残りを採用したもので変換，\r\nというのを繰り返せばいいのか．これで多分，横棒数，段数ともに最小になるはず？\r\n\r\n印字系は手抜きです(縦棒10本まで対応)．置換を与えると，阿弥陀籤を印字します．\r\n\r\n実行結果\r\n*Main&gt;
+    :main [3,5,2,4,0,1]\r\n0 1 2 3 4 5\r\n| |-| | |-|\r\n|-| |-| | |\r\n| |-| |-|
+    |\r\n|-| |-| |-|\r\n| |-| |-| |\r\n3 5 2 4 0 1\r\n*Main&gt; :main [5,4,3,2,1,0]\r\n0
+    1 2 3 4 5\r\n|-| |-| |-|\r\n| |-| |-| |\r\n|-| |-| |-|\r\n| |-| |-| |\r\n|-| |-|
+    |-|\r\n| |-| |-| |\r\n5 4 3 2 1 0\r\n</pre>\n\t"
+  :code: "module Main (main) where\n\nimport Data.List\nimport System.Environment\n\nmain
+    :: IO ()\nmain = do { a:_ &lt;- getArgs\n          ; let { e = read a :: [Int]\n
+    \               ; s = sort e\n                ; caption = putStrLn . concat .
+    intersperse \" \" . map show\n                }\n          ; caption s &gt;&gt;
+    putStr (showAmida (length e - 1) (amida e)) &gt;&gt; caption e\n          }\n\namida
+    :: [Int] -&gt; [[(Int,Int)]]\namida p = reverse $ fst $ head $ dropWhile (not
+    . null . snd) $ iterate f ([],invs)\n  where invs = inversions p\n        f (acc,invs)
+    = case select invs of\n                         (xs,ys) -&gt; (xs:acc, foldr map
+    ys (map exchange xs))\n\ninversions :: [Int] -&gt; [(Int,Int)]\ninversions []
+    = []\ninversions (y:ys) = map (flip (,) y) (filter (y &gt;) ys) ++ inversions
+    ys\n\nselect :: [(Int,Int)] -&gt; ([(Int,Int)],[(Int,Int)])\nselect invs = case
+    partition ((1==) . uncurry subtract) $ sort $ invs of\n                ([]  ,ys)
+    \      -&gt; ([],ys)\n                (x:xs,ys) \n                  -&gt; case
+    partition (share x) (xs++ys) of\n                        (zs,ws) -&gt; case select
+    ws of\n                                     (us,vs) -&gt; (x:us,zs++vs)\n\nshare
+    :: (Int,Int) -&gt; (Int,Int) -&gt; Bool\nshare (x,y) (p,q) = x == p || x == q
+    || y == p || y == q\n\nexchange :: (Int,Int) -&gt; (Int,Int) -&gt; (Int,Int)\nexchange
+    (x,y) pq@(p,q) | x == p    = (y,q)\n                        | x == q    = (p,y)\n
+    \                       | y == p    = (x,q)\n                        | y == q
+    \   = (p,x)\n                        | otherwise = pq\n\nshowAmida :: Int -&gt;
+    [[(Int,Int)]] -&gt; String\nshowAmida n = unlines . map (showStep n)\n\nshowStep
+    :: Int -&gt; [(Int,Int)] -&gt; String\nshowStep n xs = '|':step n 0 xs\n  where
+    step n m xs \n          | n == m    = \"\"\n          | otherwise = case xs of\n
+    \                         [] -&gt; nostep $ step n (m+1) xs\n                          (i,_):rs
+    | m == i    -&gt; astep  $ step n (m+1) rs\n                                   |
+    otherwise -&gt; nostep $ step n (m+1) xs\n        nostep = (' ':).('|':)\n        astep
+    \ = ('-':).('|':)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4923'
+  :parent_id: '109'
+  :url: http://ja.doukaku.org/comment/4923
+  :user_name: 匿名
+  :user_url: /web/20081204133044/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/12/22 01:49 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">置換を互換の積に変換する方法で悩んだのですが、バブルソートを応用すれば\r\nできる事に気付きました（考え易くするため逆変換を求めて反転させています）。\r\n\r\nバブルソートをアレンジして、隣接する互換が連続で起きないようにしています。\r\nこれによって例題では例示よりも１行短い解を出力します。\r\n\r\n引数に得たいリストを与えて起動してください。\r\n\r\n0
+    1 2 3 4 5 \r\n| |-| | | | \r\n|-| |-| |-| \r\n| |-| |-| | \r\n|-| |-| |-| \r\n|
+    |-| |-| | \r\n3 5 2 4 0 1 </pre>\n\t"
+  :code: |
+    import java.util.*;
+
+    public class Sample {
+        public static void main(String[] args) {
+            int[] sequence = new int[args.length];
+            List&lt;String&gt; amida = new ArrayList&lt;String&gt;();
+            String seed = "";
+            String nums = "";
+            for (int i = 0; i &lt; args.length; i++) {
+                sequence[i] = Integer.parseInt(args[i]);
+                seed = seed + "| ";
+                nums = nums + args[i] + " ";
+            }
+            amida.add(nums);
+            boolean change;
+            do {
+                StringBuilder am = new StringBuilder(seed);
+                change = false;
+                for (int i = 0; i &lt; sequence.length - 1; i++) {
+                    if (sequence[i] &gt; sequence[i + 1]) {
+                        int a = sequence[i];
+                        sequence[i] = sequence[i + 1];
+                        sequence[i + 1] = a;
+                        change = true;
+                        am.setCharAt(2 * i + 1, '-');
+                        i++;
+                    }
+                }
+                if (change)
+                    amida.add(am.toString());
+            } while (change);
+            nums = "";
+            for (int i = 0; i &lt; sequence.length; i++)
+                nums = nums + Integer.toString(sequence[i]) + " ";
+            amida.add(nums);
+            Collections.reverse(amida);
+            for (String s : amida) {
+                System.out.println(s);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4924'
+  :parent_id: '109'
+  :url: http://ja.doukaku.org/comment/4924
+  :user_name: 匿名
+  :user_url: /web/20081204133044/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/12/22 02:20 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">逆変換を求めて反転させるのが本質的な操作でないのが気になって、\r\n直接求めるプログラムも作ってみました。\r\n\r\nほとんど同じなのですが、余分な操作がなくなった分だけかえって\r\n直感的になったような気もします。\r\n\r\n当然ですが、出力する解は違います。\r\n\r\n0
+    1 2 3 4 5 \r\n| |-| | |-| \r\n|-| |-| | | \r\n| |-| |-| | \r\n|-| |-| |-| \r\n|
+    |-| |-| | \r\n3 5 2 4 0 1 \r\n</pre>\n\t"
+  :code: |
+    import java.util.*;
+
+    public class Sample2 {
+        public static void main(String[] args) {
+            int[] sequence = new int[args.length];
+            Map&lt;Integer, Integer&gt; order = new HashMap&lt;Integer, Integer&gt;();
+            String seed = "";
+            for (int i = 0; i &lt; args.length; i++) {
+                order.put(Integer.parseInt(args[i]), i);
+                sequence[i] = i;
+                seed = seed + "| ";
+                System.out.print(Integer.toString(i) + " ");
+            }
+            System.out.println();
+            boolean change;
+            do {
+                StringBuilder am = new StringBuilder(seed);
+                change = false;
+                for (int i = 0; i &lt; sequence.length - 1; i++) {
+                    if (order.get(sequence[i]) &gt; order.get(sequence[i + 1])) {
+                        int a = sequence[i];
+                        sequence[i] = sequence[i + 1];
+                        sequence[i + 1] = a;
+                        change = true;
+                        am.setCharAt(2 * i + 1, '-');
+                        i++;
+                    }
+                }
+                if (change)
+                    System.out.println(am.toString());
+            } while (change);
+            for (int i = 0; i &lt; sequence.length; i++)
+                System.out.print(Integer.toString(sequence[i]) + " ");
+            System.out.println();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4935'
+  :parent_id: '109'
+  :url: http://ja.doukaku.org/comment/4935
+  :user_name: lieutar
+  :user_url: /web/20081204133044/http://ja.doukaku.org/user/618/
+  :language: Perl
+  :time: 2007/12/23 08:37 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>__END__ 以下に圧縮版置きますた.</p>\n\n\t"
+  :code: |-
+    my @current = @ARGV;
+    my @maze = ();
+    my $done = 0;
+    until($done)
+    {
+      my $row = [1..(@ARGV-1)];
+      $done = 1;
+      for(my $i=0;$i&lt; @current - 1;$i++)
+        {
+          next if $current[$i] &lt; $current[$i+1];
+          $row-&gt;[$i]=0;
+          @current[$i,$i+1] = @current[$i+1,$i];
+          $done = 0;
+          $i++;
+        }
+      @maze = ($row, @maze) unless $done;
+    }
+    print join(" ",@current),
+
+
+
+
+    <!--
+         FILE ARCHIVED ON 13:30:44 Dec 4, 2008 AND RETRIEVED FROM THE
+         INTERNET ARCHIVE ON 13:26:43 Nov 16, 2013.
+         JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+         ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+         SECTION 108(a)(3)).
+    -->
+  :tags: []
+  :references:
+    :url: 
+    :title: 

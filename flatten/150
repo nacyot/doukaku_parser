@@ -1,0 +1,2815 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja"> 
+  <head>
+
+<script type="text/javascript" src="/static/js/analytics.js" ></script>
+<link type="text/css" rel="stylesheet" href="/static/css/banner-styles.css"/>
+
+
+
+
+    <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+    <title>
+不動点演算子
+どう書く？org </title>
+
+    <link rel="stylesheet" type="text/css"
+	href="/web/20090411101942cs_/http://ja.doukaku.org/static/style/reset-fonts-grids.css" />
+    <link rel="stylesheet" type="text/css"
+	href="/web/20090411101942cs_/http://ja.doukaku.org/static/style/style.css?20071211?20071207" />
+	
+    <link rel="stylesheet" type="text/css"
+	href="/web/20090411101942cs_/http://ja.doukaku.org/static/style/pygments.css" />
+
+
+	
+<meta name="robots" content="noindex,nofollow">
+
+    <!--<script src="/web/20090411101942/http://ja.doukaku.org/static/js/ieerbug/ieerbug.js" type="text/javascript"></script>-->
+
+
+<!--<script src="/web/20090411101942/http://ja.doukaku.org/static/js/ieerbug/ieerbug.js" type="text/javascript"></script>-->
+<script src="/web/20090411101942js_/http://ja.doukaku.org/static/js/jquery-1.1.3.1.js" type="text/javascript"></script>
+<script src="/web/20090411101942js_/http://ja.doukaku.org/static/js/rating.js" type="text/javascript"></script>
+<script src="/web/20090411101942js_/http://ja.doukaku.org/static/js/addtag.js?20071129" type="text/javascript"></script>
+
+<script type="text/javascript">
+is_key_navigation_enable = true;
+</script>
+<script src="/web/20090411101942js_/http://ja.doukaku.org/static/js/utils.js?~~~" type="text/javascript"></script>
+
+</head>
+
+
+<body id="doukaku_org">
+<!-- BEGIN WAYBACK TOOLBAR INSERT -->
+<script> if (window.archive_analytics) { window.archive_analytics.values['server_name']="wwwb-app11.us.archive.org";}; </script>
+
+<script type="text/javascript" src="/static/js/disclaim-element.js" ></script>
+<script type="text/javascript" src="/static/js/graph-calc.js" ></script>
+<script type="text/javascript" src="/static/jflot/jquery.min.js" ></script>
+<script type="text/javascript">
+//<![CDATA[
+var firstDate = 820454400000;
+var lastDate = 1388534399999;
+var wbPrefix = "/web/";
+var wbCurrentUrl = "http:\/\/ja.doukaku.org\/150\/flatten\/";
+
+var curYear = -1;
+var curMonth = -1;
+var yearCount = 18;
+var firstYear = 1996;
+var imgWidth = 450;
+var yearImgWidth = 25;
+var monthImgWidth = 2;
+var trackerVal = "none";
+var displayDay = "11";
+var displayMonth = "Apr";
+var displayYear = "2009";
+var prettyMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function showTrackers(val) {
+	if(val == trackerVal) {
+		return;
+	}
+	if(val == "inline") {
+		document.getElementById("displayYearEl").style.color = "#ec008c";
+		document.getElementById("displayMonthEl").style.color = "#ec008c";
+		document.getElementById("displayDayEl").style.color = "#ec008c";		
+	} else {
+		document.getElementById("displayYearEl").innerHTML = displayYear;
+		document.getElementById("displayYearEl").style.color = "#ff0";
+		document.getElementById("displayMonthEl").innerHTML = displayMonth;
+		document.getElementById("displayMonthEl").style.color = "#ff0";
+		document.getElementById("displayDayEl").innerHTML = displayDay;
+		document.getElementById("displayDayEl").style.color = "#ff0";
+	}
+   document.getElementById("wbMouseTrackYearImg").style.display = val;
+   document.getElementById("wbMouseTrackMonthImg").style.display = val;
+   trackerVal = val;
+}
+function getElementX2(obj) {
+	var thing = jQuery(obj);
+	if((thing == undefined) 
+			|| (typeof thing == "undefined") 
+			|| (typeof thing.offset == "undefined")) {
+		return getElementX(obj);
+	}
+	return Math.round(thing.offset().left);
+}
+function trackMouseMove(event,element) {
+
+   var eventX = getEventX(event);
+   var elementX = getElementX2(element);
+   var xOff = eventX - elementX;
+	if(xOff < 0) {
+		xOff = 0;
+	} else if(xOff > imgWidth) {
+		xOff = imgWidth;
+	}
+   var monthOff = xOff % yearImgWidth;
+
+   var year = Math.floor(xOff / yearImgWidth);
+	var yearStart = year * yearImgWidth;
+   var monthOfYear = Math.floor(monthOff / monthImgWidth);
+   if(monthOfYear > 11) {
+       monthOfYear = 11;
+   }
+   // 1 extra border pixel at the left edge of the year:
+   var month = (year * 12) + monthOfYear;
+   var day = 1;
+	if(monthOff % 2 == 1) {
+		day = 15;
+	}
+	var dateString = 
+		zeroPad(year + firstYear) + 
+		zeroPad(monthOfYear+1,2) +
+		zeroPad(day,2) + "000000";
+
+	var monthString = prettyMonths[monthOfYear];
+	document.getElementById("displayYearEl").innerHTML = year + 1996;
+	document.getElementById("displayMonthEl").innerHTML = monthString;
+	// looks too jarring when it changes..
+	//document.getElementById("displayDayEl").innerHTML = zeroPad(day,2);
+
+	var url = wbPrefix + dateString + '/' +  wbCurrentUrl;
+	document.getElementById('wm-graph-anchor').href = url;
+
+   //document.getElementById("wmtbURL").value="evX("+eventX+") elX("+elementX+") xO("+xOff+") y("+year+") m("+month+") monthOff("+monthOff+") DS("+dateString+") Moy("+monthOfYear+") ms("+monthString+")";
+   if(curYear != year) {
+       var yrOff = year * yearImgWidth;
+       document.getElementById("wbMouseTrackYearImg").style.left = yrOff + "px";
+       curYear = year;
+   }
+   if(curMonth != month) {
+       var mtOff = year + (month * monthImgWidth) + 1;
+       document.getElementById("wbMouseTrackMonthImg").style.left = mtOff + "px";
+       curMonth = month;
+   }
+}
+//]]>
+</script>
+
+<style type="text/css">body{margin-top:0!important;padding-top:0!important;min-width:800px!important;}#wm-ipp a:hover{text-decoration:underline!important;}</style>
+<div id="wm-ipp" lang="en" class="__wb_banner_div" style="display:none; position:relative;padding:0 5px;min-height:70px;min-width:800px">
+
+
+<div id="wm-ipp-inside" class="__wb_banner_div" style="position:fixed;padding:0!important;margin:0!important;width:97%;min-width:780px;border:5px solid #000;border-top:none;background-image:url(/static/images/toolbar/wm_tb_bk_trns.png);text-align:center;-moz-box-shadow:1px 1px 3px #333;-webkit-box-shadow:1px 1px 3px #333;box-shadow:1px 1px 3px #333;font-size:11px!important;font-family:'Lucida Grande','Arial',sans-serif!important;">
+   <table style="border-collapse:collapse;margin:0;padding:0;width:100%;"><tbody><tr>
+   <td style="padding:10px;vertical-align:top;min-width:110px;">
+   <a href="/web/" title="Wayback Machine home page" style="background-color:transparent;border:none;"><img src="/static/images/toolbar/wayback-toolbar-logo.png" alt="Wayback Machine" width="110" height="39" border="0"/></a>
+   </td>
+   <td style="padding:0!important;text-align:center;vertical-align:top;width:100%;">
+
+       <table style="border-collapse:collapse;margin:0 auto;padding:0;width:570px;"><tbody><tr>
+       <td style="padding:3px 0;" colspan="2">
+       <form target="_top" method="get" action="/web/form-submit.jsp" name="wmtb" id="wmtb" style="margin:0!important;padding:0!important;"><input type="text" name="url" id="wmtbURL" value="http://ja.doukaku.org/150/flatten/" style="width:400px;font-size:11px;font-family:'Lucida Grande','Arial',sans-serif;" onfocus="javascript:this.focus();this.select();" /><input type="hidden" name="type" value="replay" /><input type="hidden" name="date" value="20090411101942" /><input type="submit" value="Go" style="font-size:11px;font-family:'Lucida Grande','Arial',sans-serif;margin-left:5px;width: inherit !important" /><span id="wm_tb_options" style="display:block;"></span></form>
+       </td>
+       <td style="vertical-align:bottom;padding:5px 0 0 0!important;" rowspan="2">
+           <table style="border-collapse:collapse;width:110px;color:#99a;font-family:'Helvetica','Lucida Grande','Arial',sans-serif;"><tbody>
+			
+           <!-- NEXT/PREV MONTH NAV AND MONTH INDICATOR -->
+           <tr style="width:110px;height:16px;font-size:10px!important;">
+           	<td style="padding-right:9px;font-size:11px!important;font-weight:bold;text-transform:uppercase;text-align:right;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+		                <a href="/web/20081122151209/http://ja.doukaku.org/150/flatten/" style="text-decoration:none;color:#33f;font-weight:bold;background-color:transparent;border:none;" title="22 Nov 2008"><strong>NOV</strong></a>
+		                
+               </td>
+               <td id="displayMonthEl" style="background:#000;color:#ff0;font-size:11px!important;font-weight:bold;text-transform:uppercase;width:34px;height:15px;padding-top:1px;text-align:center;" title="You are here: 10:19:42 Apr 11, 2009">APR</td>
+				<td style="padding-left:9px;font-size:11px!important;font-weight:bold;text-transform:uppercase;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+                       May
+                       
+               </td>
+           </tr>
+
+           <!-- NEXT/PREV CAPTURE NAV AND DAY OF MONTH INDICATOR -->
+           <tr>
+               <td style="padding-right:9px;white-space:nowrap;overflow:visible;text-align:right!important;vertical-align:middle!important;" nowrap="nowrap">
+               
+		                <a href="/web/20090409061731/http://ja.doukaku.org/150/flatten/" title="6:17:31 Apr 9, 2009" style="background-color:transparent;border:none;"><img src="/static/images/toolbar/wm_tb_prv_on.png" alt="Previous capture" width="14" height="16" border="0" /></a>
+		                
+               </td>
+               <td id="displayDayEl" style="background:#000;color:#ff0;width:34px;height:24px;padding:2px 0 0 0;text-align:center;font-size:24px;font-weight: bold;" title="You are here: 10:19:42 Apr 11, 2009">11</td>
+				<td style="padding-left:9px;white-space:nowrap;overflow:visible;text-align:left!important;vertical-align:middle!important;" nowrap="nowrap">
+               
+                       <img src="/static/images/toolbar/wm_tb_nxt_off.png" alt="Next capture" width="14" height="16" border="0"/>
+                       
+			    </td>
+           </tr>
+
+           <!-- NEXT/PREV YEAR NAV AND YEAR INDICATOR -->
+           <tr style="width:110px;height:13px;font-size:9px!important;">
+				<td style="padding-right:9px;font-size:11px!important;font-weight: bold;text-align:right;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+		                <a href="/web/20080215101329/http://ja.doukaku.org/150/flatten/" style="text-decoration:none;color:#33f;font-weight:bold;background-color:transparent;border:none;" title="15 Feb 2008"><strong>2008</strong></a>
+		                
+               </td>
+               <td id="displayYearEl" style="background:#000;color:#ff0;font-size:11px!important;font-weight: bold;padding-top:1px;width:34px;height:13px;text-align:center;" title="You are here: 10:19:42 Apr 11, 2009">2009</td>
+				<td style="padding-left:9px;font-size:11px!important;font-weight: bold;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+                       2010
+                       
+				</td>
+           </tr>
+           </tbody></table>
+       </td>
+
+       </tr>
+       <tr>
+       <td style="vertical-align:middle;padding:0!important;">
+           <a href="/web/20090411101942*/http://ja.doukaku.org/150/flatten/" style="color:#33f;font-size:11px;font-weight:bold;background-color:transparent;border:none;" title="See a list of every capture for this URL"><strong>6 captures</strong></a>
+           <div class="__wb_banner_div" style="margin:0!important;padding:0!important;color:#666;font-size:9px;padding-top:2px!important;white-space:nowrap;" title="Timespan for captures of this URL">15 Feb 08 - 11 Apr 09</div>
+       </td>
+       <td style="padding:0!important;">
+       <a style="position:relative; white-space:nowrap; width:450px;height:27px;" href="" id="wm-graph-anchor">
+       <div class="__wb_banner_div" id="wm-ipp-sparkline" style="position:relative; white-space:nowrap; width:450px;height:27px;background-color:#fff;cursor:pointer;border-right:1px solid #ccc;" title="Explore captures for this URL">
+			<img id="sparklineImgId" style="position:absolute; z-index:9012; top:0px; left:0px;"
+				onmouseover="showTrackers('inline');" 
+				onmouseout="showTrackers('none');"
+				onmousemove="trackMouseMove(event,this)"
+				alt="sparklines"
+				width="450"
+				height="27"
+				border="0"
+				src="/web/jsp/graph.jsp?graphdata=450_27_1996:-1:000000000000_1997:-1:000000000000_1998:-1:000000000000_1999:-1:000000000000_2000:-1:000000000000_2001:-1:000000000000_2002:-1:000000000000_2003:-1:000000000000_2004:-1:000000000000_2005:-1:000000000000_2006:-1:000000000000_2007:-1:000000000000_2008:-1:010100000010_2009:3:000300000000_2010:-1:000000000000_2011:-1:000000000000_2012:-1:000000000000_2013:-1:000000000000"></img>
+			<img id="wbMouseTrackYearImg" 
+				style="display:none; position:absolute; z-index:9010;"
+				width="25" 
+				height="27"
+				border="0"
+				src="/static/images/toolbar/transp-yellow-pixel.png"></img>
+			<img id="wbMouseTrackMonthImg"
+				style="display:none; position:absolute; z-index:9011; " 
+				width="2"
+				height="27" 
+				border="0"
+				src="/static/images/toolbar/transp-red-pixel.png"></img>
+       </div>
+		</a>
+
+       </td>
+       </tr></tbody></table>
+   </td>
+   <td style="text-align:right;padding:5px;width:65px;font-size:11px!important;">
+       <a href="javascript:;" onclick="document.getElementById('wm-ipp').style.display='none';" style="display:block;padding-right:18px;background:url(/static/images/toolbar/wm_tb_close.png) no-repeat 100% 0;color:#33f;font-family:'Lucida Grande','Arial',sans-serif;margin-bottom:23px;background-color:transparent;border:none;" title="Close the toolbar">Close</a>
+       <a href="http://faq.web.archive.org/" style="display:block;padding-right:18px;background:url(/static/images/toolbar/wm_tb_help.png) no-repeat 100% 0;color:#33f;font-family:'Lucida Grande','Arial',sans-serif;background-color:transparent;border:none;" title="Get some help using the Wayback Machine">Help</a>
+   </td>
+   </tr></tbody></table>
+
+</div>
+</div>
+<script type="text/javascript">
+ var wmDisclaimBanner = document.getElementById("wm-ipp");
+ if(wmDisclaimBanner != null) {
+   disclaimElement(wmDisclaimBanner);
+ }
+</script>
+<!-- END WAYBACK TOOLBAR INSERT -->
+
+
+<div id="page_head" class="compact">
+  <h1 class="compact">
+    <a href="/web/20090411101942/http://ja.doukaku.org/">どう書く？org</a><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/beta.png" alt="beta">
+  </h1>
+</div>
+
+<div id="page_body" class="compact">
+<div id="content" class="compact">
+
+
+
+
+<h2 class="compact">
+<img src='/web/20090411101942im_/http://ja.doukaku.org/static/image/star_gold.png' alt=お題(出題済み)>
+<a href="/web/20090411101942/http://ja.doukaku.org/150/">不動点演算子</a>
+</h2>
+
+    
+
+
+
+
+
+<div class="comment" id="comment5680">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/136/" target="_top">matarillo</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5680/">#5680</a>(<script language="JavaScript">print_time(new Date("2008/02/04 23:16 GMT"));</script><noscript>2008/02/04 23:16 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #dfffbf;">2/4=0.50</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>不動点演算子とは、関数を引数に取り、その関数の不動点を返すような関数です。
+つまり、不動点演算子である関数gが関数fを引数に取るとき、
+f(g(f)) = g(f)
+となります。</p>
+<p>お題は不動点演算子を実装することです。（Yコンビネータを実装しても結構ですが、それ以外でも、コンビネータになっていなくてもOKとします）</p>
+
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20090411101942/http://en.wikipedia.org/wiki/Y_combinator">Wikipedia</a>
+	</p>  
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5680/addtag/" class="addtag" id="addtag_5680">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #dfffbf;"
+  >2/4=0.50</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5680"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5680"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5680"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/5680/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+
+<div class="indent">
+<a href="/web/20090411101942/http://ja.doukaku.org/150/post_comment/">
+投稿する
+</a>
+</div>
+
+
+<h2>投稿されたコメント - フラット表示</h2>
+<a href="/web/20090411101942/http://ja.doukaku.org/150/nested/">ネスト表示</a>
+<a href="/web/20090411101942/http://ja.doukaku.org/150/">非表示</a> 
+
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment5731">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/88/" target="_top">sumim</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5731/">#5731</a>(<script language="JavaScript">print_time(new Date("2008/02/11 10:07 GMT"));</script><noscript>2008/02/11 10:07 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/smalltalk/">
+	  Smalltalk
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>Squeak Smalltalk で。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td><td class="code"><div class="highlight"><pre>| fix factMaker fact |
+
+fix := [:f | [:g | f value: [:arg | (g value: g) value: arg]] 
+    value: [:g | f value: [:arg | (g value: g) value: arg]]].
+
+factMaker := [:myself | [:n | n &lt; 2 ifTrue: [1] ifFalse: [n * (myself value: n - 1)]]].
+fact := fix value: factMaker.
+
+^fact value: 10   &quot;=&gt; 3628800 &quot;
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5731/addtag/" class="addtag" id="addtag_5731">タグ</a>:
+	
+    
+    <a href="/web/20090411101942/http://ja.doukaku.org/tag/Squeak_Smalltalk/">Squeak_Smalltalk</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/smalltalk/">
+		Smalltalk
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5731/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5731/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5731"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5731"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5731"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/5731/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment5732">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/82/" target="_top">yuin</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/star_bronze.png" border=0/></a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5732/">#5732</a>(<script language="JavaScript">print_time(new Date("2008/02/11 10:46 GMT"));</script><noscript>2008/02/11 10:46 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/scala/">
+	  Scala
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>Scalaで。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></td><td class="code"><div class="highlight"><pre>def Y[A,B](f:((A=&gt;B),A)=&gt;B,x:A):B = f((x1:A)=&gt;Y(f,x1),x)
+
+def factMaker(self:(int)=&gt;int, n:int) = {
+  if(n &lt; 2) { 1 }
+  else{ n * self(n-1)}
+}
+
+print(Y(factMaker, 10)) //=&gt; 3628800
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5732/addtag/" class="addtag" id="addtag_5732">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/scala/">
+		Scala
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5732/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5732/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5732"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5732"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5732"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/5732/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment5733">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/713/" target="_top">heita</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5733/">#5733</a>(<script language="JavaScript">print_time(new Date("2008/02/11 11:26 GMT"));</script><noscript>2008/02/11 11:26 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/ruby/">
+	  Ruby
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <pre class='compact'>Yコンビネータを愚直に実装しただけです。
+    f = lambda {|g| lambda {|n| if n == 0 then 1 else n * g[n-1] end}}
+    Y[f][5]  # =&gt; 120
+とかやって遊びます。</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4</pre></td><td class="code"><div class="highlight"><pre><span class="n">Y</span> <span class="o">=</span> <span class="nb">lambda</span> <span class="p">{</span><span class="o">|</span><span class="n">f</span><span class="o">|</span>
+  <span class="n">g</span> <span class="o">=</span> <span class="nb">lambda</span> <span class="p">{</span><span class="o">|</span><span class="n">x</span><span class="o">|</span> <span class="nb">lambda</span> <span class="p">{</span><span class="o">|*</span><span class="n">n</span><span class="o">|</span> <span class="p">(</span><span class="n">f</span><span class="o">[</span><span class="n">x</span><span class="o">[</span><span class="n">x</span><span class="o">]]</span><span class="p">)</span><span class="o">[*</span><span class="n">n</span><span class="o">]</span><span class="p">}}</span>
+  <span class="n">g</span><span class="o">[</span><span class="n">g</span><span class="o">]</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5733/addtag/" class="addtag" id="addtag_5733">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/ruby/">
+		Ruby
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5733/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5733/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5733"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5733"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5733"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/5733/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment5734">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/164/" target="_top">kozima</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5734/">#5734</a>(<script language="JavaScript">print_time(new Date("2008/02/11 11:46 GMT"));</script><noscript>2008/02/11 11:46 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/ocaml/">
+	  OCaml
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #cfffcf;">3/3=1.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>#2929 に書いたものそのままですが。</p>
+<p>OCaml は正格評価なので y f = f (y f) と書くと止まりませんが、仮引数 x を与えてやって関数本体の計算開始を遅らせれば大丈夫です。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1</pre></td><td class="code"><div class="highlight"><pre><span class="kr">let</span> <span class="kr">rec</span> <span class="n">y</span> <span class="n">f</span> <span class="n">x</span> <span class="k">=</span> <span class="n">f</span> <span class="k">(</span><span class="n">y</span> <span class="n">f</span><span class="k">)</span> <span class="n">x</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5734/addtag/" class="addtag" id="addtag_5734">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/ocaml/">
+		OCaml
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5734/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5734/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #cfffcf;"
+  >3/3=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5734"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5734"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5734"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/5734/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment5735">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/164/" target="_top">kozima</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5735/">#5735</a>(<script language="JavaScript">print_time(new Date("2008/02/11 11:54 GMT"));</script><noscript>2008/02/11 11:54 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/haskell/">
+	  Haskell
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>Haskell は、まあほぼ自明なやつですが……</p>
+<p>ついでに実行例でも:</p>
+<pre class="literal-block">
+Prelude&gt; let y f = f $ y f
+Prelude&gt; let fib_maker f x = if x &lt;= 2 then 1 else f (x-1) + f (x-2)
+Prelude&gt; let fib = y fib_maker
+Prelude&gt; map fib [1..10]
+[1,1,2,3,5,8,13,21,34,55]
+</pre>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1</pre></td><td class="code"><div class="highlight"><pre><span class="kr">let</span> <span class="nv">y</span> <span class="nv">f</span> <span class="o">=</span> <span class="nv">f</span> <span class="o">$</span> <span class="nv">y</span> <span class="nv">f</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5735/addtag/" class="addtag" id="addtag_5735">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/haskell/">
+		Haskell
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5735/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5735/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5735"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5735"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5735"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/5735/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment5737">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/673/" target="_top">uti</a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5737/">#5737</a>(<script language="JavaScript">print_time(new Date("2008/02/11 12:14 GMT"));</script><noscript>2008/02/11 12:14 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/java/">
+	  Java
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  わざわざJavaで書く意味がないですね（笑）
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65</pre></td><td class="code"><div class="highlight"><pre><span class="k">public</span> <span class="k">class</span> <span class="nc">FixedPointOperator</span> <span class="o">{</span>
+
+    <span class="c">// 任意の関数型 T を定義します</span>
+    <span class="k">abstract</span> <span class="k">class</span> <span class="nc">T</span> <span class="o">{</span>
+        <span class="k">abstract</span> <span class="n">T</span> <span class="n">apply</span><span class="o">(</span><span class="k">final</span> <span class="n">T</span> <span class="n">arg</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="c">// 整数型を定義します</span>
+    <span class="k">class</span> <span class="nc">Int</span> <span class="k">extends</span> <span class="n">T</span> <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">val</span><span class="o">;</span>
+        <span class="n">Int</span><span class="o">(</span><span class="kt">int</span> <span class="n">val</span><span class="o">)</span> <span class="o">{</span> <span class="k">this</span><span class="o">.</span><span class="na">val</span> <span class="o">=</span> <span class="n">val</span><span class="o">;</span> <span class="o">}</span>
+        <span class="c">// 整数型の apply が呼ばれることはありません</span>
+        <span class="n">T</span> <span class="n">apply</span><span class="o">(</span><span class="k">final</span> <span class="n">T</span> <span class="n">arg</span><span class="o">)</span> <span class="o">{</span> <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="o">();</span> <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c">// 不動点オペレータを定義します</span>
+    <span class="c">// Y = (g=&gt;(s=&gt;g (x=&gt;(s s) x))(s=&gt;g (x=&gt;(s s) x)))</span>
+    <span class="c">//               ------------  ここを tmp2 としています</span>
+    <span class="c">//         ------------------- ここを tmp1 としています</span>
+    <span class="k">final</span> <span class="n">T</span> <span class="n">Y</span> <span class="o">=</span> <span class="k">new</span> <span class="n">T</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">T</span> <span class="n">apply</span><span class="o">(</span><span class="k">final</span> <span class="n">T</span> <span class="n">g</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">final</span> <span class="n">T</span> <span class="n">tmp1</span> <span class="o">=</span> <span class="k">new</span> <span class="n">T</span><span class="o">()</span> <span class="o">{</span>
+                <span class="n">T</span> <span class="n">apply</span><span class="o">(</span><span class="k">final</span> <span class="n">T</span> <span class="n">s</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="k">final</span> <span class="n">T</span> <span class="n">tmp2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">T</span><span class="o">()</span> <span class="o">{</span>
+                        <span class="n">T</span> <span class="n">apply</span><span class="o">(</span><span class="k">final</span> <span class="n">T</span> <span class="n">x</span><span class="o">)</span> <span class="o">{</span>
+                            <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">s</span><span class="o">).</span><span class="na">apply</span><span class="o">(</span><span class="n">x</span><span class="o">);</span>
+                        <span class="o">}</span>
+                    <span class="o">};</span>
+                    <span class="k">return</span> <span class="n">g</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">tmp2</span><span class="o">);</span>
+                <span class="o">}</span>
+            <span class="o">};</span>
+            <span class="k">return</span> <span class="n">tmp1</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">tmp1</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">};</span>
+
+    <span class="c">// 階乗を求める関数です (サンプル)</span>
+    <span class="c">// factRec = (f=&gt;(x=&gt;(if x = 0 then 1 else x * (f (x - 1)))))</span>
+    <span class="k">final</span> <span class="n">T</span> <span class="n">factRec</span> <span class="o">=</span> <span class="k">new</span> <span class="n">T</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">T</span> <span class="n">apply</span><span class="o">(</span><span class="k">final</span> <span class="n">T</span> <span class="n">f</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">T</span><span class="o">()</span> <span class="o">{</span>
+                <span class="n">T</span> <span class="n">apply</span><span class="o">(</span><span class="k">final</span> <span class="n">T</span> <span class="n">x</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="o">((</span><span class="n">Int</span><span class="o">)</span> <span class="n">x</span><span class="o">).</span><span class="na">val</span><span class="o">;</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">return</span> <span class="k">new</span> <span class="n">Int</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+                    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                        <span class="k">return</span> <span class="k">new</span> <span class="n">Int</span><span class="o">(</span><span class="n">i</span> <span class="o">*</span> <span class="o">((</span><span class="n">Int</span><span class="o">)</span> <span class="n">f</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="k">new</span> <span class="n">Int</span><span class="o">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="o">))).</span><span class="na">val</span><span class="o">);</span>
+                    <span class="o">}</span>
+                <span class="o">}</span>
+            <span class="o">};</span>
+        <span class="o">}</span>
+    <span class="o">};</span>
+
+    <span class="c">// 不動点オペレータ Y を factRec に適用して再帰的関数を作成</span>
+    <span class="c">// ためしに fact(5) を計算します</span>
+    <span class="k">public</span> <span class="kt">void</span> <span class="n">exec</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">T</span> <span class="n">fact</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">factRec</span><span class="o">);</span>
+        <span class="n">Int</span> <span class="n">five</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Int</span><span class="o">(</span><span class="mi">5</span><span class="o">);</span>
+        <span class="n">Int</span> <span class="n">result</span> <span class="o">=</span> <span class="o">(</span><span class="n">Int</span><span class="o">)</span> <span class="n">fact</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">five</span><span class="o">);</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;fact(&quot;</span> <span class="o">+</span> <span class="n">five</span><span class="o">.</span><span class="na">val</span> <span class="o">+</span> <span class="s">&quot;) = &quot;</span> <span class="o">+</span> <span class="n">result</span><span class="o">.</span><span class="na">val</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="kt">void</span> <span class="n">main</span><span class="o">(</span><span class="n">String</span> <span class="n">args</span><span class="o">[])</span> <span class="o">{</span>
+        <span class="k">new</span> <span class="n">FixedPointOperator</span><span class="o">().</span><span class="na">exec</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5737/addtag/" class="addtag" id="addtag_5737">タグ</a>:
+	
+    
+    <a href="/web/20090411101942/http://ja.doukaku.org/tag/JDK1.5/">JDK1.5</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/java/">
+		Java
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5737/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5737/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5737"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5737"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5737"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/5737/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment5740">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/343/" target="_top">matyr</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5740/">#5740</a>(<script language="JavaScript">print_time(new Date("2008/02/11 17:04 GMT"));</script><noscript>2008/02/11 17:04 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/io/">
+	  Io
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  
+<p>括弧の拡張機能を使って <a href="/web/20090411101942/http://ja.doukaku.org/comment/5731">#5731</a> と <a href="/web/20090411101942/http://ja.doukaku.org/comment/5731">#5733</a> の写経。(Yコンビネータは理解してない。)
+</p>
+
+
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td><td class="code"><div class="highlight"><pre>Object do( curlyBrackets  := getSlot(&quot;block&quot;))
+Block  do( squareBrackets := getSlot(&quot;call&quot;))
+
+Y := { f,
+  { g, f[{ a, g[g][a] }] }[
+  { g, f[{ a, g[g][a] }] }]
+}
+
+Y[{ b, { n, if(n &lt; 2, 1, n * b[n - 1]) } }][10] println
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5740/addtag/" class="addtag" id="addtag_5740">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/io/">
+		Io
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5740/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5740/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5740"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5740"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5740"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/5740/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment5747">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/26/" target="_top">dankogai</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5747/">#5747</a>(<script language="JavaScript">print_time(new Date("2008/02/13 00:40 GMT"));</script><noscript>2008/02/13 00:40 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/perl/">
+	  Perl
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  
+<p>Y CombinatorのApplicative Order版のZ Combinatorと、名前付きのものと双方。
+</p>
+<p>詳しくは
+</p>
+<p><a href="/web/20090411101942/http://blog.livedoor.jp/dankogai/archives/50458503.html">TuringとChurchの狭間で</a>
+</p>
+<p>を参照のこと。
+</p>
+
+
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16</pre></td><td class="code"><div class="highlight"><pre><span class="k">sub </span><span class="nf">fix</span> <span class="p">{</span>
+  <span class="k">my</span> <span class="nv">$G</span> <span class="o">=</span> <span class="nb">shift</span><span class="p">;</span> 
+  <span class="k">return</span> <span class="nv">$G</span><span class="o">-&gt;</span><span class="p">(</span> <span class="k">sub </span><span class="p">{</span> <span class="k">my</span> <span class="nv">$x</span> <span class="o">=</span> <span class="nb">shift</span><span class="p">;</span> <span class="k">return</span> <span class="n">fix</span><span class="p">(</span><span class="nv">$G</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">(</span><span class="nv">$x</span><span class="p">);}</span> <span class="p">);</span> 
+<span class="p">}</span> 
+
+<span class="k">our</span> <span class="nv">$Z</span> <span class="o">=</span> <span class="k">sub </span><span class="p">{</span> <span class="k">my</span> <span class="nv">$f</span> <span class="o">=</span> <span class="nb">shift</span><span class="p">;</span>
+               <span class="k">sub </span><span class="p">{</span> <span class="k">my</span> <span class="nv">$x</span> <span class="o">=</span> <span class="nb">shift</span><span class="p">;</span> 
+                     <span class="k">sub </span><span class="p">{</span> <span class="k">my</span> <span class="nv">$y</span> <span class="o">=</span> <span class="nb">shift</span><span class="p">;</span>
+                           <span class="nv">$f</span><span class="o">-&gt;</span><span class="p">(</span><span class="nv">$x</span><span class="o">-&gt;</span><span class="p">(</span><span class="nv">$x</span><span class="p">))</span>
+                     <span class="p">}</span>
+                 <span class="p">}</span><span class="o">-&gt;</span><span class="p">(</span><span class="k">sub </span><span class="p">{</span> <span class="k">my</span> <span class="nv">$x</span> <span class="o">=</span> <span class="nb">shift</span><span class="p">;</span> 
+                           <span class="k">sub </span><span class="p">{</span> <span class="k">my</span> <span class="nv">$y</span> <span class="o">=</span> <span class="nb">shift</span><span class="p">;</span> 
+                                 <span class="nv">$f</span><span class="o">-&gt;</span><span class="p">(</span><span class="nv">$x</span><span class="o">-&gt;</span><span class="p">(</span><span class="nv">$x</span><span class="p">))</span> 
+                           <span class="p">}</span>
+                     <span class="p">})</span>
+         <span class="p">};</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5747/addtag/" class="addtag" id="addtag_5747">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/perl/">
+		Perl
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5747/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5747/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5747"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5747"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5747"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/5747/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment5750">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/154/" target="_top">xsd</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5750/">#5750</a>(<script language="JavaScript">print_time(new Date("2008/02/13 13:38 GMT"));</script><noscript>2008/02/13 13:38 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/c/">
+	  C
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  let&nbsp;rec&nbsp;fix&nbsp;f&nbsp;=&nbsp;f&nbsp;(fix&nbsp;f)型の不動点演算子をCで実現してみました。<br/>stdcall呼び出しの関数(引数は右から左にスタックにプッシュ、スタックの後始末は呼び出された側で実施)を渡すと、不動点(実体は遅延評価のためのThunk)を作って返します。<br/><br/>任意個の引数の関数に対応しています。<br/>また、Visual&nbsp;C++/GCCの両方で使用可能です。
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36</pre></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;stdio.h&gt;</span>
+<span class="cp">#include &lt;string.h&gt;</span>
+
+<span class="cp">#ifdef __GNUC__</span>
+<span class="cp">#ifndef __stdcall</span>
+<span class="cp">#define __stdcall __attribute__((stdcall))</span>
+<span class="cp">#endif</span>
+<span class="cp">#endif</span>
+
+<span class="cp">#define SET(p,a) *(void**)(p+a)</span>
+
+<span class="kt">void</span><span class="o">*</span> <span class="kr">__stdcall</span> <span class="nf">fix</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">f</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">thunk</span> <span class="o">=</span> <span class="n">strdup</span><span class="p">(</span><span class="s">&quot;hack!</span><span class="se">\xba</span><span class="s">....</span><span class="se">\xff\xd2</span><span class="s">ZPR</span><span class="se">\xb8</span><span class="s">....</span><span class="se">\xff\xe0</span><span class="s">&quot;</span><span class="p">);</span>
+    <span class="n">SET</span><span class="p">(</span><span class="n">thunk</span><span class="p">,</span>  <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">f</span><span class="p">;</span>
+    <span class="n">SET</span><span class="p">(</span><span class="n">thunk</span><span class="p">,</span>  <span class="mi">6</span><span class="p">)</span> <span class="o">=</span> <span class="n">fix</span><span class="p">;</span>
+    <span class="n">SET</span><span class="p">(</span><span class="n">thunk</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span> <span class="o">=</span> <span class="n">f</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">thunk</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">typedef</span> <span class="kt">int</span> <span class="p">(</span><span class="kr">__stdcall</span> <span class="o">*</span><span class="n">FUNC2</span><span class="p">)(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="kr">__stdcall</span> <span class="nf">gcd_maker</span><span class="p">(</span><span class="n">FUNC2</span> <span class="n">f</span><span class="p">,</span> <span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">%</span> <span class="n">b</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">b</span> <span class="o">:</span> <span class="n">f</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">%</span> <span class="n">b</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">FUNC2</span> <span class="n">gcd</span> <span class="o">=</span> <span class="p">(</span><span class="n">FUNC2</span><span class="p">)</span><span class="n">fix</span><span class="p">(</span><span class="n">gcd_maker</span><span class="p">);</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;gcd(2520,3840) = %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>             <span class="n">gcd</span><span class="p">(</span><span class="mi">2520</span><span class="p">,</span>       <span class="mi">3840</span><span class="p">));</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;gcd(1836311903,1134903170) = %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">gcd</span><span class="p">(</span><span class="mi">1836311903</span><span class="p">,</span> <span class="mi">1134903170</span><span class="p">));</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5750/addtag/" class="addtag" id="addtag_5750">タグ</a>:
+	
+    
+    <a href="/web/20090411101942/http://ja.doukaku.org/tag/IA-32/">IA-32</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/c/">
+		C
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5750/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5750/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5750"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5750"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5750"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/5750/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment5783">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/164/" target="_top">kozima</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5783/">#5783</a>(<script language="JavaScript">print_time(new Date("2008/02/19 08:43 GMT"));</script><noscript>2008/02/19 08:43 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/commonlisp/">
+	  Common Lisp
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>labels で無名再帰関数作りました。</p>
+<p>こういうのは変数と関数の名前空間が分かれてると読みにくいですね。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></td><td class="code"><div class="highlight"><pre>(defun fix (f) (labels ((g (x) (funcall (funcall f #&#39;g) x))) #&#39;g))
+
+(defun fib-maker (f)
+  (lambda (x) 
+    (if (&lt;= x 2) 1 (+ (funcall f (1- x)) (funcall f (- x 2))))))
+
+(let ((fib (fix #&#39;fib-maker)))
+  (mapcar fib &#39;(1 2 3 4 5 6 7 8 9 10)))
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5783/addtag/" class="addtag" id="addtag_5783">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/commonlisp/">
+		Common Lisp
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5783/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5783/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5783"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5783"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5783"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  <a href="/web/20090411101942/http://ja.doukaku.org/comment/5783/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/5783/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment5784">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/164/" target="_top">kozima</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5784/">#5784</a>(<script language="JavaScript">print_time(new Date("2008/02/19 09:25 GMT"));</script><noscript>2008/02/19 09:25 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>もしかしたらマクロの方がきれいに書けるかと思っていろいろ試してみましたが、結局 alambda みたいなものにたどり着きました。</p>
+
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20090411101942/http://www.bookshelf.jp/texi/onlisp/onlisp_15.html#SEC100">Onlisp: Anaphoric Macros</a>
+	</p>  
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5784/addtag/" class="addtag" id="addtag_5784">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5784"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5784"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5784"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+    <a href="/web/20090411101942/http://ja.doukaku.org/comment/5783/"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20090411101942/http://ja.doukaku.org/comment/5784/root/"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/5784/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment5845">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/82/" target="_top">yuin</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/star_bronze.png" border=0/></a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5845/">#5845</a>(<script language="JavaScript">print_time(new Date("2008/02/26 00:57 GMT"));</script><noscript>2008/02/26 00:57 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/scala/">
+	  Scala
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>言語タグを間違えたので･･･</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></td><td class="code"><div class="highlight"><pre>def Y[A,B](f:((A=&gt;B),A)=&gt;B,x:A):B = f((x1:A)=&gt;Y(f,x1),x)
+
+def factMaker(self:(int)=&gt;int, n:int) = {
+  if(n &lt; 2) { 1 }
+  else{ n * self(n-1)}
+}
+
+print(Y(factMaker, 10)) //=&gt; 3628800
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5845/addtag/" class="addtag" id="addtag_5845">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/scala/">
+		Scala
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5845/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5845/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5845"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5845"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5845"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/5845/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment5921">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5921/">#5921</a>(<script language="JavaScript">print_time(new Date("2008/03/02 03:38 GMT"));</script><noscript>2008/03/02 03:38 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/lua/">
+	  Lua
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <pre class='compact'>以下のサイトが分かりやすかったです。
+結果的に#5733さんのコードそのままになりました。
+</pre>
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20090411101942/http://www.loveruby.net/ja/misc/ycombinator.html">Y Combinator</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6</pre></td><td class="code"><div class="highlight"><pre><span class="n">Y</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+  <span class="n">g</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">proc</span><span class="p">)</span> <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">return</span> <span class="n">proc</span><span class="p">(</span><span class="n">proc</span><span class="p">)(</span><span class="n">arg</span><span class="p">)</span> <span class="k">end</span><span class="p">)</span> <span class="k">end</span>
+  <span class="k">return</span> <span class="n">g</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="nf">print</span><span class="p">(</span><span class="n">Y</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">return</span> <span class="n">function</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="k">then</span> <span class="k">return</span> <span class="mi">1</span> <span class="k">else</span> <span class="k">return</span> <span class="n">n</span> <span class="o">*</span> <span class="n">f</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="k">end</span> <span class="k">end</span> <span class="k">end</span><span class="p">)(</span><span class="mi">10</span><span class="p">))</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5921/addtag/" class="addtag" id="addtag_5921">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/lua/">
+		Lua
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5921/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5921/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5921"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5921"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5921"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  <a href="/web/20090411101942/http://ja.doukaku.org/comment/5921/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/5921/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment5926">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5926/">#5926</a>(<script language="JavaScript">print_time(new Date("2008/03/03 03:04 GMT"));</script><noscript>2008/03/03 03:04 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/python/">
+	  Python
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5</pre></td><td class="code"><div class="highlight"><pre><span class="k">def</span> <span class="nf">Y</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+  <span class="n">g</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">proc</span><span class="p">:</span> <span class="n">f</span><span class="p">(</span><span class="k">lambda</span> <span class="n">arg</span><span class="p">:</span> <span class="n">proc</span><span class="p">(</span><span class="n">proc</span><span class="p">)(</span><span class="n">arg</span><span class="p">))</span>
+  <span class="k">return</span> <span class="n">g</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="n">Y</span><span class="p">(</span><span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="n">n</span> <span class="o">*</span> <span class="n">f</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))(</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/5926/addtag/" class="addtag" id="addtag_5926">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/python/">
+		Python
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5926/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/5926/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5926"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5926"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5926"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+    <a href="/web/20090411101942/http://ja.doukaku.org/comment/5921/"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20090411101942/http://ja.doukaku.org/comment/5926/root/"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/5926/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment6006">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/136/" target="_top">matarillo</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/6006/">#6006</a>(<script language="JavaScript">print_time(new Date("2008/03/12 23:30 GMT"));</script><noscript>2008/03/12 23:30 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/csharp/">
+	  C#
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>お題を出したものなので回答は控える。
+参考リンクだけ提示。おまいらコード書け。</p>
+<p><a class="reference" href="/web/20090411101942/http://blogs.msdn.com/wesdyer/archive/2007/02/02/anonymous-recursion-in-c.aspx">http://blogs.msdn.com/wesdyer/archive/2007/02/02/anonymous-recursion-in-c.aspx</a>
+<a class="reference" href="/web/20090411101942/http://blogs.msdn.com/madst/archive/2007/05/11/recursive-lambda-expressions.aspx">http://blogs.msdn.com/madst/archive/2007/05/11/recursive-lambda-expressions.aspx</a></p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1</pre></td><td class="code"><div class="highlight"><pre><span class="c">// (snip)</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/6006/addtag/" class="addtag" id="addtag_6006">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/csharp/">
+		C#
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/6006/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/6006/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6006"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6006"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6006"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/6006/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment7283">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/840/" target="_top">leque</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/star_silver.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/7283/">#7283</a>(<script language="JavaScript">print_time(new Date("2008/08/20 21:47 GMT"));</script><noscript>2008/08/20 21:47 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/scheme/">
+	  Scheme
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  
+<p><a href="/web/20090411101942/http://ja.doukaku.org/comment/5783">#5783</a> を Scheme で写経。
+</p>
+
+
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></td><td class="code"><div class="highlight"><pre><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">fix</span> <span class="nv">f</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">rec</span> <span class="p">(</span><span class="nf">g</span> <span class="nv">x</span><span class="p">)</span> <span class="p">((</span><span class="nf">f</span> <span class="nv">g</span><span class="p">)</span> <span class="nv">x</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k">let </span><span class="p">((</span><span class="nf">fib</span> <span class="p">(</span><span class="nf">fix</span> <span class="p">(</span><span class="k">lambda </span><span class="p">(</span><span class="nf">f</span><span class="p">)</span>
+                  <span class="p">(</span><span class="k">lambda </span><span class="p">(</span><span class="nf">x</span><span class="p">)</span>
+                    <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">&lt;= </span><span class="nv">x</span> <span class="mi">2</span><span class="p">)</span>
+                        <span class="mi">1</span>
+                        <span class="p">(</span><span class="nb">+ </span><span class="p">(</span><span class="nf">f</span> <span class="p">(</span><span class="nb">- </span><span class="nv">x</span> <span class="mi">1</span><span class="p">))</span> <span class="p">(</span><span class="nf">f</span> <span class="p">(</span><span class="nb">- </span><span class="nv">x</span> <span class="mi">2</span><span class="p">)))))))))</span>
+  <span class="p">(</span><span class="nb">display </span><span class="p">(</span><span class="nb">map </span><span class="nv">fib</span> <span class="o">&#39;</span><span class="p">(</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span> <span class="mi">7</span> <span class="mi">8</span> <span class="mi">9</span> <span class="mi">10</span><span class="p">)))</span>
+  <span class="p">(</span><span class="nf">newline</span><span class="p">))</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/7283/addtag/" class="addtag" id="addtag_7283">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/scheme/">
+		Scheme
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/7283/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/7283/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_7283"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_7283"
+  >0</span><span 
+  class="button green"
+  id="rating_p_7283"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/7283/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment7670">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/654/" target="_top">ika</a><a href="/web/20090411101942/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/star_silver.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/7670/">#7670</a>(<script language="JavaScript">print_time(new Date("2008/09/18 02:03 GMT"));</script><noscript>2008/09/18 02:03 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/d/">
+	  D
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>テンプレート引数の推論を使って型無しラムダっぽく。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43</pre></td><td class="code"><div class="highlight"><pre><span class="k">import</span> <span class="n">std</span>.<span class="n">stdio</span>;
+
+<span class="kt">void</span> <span class="n">main</span>() {    
+    <span class="k">auto</span> <span class="n">Y</span> = <span class="k">new</span> <span class="k">class</span> {
+        <span class="k">auto</span> <span class="n">opCall</span>(<span class="n">_</span>)(<span class="n">_</span> <span class="n">f</span>) {
+            <span class="k">return</span> (<span class="k">new</span> <span class="k">class</span> {
+                <span class="k">auto</span> <span class="n">opCall</span>(<span class="n">_</span>)(<span class="n">_</span> <span class="n">g</span>) {
+                    <span class="k">return</span> <span class="k">new</span> <span class="k">class</span> {
+                        <span class="k">auto</span> <span class="n">opCall</span>(<span class="n">_</span>)(<span class="n">_</span> <span class="n">x</span>) {
+                            <span class="k">return</span> <span class="n">f</span>(<span class="n">g</span>(<span class="n">g</span>))(<span class="n">x</span>);
+                        }
+                    };
+                }
+            })(<span class="k">new</span> <span class="k">class</span> {
+                <span class="k">auto</span> <span class="n">opCall</span>(<span class="n">_</span>)(<span class="n">_</span> <span class="n">g</span>) {
+                    <span class="k">return</span> <span class="k">new</span> <span class="k">class</span> {
+                        <span class="k">auto</span> <span class="n">opCall</span>(<span class="n">_</span>)(<span class="n">_</span> <span class="n">x</span>) {
+                            <span class="k">return</span> <span class="n">f</span>(<span class="n">g</span>(<span class="n">g</span>))(<span class="n">x</span>);
+                        }
+                    };
+                }
+            });
+        };
+    };
+    
+    <span class="k">auto</span> <span class="n">F</span> = <span class="k">new</span> <span class="k">class</span> {
+        <span class="k">auto</span> <span class="n">opCall</span>(<span class="n">_</span>)(<span class="n">_</span> <span class="n">f</span>) {
+            <span class="k">return</span> <span class="k">new</span> <span class="k">class</span> {
+                <span class="k">auto</span> <span class="n">opCall</span>(<span class="n">_</span>)(<span class="n">_</span> <span class="n">x</span>) {
+                    <span class="k">if</span> (<span class="n">x</span> == <span class="mi">0</span>) {
+                        <span class="k">return</span> <span class="k">cast</span>(<span class="n">_</span>)<span class="mi">1</span>;
+                    } <span class="k">else</span> {
+                        <span class="k">return</span> <span class="n">x</span> * <span class="n">f</span>(<span class="n">x</span> - <span class="mi">1</span>);
+                    }
+                }
+            };
+        }
+    };
+
+    <span class="k">auto</span> <span class="n">factorial</span> = <span class="n">Y</span>(<span class="n">F</span>);
+    <span class="n">writeln</span>(<span class="s">&quot;fact(5) = &quot;</span>, <span class="n">factorial</span>(<span class="mi">10</span>));
+    <span class="n">writeln</span>(<span class="s">&quot;fact(5) = &quot;</span>, <span class="n">factorial</span>(<span class="mi">20L</span>));
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/7670/addtag/" class="addtag" id="addtag_7670">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/d/">
+		D
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/7670/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/7670/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_7670"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_7670"
+  >0</span><span 
+  class="button green"
+  id="rating_p_7670"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/7670/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment7751">
+  <p class="banner"><a href="/web/20090411101942/http://ja.doukaku.org/user/759/" target="_top">egtra</a>
+
+	
+	&nbsp;
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/7751/">#7751</a>(<script language="JavaScript">print_time(new Date("2008/10/04 12:16 GMT"));</script><noscript>2008/10/04 12:16 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20090411101942/http://ja.doukaku.org/lang/cpp/">
+	  C++
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  
+<p>折角なのでBoost.MPLでやりました。Boost 1.36.0使用。
+   VC++ 9 SP1, VC++ 8 SP1, gcc 4.3.1 (Cygwin), gcc 3.4.4 (Cygwin付属)で確認。
+</p>
+<p>うまくいかずあれこれ悩んでいましたが、<a href="/web/20090411101942/http://ja.doukaku.org/comment/5921/" title="#5921">#5921</a>を見たらあっというまに出来上がりました。ありがとうございます。参考ページは自分が理解するのに役立ちました。
+</p>
+<p>coutではなくprintfを使っている理由は、コンパイル時計算されて定数展開されているのをアセンブリ出力を見て確かめるときに分かりやすいからです（さすがにprintfはインライン展開されないですから）。
+</p>
+
+
+
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20090411101942/http://d.hatena.ne.jp/tanakh/20040813">不動点演算子 - 純粋関数型雑記帳</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84</pre></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;cstdio&gt;</span>
+<span class="cp">#include &lt;boost/mpl/int.hpp&gt;</span>
+<span class="cp">#include &lt;boost/mpl/times.hpp&gt;</span>
+<span class="cp">#include &lt;boost/mpl/plus.hpp&gt;</span>
+<span class="cp">#include &lt;boost/mpl/next_prior.hpp&gt;</span>
+<span class="cp">#include &lt;boost/mpl/less_equal.hpp&gt;</span>
+<span class="cp">#include &lt;boost/mpl/eval_if.hpp&gt;</span>
+<span class="cp">#include &lt;boost/mpl/bind.hpp&gt;</span>
+<span class="cp">#include &lt;boost/mpl/less_equal.hpp&gt;</span>
+
+<span class="k">namespace</span> <span class="n">mpl</span> <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">mpl</span><span class="p">;</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">F</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">Y</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">G</span>
+    <span class="p">{</span>
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">P</span><span class="o">&gt;</span>
+        <span class="k">struct</span> <span class="n">apply</span>
+        <span class="p">{</span>
+            <span class="k">struct</span> <span class="n">U</span>
+            <span class="p">{</span>
+                <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">A</span><span class="o">&gt;</span>
+                <span class="k">struct</span> <span class="n">apply</span> <span class="o">:</span> <span class="n">P</span><span class="o">::</span><span class="k">template</span> <span class="n">apply</span><span class="o">&lt;</span><span class="n">P</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">::</span><span class="k">template</span> <span class="n">apply</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span>
+                <span class="p">{};</span>
+            <span class="p">};</span>
+            <span class="k">typedef</span> <span class="n">mpl</span><span class="o">::</span><span class="n">bind</span><span class="o">&lt;</span><span class="n">F</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">mpl</span><span class="o">::</span><span class="n">_1</span><span class="o">&gt;</span> <span class="n">type</span><span class="p">;</span>
+        <span class="p">};</span>
+    <span class="p">};</span>
+    <span class="k">typedef</span> <span class="k">typename</span> <span class="n">G</span><span class="o">::</span><span class="k">template</span> <span class="n">apply</span><span class="o">&lt;</span><span class="n">G</span><span class="o">&gt;::</span><span class="n">type</span> <span class="n">type</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">FactorialBase</span>
+<span class="p">{</span>
+    <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">F</span><span class="p">,</span> <span class="k">typename</span> <span class="n">X</span><span class="o">&gt;</span>
+    <span class="k">struct</span> <span class="n">apply</span>
+    <span class="p">{</span>
+        <span class="k">struct</span> <span class="n">X_Times_X_minus_1</span> <span class="o">:</span>
+            <span class="n">mpl</span><span class="o">::</span><span class="n">times</span>
+            <span class="o">&lt;</span>
+                <span class="n">X</span><span class="p">,</span>
+                <span class="k">typename</span> <span class="n">F</span><span class="o">::</span><span class="k">template</span> <span class="n">apply</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">mpl</span><span class="o">::</span><span class="k">template</span> <span class="n">prior</span><span class="o">&lt;</span><span class="n">X</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&gt;::</span><span class="n">type</span>
+            <span class="o">&gt;</span>
+        <span class="p">{};</span>
+        <span class="k">typedef</span> <span class="k">typename</span> <span class="n">mpl</span><span class="o">::</span><span class="n">eval_if</span>
+        <span class="o">&lt;</span>
+            <span class="n">mpl</span><span class="o">::</span><span class="n">less_equal</span><span class="o">&lt;</span><span class="n">X</span><span class="p">,</span> <span class="n">mpl</span><span class="o">::</span><span class="n">int_</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">,</span>
+            <span class="n">mpl</span><span class="o">::</span><span class="n">int_</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">,</span>
+            <span class="n">X_Times_X_minus_1</span>
+        <span class="o">&gt;::</span><span class="n">type</span> <span class="n">type</span><span class="p">;</span>
+    <span class="p">};</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">FibonacciBase</span>
+<span class="p">{</span>
+    <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">F</span><span class="p">,</span> <span class="k">typename</span> <span class="n">X</span><span class="o">&gt;</span>
+    <span class="k">struct</span> <span class="n">apply</span>
+    <span class="p">{</span>
+        <span class="k">typedef</span> <span class="k">typename</span> <span class="n">mpl</span><span class="o">::</span><span class="k">template</span> <span class="n">prior</span><span class="o">&lt;</span><span class="n">X</span><span class="o">&gt;::</span><span class="n">type</span> <span class="n">PriorX</span><span class="p">;</span>
+        <span class="k">struct</span> <span class="n">X_minus_2_Plus_X_minus_1</span> <span class="o">:</span>
+            <span class="n">mpl</span><span class="o">::</span><span class="n">plus</span>
+            <span class="o">&lt;</span>
+                <span class="k">typename</span> <span class="n">F</span><span class="o">::</span><span class="k">template</span> <span class="n">apply</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">mpl</span><span class="o">::</span><span class="k">template</span> <span class="n">prior</span><span class="o">&lt;</span><span class="n">PriorX</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&gt;::</span><span class="n">type</span><span class="p">,</span>
+                <span class="k">typename</span> <span class="n">F</span><span class="o">::</span><span class="k">template</span> <span class="n">apply</span><span class="o">&lt;</span><span class="n">PriorX</span><span class="o">&gt;::</span><span class="n">type</span>
+            <span class="o">&gt;</span>
+        <span class="p">{};</span>
+        <span class="k">typedef</span> <span class="k">typename</span> <span class="n">mpl</span><span class="o">::</span><span class="n">eval_if</span>
+        <span class="o">&lt;</span>
+            <span class="n">mpl</span><span class="o">::</span><span class="n">less_equal</span><span class="o">&lt;</span><span class="n">X</span><span class="p">,</span> <span class="n">mpl</span><span class="o">::</span><span class="n">int_</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">,</span>
+            <span class="n">X</span><span class="p">,</span>
+            <span class="n">X_minus_2_Plus_X_minus_1</span>
+        <span class="o">&gt;::</span><span class="n">type</span> <span class="n">type</span><span class="p">;</span>
+    <span class="p">};</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="n">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="n">Y</span><span class="o">&lt;</span><span class="n">FactorialBase</span><span class="o">&gt;::</span><span class="n">type</span> <span class="n">Factorial</span><span class="p">;</span>
+    <span class="k">typedef</span> <span class="n">Factorial</span><span class="o">::</span><span class="n">apply</span><span class="o">&lt;</span><span class="n">mpl</span><span class="o">::</span><span class="n">int_</span><span class="o">&lt;</span><span class="mi">10</span><span class="o">&gt;</span> <span class="o">&gt;::</span><span class="n">type</span> <span class="n">result1</span><span class="p">;</span>
+    <span class="k">typedef</span> <span class="n">Y</span><span class="o">&lt;</span><span class="n">FibonacciBase</span><span class="o">&gt;::</span><span class="n">type</span> <span class="n">Fibonacci</span><span class="p">;</span>
+    <span class="k">typedef</span> <span class="n">Fibonacci</span><span class="o">::</span><span class="n">apply</span><span class="o">&lt;</span><span class="n">mpl</span><span class="o">::</span><span class="n">int_</span><span class="o">&lt;</span><span class="mi">10</span><span class="o">&gt;</span> <span class="o">&gt;::</span><span class="n">type</span> <span class="n">result2</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">result1</span><span class="o">::</span><span class="n">value</span><span class="p">);</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">result2</span><span class="o">::</span><span class="n">value</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20090411101942/http://ja.doukaku.org/comment/7751/addtag/" class="addtag" id="addtag_7751">タグ</a>:
+	
+    
+    <a href="/web/20090411101942/http://ja.doukaku.org/tag/Boost/">Boost</a>
+    
+    <a href="/web/20090411101942/http://ja.doukaku.org/tag/Boost.MPL/">Boost.MPL</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20090411101942/http://ja.doukaku.org/lang/cpp/">
+		C++
+      </a>]
+	  
+      [<a href="/web/20090411101942/http://ja.doukaku.org/comment/7751/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20090411101942/http://ja.doukaku.org/comment/7751/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_7751"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_7751"
+  >0</span><span 
+  class="button green"
+  id="rating_p_7751"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20090411101942/http://ja.doukaku.org/150/reply_to/7751/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+
+
+
+
+
+
+</div>
+
+<div id="side_menu" class="compact">
+
+<iframe src="/web/20090411101942if_/http://ja.doukaku.org/login_info/" frameborder=0 width=100% id="login_info">
+iframe required
+</iframe>
+
+<h4 class="semi_compact">一覧</h4>
+
+<ul>
+<!--<li><a href="/web/20090411101942/http://ja.doukaku.org/user/">ユーザ</a>-->
+<li><a href="/web/20090411101942/http://ja.doukaku.org/lang/">言語</a>
+<li><a href="/web/20090411101942/http://ja.doukaku.org/challenge/">お題</a>
+<li><a href="/web/20090411101942/http://ja.doukaku.org/topic/">トピック</a>
+<li><a href="/web/20090411101942/http://ja.doukaku.org/comment/">投稿</a>
+<li><a href="/web/20090411101942/http://ja.doukaku.org/good_comments/">評価の高い投稿</a>
+<li><a href="/web/20090411101942/http://ja.doukaku.org/tag/">タグ</a>
+</ul>
+
+<h4 class="compact">フィード</h4>
+<ul>
+<li><a href="/web/20090411101942/http://ja.doukaku.org/feeds/challenges/">最新のお題</a><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/feed_icon.png">
+<li><a href="/web/20090411101942/http://ja.doukaku.org/feeds/topics/">最新のトピック</a><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/feed_icon.png">
+<li><a href="/web/20090411101942/http://ja.doukaku.org/feeds/comments/">新着投稿</a><img src="/web/20090411101942im_/http://ja.doukaku.org/static/image/feed_icon.png">
+</ul>
+
+
+
+
+
+
+
+<h4 class="compact">その他</h4>
+<ul>
+<li><a href="/web/20090411101942/http://ja.doukaku.org/qa/">Q&A</a>
+<li><a href="/web/20090411101942/http://ja.doukaku.org/feedback/">フィードバック</a>
+<!--<li><a href="/web/20090411101942/http://ja.doukaku.org/terms">用語集</a>-->
+</ul>
+
+
+<h4 class="compact">リンク</h4>
+<ul>
+<li><a href="/web/20090411101942/http://www.lingr.com/room/doukaku_ja">チャットルーム(Lingr)</a>
+<li><a href="/web/20090411101942/http://labs.cybozu.co.jp/">サイボウズ・ラボ</a>
+<li><a href="/web/20090411101942/http://www.djangoproject.com/">Django</a>
+</ul>
+
+<h4 id="pathtraq" class="compact"><a href="/web/20090411101942/http://pathtraq.com/analytics?url=http%3A%2F%2Fja.doukaku.org%2Fcomment%2F*%2F%20desc%3A%E3%81%A9%E3%81%86%E6%9B%B8%E3%81%8Forg&m=popular">Pathtraq</a></h4>
+<div class="indent">
+<span id="pathtraq_sentinel">loading...</span>
+</div>
+
+
+</div>
+</div>
+
+
+<div id="page_foot" class="bordered">
+
+<a rel="license" href="/web/20090411101942/http://creativecommons.org/licenses/by/2.1/jp/">
+<img alt="Creative Commons License" style="border-width:0" src="/web/20090411101942im_/http://i.creativecommons.org/l/by/2.1/jp/88x31.png" /></a>
+このサイトの内容は、
+<a rel="license" href="/web/20090411101942/http://creativecommons.org/licenses/by/2.1/jp/">クリエイティブ・コモンズ・ライセンス</a>の下でライセンスされています。
+<a href="/web/20090411101942/http://ja.doukaku.org/qa/#licence">[詳細]</a>
+
+</div>
+
+</body>
+
+
+
+
+<script type="text/javascript">
+$(document).ready(function(){$("#doukaku_org").after("<script src='/web/20090411101942/http://api.pathtraq.com/pages?url=http%3A%2F%2Fja.doukaku.org%2Fcomment%2F*%2F%20desc%3A%E3%81%A9%E3%81%86%E6%9B%B8%E3%81%8Forg&api=json&callback=addPathtraq'><" + "/script>")});
+</script>
+
+<script src="/web/20090411101942js_/http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-2136157-1";
+urchinTracker();
+</script>
+
+
+
+
+</html>
+
+
+
+
+
+<!--
+     FILE ARCHIVED ON 10:19:42 Apr 11, 2009 AND RETRIEVED FROM THE
+     INTERNET ARCHIVE ON 13:14:13 Nov 16, 2013.
+     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+     SECTION 108(a)(3)).
+-->

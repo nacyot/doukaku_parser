@@ -1,0 +1,818 @@
+---
+:id: '188'
+:title: クリップボードへの転送
+:comments:
+- :id: '6644'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6644
+  :user_name: mattsan
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/833/
+  :language: 
+  :time: 2008/07/02 19:11 GMT
+  :vote_count: '8'
+  :vote_score: '6'
+  :body: "\r\n\t  \n<p>クリップボード(や同等の機能)へテキストを転送するプログラムをお願いします。\n   また可能でしたらクリップボードのデータを取り出すプログラムもお願いします。\n</p>\n<p>システムに依存する内容ですが、応用範囲が広いと思いましたので出題させてもらいました。\n</p>\n\n\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6680'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6680
+  :user_name: kkobayashi
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2008/07/06 10:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Rでは、ファイル名に\"clipboard\"を指定するとクリップボードへの入出力が可能です。（Windows限定かもしれません）</p>\n\n\t"
+  :code: |
+    &gt; readLines("clipboard")
+    [1] "クリップボード(や同等の機能)へテキストを転送するプログラムをお願いします。 また可能でしたらクリップボードのデータを取り出すプログラムもお願いします。 "
+    [2] ""
+    [3] "システムに依存する内容ですが、応用範囲が広いと思いましたので出題させてもらいました。 "
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6681'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6681
+  :user_name: ocean
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/07/06 11:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  私が使ってるライブラリそのものですが。私はこのコードを ocean/clipboard.py として保存してるので、\r<br><br>import ocean.clipboard as c\r<br>c.get() # クリップボードの中身を取得\r<br>c.set(\"hoge\") # クリップボードに設定\r<br>c.clear() # クリップボードを空にする\r<br><br>として使います。\n\t"
+  :code: |
+    from __future__ import with_statement
+    from contextlib import contextmanager
+    import ctypes
+
+    GMEM_DDESHARE = 0x2000
+    GMEM_MOVEABLE = 0x0002
+    CF_TEXT = 1
+
+    user32 = ctypes.windll.user32
+    kernel32 = ctypes.windll.kernel32
+
+    @contextmanager
+    def _GlobalLock(h):
+        p = kernel32.GlobalLock(h)
+        if not p:
+            raise WindowsError("GlobalLock() failed")
+        try:
+            yield p
+        finally:
+            kernel32.GlobalUnlock(h)
+
+    @contextmanager
+    def _Clipboard():
+        if not user32.OpenClipboard(None):
+            raise WindowsError("OpenClipboard() failed")
+        try:
+            yield
+        finally:
+            user32.CloseClipboard()
+
+    def set(s):
+        s = s.encode("mbcs")
+        # memory block
+        h = kernel32.GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE, len(s) + 1)
+        if not h:
+            raise WindowsError("GlobalAlloc() failed")
+        try:
+            with _GlobalLock(h) as p:
+                p = (ctypes.c_char * (len(s) + 1)).from_address(p)
+                for i, c in enumerate(s + "\0"):
+                    p[i] = c
+            # clipboard
+            with _Clipboard():
+                user32.EmptyClipboard()
+                user32.SetClipboardData(CF_TEXT, h)
+        except:
+            kernel32.GlobalFree(h)
+            raise
+
+    def get():
+        with _Clipboard():
+            h = user32.GetClipboardData(CF_TEXT)
+            if h:
+                with _GlobalLock(h) as p:
+                    return ctypes.c_char_p(p).value.decode("mbcs")
+
+    def clear():
+        with _Clipboard():
+            user32.EmptyClipboard()
+  :tags:
+  - Python2.5
+  - Windows
+  :references:
+    :url: 
+    :title: 
+- :id: '6682'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6682
+  :user_name: turugina
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/760/
+  :language: Perl
+  :time: 2008/07/06 11:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  そのものずばりのCPANモジュール Clipboardを使って。\n\t"
+  :code: |
+    use strict;
+    use Clipboard;
+    # クリップボードに転送
+    Clipboard-&gt;copy('foo');
+    # クリップボードから取り出し
+    print Clipboard-&gt;paste;
+  :tags:
+  - CPAN
+  :references:
+    :url: /web/20081011222236/http://search.cpan.org/~king/Clipboard-0.09/lib/Clipboard.pm
+    :title: Clipboard
+- :id: '6683'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6683
+  :user_name: ocean
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/177/
+  :language: diff
+  :time: 2008/07/06 12:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ちょっと簡略化。</p>\n\n\t"
+  :code: |
+    --- clipboard.py    Mon Feb 11 19:47:02 2008
+    +++ clipboard.py    Mon Jul  7 02:51:50 2008
+    @@ -37,9 +37,7 @@
+             raise WindowsError("GlobalAlloc() failed")
+         try:
+             with _GlobalLock(h) as p:
+    -            p = (ctypes.c_char * (len(s) + 1)).from_address(p)
+    -            for i, c in enumerate(s + "\0"):
+    -                p[i] = c
+    +            (ctypes.c_char * (len(s) + 1)).from_address(p).value = s
+             # clipboard
+             with _Clipboard():
+                 user32.EmptyClipboard()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6684'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6684
+  :user_name: しらたま
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/607/
+  :language: 
+  :time: 2008/07/06 13:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>なでしこでは、変数「クリップボード」でクリップボードの読み書きが出来ます。\r</p>\n<p>また、命令としても、クリップボードからの取り出しには「クリップボード取得」、転送には「コピー」が使用できます。</p>\n</div>\n\t"
+  :code: |
+    クリップボードは「変数経由」
+    クリップボード取得して表示
+
+    「命令経由」をコピー
+    クリップボードを表示
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6685'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6685
+  :user_name: syat
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/766/
+  :language: Other
+  :time: 2008/07/06 17:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  サクラエディタはJScriptやVBScriptで書いたマクロを使えるんだぜ、というアピール。\r<br>\"hoge.js\" などの名前で保存し、「ツール」の「キーマクロの読み込み」でキーマクロに設定したのち、Ctrl + Shift + L で実行します。\n\t"
+  :code: |
+    Editor.SelectAll();
+    Editor.Copy();
+    for (var i=0; i&lt;3; i++) {
+      Editor.GoFileEnd();
+      Editor.Paste();
+    }
+  :tags:
+  - サクラエディタマクロ
+  :references:
+    :url: /web/20081011222236/http://www.geocities.jp/maru3128/SakuraMacro/
+    :title: サクラエディタマクロ
+- :id: '6686'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6686
+  :user_name: anekos
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/170/
+  :language: Ruby
+  :time: 2008/07/06 18:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>標準入力或いは、指定のファイルからクリップボードに転送します。\n'-show' をつけるとクリップボードのテキストを表示</p>\n\n\t"
+  :code: |
+    require 'win32/clipboard'
+    include Win32
+
+    if ARGV.include?('-show')
+      print Clipboard.get_data
+    else
+      Clipboard.set_data(ARGF.read)
+    end
+  :tags:
+  - Windows
+  :references:
+    :url: 
+    :title: 
+- :id: '6687'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6687
+  :user_name: anekos
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/170/
+  :language: JavaScript
+  :time: 2008/07/06 18:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>\"hogehoge\" をクリップボードに転送。\nFirefox3で確認。</p>\n\n\t"
+  :code: |
+    function copyToClipboard (copytext) {
+      const supstr = Components.classes["@mozilla.org/supports-string;1"].
+                       createInstance(Components.interfaces.nsISupportsString);
+      const transferable = Components.classes["@mozilla.org/widget/transferable;1"].
+                      createInstance(Components.interfaces.nsITransferable);
+      const iClipboard = Components.interfaces.nsIClipboard;
+      const clipboard = Components.classes["@mozilla.org/widget/clipboard;1"].getService(iClipboard);
+
+      supstr.data = copytext;
+
+      transferable.addDataFlavor("text/unicode");
+      transferable.setTransferData("text/unicode", supstr, copytext.length * 2);
+
+      return clipboard.setData(transferable, null, iClipboard.kGlobalClipboard);
+    }
+
+    copyToClipboard('hogehoge');
+  :tags:
+  - XPCOM
+  :references:
+    :url: 
+    :title: 
+- :id: '6688'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6688
+  :user_name: horiuchi
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/07/06 19:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>とりあえず、文字列の場合は以下の通り。\nその他、画像やJavaのシリアライズしたオブジェクトなど、さまざまなデータを送れます。</p>\n\n\t"
+  :code: |
+    import java.awt.Toolkit;
+    import java.awt.datatransfer.Clipboard;
+    import java.awt.datatransfer.DataFlavor;
+    import java.awt.datatransfer.StringSelection;
+
+    public class Sample188 {
+        public static void main(String[] args) {
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+            // クリップボードにデータを設定
+            StringSelection setData = new StringSelection("クリップボードにコピーされる。");
+            clipboard.setContents(setData, setData);
+
+            // クリップボードからデータを取得
+            try {
+                String str = (String) clipboard.getData(DataFlavor.stringFlavor);
+                System.out.println(str);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: /web/20081011222236/http://java.sun.com/javase/ja/6/docs/ja/api/java/awt/datatransfer/DataFlavor.html
+    :title: クリップボード経由でやりとりできる型の詳細
+- :id: '6690'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6690
+  :user_name: sumim
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/07/06 21:45 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    Clipboard clipboardText: 'クリップボードへ'.
+    Clipboard clipboardText  "クリップボードから"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '6692'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6692
+  :user_name: genzou
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/07/06 22:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">クラス化してみました。\r\n\r\n【使い方】\r\nclip = new ClipBoard()\r\n//
+    中身を表示\r\nprintln clip.text\r\n// セット\r\nclip.text = \"新しい内容\"</pre>\n\t"
+  :code: "import java.awt.Toolkit\nimport java.awt.datatransfer.Clipboard\nimport
+    java.awt.datatransfer.DataFlavor\nimport java.awt.datatransfer.StringSelection\nimport
+    java.awt.datatransfer.Transferable\n\npublic class ClipBoard {\n    def clipboard
+    = Toolkit.getDefaultToolkit().getSystemClipboard()\n    \n    public void setText(sendStr)
+    {\n\n        def ss = new StringSelection(sendStr)\n        clipboard.setContents(ss,
+    ss)\n    }\n\n    public getText() {\n\n        Transferable recive = clipboard.getContents(null)\n\n
+    \       def recieveStr = null\n\n        try {\n            recieveStr = (String)
+    recive.getTransferData(DataFlavor.stringFlavor)\n        } catch (Exception e)
+    {\n            recieveStr = \"\"\n        }\n        return recieveStr\n    }\n}\n"
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '6694'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6694
+  :user_name: baal
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/827/
+  :language: Scheme
+  :time: 2008/07/06 23:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">MIT/GNU Scheme で書きました。\r\n残念ながら Scheme 処理系に共通したクリップボード読み書きの方法はありません。\r\n</pre>\n\t"
+  :code: |
+    ;; クリップボードへ書き込み (※ str は文字列)
+    (win32-clipboard-write-text str)
+    ;; クリップボードから読み込み
+    (win32-clipboard-read-text)
+  :tags:
+  - MIT/GNU-Scheme
+  :references:
+    :url: 
+    :title: 
+- :id: '6695'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6695
+  :user_name: mc
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/07/07 06:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  X window上でMacOSXのpbpaste/pbcopyのような動作を実現できるxclipを使ってみました。\r<br>今回の例では、中ボタンでのペーストではなくCTR+V系にしました。\r<br>コマンド呼び出しのライブラリには、KMRCLを利用しています。\r<br>ちなみに、日本語の文字化け問題には対応していません…。\r<br><br>動作:\r<br>(pbcopy \"foo\")\r<br>; クリップボードへ\r<br><br>(pbpaste) \r<br>;=&gt; foo\n\t"
+  :code: |
+    (defun pbcopy (string)
+      (declare (string string))
+      (kmrcl:run-shell-command
+       "echo ~A|xclip -selection clipboard" string))
+
+    (defun pbpaste ()
+      (values
+       (kmrcl:command-output
+        "~A" "xclip -selection clipboard -o")))
+  :tags:
+  - kmrcl
+  - unix
+  :references:
+    :url: /web/20081011222236/http://kyanny.nowa.jp/entry/6097dc5aa7
+    :title: xclip を使って pbcopy/pbpaste っぽいコマンドを再現する
+- :id: '6696'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6696
+  :user_name: tsuwabuki
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/479/
+  :language: Haskell
+  :time: 2008/07/07 11:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Windows用です。</p>\n\n\t"
+  :code: |
+    import Graphics.Win32.GDI.Clip
+    import Foreign.Ptr
+    import Foreign.C.String
+
+    main = do { openClipboard nullPtr
+              ; b &lt;- isClipboardFormatAvailable cF_TEXT
+              ; if b
+                then do { p &lt;- getClipboardData cF_TEXT
+                        ; s &lt;- peekCString (castPtr p)
+                        ; putStrLn s
+                        }
+                else return ()
+              ; closeClipboard
+              }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6699'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6699
+  :user_name: ika
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2008/07/07 12:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>生憎、今のところそのような便利ライブラリはなさそうなので生のWin32APIを使わざるを得ません。</p>\n\n\t"
+  :code: "module win32.clipboard;\nprivate import std.c.windows.windows;\nprivate
+    import std.contracts, std.conv;\n\nexport extern(Windows) {\n    HGLOBAL GlobalAlloc(UINT
+    uFlags, DWORD dwBytes);\n    HGLOBAL GlobalFree(HGLOBAL hMem);\n    LPVOID GlobalLock(HGLOBAL
+    hMem);\n    BOOL GlobalUnlock(HGLOBAL hMem);\n    enum UINT GMEM_MOVEABLE = 2;\n
+    \   \n    BOOL CloseClipboard();\n    BOOL EmptyClipboard();\n    UINT EnumClipboardFormats(UINT
+    format);\n    HANDLE GetClipboardData(UINT uFormat);\n    BOOL OpenClipboard(HWND
+    hWndNewOwner);\n    HANDLE SetClipboardData(UINT uFormat, HANDLE hMem);\n    \n
+    \   enum UINT CF_UNICODETEXT = 13;\n}\n\npublic static class Clipboard {    \n
+    \   static void setText(string text) {\n        enforce(OpenClipboard(null));\n
+    \       scope(exit) CloseClipboard();\n        \n        auto wtext = to!(wstring)(text);\n
+    \       auto data = enforce(GlobalAlloc(GMEM_MOVEABLE, wchar.sizeof * (wtext.length
+    + 1)));\n        scope(failure) GlobalFree(data);\n        \n        {\n            auto
+    pdata = cast(wchar*)GlobalLock(data);\n            scope(exit) GlobalUnlock(data);\n
+    \           \n            pdata[0..wtext.length] = wtext;\n            pdata[wtext.length]
+    = '\\0';\n        }\n        \n        enforce(EmptyClipboard());\n        enforce(SetClipboardData(CF_UNICODETEXT,
+    data));\n    }\n    \n    static string getText() {\n        enforce(OpenClipboard(null));\n
+    \       scope(exit) CloseClipboard();\n        \n        auto data = GetClipboardData(CF_UNICODETEXT);\n
+    \       if(!data) return null;\n        \n        auto pdata = cast(const(wchar)*)GlobalLock(data);\n
+    \       auto wtext = pdata[0..strlen(pdata)];\n        GlobalUnlock(data);\n        \n
+    \       return to!(string)(wtext);\n    }\n}\n\nprivate uint strlen(const(wchar)*
+    s) {\n    uint len;\n    while(*s++) len++;\n    return len;\n}\n\ndebug(Clipboard)
+    {\nimport std.stdio;\n\nvoid main() {\n    Clipboard.setText(\"test テスト\");\n
+    \   writeln(Clipboard.getText);\n}\n\n}\n"
+  :tags:
+  - Windows
+  :references:
+    :url: 
+    :title: 
+- :id: '6700'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6700
+  :user_name: ika
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/654/
+  :language: 
+  :time: 2008/07/07 12:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>すみません。\n不注意で関係のないところへぶら下げてしまいました。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6701'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6701
+  :user_name: あにす
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/07/07 18:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    using System;
+
+    class Program {
+        [STAThread]//クリップボードを利用する場合に必須の属性です。
+        static void Main(string[] args) {
+            Console.Write("クリップボードのセットする文字列を入力して下さい。:");
+            string setStr = Console.ReadLine();//セットする文字列を入力
+
+            System.Windows.Forms.Clipboard.SetText(setStr);//クリップボードにセット
+
+            string getStr = System.Windows.Forms.Clipboard.GetText();//クリップボードから文字列を取得
+
+            Console.WriteLine("クリップボードの内容は\n\n{0}\n\nです。", getStr);
+            Console.ReadLine();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6705'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6705
+  :user_name: Otter
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2008/07/08 01:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>こちらは、クリップボードへテキストを乗っけるコードです…標準入力とファイルに対応しています…</p>\n<p>System.Win32.Mem.globalUnlockってエラーハンドリングにバグがあるようなのでc_GlobalUnlockを使っています…</p>\n\n\t"
+  :code: "module Main where\n\nimport Control.Monad\nimport Foreign.Ptr\nimport Foreign.Storable\nimport
+    Graphics.Win32.GDI.Types\nimport Graphics.Win32.GDI.Clip\nimport Data.Word\nimport
+    System\nimport System.IO\nimport System.Win32.Types\nimport System.Win32.Mem\n\nwhen_
+    f m = when f (m &gt;&gt; return ())\n\nwithGlobalAlloc :: GlobalAllocFlags -&gt;
+    DWORD -&gt; (HGLOBAL -&gt; IO (HGLOBAL, a) ) -&gt; IO a\nwithGlobalAlloc fl cb
+    f = do\n    h &lt;- globalAlloc fl cb\n    (h', ret) &lt;- f h\n    when_ (h'
+    /= nullHANDLE) $ globalFree h\n    return ret\n    \nwithGlobalLock :: HGLOBAL
+    -&gt; (Addr -&gt; IO a) -&gt; IO a\nwithGlobalLock h f = do\n    addr &lt;- globalLock
+    h\n    ret &lt;- f addr\n    c_GlobalUnlock h\n    return ret\n    \nwithClipboard
+    :: HWND -&gt; (IO b) -&gt; IO b\nwithClipboard hwnd fn = do\n    openClipboard
+    hwnd\n    ret &lt;- fn\n    closeClipboard\n    return ret\n    \npublishToClipboard
+    :: HGLOBAL -&gt; IO (HGLOBAL, ())\npublishToClipboard h = withClipboard nullHANDLE
+    (setData h)\n    where\n        setData h = do\n            h' &lt;- catch (c_SetClipboardData
+    cF_TEXT h) (\\_ -&gt; return nullHANDLE)\n            return (if h' == nullHANDLE
+    then h else nullHANDLE, ())\n            \ncopyStr :: String -&gt; Addr -&gt;
+    IO ()\ncopyStr str pv = zipWithM_ (pokeByteOff pch) [0..] $ str\n    where\n        pch
+    = castPtr pv :: Ptr Word8\n\nsetTextToClipboard str =  withGlobalAlloc gMEM_MOVEABLE
+    (fromIntegral $ length str) $ _setTextToClipboard str\n    where\n        _setTextToClipboard
+    :: String -&gt; HGLOBAL -&gt; IO (HGLOBAL, ())\n        _setTextToClipboard str
+    h = do\n            withGlobalLock h (copyStr str)\n            publishToClipboard
+    h\n\nmain = do\n    args &lt;- liftM (take 1) $ getArgs &gt;&gt;= mapM (\\path
+    -&gt; openFile path ReadMode)\n    str &lt;- hGetContents $ head $ args ++ [stdin]\n
+    \   setTextToClipboard str\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6710'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6710
+  :user_name: 99yen
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2008/07/09 04:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  なでしこでは「コピー」でクリップボードにコピー、「クリップボード取得」でクリップボードを取得できます。\n\t"
+  :code: |
+    # クリップボードにコピー
+    「Hello World」をコピー
+    # クリップボードから取得
+    クリップボード取得して表示
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6711'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6711
+  :user_name: 匿名
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/4/
+  :language: Tcl
+  :time: 2008/07/09 09:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Tkのclipboardコマンドで実現できます。</p>\n\n\t"
+  :code: |
+    package require Tk
+    clipboard clear
+    clipboard append "テキスト"; # 転送
+    clipboard get; # 取得
+    #=&gt; テキスト
+  :tags:
+  - clipboard
+  :references:
+    :url: /web/20081011222236/http://tcl.tk/man/tcl8.5/TkCmd/clipboard.htm
+    :title: clipboard manual page - Tk Built-In Commands
+- :id: '6721'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6721
+  :user_name: pooq
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/606/
+  :language: J
+  :time: 2008/07/11 23:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">windows用のGUI版の場合です。コンソール版では\r\n「wd」が再定義されていてうまくいきません。\r\n\r\n
+    \  clipcopy 'test test test'\r\n   clippaste ''\r\ntest test test\r\n</pre>\n\t"
+  :code: |
+    clipcopy=:3 :0
+      wd 'clipcopy "',y,'"'
+    )
+    clippaste=:3 :0
+      wd 'clippaste'
+    )
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6723'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6723
+  :user_name: shimakuma
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/343/
+  :language: Common
+  :time: 2008/07/12 13:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  clisp扱いでいいのかな？\n\t"
+  :code: |
+    (copy-to-clipboard "hoge") ;転送
+    (get-clipboard-data) ;取得
+  :tags:
+  - xyzzy
+  :references:
+    :url: /web/20081011222236/http://xyzzy.s53.xrea.com/wiki/
+    :title: xyzzy wiki
+- :id: '6724'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6724
+  :user_name: nori
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/59/
+  :language: Python
+  :time: 2008/07/13 10:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">wxPythonのClipboard機能を試してみました。\r\nプラットフォームに依存しないのがウリです。\r\nwindows
+    xp, Centos5.1 gnome, Mac OS X Leopardで動作を確認しました。\r\n\r\nらくちんすぎます。\r\n\r\nコメント:\r\nコードは、リンク先にあるwxpython.orgのコードを動くようにしただけです。\r\n\r\n解説:\r\n実行するとロードが跳ね上がります。\r\nidle
+    eventをhandleしてそこでTheClipboardの\r\n内容をtext ctrlに貼り付けるだけ。\r\n次のidle eventが処理されるので一瞬に\r\nして消えます。\r\n</pre>\n\t"
+  :code: |
+    import wx
+
+    class MyFrame(wx.Frame):
+      def __init__(self, parent, ID, title):
+        wx.Frame.__init__(self, parent, ID, title, wx.DefaultPosition, wx.Size(200, 150))
+        self.text = wx.TextCtrl(self, -1, "", style=wx.TE_MULTILINE|wx.HSCROLL)
+        wx.EVT_IDLE(self,self.Paste)
+
+      def Paste(self, evt):
+        do = wx.TextDataObject()
+        success = str(wx.TheClipboard)
+        if success:
+          self.text.SetValue(do.GetText())
+        else:
+          self.text.SetValue("There is no data in the clipboard in the required format")
+
+    class MyApp(wx.App):
+      def OnInit(self):
+        frame = MyFrame(None, -1, "Hello from wxPython")
+        frame.Show(True)
+        self.SetTopWindow(frame)
+        return True
+
+    app = MyApp(0)
+    app.MainLoop()
+  :tags: []
+  :references:
+    :url: /web/20081011222236/http://wiki.wxpython.org/ClipBoard
+    :title: ''
+- :id: '6785'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/6785
+  :user_name: mattsan
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/833/
+  :language: Delphi
+  :time: 2008/07/21 20:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>クリップボードの扱いを最初に覚えたDelphiで。</p>\n\n\t"
+  :code: |
+    program doukaku188;
+
+    {$APPTYPE CONSOLE}
+
+    uses
+      ClipBrd;
+
+    var
+      S: String;
+    begin
+      Clipboard.AsText := 'テキスト'; { copy  }
+      S := Clipboard.AsText;          { paste }
+      WriteLn(S);
+    end.
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7065'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/7065
+  :user_name: lunlumo
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/813/
+  :language: Scala
+  :time: 2008/08/08 11:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>Javaと同じ処理になりますが...。</p>\n</div>\n\t"
+  :code: "import    java.awt.BorderLayout\nimport    java.awt.Container\nimport    java.awt.Dimension\nimport
+    \   java.awt.FlowLayout\nimport    java.awt.Toolkit\nimport    java.awt.datatransfer.Clipboard\nimport
+    \   java.awt.datatransfer.DataFlavor\nimport    java.awt.datatransfer.StringSelection\nimport
+    \   java.awt.event.ActionEvent\nimport    java.awt.event.ActionListener\nimport
+    \   javax.swing.JButton\nimport    javax.swing.JFrame\nimport    javax.swing.JMenu\nimport
+    \   javax.swing.JMenuBar\nimport    javax.swing.JMenuItem\nimport    javax.swing.JPanel\nimport
+    \   javax.swing.JTextArea\n\nclass SButton(l:String,c:ActionEvent=&gt;Unit) extends
+    JButton with ActionListener {\n    \n    setText(l)\n    addActionListener(this)\n
+    \   \n    override def actionPerformed(e:ActionEvent) = c(e)\n}\n\nclass SMenuItem(l:String,c:ActionEvent=&gt;Unit)
+    extends JMenuItem with ActionListener {\n    \n    setText(l)\n    addActionListener(this)\n
+    \   \n    override def actionPerformed(e:ActionEvent) = c(e)\n}\n\nclass ClipboardFrame(title:String)
+    extends JFrame {\n    \n    val    mb:JMenuBar = new JMenuBar\n    val    fm:JMenu
+    = new JMenu(\"file\")\n    val    em:JMenu = new JMenu(\"edit\")\n    val    c:Container
+    = getContentPane\n    val    t:JTextArea = new JTextArea(20,40);\n    val    p:JPanel
+    = new JPanel;\n    val    clipboard:Clipboard = Toolkit.getDefaultToolkit.getSystemClipboard;\n
+    \   \n    c.setLayout(new BorderLayout)\n    c.add(t,BorderLayout.CENTER)\n    \n
+    \   p.setLayout(new FlowLayout)\n    p.add(new SButton(\"copy\",copy))\n    p.add(new
+    SButton(\"paste\",paste))\n    c.add(p,BorderLayout.SOUTH)\n    \n    fm.add(new
+    SMenuItem(\"quit\",quit))\n    mb.add(fm)\n    em.add(new SMenuItem(\"copy\",copy))\n
+    \   em.add(new SMenuItem(\"paste\",paste))\n    mb.add(em)\n    setJMenuBar(mb)\n
+    \   \n    setResizable(false)\n    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)\n
+    \   setTitle(title)\n    \n    pack\n    \n    def this() = this(\"clipboad\")\n
+    \   \n    def quit(e:ActionEvent):Unit = {\n        System.exit(0)\n    }\n    \n
+    \   def copy(e:ActionEvent):Unit = {\n        val    s:StringSelection = new StringSelection(t.getSelectedText);\n
+    \       clipboard.setContents(s,s);\n    }\n    \n    def paste(e:ActionEvent):Unit
+    = {\n        t.replaceSelection(clipboard.getData(DataFlavor.stringFlavor).asInstanceOf[String])\n
+    \   }\n}\n\nobject Main extends Application {\n    (new ClipboardFrame).setVisible(true)\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7133'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/7133
+  :user_name: りんごちゃん
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/882/
+  :language: Other
+  :time: 2008/08/16 06:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Mac OS Xには\npbcopy, pbpasteの名前でシェルから\nクリップポードを操作するコマンドが\n存在します。</p>\n\n\t"
+  :code: "#!/usr/bin/env ruby -wKU\n\nif (ARGV.length != 1)\n  print \"Usage: handle_pb
+    [-show] text\\n\"\nend\n\nif ARGV.include?('-show') \n  \n  print %x{ pbpaste
+    }\nelse\n  ENV['PB_COPY_TEXT'] = ARGV[0]\n  \n  # デフォルトではpbcopyは日本語の場合Shift-JISしか扱えない\n
+    \ %x{ echo $PB_COPY_TEXT | nkf -s | pbcopy } \nend\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7134'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/7134
+  :user_name: りんごちゃん
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/882/
+  :language: Ruby
+  :time: 2008/08/16 11:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Mac OS Xには pbcopy, pbpasteの名前でシェルからクリップポードを操作するコマンドが存在します。（デフォルトではpbcopy,pbpasteは日本語の場合Shift-JISしか扱えないそうです）</p>\n\n\t"
+  :code: "#!/usr/bin/env ruby -wKU\n\nif (ARGV.length != 1)\n  print \"Usage: handle_pb
+    [-show] text\\n\"\nend\n\nif ARGV[0] == '-show'\n  \n  print %x{ pbpaste | nkf
+    -w }\nelse\n  ENV['PB_COPY_TEXT'] = ARGV[0]\n  \n  # デフォルトではpbcopyは日本語の場合Shift-JISしか扱えない\n
+    \ %x{ echo $PB_COPY_TEXT | nkf -s | pbcopy } \nend\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7136'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/7136
+  :user_name: りんごちゃん
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/882/
+  :language: 
+  :time: 2008/08/16 13:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>#!/usr/bin/ruby -wKSでnkfは取り除けました。\n勘違いです。すいません。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7137'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/7137
+  :user_name: りんごちゃん
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/882/
+  :language: 
+  :time: 2008/08/16 08:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>#!/usr/bin/ruby -wKSでnkfは取り除けました。\n勘違いです。すいません。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7587'
+  :parent_id: '188'
+  :url: http://ja.doukaku.org/comment/7587
+  :user_name: 匿名
+  :user_url: /web/20081011222236/http://ja.doukaku.org/user/4/
+  :language: HSP
+  :time: 2008/09/07 07:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  HSP2.xxでは動かない…かもしれません。\n\t"
+  :code: |
+    #include "hspext.as"
+    clipset "テスト"
+    sdim clip,3
+    clipget clip
+    mes clip
+  :tags: []
+  :references:
+    :url: 
+    :title: 

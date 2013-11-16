@@ -1,0 +1,1099 @@
+---
+:id: '24'
+:title: 日本語メールのエンコード
+:comments:
+- :id: '3380'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/3380
+  :user_name: 沢渡 みかげ
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/101/
+  :language: 
+  :time: 2007/07/18 21:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  UTF-8で書かれたテンプレートに，任意の文字列を差し込んだ文書を，ISO-2022-JPのテキストメール形式にエンコードしてください．\r\nDateヘッダ，Message-IDヘッダなどはプログラム側で適切に追加するものとします．\r\n<p>\r\n----テンプレート----\r\n</p>\n<pre
+    class=\"box\">\r\nFrom: [[from]]\r\nTo: [[to]]\r\nSubject: [[name]]さんにメッセージが届いています\r\n\r\n[[name]]さんに[[fromname]]さんからメッセージが届いています。\r\n以下のURLからアクセスできます。\r\n[[url]]\r\n</pre>\r\n----テンプレート----\r\n<p>\r\n----差し込みデータ----\r\n</p>\n<pre
+    class=\"box\">\r\nfrom =&gt; 'from@example.org',\r\nto =&gt; 'to@example.org',\r\nname
+    =&gt; 'どう書く',\r\nfromname =&gt; '管理者',\r\nurl =&gt; 'http://ja.doukaku.org/',\r\n</pre>\r\n----差し込みデータ----\r\n<p>\r\n----出力----\r\n</p>\n<pre
+    class=\"box\">\r\nFrom: from@example.org\r\nTo: to@example.org\r\nSubject: =?ISO-2022-JP?B?GyRCJEkkJj1xJC8kNSRzJEslYSVDJTshPCU4JCxGTyQkJEYkJCReJDkbKEI=?=\r\nDate:
+    Fri, 13 Jul 2007 22:27:32 +0900\r\nMessage-ID: &lt;0.1184333252.27836.123@example.org&gt;\r\nMIME-Version:
+    1.0\r\nContent-Type: text/plain; charset=\"ISO-2022-JP\"\r\nContent-Transfer-Encoding:
+    7bit\r\n\r\nどう書くさんに管理者さんからメッセージが届いています。\r\n以下のURLからアクセスできます。\r\nhttp://ja.doukaku.org/\r\n</pre>\r\n----出力----\r\n\r\n<p>\r\n※実際の上記出力の日本語部分の文字コードはISO-2022-JPです．\r\n</p>\n<p>\r\n差し込みタグの形式は[[名称]]でなくてもかまいません．\r\n</p>\n<p>\r\n言語標準以外のライブラリを使った場合，それをタグに書いてください．\r\n</p>\n<p>\r\nこのお題は沢渡みかげさんの投稿を元にHTMLタグなどを付加したものです。\r\nサンプル入出力までそろった投稿で非常に助かりました。ありがとうございます。\r\n</p>\n<p>\r\n追記：補足があったのでこちらもご覧ください。\r\n<a
+    href=\"/web/20090523155028/http://ja.doukaku.org/comment/1100/\">出題の意図</a>(埋もれないように)\r\n\t</p>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1083'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1083
+  :user_name: rubikitch
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/105/
+  :language: Ruby
+  :time: 2007/07/18 22:10 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">nkfが勝手にmime decodeしやがるのでてっきりTMailがmime encodeしてないのかと勘違いしてしまった＞＜\r\nデータは扱いやすい形式にしました。\r\n\r\n$
+    cat 24.template\r\nFrom: [[from]]\r\nTo: [[to]]\r\nSubject: [[name]]さんにメッセージが届いています\r\n\r\n[[name]]さんに[[fromname]]さんからメッセージが届いています。\r\n以下のURLからアクセスできます。\r\n[[url]]\r\n$
+    cat 24.dat\r\n{\r\n'from' =&gt; 'from@example.org',\r\n'to' =&gt; 'to@example.org',\r\n'name'
+    =&gt; 'どう書く',\r\n'fromname' =&gt; '管理者',\r\n'url' =&gt; 'http://ja.doukaku.org/',\r\n}\r\n</pre>\n\t"
+  :code: |
+    require 'tmail'
+    require 'kconv'
+
+    $KCODE='u'
+    def fill_template(template, keyword)
+      template.gsub(/\[\[(.+?)\]\]/) {
+        keyword[$1]
+      }.tojis
+    end
+
+    def create_mail(mail_string)
+      m = TMail::Mail.parse(mail_string)
+      m.message_id = "&lt;0.1184333252.27836.123@example.org&gt;"
+      m.mime_version = "1.0"
+      m.set_content_type( "text", "plain", {"charset" =&gt; "ISO-2022-JP"})
+      m.transfer_encoding = "7bit"
+      m.date = Time.now
+      m
+    end
+
+    mail = create_mail(fill_template(File.read("24.template"), eval(File.read("24.dat"))))
+    mail.encoded("\n", "j", $&gt;)
+  :tags:
+  - TMail
+  :references:
+    :url: 
+    :title: 
+- :id: '1086'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1086
+  :user_name: ocean
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/07/18 23:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  メールの仕様に詳しくないので、あまり自信がないですが。（emailパッケージも今回はじめて使いました）\n\t"
+  :code: |
+    import email.mime.text
+    import email.header
+    import email.utils
+    import codecs
+    import re
+
+    def read():
+        insertion = dict(re.search(r"(\S+)\s*=&gt;\s*'(\S+)'", line).groups() \
+            for line in codecs.open("insert.txt", "r", "utf-8"))
+        def insert(line):
+            return re.sub(r'\[\[(.+?)\]\]', lambda m: insertion[m.group(1)], line)
+
+        headers, content = [], None
+        for line in codecs.open("template.txt", "r", "utf-8"):
+            line = insert(line)
+            if content is None: # still header part
+                line = line.strip()
+                if line:
+                    headers.append(re.search('(.+?)\s*:\s*(.+)', line).groups())
+                else:
+                    content = []
+            else:
+                content.append(line)
+        return headers, "".join(content)
+
+    def main():
+        headers, content = read()
+        charset = "ISO-2022-JP"
+        m = email.mime.text.MIMEText(content.encode(charset), "plain", charset)
+        for name, value in headers:
+            m[name] = email.header.Header(value, charset)
+        m["Message-ID"] = email.utils.make_msgid()
+        m["Date"] = email.utils.formatdate(localtime=True)
+        print m.as_string()
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1091'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1091
+  :user_name: cats
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/07/19 03:05 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  きちんとしてないですが、\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using System.Text.RegularExpressions;
+    class Program
+    {
+      static void Main()
+      {
+        string テンプレート = @"From: [[from]]
+    To: [[to]]
+    Subject: [[name]]さんにメッセージが届いています
+    [[header]]
+    [[name]]さんに[[fromname]]さんからメッセージが届いています。
+    以下のURLからアクセスできます。
+    [[url]]";
+        string 差し込みデータ = @"from =&gt; 'from@example.org',to =&gt; 'to@example.org',name =&gt; 'どう書く',fromname =&gt; '管理者',url =&gt; 'http://ja.doukaku.org/'";
+        string 出力 = @"From: from@example.org
+    To: to@example.org
+    Subject: =?ISO-2022-JP?B?GyRCJEkkJj1xJC8kNSRzJEslYSVDJTshPCU4JCxGTyQkJEYkJCReJDkbKEI=?=
+    Date: Fri, 13 Jul 2007 22:27:32 +0900
+    Message-ID: &lt;0.1184333252.27836.123@example.org&gt;
+    MIME-Version: 1.0
+    Content-Type: text/plain; charset='ISO-2022-JP'
+    Content-Transfer-Encoding: 7bit
+
+    どう書くさんに管理者さんからメッセージが届いています。
+    以下のURLからアクセスできます。
+    http://ja.doukaku.org/";
+        Dictionary&lt;string, string&gt; dic = new Dictionary&lt;string, string&gt;();
+        foreach (string s in 差し込みデータ.Split(','))
+        {
+          string[] ss = s.Replace(" =&gt; ", "#").Split('#');
+          dic[ss[0]] = ss[1].Trim('\'');
+        }
+        dic["header"] = @"Date: Fri, 13 Jul 2007 22:27:32 +0900
+    Message-ID: &lt;0.1184333252.27836.123@example.org&gt;
+    MIME-Version: 1.0
+    Content-Type: text/plain; charset='ISO-2022-JP'
+    Content-Transfer-Encoding: 7bit
+    ";
+        string result = Regex.Replace(テンプレート, @"\[\[(.+?)\]\]", delegate(Match m)
+        {
+          return dic[m.Groups[1].Value];
+        });
+        result = Regex.Replace(result, "Subject: (.+)", delegate(Match m)
+        {
+          return "Subject: =?ISO-2022-JP?B?" + Convert.ToBase64String(Encoding.GetEncoding("iso-2022-jp").GetBytes(
+            m.Groups[1].Value.Replace("\r", ""))) + "?=\r";
+        });
+        Console.WriteLine(result == 出力);
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1093'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1093
+  :user_name: sumim
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/07/19 08:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Squeak Smalltalk で。\r\n\r\nテンプレートは指定のままですが、差し込みデータは\r\nSmalltalk
+    のコードとして意味を持つよう変更しました。\r\n\r\n----差し込みデータ (data.txt)----\r\n{\r\n   #from -&gt;
+    'from@example.org'.\r\n   #to -&gt; 'to@example.org'.\r\n   #name -&gt; 'どう書く'.\r\n
+    \  #fromname -&gt; '管理者'.\r\n   #url -&gt; 'http://ja.doukaku.org/'\r\n}\r\n----差し込みデータ
+    (data.txt) ----</pre>\n\t"
+  :code: "| template data tempArray fields elems mail encoding out tempFile dataFile
+    |\n\nfields := #(from to name fromname url).\n\ntempFile := FileStream fileNamed:
+    'template.txt'.\ntemplate := tempFile contents.\ntempFile close.\n\ndataFile :=
+    FileStream fileNamed: 'data.txt'.\ndata := (Compiler evaluate: dataFile contents)
+    as: Dictionary.\n\ntempArray := template findBetweenSubStrs: #('[[' ']]').\nfields
+    doWithIndex: [:fieldName :idx | \n   tempArray replaceAll: fieldName with: '{',
+    idx printString, '}'].\ntemplate := tempArray inject: '' into: [:result :each
+    | result, each].\nelems := fields collect: [:field | data at: field].\n\nencoding
+    := 'iso-2022-jp'.\nmail := MailMessage from: (template format: elems).\nmail setField:
+    'Message-ID' toString: ('&lt;{1}.{2}@{3}&gt;' format: {DateAndTime now asSeconds.
+    mail hash. mail from copyAfter: $@}).\nmail setField: 'MIME-Version' toString:
+    '1.0'.\nmail setField: 'Content-Type' toString: ('{1}; charset=\"{2}\"' format:
+    {mail body contentType. encoding}).\nmail setField: 'Content-Transfer-Encoding'
+    toString: '7bit'.\nmail setField: 'Date' toString: ('{1}, {2} {3} {4}' format:
+    {Date today weekday first: 3. Date today. Time now print24. DateAndTime now printString
+    last: 6}).\nmail subject isOctetString ifFalse: [\n   | subject |\n   subject
+    := mail subject convertToEncoding: encoding.\n   subject := (Base64MimeConverter
+    mimeEncode: subject readStream) contents.\n   mail setField: 'subject' toString:
+    ('=?{1}?{2}?=' format: {encoding. subject})].\nmail regenerateText.\n\nout :=
+    FileStream newFileNamed: 'out.txt'.\nout converter: (TextConverter defaultConverterClassForEncoding:
+    encoding) new.\nout nextPutAll: mail text.\nout edit\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '1096'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1096
+  :user_name: にしお
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2007/07/19 11:49 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">最近このサイトを作るために初めてメール関連のコードを書いたばっかりなので\r\n整理のためにMIME部分に注目したシンプルなバージョンを投稿してみます。\r\n\r\n「差し込みタグの形状は自由」というところから\r\nデータのパースは本題ではないと思ったので\r\nテンプレートはmessage_templateという変数にユニコード文字列として、\r\n差し込みデータはparamsという変数に辞書として入っているとします。\r\nもちろんparamsの値の文字列は全部ユニコード文字列とする。\r\nテンプレートは[[name]]じゃなくて%(name)sという形だとします。\r\n\r\nそうするとテンプレートに値を埋め込むのは\r\nmessage_tamplate
+    % params\r\nで済んでしまいます。\r\n\r\nそして本題のメールライブラリ。\r\nPythonのメール関連ライブラリはfromやtoやsubjectを別の引数として受け取るので、\r\nこれをテンプレートの中に書いてあるのは不便。\r\nfromやtoはparamsの中の値そのままで、\r\nsubjectは別途subject_templateっていうテンプレートで整形するのじゃダメでしょうか。\r\nダメだったらパース部分を後で書きます。</pre>\n\t"
+  :code: |
+    from email.MIMEText import MIMEText
+    from email.Header import Header
+    from email.Utils import formatdate, make_msgid
+
+    message = message_template % params
+    subject = subject_template % params
+    encoding = "ISO-2022-JP"
+
+    mimetext = MIMEText(message, 'plain', encoding)
+    mimetext['Subject'] = Header(subject, encoding)
+    mimetext['From'] = params['from']
+    mimetext['To'] = params['to']
+    mimetext['Date'] = formatdate()
+    mimetext['Message-ID'] = make_msgid()
+    result = mimetext.as_string()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1100'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1100
+  :user_name: 沢渡 みかげ
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/101/
+  :language: 
+  :time: 2007/07/19 12:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">こんにちは．\r\n出題の意図について補足させてください．\r\n\r\nシステムが通知メールを送る際に，その通知メールの文面を容易に\r\n変更できるようにすることが目的です．\r\nたとえば納品先のお客様が直接テンプレートファイルをいじるような事を\r\n想定しています．\r\n\r\nHTMLならそういったことは容易に出来ますが，日本語のメールに\r\n関してはライブラリの対応状況など色々あると思いましたので，\r\n問題として提案させていただきました．\r\n\r\nメール文書の中を変えたり，タイトルを少し変更したい，といった要望に\r\n応えやすくするためのコードと考えていただければと思います．\r\n\r\nですので，Subjectまで含めて容易に変更できることが望ましいです．\r\n\r\nまた，差し込みデータの形式は本題ではないので（システム側で\r\nあらかじめ作る部分なので）ここは任意でかまわないです．\r\n\r\n%
+    わたしのコードはPerlのライブラリを使用したものなので，\r\n% Perlのコードが出た後に投稿します．</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1112'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1112
+  :user_name: 匿名
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/07/19 13:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">こんな感じでどうでしょうか。\r\nmessage_from_stringがユニコードを扱えないようなので、明示的にコード変換しています。</pre>\n\t"
+  :code: |
+    from email.MIMEText import MIMEText
+    from email.Header import Header
+    from email.Utils import formatdate, make_msgid
+    from email import message_from_string
+
+    msg = message_from_string(template % params)
+
+    encoding = "ISO-2022-JP"
+    message = unicode(msg.get_payload(), 'utf-8').encode(encoding)
+    subject = unicode(msg['subject'], 'utf-8')
+
+    mimetext = MIMEText(message, 'plain', encoding)
+    mimetext['Subject'] = Header(subject, encoding)
+    mimetext['From'] = msg['from']
+    mimetext['To'] = msg['to']
+    mimetext['Date'] = formatdate()
+    mimetext['Message-ID'] = make_msgid()
+    result = mimetext.as_string()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1123'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1123
+  :user_name: yuin
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/07/19 15:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">うーむ。表示目的と送信目的では結構ちがいますね。\r\n\r\nというわけで、お題どおりに出力するものと、お題の意図どおりにメール送信できるものを作ってみました。</pre>\n\t"
+  :code: "import java.util.Date\nimport java.util.Locale\nimport sun.misc.BASE64Encoder\nimport
+    java.text.SimpleDateFormat\nimport scala.io._\nimport scala.collection.mutable.HashMap\nimport
+    scala.collection.mutable.Map\nimport org.apache.commons.mail._\n\nclass ExtendedString(self:String)
+    {\n  import java.util.regex._\n  import java.io._\n  def gsub(reg:String)(f:(Matcher)=&gt;String)
+    = {\n    val result = new StringBuffer\n    val m = Pattern.compile(reg).matcher(self)\n
+    \   while(m.find) m.appendReplacement(result, f(m))\n    m.appendTail(result)\n
+    \   result.toString\n  }\n}\nimplicit def string2ext(self:String) = new ExtendedString(self)\n\ndef
+    readFile(f:String) = Source.fromFile(f).getLines.mkString(\"\")\n\ndef parseData(f:String):Map[String,String]
+    = {\n  val text = readFile(f)\n  text.split(\"\\n\").foldLeft(new HashMap[String,String]){(result,
+    line) =&gt; {\n    line.trim.gsub(\"([a-z]+)[\\\\s]+=&gt;[\\\\s]+'(.*)',\"){m
+    =&gt; \n      result += m.group(1) -&gt; m.group(2);\"\"\n    }\n    result\n
+    \ }}\n}\n\ndef print_email(template:String, data:Map[String, String]):unit = {\n
+    \ val textlines = template.trim.gsub(\"(\\\\[\\\\[([^\\\\]]+)\\\\]\\\\])\"){m
+    =&gt; data(m.group(2)) }.split(\"\\n\")\n  def findLine(s:String) = textlines.find(x=&gt;x.startsWith(s)).get\n
+    \ def getHeader(s:String) = findLine(s+\": \").split(\":\")(1).trim\n  println(\"From:
+    \"+getHeader(\"From\"))\n  println(\"To: \"+getHeader(\"To\"))\n  println(\"Subject:
+    =?ISO-2022-JP?B?\"+\n    new BASE64Encoder().encode(getHeader(\"Subject\").getBytes(\"iso-2022-jp\"))+\"?=\")\n
+    \ println(\"Date: \" + \n    new SimpleDateFormat(\"EEE, d MMM yyyy HH:mm:ss Z\",
+    Locale.ENGLISH).format(new Date))\n  printf(\"\"\"Message-ID: &lt;{0}.{1}@example.org&gt;\nMIME-Version:
+    1.0\nContent-Type: text/plain; charset=\"ISO-2022-JP\"\nContent-Transfer-Encoding:
+    7bit\n\"\"\", textlines.hashCode.toString, (new Date).hashCode.abs.toString)\n
+    \ println(textlines.dropWhile(x=&gt;x!=\"\").mkString(\"\\n\"))\n}\n\ndef send_mail(template:String,
+    data:Map[String,String]):unit = {\n  val textlines = template.trim.gsub(\"(\\\\[\\\\[([^\\\\]]+)\\\\]\\\\])\"){m
+    =&gt; data(m.group(2)) }.split(\"\\n\")\n  def findLine(s:String) = textlines.find(x=&gt;x.startsWith(s)).get\n
+    \ def getHeader(s:String) = findLine(s+\": \").split(\":\")(1).trim\n  val email
+    = new SimpleEmail\n  email.setHostName(\"smtp.example.org\")\n  email.setCharset(\"iso-2022-jp\")\n
+    \ email.addHeader(\"MIME-Version\", \"1.0\")\n  email.addHeader(\"Content-Transfer-Encoding\",
+    \"7bit\")\n  email.addTo(getHeader(\"To\"))\n  email.setFrom(getHeader(\"From\"))\n
+    \ email.setSubject(getHeader(\"Subject\"))\n  email.setSentDate(new Date)\n  email.setContent(textlines.dropWhile(x=&gt;x!=\"\").mkString(\"\\n\"),
+    \"text/plain; charset=iso-2022-jp\")\n  email.send\n}\n\nprint_email(readFile(\"mail_template.txt\"),
+    parseData(\"data.txt\"))\nsend_mail(readFile(\"mail_template.txt\"), parseData(\"data.txt\"))\n"
+  :tags:
+  - commons_mail
+  :references:
+    :url: 
+    :title: 
+- :id: '1153'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1153
+  :user_name: tnk
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/30/
+  :language: Java
+  :time: 2007/07/20 04:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">要JavaMail。関連JarファイルがCLASSPATHに含まれている必要があります。\r\n\r\n実行方法は，\r\n
+    \   java MailSender テンプレートファイル 差込ファイル\r\n\r\n差込ファイルの形式は，そのままだとパーサーが書きにくいので，\r\n以下のように変更しています。\r\n----差し込みデータ----\r\nfrom:
+    from@example.org\r\nto: to@example.org\r\nname: どう書く\r\nfromname: 管理者\r\nurl:
+    http://ja.doukaku.org/\r\n----差し込みデータ----\r\n\r\nJavaには題意に沿うようなテンプレートフォーマッターが\r\n標準ではないので，自作しています。\r\n\r\nまた，\r\n・テンプレートのファイルからの読み込みを作成\r\n・差込データの読み込みとパースを作成\r\n・テンプレートの形式がJavaMail向きでないのでパース処理が必要\r\nというような理由で，かなり長くなっています。</pre>\n\t"
+  :code: "import java.io.BufferedReader;\nimport java.io.FileInputStream;\nimport
+    java.io.IOException;\nimport java.io.InputStreamReader;\nimport java.io.Reader;\nimport
+    java.io.StringWriter;\nimport java.util.HashMap;\nimport java.util.Properties;\nimport
+    java.util.StringTokenizer;\nimport javax.mail.MessagingException;\nimport javax.mail.Session;\nimport
+    javax.mail.Transport;\nimport javax.mail.internet.InternetAddress;\nimport javax.mail.internet.MimeMessage;\n\npublic
+    class MailSender {\n    private static final String encoding = \"ISO-2022-JP\";\n\n
+    \   public static void main(String[] args) throws Exception {\n        // テンプレートと差込データの読み込み\n
+    \       String template = readFile(args[0]);\n        HashMap vars = readVars(args[1]);\n
+    \       // テンプレートを使用したメールの整形\n        TemplateFormatter formatter = new TemplateFormatter();\n
+    \       String mail = formatter.format(template, vars);\n        // メールの送信\n        sendMail(mail);\n
+    \   }\n    \n    public static String readFile(String filename) throws IOException
+    {\n        Reader in = new InputStreamReader(new FileInputStream(filename), \"UTF-8\");\n
+    \       StringWriter out = new StringWriter();\n        for (int c = in.read();
+    c &gt;=0; c = in.read()) out.write(c);\n        in.close();\n        out.close();\n
+    \       return out.toString();\n    }\n    \n    public static HashMap readVars(String
+    filename) throws IOException {\n        HashMap&lt;String,String&gt; result =
+    new HashMap&lt;String,String&gt;();\n        BufferedReader in = new BufferedReader(\n
+    \               new InputStreamReader(\n                        new FileInputStream(filename),
+    \"UTF-8\"));\n        for (String s = in.readLine(); s != null; s = in.readLine())
+    {\n            if (s.trim().startsWith(\"#\")) continue;\n            int off
+    = s.indexOf(\":\");\n            if (off &lt;= 0) continue;\n            result.put(s.substring(0,off).trim(),
+    s.substring(off+1).trim());\n        }\n        in.close();\n        return result;\n
+    \   }\n    \n    public static void sendMail(String mail) throws MessagingException,
+    IOException {\n        Properties props = System.getProperties();\n        Session
+    session = Session.getDefaultInstance(props);\n        MimeMessage message = new
+    MimeMessage(session);\n        StringTokenizer st = new StringTokenizer(mail,
+    \"\\n\");\n        while (st.hasMoreTokens()) {\n            String s = st.nextToken();\n
+    \           int off = s.indexOf(\":\");\n            if (off &lt; 0) break;\n
+    \           String header = s.substring(0,off).trim();\n            String value
+    = s.substring(off+1);\n            if (header.equalsIgnoreCase(\"subject\")) {\n
+    \               message.setSubject(value, encoding);\n            } else if (header.equalsIgnoreCase(\"to\"))
+    {\n                message.setRecipients(MimeMessage.RecipientType.TO, value);\n
+    \           } else if (header.equalsIgnoreCase(\"from\")) {\n                message.setFrom(new
+    InternetAddress(value));\n            } else {\n                message.setHeader(header,
+    value);\n            }\n        }\n        StringBuffer body = new StringBuffer();\n
+    \       while (st.hasMoreTokens()) {\n            body.append(st.nextToken()).append(\"\\n\");\n
+    \       }\n        message.setText(body.toString(), encoding);\n//      Transport.send(message);
+    \       // 実際に送信する場合\n        message.writeTo(System.out);    // 課題にあわせて標準出力に\n
+    \   }\n}\n\nclass TemplateFormatter {\n    private String prefix = \"[[\";\n    private
+    String postfix = \"]]\";\n    public TemplateFormatter() {}\n    public TemplateFormatter(String
+    prefix, String postfix) {\n        this.prefix = prefix;\n        this.postfix
+    = postfix;\n    }\n    public String format(String tempate, HashMap&lt;String,String&gt;
+    vars) {\n        StringBuffer result = new StringBuffer(tempate);\n        for
+    (String key : vars.keySet()) {\n            String element = prefix + key + postfix;\n
+    \           while (result.indexOf(element) &gt;= 0) {\n                int off
+    = result.indexOf(element);\n                result.replace(off, off+element.length(),
+    vars.get(key));\n            }\n        }\n        return result.toString();\n
+    \   }\n}\n"
+  :tags:
+  - Java1.5
+  - JavaMail
+  :references:
+    :url: 
+    :title: 
+- :id: '1155'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1155
+  :user_name: rucker
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/07/20 07:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">文字コードの変換はmb_send_mail任せだけど、\r\nsubjectはヘッダと別に渡さないとMIMEエンコードされないので\r\n抜き出すようにしてみた。</pre>\n\t"
+  :code: "&lt;?php\nfunction sendcustommail($template,$data)\n{\n\tmb_internal_encoding(\"UTF-8\");\n\tmb_language(\"ja\");\n\n\treset($data);\n\twhile(list($k,$v)=each($data))
+    // テンプレートに差し込みデータ適用\n\t\t$template=str_replace('[['.$k.']]',$v,$template);\n\n\t$part=explode(\"\\n\\n\",$template,2);
+    // ヘッダと本文分割\n\t$headers=array();\n\t$subject=\"\";\n\t$to=\"\";\n\t$srchdrs=explode(\"\\n\",$part[0]);\n\t$next=each($srchdrs);\n\twhile($next)\n\t{\t$curr=$next[1];\n\t\tfor(;;)\n\t\t{\tif(!($next=each($srchdrs)))\n\t\t\t\tbreak;\n\t\t\tif(!ereg('^[
+    \\t]',$next[1]))\n\t\t\t\tbreak;\n\t\t\t$curr.=\"\\n\".$next[1]; // 複数行にまたがったヘッダを繋げる\n\t\t}\n\t\tlist($header,$str)=explode(\":\",$curr,2);\n\t\tswitch($header=strtolower($header))\n\t\t{\n\t\tcase
+    \"subject\": // subject は引数で渡さないとエンコードされない\n\t\tcase \"to\":      // ついでに to も引数で渡す\n\t\t\t$$header=trim($str);\n\t\t\tbreak;\n\t\tdefault:\n\t\t\t$headers[]=$curr;\n\t\t}\n\t}\n\n\treturn
+    mb_send_mail( $to, $subject, $part[1], implode(\"\\n\",$headers));\n}\n\n$template=\"From:
+    [[from]]\nTo: [[to]]\nSubject: [[name]]さんにメッセージが届いています\n\n[[name]]さんに[[fromname]]さんからメッセージが届いています。\n以下のURLからアクセスできます。\n[[url]]\";\n\n$data=array(\n\t\"from\"=&gt;\"from@example.org\",\n\t\"to\"=&gt;\"to@example.org\",\n\t\"name\"=&gt;\"どう書く\",\n\t\"fromname\"=&gt;\"管理者\",\n\t\"url\"=&gt;\"http://ja.doukaku.org/\");\n\nsendcustommail($template,$data);\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1162'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1162
+  :user_name: 匿名
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/07/20 10:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">上の投稿は#1096のにしおさんへのコメントのつもりでしたが\r\nうまく行かなかったようです。\r\n\r\nあらためてまとめておきます。\r\n\r\nファイル'template.txt'は置換対象を'%(NAME)s'形式で\r\n記述したメールのテンプレートです。\r\nファイル'users.txt'はコンマで区切られた置換内容を\r\n人数行分ならべたものです。\r\n\r\nどちらも文字コードは'UTF-8'、行末は'\\n'を前提にしています。\r\n\r\nsmtp部分は未検証のため、コメントにしています。\r\n</pre>\n\t"
+  :code: |
+    from email.Header import Header
+    from email.Utils import formatdate, make_msgid
+    from email import message_from_string
+    #from smtplib import SMTP
+
+    def make_message(template, params):
+      encoding = 'ISO-2022-JP'
+      msg = message_from_string(template % params)
+      msg.replace_header('Subject', Header(unicode(msg['Subject'], 'utf-8'), encoding))
+      msg['Date'] = formatdate(localtime=True)
+      msg['Message-ID'] = make_msgid()
+      msg.set_payload(unicode(msg.get_payload(), 'utf-8').encode(encoding), encoding)
+      return msg.as_string().replace('\n',　'\r\n')
+
+    #smtp = SMTP()
+    #smtp.connect()
+    template = file('template.txt', 'r').read()
+    for s in file('users.txt', 'r').readlines():
+      params = {}
+      for k, v in zip(['from', 'to', 'name', 'fromname', 'url'], s.strip().split(',')):
+        params[k] = v
+      message = make_message(template, params)
+      print message
+    #  smtp.sendmail(params['from'], [params['to']], message)
+    #smtp.close()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1206'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1206
+  :user_name: kkobayashi
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2007/07/21 03:01 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">むずかしかったです＞＜\r\n\r\nRはメールを扱うライブラリーがない（と思う）のでほとんど自作しました。\r\nまた、差し込みデータは以下のようなタブ区切りデータにしました。\r\n\r\n----差し込みデータ----\r\nfrom\tfrom@example.org\r\nto\t
+    \ to@example.org\r\nname\tどう書く\r\nfromname\t管理者\r\nurl\t http://ja.doukaku.org/\r\n----差し込みデータ----\r\n\r\nmail.create(\"template.txt\",
+    \"data.txt\", \"mail.txt\")\r\n\r\nとして実行すると、\"mail.txt\"に変換後のテキストが出力されます。\r\n</pre>\n\t"
+  :code: "mail.create &lt;- function(templatefile, datafile, mailfile){\n    # parse
+    data\n    d    &lt;- read.table(datafile)\n    data &lt;- as.list(as.vector(d[,2]))\n
+    \   names(data) &lt;- d[,1]\n\n    # replace variables\n    mail &lt;- sub(\"^&lt;ef&gt;&lt;bb&gt;&lt;bf&gt;\",
+    \"\", readLines(templatefile, encoding=\"UTF-8\"))\n    mail &lt;- gsub(\"\\\\[\\\\[from\\\\]\\\\]\",
+    \    data$from, mail)\n    mail &lt;- gsub(\"\\\\[\\\\[to\\\\]\\\\]\",       data$to,
+    mail)\n    mail &lt;- gsub(\"\\\\[\\\\[name\\\\]\\\\]\",     data$name, mail)\n
+    \   mail &lt;- gsub(\"\\\\[\\\\[fromname\\\\]\\\\]\", data$fromname, mail)\n    mail
+    &lt;- gsub(\"\\\\[\\\\[url\\\\]\\\\]\",      data$url, mail)\n\n    # making mail
+    header\n    mail.sep    &lt;- which(mail == \"\")[1]\n    mail.header &lt;- mail[1:(mail.sep-1)]\n
+    \   mail.body   &lt;- mail[(mail.sep+1):length(mail)]\n    sub &lt;- grep(\"^Subject:\",
+    mail.header)\n    mail.header &lt;- c(mail.header[-sub], MIME.Base64(mail.header[sub]))\n
+    \   if(all((regexpr(\"^Date:\", mail.header)==-1))){\n        mail.header &lt;-
+    c(mail.header, paste(\"Date:\", getDate()))\n    }\n    if(all((regexpr(\"^Message-ID:\",
+    mail.header)==-1))){\n        mail.header &lt;- c(mail.header, paste(\"Message-ID:\",
+    getMessageID(data$from)))\n    }\n    mail.header &lt;- c(mail.header, 'MIME-Version:
+    1.0')\n    mail.header &lt;- c(mail.header, 'Content-Type: text/plain; charset=\"ISO-2022-JP\"')\n
+    \   mail.header &lt;- c(mail.header, 'Content-Transfer-Encoding: 7bit')\n    \n
+    \   # concatenate to file\n    cat(c(mail.header, \"\", mail.body), file=file(mailfile,
+    \"w\", encoding=\"ISO-2022-JP\"), sep=\"\\n\")\n}\n\n# Date: (cf. RFC 2822)\ngetDate
+    &lt;- function(){\n    lct &lt;- Sys.getlocale(\"LC_TIME\")\n    Sys.setlocale(\"LC_TIME\",
+    \"C\")\n    datastr &lt;- format(Sys.time(), \"%a, %d %b %Y %H:%M:%S +900\", tz=\"JST-9\")\n
+    \   Sys.setlocale(\"LC_TIME\", lct)\n    return(datastr)\n}\n\n# Message-ID: timestamp
+    and random number (without hashing)\ngetMessageID &lt;- function(address){\n    lp
+    &lt;- paste(format(Sys.time(), \"%Y%m%d%H%M%S\"), runif(1), sep=\"\")\n    dp
+    &lt;- sub(\"&gt;\", \"\", sub(\".+@(.+)\", \"\\\\1\", address))\n    return(paste(lp,
+    \"@\", dp, sep=\"\"))\n}\n\n# MIME-Base64 (converting to ISO-2022-JP)\nMIME.Base64
+    &lt;- function(str){\n    i &lt;- regexpr(\"[^ -~]\", str, perl=TRUE) # find non-ascii
+    index\n    if(i == -1) return(str)\n    len  &lt;- 76-17-i\n    enc  &lt;- toBase64(iconv(substr(str,
+    i, nchar(str)), from=\"SJIS\", to=\"ISO-2022-JP\"))\n    enc2 &lt;- unlist(strsplit(enc,
+    \"\"))\n    enc2 &lt;- c(enc2, rep(\"\", (len - length(enc2))%%len))\n    sub
+    \ &lt;- apply(matrix(enc2, len), 2, function(a){paste(c(\"=?ISO-2022-JP?B?\",
+    a, \"?=\"), collapse=\"\")})\n    sub[1] &lt;- paste(substr(str, 1, i-1), sub[1],
+    sep=\"\")\n    return(sub)\n}\n\n# Base64 encoding (cf. RFC 3548)\nBase64.table
+    &lt;- c(LETTERS, letters, unlist(strsplit(\"0123456789+/\", \"\")))\ntoBase64
+    &lt;- function(str){\n    r   &lt;- charToRaw(str)\n    pad &lt;- (3 - length(r))%%3\n
+    \   r1  &lt;- c(r, as.raw(rep(0, pad)))\n    m   &lt;- matrix(r1, 3, length(r1)/3)\n
+    \   b64 &lt;- as.vector(apply(m, 2, toBase64.each8bit))\n    if(pad == 2) b64[length(b64)-1]
+    = \"=\"\n    if(pad == 2 || pad == 1) b64[length(b64)] = \"=\"\n    return(paste(b64,
+    collapse=\"\"))\n}\ntoBase64.each8bit &lt;- function(m){\n    b1 &lt;- as.vector(sapply(m,
+    function(a){rev(rawToBits(a))}))\n    b2 &lt;- rbind(matrix(as.raw(0), 2,4), matrix(b1,
+    6, 4))\n    return(apply(b2, 2, toBase64.each6bit))\n}\ntoBase64.each6bit &lt;-
+    function(b){\n    return(Base64.table[as.integer(packBits(rev(b)))+1])\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1304'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1304
+  :user_name: 匿名
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/4/
+  :language: Perl
+  :time: 2007/07/21 15:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">全体的に adhoc 感満載ですが、ザクッとこんな感じでどうでしょう？\r\n</pre>\n\t"
+  :code: "use strict;\nuse warnings;\n\nuse Template;\nuse MIME::Lite;\nuse HTTP::Date;\nuse
+    Encode;\n\nmy $param = {\n             from =&gt; 'from@example.jp',\n             to
+    =&gt; 'to@example.jp',\n             name =&gt; '受信者',\n             fromname
+    =&gt; '送信者',\n             url =&gt; 'http://example.jp/',\n             subject
+    =&gt; '[% name %]さんにメッセージが届いています。',\n             data =&gt; do { local $/; &lt;DATA&gt;
+    },\n             tz =&gt; +9,\n            };\n\n### template                                                                                                        \nmy
+    $tt = Template-&gt;new() or die $Template::ERROR;\nfor my $key ( keys %$param
+    ) {\n    my $depo;\n    $tt-&gt;process(\\$param-&gt;{$key}, $param, \\$depo)
+    or die $tt-&gt;error();\n    $param-&gt;{$key} = $depo;\n}\n\n### utf-8 -&gt;
+    iso-2022-jp                                                                                            \nfor
+    my $key ( keys %$param ) {\n    next if $key eq 'subject';\n    Encode::from_to($param-&gt;{$key},'utf-8',
+    '7bit-jis');\n}\n### MIME Encode                                                                                                     \nEncode::decode('utf-8',
+    $param-&gt;{subject});\n$param-&gt;{subject} = encode('MIME-Header-ISO_2022_JP'
+    =&gt; $param-&gt;{subject});\n\n### date                                                                                                            \n$param-&gt;{date}
+    = HTTP::Date::time2str(time +$param-&gt;{tz}*3600);\n$param-&gt;{date} =~ s/GMT/sprintf(\"%+03d00\",
+    $param-&gt;{tz})/e;\n\n### mail                                        \nmy $msg
+    = MIME::Lite-&gt;new(\n                          From =&gt; $param-&gt;{from},\n
+    \                         To =&gt; $param-&gt;{to},\n                          Subject
+    =&gt; $param-&gt;{subject},\n                          Type =&gt; 'text/plain;
+    charset=ISO-2022-JP',\n                          Encoding =&gt; '7bit',\n                          Data
+    =&gt; $param-&gt;{data},\n                          Datestamp =&gt; 0,\n                          Date
+    =&gt; $param-&gt;{date},\n                         );\n$msg-&gt;replace('X-Mailer'
+    =&gt; 'ja.doukaku.org/24');\n#$msg-&gt;send();                                                                                                      \nprint
+    $msg-&gt;as_string;\n\n__END__\n[% name %]さんに[% fromname %]さんからメッセージが届いています。\n以下のURLからアクセスできます。\n[%
+    url %]\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1342'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1342
+  :user_name: 沢渡 みかげ
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/101/
+  :language: Perl
+  :time: 2007/07/22 09:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">TripletaiLというフレームワークを利用しています．\r\n\r\nみなさんからの回答を見ていると，やはりMIMEエンコードは\r\n自前である程度コードを書かないといけないことが多いようですね．\r\n（RubyのライブラリはMIME対応しているようで羨ましいです）\r\n\r\n</pre>\n\t"
+  :code: |
+    ---- mail.txt
+    From: &lt;&amp;from&gt;
+    To: &lt;&amp;to&gt;
+    Subject: &lt;&amp;name&gt;さんにメッセージが届いています
+
+    &lt;&amp;name&gt;さんに&lt;&amp;fromname&gt;さんからメッセージが届いています。
+    以下のURLからアクセスできます。
+    &lt;&amp;url&gt;
+
+    ---- mailenc.pl
+    #!/usr/local/ymir/perl/bin/perl
+
+    use Tripletail qw(/dev/null);
+
+    my $t = $TL-&gt;newTemplate("mail.txt")
+            -&gt;expand({
+              from =&gt; 'from@example.org',
+              to =&gt; 'to@example.org',
+              name =&gt; 'どう書く',
+              fromname =&gt; '管理者',
+              url =&gt; 'http://ja.doukaku.org/',
+            });
+
+    print $TL-&gt;newMail-&gt;set($t-&gt;toStr)-&gt;toStr;
+  :tags:
+  - TripletaiL
+  :references:
+    :url: 
+    :title: 
+- :id: '1343'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1343
+  :user_name: 沢渡 みかげ
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/101/
+  :language: Perl
+  :time: 2007/07/22 09:53 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">実際に送信までするコードを書いていただいた方もいらしたので，\r\nTripletaiLでそこまでやる場合のコードも書いてみました．</pre>\n\t"
+  :code: |
+    ---- mail.ini
+    [Sendmail]
+    method = smtp
+    host = mikage.to
+
+    ---- mailsend.pl
+
+    #!/usr/local/ymir/perl/bin/perl
+
+    use Tripletail qw(mail.ini);
+
+    my $t = $TL-&gt;newTemplate("mail.txt")
+            -&gt;expand({
+              from =&gt; 'from@example.org',
+              to =&gt; 'to@example.org',
+              name =&gt; 'どう書く',
+              fromname =&gt; '管理者',
+              url =&gt; 'http://ja.doukaku.org/',
+            });
+
+    my $mail = $TL-&gt;newMail-&gt;set($t-&gt;toStr)-&gt;toStr;
+
+    $TL-&gt;newSendmail-&gt;connect
+            -&gt;send(
+            -from =&gt; 'from@example.org',
+            -rcpt =&gt; 'mikage@mikage.to',
+            -data =&gt; $mail)
+            -&gt;disconnect;
+  :tags:
+  - TripletaiL
+  :references:
+    :url: 
+    :title: 
+- :id: '1355'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1355
+  :user_name: shiro
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/07/23 01:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">quick&amp;dirtyバージョンです。\r\nロバストにやろうとすると結構面倒なので、やはりまとまったライブラリが欲しいところですね。\r\n(差し込みデータに改行や不正文字が入っていた場合とか、ヘッダ行が長すぎる場合に適切に折り返したりとか)\r\n\r\n実行はこんな感じで。\r\n(define
+    *template* \"From: [[from]]\r\nTo: [[to]]\r\nSubject: [[name]]さんにメッセージが届いています。\r\n\r\n[[name]]さんに[[fromname]]さんからメッセージが届いています。\r\n以下のURLからアクセスできます。\r\n[[url]]\"\r\n)\r\n\r\n(define
+    *bindings* '((\"from\"     . \"from@example.org\")\r\n                     (\"to\"
+    \      . \"to@example.org\")\r\n                     (\"name\"     . \"どう書く\")\r\n
+    \                    (\"fromname\" . \"管理者\")\r\n                     (\"url\"
+    \     . \"http://ja.doukaku.org/\")))\r\n\r\n(display (prepare-message (apply-template
+    *template* *bindings*)))\r\n</pre>\n\t"
+  :code: |
+    (use rfc.822)
+    (use rfc.base64)
+    (use util.list)
+    (use gauche.charconv)
+    (use srfi-13)
+    (use srfi-19)
+    (use srfi-27)
+
+    (define (apply-template tmpl bindings)
+      (regexp-replace-all #/\[\[(\w+)\]\]/ tmpl
+                          (lambda (m) (assoc-ref bindings (m 1) (m 0)))))
+
+    (define (rfc2047-encode s)
+      (if (= (string-length s) (string-size s))
+        s
+        (format "=?ISO-2022-JP?B?~a?="
+                (base64-encode-string (ces-convert s #f 'iso-2022-jp)))))
+
+    (define (prepare-message input)
+      (call-with-string-io input
+        (lambda (in out)
+          (let* ((now     (current-date))
+                 (hdrs    (append (rfc822-header-&gt;list in)
+                                  `(("message-id"
+                                     ,(format "&lt;~a.~a@example.org&gt;"
+                                              (sys-getpid) (date-nanosecond now)))
+                                    ("date"
+                                     ,(date-&gt;string now "~a, ~e ~b ~Y ~T ~z"))))))
+            (dolist (hdr hdrs)
+              (format out "~a: ~a\n" (string-titlecase (car hdr)) (rfc2047-encode (cadr hdr))))
+            (newline out)
+            (let1 cout (wrap-with-output-conversion out 'iso-2022-jp)
+              (copy-port in cout)
+              (newline cout)
+              (close-output-port cout))))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '1483'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1483
+  :user_name: onjo
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/235/
+  :language: Common
+  :time: 2007/07/26 19:57 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  AllegroCL の base64, mime パッケージをつかってます。テンプレートやデータ形式は問題のものを使ってます。\n\t"
+  :code: "(defpackage :doukaku (:use :cl :net.post-office) (:export #:main))\n(in-package
+    :doukaku)\n\n(defun encode-subject (string)\n  (let* ((array (excl:string-to-octets
+    string :external-format :jis))\n\t (text  (excl:usb8-array-to-base64-string array)))\n
+    \   (format nil \"=?ISO-2022-JP?B?~A?=\" text)))\n\n(defun make-date ()\n  (multiple-value-bind
+    (second minute hour date month year day daylight-p zone)\n      (get-decoded-time)\n
+    \   (declare (ignore daylight-p))\n    (format nil \"~A, ~2,'0D ~A ~4,'0D ~2,'0D:~2,'0D:~2,'0D
+    +~2,'0D00\"\n\t    (elt #(\"Sun\" \"Mon\" \"Tue\" \"Wed\" \"Thr\" \"Fri\" \"Sat\")
+    day)\n\t    date\n\t    (elt #(\"Jan\" \"Feb\" \"Mar\" \"Apr\" \"May\" \"Jun\"
+    \"Jul\" \"Aug\" \"Sep\" \"Oct\" \"Nov\" \"Dec\") (1- month))\n\t    year\n\t    hour
+    minute second (abs zone))))\n\n(defun make-message-id ()\n  (format nil \"&lt;~A.~A.~A@~A&gt;\"\n\t
+    \ (excl.osi:getpid) (get-universal-time)\n\t  (get-internal-run-time) (excl.osi:gethostname)))\n\n(defun
+    read-data-file (name)\n  (with-open-file (s name :direction :input)\n    (loop
+    for line = (read-line s nil :eof)\n\t  until (eql line :eof)\n\t  for (match?
+    result) = (multiple-value-list\n\t\t\t\t (ppcre:scan-to-strings \"(\\\\w+)\\\\s*=&gt;\\\\s*'(.*)',\"
+    line))\n\t  when match? collect (cons (elt result 0) (elt result 1)))))\n\n(defun
+    fill-template (datafile template)\n  (let* ((data (read-data-file datafile))\n\t
+    (text (with-open-file (s template :direction :input)\n\t\t (let* ((buf (make-string
+    (file-length s)))\n\t\t\t(size (read-sequence buf s)))\n\t\t   (subseq buf 0 size)))))\n
+    \   (loop for (key . value) in data\n\t  for regex = (format nil \"\\\\[\\\\[~A\\\\]\\\\]\"
+    key)\n\t  do (setf text\n\t\t   (ppcre:regex-replace-all regex text value))\n\t
+    \ finally (return text))))\n\n(defun parse (document)\n  (with-input-from-string
+    (s document)\n    (loop with state = :header\n\t  with header = ()\n\t  with body
+    = ()\n\t  for line = (read-line s nil :eof)\n\t  until (eql line :eof)\n\t  do
+    (cond ((and (eql state :header) (string= line \"\"))\n\t\t    (setf state :body))\n\t\t
+    \  ((eql state :header)\n\t\t    (multiple-value-bind (match? result)\n\t\t\t(ppcre:scan-to-strings
+    \"(\\\\w+):\\\\s*(.*)\" line)\n\t\t      (when match?\n\t\t\t(when (string= (elt
+    result 0) \"Subject\")\n\t\t\t  (setf (elt result 1) (encode-subject (elt result
+    1))))\n\t\t\t(push (cons (elt result 0) (elt result 1)) header))))\n\t\t   ((eql
+    state :body)\n\t\t    (push line body)\n\t\t    (push #(#\\Newline) body)))\n\t
+    \ finally (return `(:header ,(reverse header)\n\t\t\t    :body   ,(apply #'concatenate\n\t\t\t\t\t
+    \   (cons 'string (reverse body))))))))\n\n(defun main ()\n  (let* ((doc (parse
+    (fill-template \"data.txt\" \"template.txt\")))\n\t (header (getf doc :header))\n\t
+    (body   (getf doc :body))\n\t (mime   (make-mime-part :headers `(,@header\n\t\t\t\t\t
+    \   (\"Date\" . ,(make-date))\n\t\t\t\t\t    (\"Message-ID\" . ,(make-message-id)))\n\t\t\t\t
+    :charset \"ISO-2022-JP\"\n\t\t\t\t :text    body\n\t\t\t\t :external-format :jis)))\n
+    \   (with-open-file (s \"mail.txt\" :direction :output :if-exists :supersede)\n
+    \     (mime-part-writer mime :stream s))\n    (with-open-file (s \"mail.txt\"
+    :direction :input :external-format :jis)\n      (loop for line = (read-line s
+    nil :eof)\n\t    until (eql line :eof)\n\t    do (write-line line)))\n    mime))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1484'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1484
+  :user_name: onjo
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/235/
+  :language: Common
+  :time: 2007/07/26 19:57 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  AllegroCL の base64, mime パッケージをつかってます。テンプレートやデータ形式は問題のものを使ってます。\n\t"
+  :code: "(defpackage :doukaku (:use :cl :net.post-office) (:export #:main))\n(in-package
+    :doukaku)\n\n(defun encode-subject (string)\n  (let* ((array (excl:string-to-octets
+    string :external-format :jis))\n\t (text  (excl:usb8-array-to-base64-string array)))\n
+    \   (format nil \"=?ISO-2022-JP?B?~A?=\" text)))\n\n(defun make-date ()\n  (multiple-value-bind
+    (second minute hour date month year day daylight-p zone)\n      (get-decoded-time)\n
+    \   (declare (ignore daylight-p))\n    (format nil \"~A, ~2,'0D ~A ~4,'0D ~2,'0D:~2,'0D:~2,'0D
+    +~2,'0D00\"\n\t    (elt #(\"Sun\" \"Mon\" \"Tue\" \"Wed\" \"Thr\" \"Fri\" \"Sat\")
+    day)\n\t    date\n\t    (elt #(\"Jan\" \"Feb\" \"Mar\" \"Apr\" \"May\" \"Jun\"
+    \"Jul\" \"Aug\" \"Sep\" \"Oct\" \"Nov\" \"Dec\") (1- month))\n\t    year\n\t    hour
+    minute second (abs zone))))\n\n(defun make-message-id ()\n  (format nil \"&lt;~A.~A.~A@~A&gt;\"\n\t
+    \ (excl.osi:getpid) (get-universal-time)\n\t  (get-internal-run-time) (excl.osi:gethostname)))\n\n(defun
+    read-data-file (name)\n  (with-open-file (s name :direction :input)\n    (loop
+    for line = (read-line s nil :eof)\n\t  until (eql line :eof)\n\t  for (match?
+    result) = (multiple-value-list\n\t\t\t\t (ppcre:scan-to-strings \"(\\\\w+)\\\\s*=&gt;\\\\s*'(.*)',\"
+    line))\n\t  when match? collect (cons (elt result 0) (elt result 1)))))\n\n(defun
+    fill-template (datafile template)\n  (let* ((data (read-data-file datafile))\n\t
+    (text (with-open-file (s template :direction :input)\n\t\t (let* ((buf (make-string
+    (file-length s)))\n\t\t\t(size (read-sequence buf s)))\n\t\t   (subseq buf 0 size)))))\n
+    \   (loop for (key . value) in data\n\t  for regex = (format nil \"\\\\[\\\\[~A\\\\]\\\\]\"
+    key)\n\t  do (setf text\n\t\t   (ppcre:regex-replace-all regex text value))\n\t
+    \ finally (return text))))\n\n(defun parse (document)\n  (with-input-from-string
+    (s document)\n    (loop with state = :header\n\t  with header = ()\n\t  with body
+    = ()\n\t  for line = (read-line s nil :eof)\n\t  until (eql line :eof)\n\t  do
+    (cond ((and (eql state :header) (string= line \"\"))\n\t\t    (setf state :body))\n\t\t
+    \  ((eql state :header)\n\t\t    (multiple-value-bind (match? result)\n\t\t\t(ppcre:scan-to-strings
+    \"(\\\\w+):\\\\s*(.*)\" line)\n\t\t      (when match?\n\t\t\t(when (string= (elt
+    result 0) \"Subject\")\n\t\t\t  (setf (elt result 1) (encode-subject (elt result
+    1))))\n\t\t\t(push (cons (elt result 0) (elt result 1)) header))))\n\t\t   ((eql
+    state :body)\n\t\t    (push line body)\n\t\t    (push #(#\\Newline) body)))\n\t
+    \ finally (return `(:header ,(reverse header)\n\t\t\t    :body   ,(apply #'concatenate\n\t\t\t\t\t
+    \   (cons 'string (reverse body))))))))\n\n(defun main ()\n  (let* ((doc (parse
+    (fill-template \"data.txt\" \"template.txt\")))\n\t (header (getf doc :header))\n\t
+    (body   (getf doc :body))\n\t (mime   (make-mime-part :headers `(,@header\n\t\t\t\t\t
+    \   (\"Date\" . ,(make-date))\n\t\t\t\t\t    (\"Message-ID\" . ,(make-message-id)))\n\t\t\t\t
+    :charset \"ISO-2022-JP\"\n\t\t\t\t :text    body\n\t\t\t\t :external-format :jis)))\n
+    \   (with-open-file (s \"mail.txt\" :direction :output :if-exists :supersede)\n
+    \     (mime-part-writer mime :stream s))\n    (with-open-file (s \"mail.txt\"
+    :direction :input :external-format :jis)\n      (loop for line = (read-line s
+    nil :eof)\n\t    until (eql line :eof)\n\t    do (write-line line)))\n    mime))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1717'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/1717
+  :user_name: tomatsu
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/323/
+  :language: Pnuts
+  :time: 2007/08/02 12:42 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">[[ ]] は &lt;%=  %&gt; に変更させていただきました。\r\n\r\nsashikomi.pnutは以下の形式。\r\n\r\nfrom=\"from@example.org\"\r\nto=\"to@example.org\"\r\nname=\"どう書く\"\r\nfromname=\"管理者\"\r\nurl=\"http://ja.doukaku.org/\"\r\n</pre>\n\t"
+  :code: |
+    use("pnuts.servlet")
+    import javax.mail.internet.*
+    load("sashikomi.pnut")
+    s = textGrab({-&gt;run(readDynamicPage("template.txt"))})()
+    in = openByteArray(s.bytes)
+    hdr = InternetHeaders()
+    hdr.load(in)
+
+    mm=new MimeMessage(null)
+    mm.setSentDate(date())
+    for (h : hdr.getAllHeaders()){
+       if (toLowerCase(h.name) == "subject"){
+         mm.setSubject(h.value, "iso-2022-jp")
+       } else {
+         mm.addHeader(h.name, h.value)
+       }
+    }
+    mm.setText(readText(in), "iso-2022-jp")
+    mm.setHeader("Content-Transfer-Encoding", "7bit")
+    mm.writeTo(getContext().getOutputStream())
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2245'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/2245
+  :user_name: matyr
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/08/17 02:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<ul>\n<li>\n<p>差し込みデータはiniファイル形式を使用しました。\n</p>\n\n </li>\n\n <li>\n<p>JScriptが文字をUTF-16で扱うため、Subjectのエンコーディングが変態的です。\n
+    \     UTF-16 -&gt; バイト列 -&gt; iso-2022-jp -&gt; Base64 と自前でやるのはしんどかったので…。(－－；)\n</p>\n\n
+    </li>\n</ul>"
+  :code: |
+    function ADOReadOrSaveFile(path, encoding, str){
+      with(new ActiveXObject("ADODB.Stream")) try {
+        open(); charset = encoding; type = 2; // 1:TypeBinary, 2:TypeText
+        if(str){
+          writeText(str);
+          saveToFile(path, 2); // 1:SaveCreateNotExist, 2:SaveCreateOverWrite
+        } else {
+          loadFromFile(path);
+          return readText();
+        }
+      } catch(e){ throw e } finally { close() }
+    }
+    function parseIni(ini){
+      var r = { Default: {} }, sect = "Default", lines = ini.split(/[\r\n]+/);
+      with(RegExp) for(var i = 0, l = lines.length; i &lt; l; i++)
+        if(/^\[(.*)\]$|^([^;=]+)=([^;]*)$/.test(lines[i]))
+          $1 ? r[sect = $1] = {} : r[sect][$2] = $3;
+      return r;
+    }
+    function jsBase64Enc(s){
+      var $64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".split("");
+      var r = "", bytes = [], b0, b1, b2, i, l, lrm;
+      for(i = 0, l = s.length; i &lt; l; i++){
+        if((c = s.charCodeAt(i)) &lt;= 0xff) bytes[bytes.length] = c; // single
+        else if(c &lt;= 0xffff) bytes.push(c &gt;&gt; 8, c &amp; 0xff); // double
+        else bytes.push(c &gt;&gt; 16, c &gt;&gt; 8 &amp; 0xff, c &amp; 0xff); // triple
+      }
+      for(i = 0, lrm = bytes.length % 3, l = bytes.length - lrm; i &lt; l; i += 3){
+        b0 = bytes[i], b1 = bytes[i + 1], b2 = bytes[i + 2];
+        r += $64[b0 &gt;&gt; 2] + $64[(b0 &amp; 3) &lt;&lt; 4 | b1 &gt;&gt; 4]
+          +  $64[(b1 &amp; 0xf) &lt;&lt; 2 | b2 &gt;&gt; 6] + $64[b2 &amp; 0x3f];
+      }
+      if(lrm){
+        b0 = bytes[l], b1 = bytes[l + 1];
+        r += $64[b0 &gt;&gt; 2] + (lrm == 1 ? $64[(b0 &amp; 3) &lt;&lt; 4] +"=="
+                              : $64[(b0 &amp; 3) &lt;&lt; 4 | b1 &gt;&gt; 4] + $64[(b1 &amp; 0xf) &lt;&lt; 2] +"=");
+      }
+      return r;
+    }
+    function doukaku24(tmpl, insr, path){
+      insr = parseIni(ADOReadOrSaveFile(insr, 'utf-8')).Insertions;
+      ADOReadOrSaveFile
+        (path, "iso-2022-jp", ADOReadOrSaveFile
+         (tmpl, 'utf-8').replace(/\r\n?/g, '\n').replace(/\[\[(.*?)\]\]/g, function(_, $){
+           return insr[$] || "";
+         }).replace(/(\nSubject: )([^\n]+)/, function(_, $1, $2){
+           return $1 + '=?UTF-16?B?'+ jsBase64Enc($2) +'?=';
+         }).replace(/\n\n/, function($){ with(new Date)
+           return [,'Date: '+ toUTCString()
+                   ,'Message-ID: &lt;'+ getTime() * Math.random() * 24 +'@doukaku.org&gt;'
+                   ,'MIME-Version: 1.0'
+                   ,'Content-Type: text/plain; charset="ISO-2022-JP"'
+                   ,'Content-Transfer-Encoding: 7bit',,].join('\n') }));
+    }
+    doukaku24("template.txt", "insertions.ini", "doukaku24.mail");
+  :tags:
+  - WSH
+  :references:
+    :url: 
+    :title: 
+- :id: '2390'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/2390
+  :user_name: nobsun
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/22 14:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ちょっと拙速につくったのでゴチャゴチャしてる\r\nMail関係のライブラリはなかなか使いやすいものがないのが残念\r\nここでは
+    WASH のライブラリを利用した\r\n\r\nまた文字コード変換は iconv のライブラリを利用した\r\nhttp://urchin.earth.li/~ian/cabal/iconv/</pre>\n\t"
+  :code: "import Data.Char\nimport Data.Word\nimport qualified Data.UTF8 as U\nimport
+    System.IO.Unsafe\nimport System.Time\nimport System.Locale\nimport Text.Regex\nimport
+    Text.Printf\nimport Text.Iconv\nimport WASH.Mail.Email\nimport WASH.Mail.MailParser\nimport
+    WASH.Utility.Base64\n\n------------------------------------------------------------------------\n\ntemplate
+    = U.toUTF8 $ unlines \n [\"From: [[from]]\"\n ,\"To: [[to]]\"\n ,\"Subject: [[name]]さんにメッセージが届いています。\"\n
+    ,\"\"\n ,\"[[name]]さんに[[fromname]]さんからメッセージが届いてます。\"\n ,\"以下のURLからアクセスできます。\"\n
+    ,\"[[url]]\"\n ]\n\nbindings = [(\"from\",\"from@example.org\")\n\t   ,(\"to\",
+    \"to@example.org\")\n\t   ,(\"name\",U.toUTF8 \"どうかく\")\n\t   ,(\"fromname\",U.toUTF8
+    \"管理者\")\n           ,(\"url\",\"http://ja.dokuaku.org/\")\n\t   ]\n------------------------------------------------------------------------\n\nmain
+    :: IO ()\nmain = case rawmsg template bindings of\n RawMessage hs ls\n  -&gt;
+    putStr $ unlines \n   $ map showHeader (encSubject hs++hdrs) ++ [\"\"] ++ map
+    convert' ls\n\n------------------------------------------------------------------------\n\nrawmsg
+    template bindings\n = case parseMessageFromString $ insertItems template bindings
+    of\n     Left e -&gt; error $ show e\n     Right rm -&gt; rm \n\ninsertItems =
+    foldl (\\ t (n,v) -&gt; subRegex (mkRegex (\"\\\\[\\\\[\"++n++\"\\\\]\\\\]\"))
+    t v)\n\nencSubject hs = case break subjectHeader hs of \n  (xs,(Header (_,v)):ys)
+    -&gt; xs++makeSubject (encodeValue v) : ys\n\nsubjectHeader (Header h) = map toLower
+    (fst h) == \"subject\"\n\nencodeValue :: String -&gt; String\nencodeValue = printf
+    \"=?ISO-2022-JP?B?%s?=\" . encode' . convert'\n\nconvert' s = case convert Strict
+    \"UTF-8\" \"ISO-2022-JP\" s of\n  ConversionSuccess s' -&gt; s'\n  _                    -&gt;
+    error \"iconv conversion failed\"\n\n{-# INLINE messageID #-}\nmessageID = unsafePerformIO
+    inventMessageId\n{-# INLINE date #-}\ndate = unsafePerformIO \n     $ getClockTime
+    &gt;&gt;= toCalendarTime\n                    &gt;&gt;= return . formatCalendarTime
+    defaultTimeLocale rfc822DateFormat\n\nhdrs :: [Header]\nhdrs = [makeX \"Date\"
+    [date]\n       ,messageID\n       ,mimeHeader\n       ,makeContentType \"text\"
+    \"plain\" [KV (\"charset\",\"ISO-2022-JP\")]\n       ,makeContentTransferEncoding
+    \"7bit\"\n       ]\n\nshowHeader (Header (k,v)) = k++\": \"++v\n"
+  :tags: []
+  :references:
+    :url: /web/20090523155028/http://www.informatik.uni-freiburg.de/~thiemann/haskell/WASH/
+    :title: Web Authoring System Haskell (WASH)
+- :id: '8028'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/8028
+  :user_name: emasaka
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/11/12 05:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ヘッダのエンコードに適切なコマンドが見つからなかったので、\r\nnkfと正規表現で実装しました。\r\n入力はUTF-8を前提にしています。\r\n\r\n$
+    cat sample.tmpl\r\nFrom: [[from]]\r\nTo: [[to]]\r\nSubject: [[name]]さんにメッセージが届いています\r\n\r\n[[name]]さんに[[fromname]]さんからメッセージが届いています。\r\n以下のURLからアクセスできます。\r\n[[url]]\r\n$
+    cat sampe.conf\r\nfrom='from@example.org'\r\nto='to@example.org'\r\nname='どう書く'\r\nfromname='管理者'\r\nurl='http://ja.doukaku.org/'\r\n$
+    bash mailencode.bash sample.conf sample.tmpl | cat -v\r\nFrom: from@example.org^M\r\nTo:
+    ^[$B$*$l^[(B &lt;to@example.org&gt;^M\r\nSubject: ^[$B$I$&amp;=q$/$5$s$K%a%C%;!&lt;%8$,FO$$$F$$$^$9^[(B^M\r\nDate:
+    Wed, 12 Nov 2008 20:13:08 +0900^M\r\nMessage-ID: &lt;hoge.1226488388.6361.7459@example.jp&gt;^M\r\nMIME-Version:
+    1.0^M\r\nContent-Type: text/plain; charset=\"ISO-2022-JP\"^M\r\nContent-Transfer-Encoding:
+    7bit^M\r\n^M\r\n^[$B$I$&amp;=q$/$5$s$K4IM}&lt;T$5$s$+$i%a%C%;!&lt;%8$,FO$$$F$$$^$9!#^[(B^M\r\n^[$B0J2&lt;$N^[(BURL^[$B$+$i%\"%/%;%9$G$-$^$9!#^[(B^M\r\nhttp://ja.doukaku.org/^M\r\n</pre>\n\t"
+  :code: |
+    #!/bin/bash
+
+    declare tmpl_sedcmd
+
+    function quotemeta() {          # just workaround
+        echo "$1" | sed -e 's|[]/.?*[]|\\&amp;|g'
+    }
+
+    function load_conf() {
+        local file=$1
+
+        local s
+        while read -r s; do
+            eval "local _CONF_$s"
+        done &lt; $file
+
+        local v
+        for v in ${!_CONF_*}; do
+            local b=$(quotemeta "[[${v#_CONF_}]]")
+            local a=$(quotemeta "${!v}")
+            tmpl_sedcmd="$tmpl_sedcmd;s/$b/$a/g"
+        done
+    }
+
+    function b_encode() {
+        local text=$1
+
+        while [[ $text =~ ([ -~]*)([^ -~][^ -~]*)(.*) ]]; do
+            echo -n "${BASH_REMATCH[1]}"
+            echo -n "${BASH_REMATCH[2]}" | nkf -Wj | nkf -M
+            text=${BASH_REMATCH[3]}
+        done
+        echo "$text"
+    }
+
+    readonly ex_headers='MIME-Version: 1.0
+    Content-Type: text/plain; charset="ISO-2022-JP"
+    Content-Transfer-Encoding: 7bit'
+
+    function header() {
+        local s
+        while read -r s; do
+            [ -z "$s" ] &amp;&amp; break
+            s=$(echo "$s" | sed -e "$tmpl_sedcmd")
+            b_encode "$s"
+        done
+        echo "Date: $(date -R)"
+        echo "Message-ID: &lt;$(hostname).$(date +%s).$$.$RANDOM@$(hostname -f)&gt;"
+        echo "$ex_headers"
+        echo
+    }
+
+    function body() {
+        sed -e "$tmpl_sedcmd" | nkf -Wj
+    }
+
+    conf=$1
+    templ=$2
+    load_conf $conf
+    { header; body; } &lt; $templ | nkf -Lw
+  :tags:
+  - date
+  - hostname
+  - nkf
+  - sed
+  :references:
+    :url: 
+    :title: 
+- :id: '8029'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/8029
+  :user_name: emasaka
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/852/
+  :language: diff
+  :time: 2008/11/12 08:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>投稿された内容を後から見て、エンコードされていないことに気づきました。</p>\n\n\t"
+  :code: |
+    60c60
+    &lt; { header; body; } &lt; $templ | nkf -Lw
+    ---
+    &gt; { header; body; } &lt; $templ | nkf -Lw -m0
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8477'
+  :parent_id: '24'
+  :url: http://ja.doukaku.org/comment/8477
+  :user_name: genzou
+  :user_url: /web/20090523155028/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2009/02/08 22:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>制約はいくつかありますが、\nこれがgroovyでは簡単かな。</p>\n<p>テンプレートファイル自体がGStringのスクリプト。\n「${hoge}」にて表示したい値を指定できます。</p>\n<div
+    class=\"section\">\n<h1><a id=\"id1\" name=\"id1\">&lt;例&gt;</a></h1>\n<p>こんにちわ　${params.name}さん\n年齢は　${params.age}にもなるんですね！\n--------------------------\nなテンプレートファイルを読み込んだ結果は、\n--------------------------\nこんにちわ　ゲンゾウさん\n年齢は　29にもなるんですね！\n--------------------------\nです。</p>\n</div>\n\n\t"
+  :code: |
+    def params = [name:"ゲンゾウ", age:29]
+    def file = new File("template.txt")
+    println groovy.util.Eval.me("params", params, /"""${file.text}"""/)
+  :tags: []
+  :references:
+    :url: 
+    :title: 

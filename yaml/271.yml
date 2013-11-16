@@ -1,0 +1,882 @@
+---
+:id: '271'
+:title: リングノードベンチマーク
+:comments:
+- :id: '9207'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9207
+  :user_name: tsuwabuki
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/479/
+  :language: 
+  :time: 2009/06/20 02:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>N個のノードを作り、1番目のノードに送られたメッセージは2番目のノードに、2番目のノードに送られたメッセージは3番目のノードに、・・・、N番目のノードに送られたメッセージは1番目のノードに送られるようにリングを形成し、そのリング上を一つのメッセージがM回まわるのにかかる時間を計測してください。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9265'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9265
+  :user_name: bleis-tift
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/732/
+  :language: SQL
+  :time: 2009/06/30 21:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>SQL Server 2008 で確認しました。</p>\n<p>へっぽこノートで 20 秒程度かかりました。</p>\n\n\t"
+  :code: |
+    DECLARE @start AS datetime = GETDATE();
+
+    DECLARE @results AS table(id int, n int, m int, msg varchar(max));
+
+    WITH
+      Input(n, msg, m) AS (
+        SELECT 1000, 'hoge', 10
+      )
+    , Nodes(id, next_id, n) AS (
+        SELECT
+            0
+          , 1 % n
+          , n - 1
+        FROM
+            Input
+        UNION ALL
+        SELECT
+            id + 1
+          , (id + 2) % (id + 1 + n)
+          , n - 1
+        FROM
+            Nodes
+        WHERE
+            n &lt;&gt; 0
+      )
+    , LoopNodes(id, n, m, msg) AS (
+        SELECT
+            id
+          , Input.n
+          , m
+          , msg
+        FROM
+            Nodes
+          , Input
+        WHERE
+            id = 0
+        UNION ALL
+        SELECT
+            Node.id
+          , Own.n
+          , CASE Node.id WHEN 0 THEN Own.m - 1 ELSE Own.m END
+          , Own.msg
+        FROM
+            LoopNodes Own
+              INNER JOIN Nodes Node ON ((Own.id + 1) % Own.n) = Node.id
+        WHERE
+            Own.m &lt;&gt; 0
+      )
+    INSERT INTO @results
+      SELECT * FROM LoopNodes
+      OPTION (MAXRECURSION 32767);
+
+    SELECT CONVERT(varchar, GETDATE() - @start, 114);
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9266'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9266
+  :user_name: kh
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2009/06/30 23:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ファイバを用いました。\r\n\r\nN = 1000, M = 1000: 719
+    ms\r\nN = 10000, M = 1000: 11521 ms\r\nN = 1000, M = 10000: 11079 ms\r\nN = 10000,
+    M = 10000: 114837 ms</pre>\n\t"
+  :code: "module ringnode;\nimport core.thread, std.range, std.stdio, std.perf;\n\nclass
+    Node: Fiber {\n    private Message[] _msgs;\n    private Node _next;\n    \n    this()
+    {    \n        super(&amp;process);\n    }\n    \n    void nextNode(Node value)
+    {\n        _next = value;\n    }\n    \n    void post(Message msg) {\n        _msgs
+    ~= msg;\n    }\n    \n    private void process() {\n        for(;;) {\n            if(!_msgs.empty)
+    {\n                auto msg = _msgs.front;\n                _msgs.popFront;\n
+    \               \n                debug writefln(\"Node[%s] received message '%s'
+    (hopLimit: %s)\", cast(void*)this, msg.text, msg.hopLimit);\n                msg.hopLimit--;\n
+    \               if(!msg.hopLimit) {\n                    yieldAndThrow(new Completed(msg));\n
+    \               }\n                _next.post(msg);\n            }\n            yield;\n
+    \       }\n    }\n}\n\nclass Ring {\n    Node[] _nodes;\n    \n    this(uint n)
+    {\n        _nodes.length = n;\n        foreach(i, ref node; _nodes) node = new
+    Node;\n        foreach(i, _; _nodes) _nodes[i].nextNode = _nodes[(i + 1) % $];\n
+    \   }\n    \n    auto nodes() {\n        return cycle(_nodes);\n    }\n    \n
+    \   alias nodes this;\n}\n\nclass Message {\n    uint hopLimit;\n    string text;\n
+    \   \n    this(uint hopLimit, string text) {\n        this.hopLimit = hopLimit;\n
+    \       this.text = text;\n    }\n}\n\nclass Completed: Throwable {\n    this(Message
+    msg) {\n        super(\"completed: '\" ~ msg.text ~ \"'\");\n    }\n}\n\n\nvoid
+    benchmark(uint N, uint M)() {\n    auto ring = new Ring(N);\n    \n    ring.front.post(new
+    Message(N * M, \"hello\"));\n    \n    auto pc = new PerformanceCounter;\n    pc.start;\n
+    \   \n    try {\n        foreach(node; ring.nodes) {\n            node.call;\n
+    \       }\n    } catch(Completed c) {\n        debug writeln(c.msg);\n    }\n
+    \   \n    pc.stop;\n    \n    writefln(\"N = %s, M = %s: %s ms\", N, M, pc.milliseconds);\n}\n\nvoid
+    main() {\n    benchmark!(1000, 1000);\n    benchmark!(10000, 1000);\n    benchmark!(1000,
+    10000);\n    benchmark!(10000, 10000);\n}\n"
+  :tags:
+  - D2.030
+  :references:
+    :url: /web/20100506131937/http://www.digitalmars.com/d/2.0/phobos/std_thread.html
+    :title: core.thread - D Programming Language - Digital Mars
+- :id: '9267'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9267
+  :user_name: sumim
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/07/01 00:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n<p>M = 1000 で固定して N を 100～10000 で振ってみました。2.4GHz
+    Core 2 Duo, Vista です。</p>\n\n\t"
+  :code: "| elapsedTime |\n{1}, (5 to: 50 by: 5), (60 to: 100 by: 10) do: [:nn |\n
+    \  Smalltalk garbageCollect.\n   elapsedTime := [\n      | numNodes numMsgs firstMailbox
+    neighborMailbox |\n      numNodes := nn * 100.\n      numMsgs := 1000.\n      firstMailbox
+    := neighborMailbox := OrderedCollection new.\n\n      (1 to: numNodes) do: [:idx
+    |\n         | myMailbox semaphore |\n         myMailbox := neighborMailbox.\n
+    \        neighborMailbox := (idx = numNodes) not\n            ifTrue: [OrderedCollection
+    new]\n            ifFalse: [firstMailbox].\n         semaphore := Semaphore new.\n\n
+    \        [  | mutex numUnsent |\n            mutex := Semaphore forMutualExclusion.\n
+    \           numUnsent := numMsgs.\n            [numUnsent &gt; 0] whileTrue: [\n
+    \              mutex critical: [\n                  myMailbox ifNotEmpty: [\n
+    \                    \"Transcript cr; show: ('Pid = {1}, M = {2}'\n                        format:
+    {Processor activeProcess name. numUnsent}).\"\n                     numUnsent
+    := numUnsent - 1.\n                     myMailbox removeFirst.\n                     neighborMailbox
+    add: #message]].\n               Processor yield].\n            (idx = numNodes)
+    ifTrue: [semaphore signal]] fixTemps fork].\n\n      firstMailbox add: #message.\n
+    \     semaphore wait] timeToRun.\n\n   World findATranscript: nil.\n   Transcript
+    cr; show: ('N = {1}, M = {2}; elapsed time = {3} milliseconds'\n      format:
+    \ {numNodes. numMsgs. elapsedTime})]\n\n\"=&gt; \nN = 100, M = 1000; elapsed time
+    = 276 milliseconds\nN = 500, M = 1000; elapsed time = 1661 milliseconds\nN = 1000,
+    M = 1000; elapsed time = 3317 milliseconds\nN = 1500, M = 1000; elapsed time =
+    5495 milliseconds\nN = 2000, M = 1000; elapsed time = 7394 milliseconds\nN = 2500,
+    M = 1000; elapsed time = 9482 milliseconds\nN = 3000, M = 1000; elapsed time =
+    11590 milliseconds\nN = 3500, M = 1000; elapsed time = 13526 milliseconds\nN =
+    4000, M = 1000; elapsed time = 15473 milliseconds\nN = 4500, M = 1000; elapsed
+    time = 19731 milliseconds\nN = 5000, M = 1000; elapsed time = 19566 milliseconds\nN
+    = 6000, M = 1000; elapsed time = 23861 milliseconds\nN = 7000, M = 1000; elapsed
+    time = 28079 milliseconds\nN = 8000, M = 1000; elapsed time = 31738 milliseconds\nN
+    = 9000, M = 1000; elapsed time = 36308 milliseconds\nN = 10000, M = 1000; elapsed
+    time = 40090 milliseconds \"\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '9268'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9268
+  :user_name: creeper
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/994/
+  :language: C
+  :time: 2009/07/01 01:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">BegenInvokeで。\r\nすごく遅いです\r\n\r\nWinXP SP3 32bit\r\nC2Q9300\r\nN
+    = 100 M = 100: 306ms\r\nN = 1000 M = 100: 3149ms\r\nN = 100 M = 1000: 3211ms\r\nN
+    = 1000 M = 1000: 32135ms</pre>\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Diagnostics;
+
+    namespace doukaku271
+    {
+        class Program
+        {
+            static void Main(string[] args)
+            {
+                benchmark(100, 100);
+                benchmark(1000, 100);
+                benchmark(100, 1000);
+                benchmark(1000, 1000);
+            }
+            static void benchmark(int N, int M)
+            {
+                Node[] n = new Node[N];
+                for (int i = 0; i &lt; N; i++) n[i] = new Node();
+                for (int i = 1; i &lt; N; i++) n[i - 1].Next = n[i];
+                n[N-1].Next = n[0];
+                EventWaitHandle ev = new ManualResetEvent(false);
+                Message msg = new Message("msg", N * M, ev);
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                n[0].Post(msg);
+                ev.WaitOne();
+                sw.Stop();
+                Console.WriteLine("N = {0} M = {1}: {2}ms", N, M, sw.ElapsedMilliseconds);
+            }
+        }
+        class Message
+        {
+            public static Message EXITMESSAGE = new Message(null, int.MaxValue, null);
+
+            public object msg;
+            public int ttl;
+            public EventWaitHandle ev;
+            public Message(object msg, int ttl, EventWaitHandle ev)
+            {
+                this.msg = msg;
+                this.ttl = ttl;
+                this.ev = ev;
+                if (ev!=null) ev.Reset();
+            }
+            public override string ToString()
+            {
+                return string.Format("[msg:{0} ttl:{1}]", msg, ttl);
+            }
+        }
+        class Node
+        {
+            static int sid = 0;
+
+            int id = sid++;
+            Node next = null;
+
+            public Node()
+            {
+                messageDelegate = new messageDelegateT(post);
+            }
+            public Node Next
+            {
+                get { return next; }
+                set { next = value; }
+            }
+
+            void post(Message msg)
+            {
+                //Console.WriteLine("{0}: {1}", id, message);
+                if (--msg.ttl == 0)
+                {
+                    if (msg.ev != null) msg.ev.Set();
+                }
+                else
+                {
+                    if (next != null) next.Post(msg);
+                }
+            }
+            delegate void messageDelegateT(Message msg);
+            messageDelegateT messageDelegate;
+            public void Post(Message msg)
+            {
+                messageDelegate.BeginInvoke(msg, null, null);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9269'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9269
+  :user_name: athos
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/755/
+  :language: Scheme
+  :time: 2009/07/01 04:02 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ノードの実現方法に制限はないようなので、ノードをクロージャ、\r\nメッセージの送信を手続き呼び出しとします
+    :-)\r\nノードの数を決め打ちでなく、実行時に決まるようにするとちょっと\r\n汚くなっちゃいますが、出力さえしなければかなり高速です。\r\n\r\nN
+    = 10000, M = 10000 で 6.50s くらいです。\r\n$ time ./doukaku271.scm 10000 10000\r\n./doukaku271.scm
+    10000 10000  6.42s user 0.05s system 97% cpu 6.619 total\r\n$</pre>\n\t"
+  :code: "#!/usr/bin/env gosh\n\n(use srfi-1)\n\n(define-macro (define-nodes n)\n
+    \ (let1 p (lambda (x)\n            #;`(format #t \"~a: ~a~%\" ',x msg)\n            #f)
+    \n    `(begin\n       (define (N0 msg m)\n         (unless (= m 0)\n           ,(p
+    'N0)\n           (N1 msg (- m 1))))\n       ,@(map (lambda (i)\n                (let
+    ([self (string-&gt;symbol #`\"N,|i|\")]\n                      [next (string-&gt;symbol
+    #`\"N,(remainder (+ i 1) n)\")])\n                  `(define (,self msg m)\n                     ,(p
+    self)\n                     (,next msg m))))\n              (iota (- n 1) 1)))))\n\n(eval
+    `(define-nodes ,(string-&gt;number (cadr *argv*)))\n      (current-module))\n\n(N0
+    \"Hello, world!\" (string-&gt;number (car *argv*)))\n"
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '9271'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9271
+  :user_name: ワサビ
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/1045/
+  :language: OCaml
+  :time: 2009/07/01 13:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  MailboxProcessor を使用して実装しました。\r<br>m = 1000 で固定、n = 100, 1000, 10000 の場合のベンチマークをとっています。\r<br><br>環境：Core2Quad 2.5GHz, Windows Vista 32bit\r<br><br>&gt; benchmark 100 1000 |&gt; printfn \"%d ms\";;\r<br>825 ms\r<br>val it : unit = ()\r<br>&gt; benchmark 1000 1000 |&gt; printfn \"%d ms\";;\r<br>7770 ms\r<br>val it : unit = ()\r<br>&gt; benchmark 10000 1000 |&gt; printfn \"%d ms\";;\r<br>113861 ms\r<br>val it : unit = ()\n\t"
+  :code: |
+    #light
+
+    open System
+    open System.Diagnostics
+    open System.Threading
+
+    type Node(next, m, eventwait : AutoResetEvent) =
+        let mailbox =
+            MailboxProcessor.Start(fun inbox -&gt;
+                let rec loop l =
+                    async {
+                        let! (nodes : Node[]) = inbox.Receive()
+                        nodes.[next].Post(nodes)
+                        if l &lt; m then
+                            return! loop (l + 1)
+                        else
+                            eventwait.Set() |&gt; ignore
+                            return ()
+                    }
+                loop 0
+            )
+        member this.Post(msg) = mailbox.Post(msg)
+
+    let benchmark n m =
+        let eventwait = new AutoResetEvent(false)
+        let nodes = [|for i in 1..n -&gt; new Node(i % n, m, eventwait)|]
+        let stopwatch = Stopwatch.StartNew()
+        nodes.[0].Post(nodes)
+        eventwait.WaitOne() |&gt; ignore
+        stopwatch.Stop()
+        stopwatch.ElapsedMilliseconds
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '9273'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9273
+  :user_name: nobsun
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2009/07/01 18:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">時間計測はお題22で作成したprofileを利用。時間の単位は秒です。\r\nCPU
+    PentiumIII M 532MHzで動作\r\n\r\n*Main&gt; benchmark 1000 1000 -- 1000 nodes 1000
+    loops\r\n0.456028 \r\n</pre>\n\t"
+  :code: "import System.IO.Unsafe\nimport System.CPUTime\n\ntype Node = Message -&gt;
+    Message\ntype Message = ()\n\nnode :: Node\nnode = id\n\nlink :: Node -&gt; Node
+    -&gt; Node\nlink = (.)\n\nmessage :: Message\nmessage = ()\n\nbenchmark :: Int
+    -&gt; Int -&gt; ()\nbenchmark n m \n  = profile $\n            ( foldr1 link .
+    take m  -- m周まわっておわりにする\n            $ cycle . (:[])         -- 輪にする\n            $
+    foldr1 link           -- 連結\n            $ replicate n node      -- n個のノード\n            )
+    message\n\n-- profile お題22で作成したもの\n\nprofile :: a -&gt; a\nprofile e \n = unsafePerformIO\n
+    $ do { s &lt;- getCPUTime\n      ; r &lt;- return $! e\n      ; e &lt;- getCPUTime\n
+    \     ; putStrLn $ show $ fromInteger (e-s) / fromInteger (10^12)\n      ; return
+    r\n      }\n"
+  :tags:
+  - System.CPUTime
+  - System.IO.Unsafe
+  :references:
+    :url: 
+    :title: 
+- :id: '9274'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9274
+  :user_name: lufia
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/242/
+  :language: Other
+  :time: 2009/07/01 18:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">チャネルを使ってリングを表現しました。\r\n計算時間に含めていないので数値には現れていませんが、\r\nN=10000の場合、計算そのものより\r\nプロセス生成(buildrings)に時間がかかります。\r\n\r\n
+    \ 100 times  1000 nodes    109 msec\r\n 1000 times  1000 nodes    984 msec\r\n
+    1000 times 10000 nodes  10609 msec\r\n10000 times  1000 nodes   9547 msec\r\n10000
+    times 10000 nodes 106313 msec</pre>\n\t"
+  :code: |
+    implement Bench;
+
+    include "sys.m";
+        sys: Sys;
+    include "draw.m";
+    include "lists.m";
+        lists: Lists;
+
+    Bench: module
+    {
+        init: fn(ctxt: ref Draw-&gt;Context, argv: list of string);
+    };
+
+    Ring: adt
+    {
+        cin, cout: chan of int;
+    };
+
+    N: con 10000;            # &gt;0
+    M: con 10000;
+
+    init(nil: ref Draw-&gt;Context, nil: list of string)
+    {
+        sys = load Sys Sys-&gt;PATH;
+        lists = load Lists "/dis/lib/lists.dis";
+
+        rings := buildrings(N);
+        tick0 := sys-&gt;millisec();
+        for(i := 0; i &lt; M; i++){
+            (hd rings).cin &lt;- = i;
+            &lt;- (hd rings).cout;
+        }
+        tick1 := sys-&gt;millisec();
+        sys-&gt;print("%d times %d nodes %d msec\n", M, N, tick1-tick0);
+        destroyrings(rings);
+    }
+
+    buildrings(n: int): list of ref Ring
+    {
+        rings: list of ref Ring;
+        for(i := 0; i &lt; n; i++)
+            rings = lists-&gt;append(rings, ref Ring(nil, chan of int));
+        last := lists-&gt;last(rings);
+        for(p := rings; p != nil; p = tl p){
+            (hd p).cin = last.cout;
+            last = hd p;
+        }
+
+        for(p = rings; p != nil; p = tl p)
+            spawn relay(hd p);
+        return rings;
+    }
+
+    relay(r: ref Ring)
+    {
+        while((n:=&lt;-r.cin) &gt;= 0)
+            r.cout &lt;- = n;
+    }
+
+    destroyrings(rings: list of ref Ring)
+    {
+        for(p := rings; p != nil; p = tl p)
+            (hd p).cin &lt;- = -1;
+    }
+  :tags:
+  - Limbo
+  :references:
+    :url: 
+    :title: 
+- :id: '9276'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9276
+  :user_name: athos
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/755/
+  :language: Scheme
+  :time: 2009/07/01 22:03 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">#9269 は不評だったようなので、継続でコルーチンっぽいものを作って\r\n#9266
+    を参考にしてやってみました。\r\n\r\n継続を生成するのにかなり時間がかかっているようです。\r\n$ time ./doukaku271.scm 10000
+    1000\r\n./doukaku271.scm 10000 1000  43.23s user 0.36s system 98% cpu 44.303 total\r\n$</pre>\n\t"
+  :code: |
+    #!/usr/bin/env gosh
+
+    (use util.queue)
+    (use gauche.parameter)
+
+    (define *nodes* (make-parameter #f))
+
+    (define (yield msg hop)
+      (let/cc cc
+        (enqueue! (*nodes*) cc)
+        ((dequeue! (*nodes*)) msg hop)))
+
+    (define (make-node name)
+      (lambda (msg hop)
+        (let loop ([msg msg] [hop hop])
+          (cond [(= hop 0) #f]
+                [else
+                 #;(format #t "~a: ~a~%" name msg)
+                 (receive (msg hop) (yield msg (- hop 1))
+                   (loop msg hop))]))))
+
+    (define (init-nodes n)
+      (*nodes* (make-queue))
+      (dotimes (i n)
+        (enqueue! (*nodes*) (make-node #`"N,|i|"))))
+
+    (define (run msg n m)
+      (init-nodes n)
+      ((dequeue! (*nodes*)) msg (* n m)))
+
+    (define (main args)
+      (run "Hello, world!"
+           (x-&gt;integer (car *argv*))
+           (x-&gt;integer (cadr *argv*)))
+      0)
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '9277'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9277
+  :user_name: egtra
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2009/07/02 05:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Boost.Asioでやりました。bindとfunctionの多用が速度を落としている原因の1つにあると思います。</p>\n<table
+    border=\"1\" class=\"docutils\">\n<colgroup>\n<col width=\"28%\">\n<col width=\"28%\">\n<col
+    width=\"44%\">\n</colgroup>\n<thead valign=\"bottom\"><tr>\n<th class=\"head\">M</th>\n<th
+    class=\"head\">N</th>\n<th class=\"head\">時間(秒)</th>\n</tr></thead>\n<tbody valign=\"top\">\n<tr>\n<td>1000</td>\n<td>1000</td>\n<td>1.698</td>\n</tr>\n<tr>\n<td>10000</td>\n<td>1000</td>\n<td>16.997</td>\n</tr>\n<tr>\n<td>1000</td>\n<td>10000</td>\n<td>16.910</td>\n</tr>\n<tr>\n<td>10000</td>\n<td>10000</td>\n<td>171.371</td>\n</tr>\n</tbody>\n</table>"
+  :code: |
+    #include &lt;boost/function.hpp&gt;
+    #include &lt;boost/bind.hpp&gt;
+    #include &lt;boost/ref.hpp&gt;
+    #include &lt;boost/optional.hpp&gt;
+    #include &lt;boost/timer.hpp&gt;
+    #include &lt;boost/asio.hpp&gt;
+    #include &lt;iostream&gt;
+    #include &lt;vector&gt;
+    #include &lt;functional&gt;
+
+    using boost::asio::io_service;
+
+    // 1番目のノード: 何周目かのカウント、経過時刻の表示を担当
+    class first
+    {
+    public:
+        typedef void result_type;
+        first(int m) : count(m) {}
+        void operator ()(io_service&amp; ios, boost::function&lt;void (int)&gt; const&amp; next, int id)
+        {
+            if (id == last_id)
+            {
+                ++cur;
+                if (count == cur)
+                {
+                    std::cout &lt;&lt; t.elapsed() &lt;&lt; "秒かかりました" &lt;&lt; std::endl;
+                    return;
+                }
+            }
+            else
+            {
+                last_id = id;
+                t.restart();
+                cur = 0;
+            }
+            ios.post(boost::bind(next, id));
+        }
+    private:
+        boost::optional&lt;int&gt; last_id;
+        boost::timer t;
+        int cur;
+        const int count;
+
+        first(const first&amp;);
+        first&amp; operator =(const first&amp;);
+    };
+
+    // 2からN番目までのノード
+    void pass_to_next(io_service&amp; ios, boost::function&lt;void (int)&gt; const&amp; next, int id)
+    {
+        ios.post(boost::bind(next, id));
+    }
+
+    int main()
+    {
+        using boost::bind;
+        io_service ios;
+        int m, n;
+        std::cin &gt;&gt; m &gt;&gt; n;
+        first f(m);
+        std::vector&lt;boost::function&lt;void (int)&gt; &gt; ring(n);
+        ring[0] = (bind(boost::ref(f), boost::ref(ios), boost::cref(ring[1]), _1));
+        for (int i = 1; i &lt; n - 1; ++i)
+        {
+            ring[i] = bind(pass_to_next, boost::ref(ios), boost::cref(ring[i + 1]), _1);
+        }
+        ring[n - 1] = bind(pass_to_next, boost::ref(ios), boost::cref(ring[0]), _1);
+
+        ring[0](42); // メッセージの送信開始
+        ios.run();
+    }
+  :tags:
+  - Boost
+  - Boost.Asio
+  - Boost1.39
+  :references:
+    :url: 
+    :title: 
+- :id: '9296'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9296
+  :user_name: konn
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/100/
+  :language: Ruby
+  :time: 2009/07/07 08:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>とりあえず、Rubyで書いてみました。\r</p>\n<p>しかし愚直に書いたので、あっと云う間にStack
+    Overflow してしまいます……。むぅ。\r</p>\n<p>\r</p>\n<p>$ time ruby1.9 ringnode.rb 100 77\r</p>\n<p>ruby1.9
+    ringnode.rb 100 77  0.01s user 0.01s system 94% cpu 0.020 total</p>\n</div>\n\t"
+  :code: "class Node\n  attr_accessor :receiver\n  @@insts = []\n  \n  def self.start(msg,
+    count)\n    @@insts[0].recv(msg, count * @@insts.size)\n  end\n  \n  def initialize\n
+    \   @id = @@insts.size\n    @@insts &lt;&lt; self\n    @@insts[-1].receiver =
+    @@insts[0]\n    @@insts[-2].receiver = @@insts[-1] if @@insts.size &gt;= 2\n  end\n\n
+    \ def recv(msg, count)\n    return msg if count.zero?\n    @receiver.recv(msg,
+    count-1)\n  end\nend\n\nm, n ,= ARGV.map(&amp;:to_i)\nn.times{Node.new}\nNode.start(\"Hi,
+    \", m)\n"
+  :tags:
+  - Ruby
+  :references:
+    :url: 
+    :title: 
+- :id: '9341'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9341
+  :user_name: airhead
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/1026/
+  :language: JavaScript
+  :time: 2009/07/11 09:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Pen4 2.53Ghzのにおいて1000ノード1000周をやったとき、Firefox 3.5で1400-1700ms、Operaで600msちょいでした。</p>\n<p>蛇足ですが、コメントアウト部はノード網羅の確認用。alertで表示できる文字数には限りがあるし、Firefoxでは最大10000文字で切り捨てるようなので、それにあわせてm,nを減らす必要があります。</p>\n\n\t"
+  :code: "var send;\nvar Node = function () {\n    var id = 0;\n    var relayDest,
+    relayMsg;\n    send = function (msg) {\n        relayDest = this;\n        relayMsg
+    = msg; \n        while (relayDest.receive(relayMsg));\n        return relayMsg;\n
+    \   }\n    return function () {\n        this.id = id++;\n        this.dest =
+    this;\n        this.receive = function (msg) {\n            if (typeof this.count
+    == \"number\") {\n                if (this.count == 0) return false;\n//                msg
+    += \"\\n\" + this.count + \": \";\n                this.count--;\n            }\n//
+    \           msg += this.id + \" \";\n            relayDest = this.dest;\n            relayMsg
+    = msg;\n            return true;\n        };\n    };\n}();\nNode.prototype.send
+    = send;\n\nvar n = 1000, m = 1000;\n\nvar ring = [];\nring[0] = new Node();\nfor
+    (var i = 1; i &lt; n; i++) {\n    ring[i] = new Node();\n    ring[i - 1].dest
+    = ring[i];\n}\nring[n - 1].dest = ring[0];\nring[0].count = m;\n\nvar t = new
+    Date();\nvar lastMsg = ring[0].send(\"read me in turn.\");\nt = new Date() - t;\n\nalert(\"elapsed
+    time:\\n\" + t + \"[ms]\\n\\nmessage:\\n\" + lastMsg);\n"
+  :tags: []
+  :references:
+    :url: /web/20100506131937/http://slashdot.jp/~airhead/journal/481544
+    :title: 'memo: リングノードベンチマーク'
+- :id: '9351'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9351
+  :user_name: nattou_curry
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/913/
+  :language: Java
+  :time: 2009/07/13 14:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Threadにて実装。</p>\n<p>Pentium M 1.30 GHzで、1000ノード1000周を実行したところ、約30,000msかかりました。</p>\n<p>Threadで実装したせいか、時間がかかりすぎています。</p>\n\n\t"
+  :code: "import java.util.Date;\n\npublic class RingNodeBenchMark {\n    \n    public
+    static void main( String[] args ) {\n        \n        int n = 1000;    // ノードの数\n
+    \       int m = 1000;    // 処理回数\n\n        ///////////////////////////////////////////////////////////////////////\n
+    \       // 前処理\n        ///////////////////////////////////////////////////////////////////////\n\n
+    \       // ノードを作成する。\n        Node[] nodes = new Node[n];\n        for ( int i
+    = 0; i &lt; nodes.length; ++i ) {\n            nodes[i] = new Node();\n        }\n\n
+    \       // ノードをリング上に繋げる。\n        nodes[nodes.length-1].nextNode = nodes[0];\n
+    \       for ( int i = 0; i &lt; nodes.length-1; ++i ) {\n            nodes[i].nextNode
+    = nodes[i+1];\n        }\n\n        // 各ノードのスレッドを開始する。\n        for ( int i =
+    0; i &lt; nodes.length; ++i ) {\n            nodes[i].start();\n        }\n        \n
+    \       // 処理回数を先頭のノードに指定する。\n        nodes[0].max = 1000;\n\n        ///////////////////////////////////////////////////////////////////////\n
+    \       // 主処理\n        ///////////////////////////////////////////////////////////////////////\n\n
+    \       // 開始時刻を取得する。\n        Date startTime = new Date();\n        \n        //
+    先頭のノードにメッセージを送信する。\n        nodes[0].interrupt();\n        \n        // 先頭ノードが終了するまで待機する。\n
+    \       // なお、先頭ノードは、一定回数処理を実行した時点で終了する。\n        try {\n            nodes[0].join();\n
+    \       } catch ( InterruptedException e ) {}\n\n        // 終了時刻を取得する。\n        Date
+    endTime = new Date();\n\n        ///////////////////////////////////////////////////////////////////////\n
+    \       // 後処理\n        ///////////////////////////////////////////////////////////////////////\n
+    \       \n        // 経過時間を計算する。\n        long result = endTime.getTime() - startTime.getTime();\n
+    \       \n        // 経過時間を表示する。\n        System.out.println( result + \" ms\"
+    );\n    }\n    \n    // ノード\n    // スレッドで実装する。\n    private static class Node
+    extends Thread {\n        \n        Node nextNode;    // 次のノード\n        int max
+    = -1;    // 処理回数\n        \n        public Node() {\n            // ノードのスレッドはデーモンスレッドにする。\n
+    \           // この結果、メインスレッドが終了すると、ノードのスレッドは自動的に終了する。\n            setDaemon( true
+    );\n        }\n        \n        public void run() {\n            \n            int
+    count = 0;    // 処理回数のカウンタ。先頭ノードでのみ使用する。\n            \n            while ( true
+    ) {\n                \n                // メッセージを受信するまで待機する。\n                try
+    {\n                    while ( true ) {\n                        Thread.sleep(
+    1000 );\n                    }\n                } catch ( InterruptedException
+    e ) {\n                }\n\n                // 先頭ノードの場合、処理回数をカウントする。\n                if
+    ( max &gt;= 0 ) {\n                    if ( count &gt;= max ) {\n                        //
+    処理回数が一定の回数を超えた:\n                        \n                        // 先頭ノードのスレッドを終了する。\n
+    \                       return;\n                    }\n                    count
+    = count + 1;\n                }\n                \n                // 次のノードにメッセージを送信する。\n
+    \               nextNode.interrupt();\n            }\n        }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9362'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9362
+  :user_name: tanakahisateru
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/1025/
+  :language: Python
+  :time: 2009/07/13 18:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>出題意図のなかで、ベンチマークというのがあまりピンときてないのですが、他の言語の例を見るに、こういうことなんでしょうか？</p>\n<p>メッセージ送信でスタックを掘らないようにディスパッチループをつくり、メッセージを持っているノードを特定するコスト節約のために辞書を持つなどしています。…っていうような最適化やりだすと、何を計測するベンチマークテストなのかよくわからない、う～ん…</p>\n<p>結果\nterminated
+    msg=1000000\n8062ms</p>\n\n\t"
+  :code: "import itertools, datetime\n\nN = 1000\nM = 1000\n\n# quit signal in maggage
+    dispatch loop\nquit_mesage_posted = False\n\n# nodes only which currently owns
+    some message.\nactive_nodes = set()\n\n# node\nclass Node:\n    proc = lambda
+    msg: None # set your function to this.\n    msgbox = None\n    \n    def post(self,
+    msg):\n        self.msgbox = msg\n        active_nodes.add(self)\n        \n    def
+    consume(self):\n        self.proc(self.msgbox)\n        self.msgbox = None\n\n#
+    creating N nodes.\nnodes = []\nfor i in range(0, N):\n    nodes.append(Node())\n\n#
+    function generator for \"proc\" of Node object.\n# passed message are delegated
+    to the next node with increment.\ndef gen_send(node, break_at=None):\n    if break_at
+    is None:\n        return lambda msg: node.post(msg + 1)\n    else:\n        def
+    send(msg):\n            global quit_mesage_posted\n            send.c += 1\n            if
+    send.c &lt; break_at:\n                node.post(msg + 1)\n            else:\n
+    \               print \"terminated with msg=%d\" % (msg + 1)\n                quit_mesage_posted
+    = True\n        send.c = 0\n        return send\n\n# building node chain for each
+    (0, 1), (1, 2), (2, 3), ..., (N-2, N-1) pairs.\nfor node_from, node_to in itertools.izip(nodes[:-1],
+    nodes[1:]):\n    node_from.proc = gen_send(node_to)\n# the last chain from N-1
+    to 0, (that would be tareminated at M times passed)\nnodes[-1].proc = gen_send(nodes[0],
+    break_at=M)\n\n######################## start\ntime_start = datetime.datetime.now()\n\n#
+    1st message\nnodes[0].post(0)\n\n# message dispatch loop\nwhile (not quit_mesage_posted):\n
+    \   acn = active_nodes.copy()\n    active_nodes.clear()\n    for n in acn:\n        n.consume()\n\ntime_delta
+    = (datetime.datetime.now() - time_start)\nprint \"%dms\" % (time_delta.seconds
+    * 1000 + time_delta.microseconds / 1000.0)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9363'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9363
+  :user_name: sumim
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/88/
+  :language: Erlang
+  :time: 2009/07/14 00:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>このリングノードベンチというのは、Erlang のスレッドの“軽さ”を他の言語処理系と比較して誇示するためのベンチマークとして知られているものです。私は出題者ではありませんが、出題者の意図もそこからは大きく外れていないものと想像しています。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100506131937/http://muharem.wordpress.com/2007/07/31/erlang-vs-stackless-python-a-first-benchmark/
+    :title: 'Erlang vs. Stackless python: a first benchmark'
+- :id: '9375'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9375
+  :user_name: creeper
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/994/
+  :language: Other
+  :time: 2009/07/16 01:25 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">Squirrel 3.0で。\r\n末尾再起でぐるぐると。\r\n1行目をconst
+    usethread = 1;にするとスレッドを使うようになります。\r\n所要時間は10倍くらいになります。\r\n\r\n結果：（usethread=0）\r\nN:1000
+    M:1000 time:0.594s\r\nN:1000 M:10000 time:5.859s\r\nN:10000 M:1000 time:5.875s\r\nN:10000
+    M:10000 time:58.766s</pre>\n\t"
+  :code: |
+    const usethread = 0;
+    class Node
+    {
+        next = null
+        function process(msg, ttl)
+        {
+            if (--ttl)
+            {
+                if (usethread) suspend(ttl);
+                return next.process(msg, ttl);
+            }
+        }
+    };
+
+    function test(n, m)
+    {
+        local nodes = array(n);
+        nodes.apply(@(a) Node());
+        nodes.reduce(@(a,b) a.next = b);
+        nodes[n-1].next = nodes[0];
+        local start = clock();
+        if (usethread)
+        {
+            local t = newthread(@() nodes[0].process("hello", n*m));
+            t.call();
+            while(t.wakeup()) {}
+        }
+        else
+        {
+            nodes[0].process("hello", n*m);
+        }
+        print(format("N:%d M:%d time:%.3fs\n", n, m, clock()-start));
+    }
+
+    test(1000, 1000);
+    test(1000, 10000);
+    test(10000, 1000);
+    test(10000, 10000);
+  :tags:
+  - Squirrel
+  :references:
+    :url: 
+    :title: 
+- :id: '9465'
+  :parent_id: '271'
+  :url: http://ja.doukaku.org/comment/9465
+  :user_name: uehaj
+  :user_url: /web/20100506131937/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2009/08/09 14:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>Groovy用の並行処理記述DSL＆ライブラリであるところのGParallelizerで記述してみます。\r</p>\n<p>\r</p>\n<p>GParallelizerは、Java
+    5のExecutorServiceやjsr166yなどをもとにして４つの並列計算モデル(Asynchronizer、Parallelizer、Actors、Dataflow
+    Concurrency)を選んだり組み合わせたりして利用することができるわけであり、これらのモデルにはActor風な並行処理、データフロー処理などの特色があるわけですが、今回Event-driven
+    actorsというのを用いてみました。\r</p>\n<p>\r</p>\n<p>$ groovy ringnode.groovy\r</p>\n<p>node9
+    received: 0\r</p>\n<p>node8 received: 1\r</p>\n<p>node7 received: 2\r</p>\n<p>node6
+    received: 3\r</p>\n<p>node5 received: 4\r</p>\n<p>node4 received: 5\r</p>\n<p>
+    \ :\r</p>\n<p>node0 received: 99\r</p>\n<p>node9 received: 100\r</p>\n<p>661\r</p>\n</div>\n\t"
+  :code: |
+    import org.gparallelizer.actors.pooledActors.AbstractPooledActor
+
+    class Node extends AbstractPooledActor {
+      Node next
+      def name
+      def counter = 0
+      def maxcount
+
+      void act()
+      {
+        loop
+        {
+          react {
+            println "$name received: $it"
+            if (++counter &gt; maxcount) {
+              stop(); return
+            }
+            if (next != null) {
+              next.send it+1
+            }
+          }
+        }
+      }
+    }
+
+
+    NUMBER_OF_NODE = 10
+    MAX_CYCLE=10
+    node0 = node = new Node(name:"node0", next:null, maxcount:MAX_CYCLE).start()
+    (1..&lt;NUMBER_OF_NODE).each {
+      node = new Node(name:"node$it", next:node, maxcount:MAX_CYCLE)
+      node.start()
+    }
+    node0.next = node
+
+    start = System.currentTimeMillis()
+    node.send 0
+    node.join()
+    println (System.currentTimeMillis()-start)
+  :tags:
+  - GParallelizer
+  - actor
+  - groovy
+  :references:
+    :url: /web/20100506131937/http://code.google.com/p/gparallelizer/wiki/Actors
+    :title: gparallelizer

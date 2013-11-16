@@ -1,0 +1,874 @@
+---
+:id: '94'
+:title: 擬似lsの実装
+:comments:
+- :id: '4212'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4212
+  :user_name: ところてん
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/11/19 00:47 GMT
+  :vote_count: '3'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">スラッシュで区切られた文字列の配列(以下パスリスト)がある。\r\nこのパスリストにたいして擬似的なlsを行いたい。\r\nlsはパスリストと表示対象ディレクトリのパスを入力する。\r\n\r\n例としては以下のようになる。\r\npathList
+    = [\"aaa/bbb\",\"aaa/ccc\",\"aaa/ddd/eee\",\"bbb/ddd/eee\"]\r\n\r\nls(pathList,\"aaa/\")\r\n&gt;[\"bbb\",\"ccc\",\"ddd/\"]\r\n\r\nls(pathList,\"aaa/ddd/\")\r\n&gt;[\"eee\"]\r\n\r\nなおパスリストが大きくなったとき、速度がなるべく低下しないように実装するのが望ましい。\r\n文字列は任意の文字コードであると仮定してかまわない。</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4424'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4424
+  :user_name: shiro
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/11/27 07:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  問題文からは、第2引数はディレクトリ名である (したがって ls(pathList, \"aaa/bbb\") は空リストとなる)  と読めるのですがそれでいいでしょうか。lsの動作を考えると単独ファイルにマッチする場合も許しても良さそうですが、一応ディレクトリ名のみ許すことにしました。\r<br><br>gosh&gt; (ls '(\"aaa/bbb\" \"aaa/ccc\" \"aaa/ddd/eee\" \"ddd/bbb/eee\") \"aaa/\")\r<br>(\"bbb\" \"ccc\" \"ddd/\")\r<br>gosh&gt; (ls '(\"aaa/bbb\" \"aaa/ccc\" \"aaa/ddd/eee\" \"ddd/bbb/eee\") \"aaa/ddd/\")\r<br>(\"eee\")\r<br>gosh&gt; (ls '(\"aaa/bbb\" \"aaa/ccc\" \"aaa/ddd/eee\" \"ddd/bbb/eee\") \"aaa/ddd\")\r<br>(\"eee\")\r<br>gosh&gt; (ls '(\"aaa/bbb\" \"aaa/ccc\" \"aaa/ddd/eee\" \"ddd/bbb/eee\") \"aaa/bbb\")\r<br>()\r<br><br>lsにはリストが渡されるので、クレバーなデータ構造をls内で毎回作ってもあまり速度に貢献しないだろうと判断。文字列マッチで済ませています。\r<br>"
+  :code: |
+    (use srfi-1)
+    (use srfi-13)
+
+    (define (ls pathlist dir)
+      (let* ((prefix (string-trim-right dir #[/]))
+             (rx (string-&gt;regexp #`"^,(regexp-quote prefix)/")))
+        (filter-map (lambda (p)
+                      (and-let* ([m (rx p)])
+                        (regexp-replace* (m'after) #/(?&lt;=\/).*/ "")))
+                    pathlist)))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '4425'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4425
+  :user_name: nobsun
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/11/27 08:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">毎回 pathList が変更されるのならこんな感じかなぁ．\r\npathList
+    が固定なら最初に疑似的にディレクトリツリーを作成するんだけど．．．\r\n\r\n</pre>\n\t"
+  :code: "import Data.Maybe\n\nls :: [String] -&gt; String -&gt; [String]\nls fs p
+    =  map g $ mapMaybe (f p) fs\n where f []     qs   = Just qs\n       f (p:ps)
+    (q:qs) \n         | p == q    = f ps qs\n         | otherwise = Nothing\n       g
+    p = case break ('/'==) p of\n               (p',\"\" ) -&gt; p'\n               (p',_:_)
+    -&gt; p'++['/']\n"
+  :tags:
+  - Data.Maybe
+  :references:
+    :url: 
+    :title: 
+- :id: '4426'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4426
+  :user_name: odz
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/212/
+  :language: Python
+  :time: 2007/11/27 08:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>やり方は多分 shiro さんと同じ。\nプリプロセスありなら、内部でリストをソートするなりツリーを構築するなりするんだけど、リストを直接渡すという要求なら単純な手法かなぁ。\nって、みんな思うことは一緒ですね。</p>\n\n\t"
+  :code: |
+    import sys
+    import re
+    import itertools
+
+    def uniq(ls):
+        return (k for k, g in itertools.groupby(ls))
+
+    def ls(pathList, dir):
+        pat = re.compile('%s([^/]+/?)' % re.escape(dir))
+        matches = itertools.ifilter(None, (pat.match(path) for path in pathList))
+        return list(uniq(sorted([m.group(1) for m in matches])))
+
+    def main(args):
+        pathList = 'aaa/bbb aaa/ccc aaa/ddd/eee bbb/ddd/eee'.split()
+        print ls(pathList, 'aaa/')
+        print ls(pathList, 'aaa/ddd/')
+
+    if __name__ == '__main__':
+        main(sys.argv[1:])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4427'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4427
+  :user_name: uho
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/498/
+  :language: C
+  :time: 2007/11/27 08:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>縮めた感じで。</p>\n\n\t"
+  :code: |
+    static void ls(string[] pathList, string path)
+    {
+        int i;
+        Console.WriteLine(
+            pathList.Where( x =&gt; x.IndexOf(path) != -1 )
+                    .Select( x =&gt; x.Substring( path.Length, (i = x.IndexOf( "/", path.Length )) == -1 ? x.Length-path.Length : i-path.Length+1 ) )
+                    .Aggregate(new StringBuilder(), (sb, s) =&gt; sb.Append(s).Append(" "))
+        );
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4428'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4428
+  :user_name: SiroKuro
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/540/
+  :language: C
+  :time: 2007/11/27 08:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  C#2.0 で。new List&lt;string&gt; のあたりがもうちょっと何とかなりそうな気がするけど……。\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    static class Program {
+        static void Main() {
+            string[] pathList = {"aaa/bbb", "aaa/ccc", "aaa/ddd/eee", "bbb/ddd/eee", "bbb/ddd/fff"};
+            Console.WriteLine("[{0}]", string.Join(", ", Ls(pathList, "aaa/")));
+            Console.WriteLine("[{0}]", string.Join(", ", Ls(pathList, "aaa/ddd/")));
+            Console.WriteLine("[{0}]", string.Join(", ", Ls(pathList, "bbb/")));
+            Console.WriteLine("[{0}]", string.Join(", ", Ls(pathList, "bbb/ddd/")));
+        }
+        static string[] Ls(string[] paths, string pattern) {
+            SortedList&lt;string, string&gt; list = new SortedList&lt;string, string&gt;();
+            Array.ForEach(paths, delegate(string x) {
+                if (x.StartsWith(pattern)) {
+                    x = x.Substring(pattern.Length);
+                    int i = x.IndexOf('/');
+                    list[i &lt; 0 ? x : x.Substring(0, i + 1)] = null;
+                }
+            });
+            return new List&lt;string&gt;(list.Keys).ToArray();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4429'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4429
+  :user_name: sumim
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/11/27 08:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk で。\n\t"
+  :code: |
+    | ls list |
+
+    ls := [:pathList :pathTo |
+        | start stream results path |
+        start := pathTo size + 1.
+        stream := pathList readStream.
+        results := OrderedCollection new.
+        [(path := stream next) notNil] whileTrue: [
+            (path beginsWith: pathTo) ifTrue: [
+                | end |
+                end := path indexOf: $/ startingAt: start.
+                end isZero ifTrue: [end := path size].
+                results add: (path copyFrom: start to: end)]].
+        results asArray].
+
+    list := #('aaa/bbb' 'aaa/ccc' 'aaa/ddd/eee' 'bbb/ddd/eee').
+
+    ls value: list value: 'aaa/'.
+       "=&gt; #('bbb' 'ccc' 'ddd/') "
+    ls value: list value: 'aaa/ddd/'.
+       "=&gt; #('eee') "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '4432'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4432
+  :user_name: yohei
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/415/
+  :language: C
+  :time: 2007/11/27 10:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>C#3.0で拡張メソッドを使ってみました．</p>\n\n\t"
+  :code: |
+    using System;
+    using System.Linq;
+    using System.Collections.Generic;
+
+    static class Program {
+        static string RemoveAfter(this string s, char ch) {
+            int index = s.IndexOf(ch);
+            return (0 &lt;= index &amp;&amp; index &lt; s.Length - 1) ? s.Remove(index + 1) : s;
+        }
+        static void ls(IEnumerable&lt;string&gt; pathList, string path) {
+            if (!path.EndsWith("/")) path += '/';
+
+            var x = from y in pathList where y.StartsWith(path)
+                    select '"' + y.Substring(path.Length).RemoveAfter('/') + '"';
+
+            Console.WriteLine("[{0}]", string.Join(", ", x.Distinct().ToArray()));
+        }
+        static void Main(string[] args) {
+            string[] pathList = { "aaa/bbb", "aaa/ccc", "aaa/ddd/eee", "bbb/ddd/eee" };
+
+            ls(pathList, "aaa/");
+            ls(pathList, "aaa/ddd/");
+        }
+    }
+  :tags:
+  - C#3.0
+  - LINQ
+  :references:
+    :url: 
+    :title: 
+- :id: '4433'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4433
+  :user_name: rucker
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/11/27 10:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">一応ディレクトリツリー作ってみた。</pre>\n\t"
+  :code: |
+    &lt;?php
+    function ls($pathlist,$path)
+    {
+        $fs=array();
+        $path=trim($path,'/');
+        foreach($pathlist as $file)
+            eval('$fs[\''.str_replace("/","']['",$file).'\']=1;');
+        return eval('return array_keys($fs[\''.str_replace("/","']['",$path).'\']);');
+    }
+
+    $pathList = array("aaa/bbb","aaa/ccc","aaa/ddd/eee","bbb/ddd/eee");
+    print_r(ls($pathList,"aaa/"));
+    print_r(ls($pathList,"aaa/ddd/"));
+    ?&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4435'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4435
+  :user_name: dankogai
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/27 11:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>あえて木構造とかを作らず、そのまま正規表現で処理してみた。\n</p>\n<p>Dan the Regular Expressionist\n</p>\n\n\n\n\t"
+  :code: |
+    #!/usr/local/bin/perl
+    use strict;
+    use warnings;
+    sub pls{
+        my $where = shift;
+        my @list  = @_;
+        $where =~ s,/?\z,/,o;
+        my $pat = qr/\A\Q$where/;
+        map { s/$pat//; s,/.*,,; $_ } grep /$pat/, @list;
+    }
+
+    if (__FILE__ eq $0){
+        local $\ = "\n";
+        local $, = ", ";
+        my @pathList = ("aaa/bbb","aaa/ccc","aaa/ddd/eee","bbb/ddd/eee");
+        print pls("aaa/", @pathList);
+        print pls("aaa/ddd", @pathList);
+    }
+  :tags:
+  - regexp
+  :references:
+    :url: 
+    :title: 
+- :id: '4437'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4437
+  :user_name: ihag
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/560/
+  :language: Ruby
+  :time: 2007/11/27 12:05 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Rubyで．真面目にディレクトリツリーを作って処理しています．</p>\n<p>ついでに，パスリストへの動的な追加(add)と，基準パス以下の仮想ファイル一覧の出力(lslR)を追加しました．</p>\n<pre
+    class=\"literal-block\">\nx = PathList.new(\"aaa/bbb\", \"aaa/ccc\", \"aaa/ddd/eee\",
+    \"bbb/ddd/eee\")\npp x.ls('aaa/')\n=&gt; [\"bbb\", \"ccc\", \"ddd/\"]\npp x.ls('aaa/ddd/')\n=&gt;
+    [\"eee\"]\n\nx.add('bbb/foo', 'bbb/bar', 'bbb/baz/hoge')\npp x.ls('bbb')\n=&gt;
+    [\"ddd/\", \"baz/\", \"foo\", \"bar\"]\npp x.ls()\n=&gt; [\"aaa/\", \"bbb/\"]\n\npp
+    x.lslR\n=&gt; [\"aaa/bbb\",\n    \"aaa/ccc\",\n    \"aaa/ddd/eee\",\n    \"bbb/ddd/eee\",\n
+    \   \"bbb/baz/hoge\",\n    \"bbb/foo\",\n    \"bbb/bar\"]\n\npp x.lslR('bbb')\n=&gt;
+    [\"bbb/ddd/eee\", \"bbb/baz/hoge\", \"bbb/foo\", \"bbb/bar\"]\n</pre>\n\n\t"
+  :code: |
+    class PathList
+      def initialize(*obj)
+        @files = Hash.new {|hash, key| hash[key] = PseudoDir.new(key) }
+        self.add(*obj) unless obj.empty?
+      end
+
+      def add(*obj)
+        obj.flatten.each do |path|
+          path = path2list(path)
+          @files[path[0]] += path[1..-1]
+        end
+        return self
+      end
+
+      def ls(path = '')
+        path = path2list(path)
+        return lscurdir if path.empty?
+        return @files[path[0]].ls(path[1..-1])
+      end
+
+      def lslR(path = '')
+        path = path2list(path)
+        return @files[path[0]].lslR(path[1..-1]) unless path.empty?
+        return self.traversal('')
+      end
+
+      def lscurdir
+        @files.map {|name, file| file.name }
+      end
+
+      def traversal(prefix = '')
+        @files.map do |name, file|
+          file.traversal(prefix + self.name)
+        end.flatten
+      end
+
+      def path2list(path)
+        return path unless path.class == String     # XXX
+        path.split(%r|/|)
+      end
+
+      def name
+        ''
+      end
+    end
+
+    class PseudoDir &lt; PathList
+      def initialize(name = nil)
+        @name = name
+        super()
+      end
+
+      def +(obj)
+        name, rest = obj[0], obj[1..-1]
+        return PseudoFile.new(@name) if obj.empty?
+
+        @files[name] += rest
+        return self
+      end
+
+      def name
+        @name + '/'
+      end
+    end
+
+    class PseudoFile &lt; PathList
+      attr_reader(:name)
+      def initialize(name)
+        @name = name
+      end
+
+      def +(obj)
+        raise "#{self.name}: PseudoFile already exists"
+      end
+
+      def ls(list = [])
+        return [] unless list.empty?  # No such file or directory
+        return [self.name]
+      end
+
+      def traversal(prefix)
+        return prefix + self.name
+      end
+    end
+    __END__
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4439'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4439
+  :user_name: ihag
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/560/
+  :language: diff
+  :time: 2007/11/27 12:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>本筋とは関係ありませんが，lslRの出力が絶対パス(?)となっていたのを，相対パスでの出力となるように修正しました．</p>\n<pre
+    class=\"literal-block\">\npp x.lslR('bbb')\n=&gt; [\"ddd/eee\", \"baz/hoge\",
+    \"foo\", \"bar\"]\n</pre>\n\n\t"
+  :code: |
+    --- pseudo-ls.rb.orig   2007-11-27 21:20:03.000000000 +0900
+    +++ pseudo-ls.rb        2007-11-27 21:20:16.000000000 +0900
+    @@ -30,7 +30,7 @@
+
+       def traversal(prefix = '')
+         @files.map do |name, file|
+    -      file.traversal(prefix + self.name)
+    +      file.traversal(prefix + file.name)
+         end.flatten
+       end
+
+    @@ -79,7 +79,7 @@
+       end
+
+       def traversal(prefix)
+    -    return prefix + self.name
+    +    return prefix
+       end
+     end
+     __END__
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4441'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4441
+  :user_name: matyr
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/11/27 13:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>一応，スラッシュを補完。</p>\n\n\t"
+  :code: |
+    function l$(lst, dir){
+      if(dir.indexOf('/') &lt; 0) dir += '/';
+      var r = [], i = 0;
+      lst.join('\n').replace(RegExp('^'+ dir +'([^/\n]+/?)', 'mg'), function(_, $){ r[i++] = $ });
+      return r;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4443'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4443
+  :user_name: yuin
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/11/27 14:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>毎回リストを与えるならちゃんと構造作ってもあまり意味ないかな。</p>\n\n\t"
+  :code: |
+    def ls(plst:List[String], dir:String) = {
+      (for(p &lt;- plst if p.startsWith(dir)) yield {
+        val a = p.substring(dir.size)
+        val i = a.indexOf("/")
+        a.substring(0,if(i&lt;0){a.size}else{i+1})
+      }) removeDuplicates
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4444'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4444
+  :user_name: kozima
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/11/27 14:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>第一引数の文字列の末尾は \"/\" ではなく、\n第二引数の末尾は \"/\" であることを仮定しています。</p>\n<p>やり方はまあ普通です。リスト生成に
+    mapcan を使ってみました。</p>\n\n\t"
+  :code: |
+    (defun ls (files dir)
+      (let ((len (length dir)))
+        (mapcan (lambda (f)
+                  (and (&gt;= (length f) len)
+                       (string= f dir :end1 len)
+                       (let ((p (position #\/ f :start len)))
+                         (list (subseq f len (and p (1+ p)))))))
+                files)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4445'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4445
+  :user_name: kozima
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/11/27 14:43 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>が、ループの方が簡潔に書けました。それと、都合のいい入力を仮定するなら mismatch でよさそう。</p>\n\n\t"
+  :code: |
+    (defun ls (files dir)
+      (loop with len = (length dir)
+        for f in files
+        if (= (mismatch f dir) len)
+        collect (let ((p (position #\/ f :start len)))
+                  (subseq f len (and p (1+ p))))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4446'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4446
+  :user_name: 匿名
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/11/27 15:03 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">効率は考えてません。\r\n</pre>\n\t"
+  :code: |
+    import re
+
+    ls = lambda list, dir: [re.findall(dir + '([^/]+/?)', s)[0] for s in list if s.startswith(dir)]
+
+    pathList = ["aaa/bbb","aaa/ccc","aaa/ddd/eee","bbb/ddd/eee"]
+    print ls(pathList, 'aaa/')
+    print ls(pathList, 'aaa/ddd/')
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4447'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4447
+  :user_name: naoto
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/572/
+  :language: Scheme
+  :time: 2007/11/27 15:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    #!/usr/bin/env gosh
+
+    (use gauche.test)
+    (use srfi-1)
+
+    (define path-list (list "aaa/bbb" "aaa/ccc" "aaa/ddd/eee" "bbb/ddd/eee"))
+
+    (define (ls path-list dir)
+      (define (matcher x)
+        (and-let* ((rx (string-&gt;regexp #`"^,(regexp-quote dir)/?([^/]+/?)"))
+                   (m (rx x))
+                   (r (m 1)))
+          r))
+      (filter-map matcher path-list))
+
+    (test-start "path-list")
+    (test* "case '(ls path-list \"aaa/\")'"
+           '("bbb" "ccc" "ddd/") (ls path-list "aaa/"))
+    (test* "case '(ls path-list \"aaa/ddd/\")'"
+           '("eee") (ls path-list "aaa/ddd/"))
+    (test* "case '(ls path-list \"aaa/ddd\")'"
+           '("eee") (ls path-list "aaa/ddd"))
+    (test* "case '(ls path-list \"aaa/bbb\")'"
+           () (ls path-list "aaa/bbb"))
+    (test-end)
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '4449'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4449
+  :user_name: yappy
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/533/
+  :language: C
+  :time: 2007/11/27 15:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  コメントといえばＣで文字列処理をかくとポインタ演算だらけになるなあ、ということくらいか。\r<br>あとリスト処理が面倒・・・。\r<br>※リストの最後にNULLターミネータを付加\r<br>※結果はstdoutにしちゃいました\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;string.h&gt;
+
+    #define PATH_MAX 256
+    const char *pathList[] = {"aaa/bbb", "aaa/ccc", "aaa/ddd/eee", "bbb/ddd/eee", NULL};
+
+    void ls(const char **list, const char *dir){
+        char buf[PATH_MAX], *p;
+        size_t dirlen = strlen(dir);
+        while(*list){
+            if(strncmp(*list, dir, dirlen) == 0){
+                strcpy(buf, *list + dirlen);
+                p = buf;
+                while(*p){
+                    *(p+1) = (*p == '/') ? '\0' : *(p+1);
+                    p++;
+                }
+                puts(buf);
+            }
+            list++;
+        }
+    }
+
+    int main(){
+        ls(pathList, "aaa/");
+        putchar('\n');
+        ls(pathList, "aaa/ddd/");
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4450'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4450
+  :user_name: t_ishida
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/592/
+  :language: JavaScript
+  :time: 2007/11/27 16:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>sayは、printlnだと思ってください。</p>\n\n\t"
+  :code: |
+    //function say(s){WScript.Echo(s);}
+    var pathList = ["aaa/bbb","aaa/ccc","aaa/ddd/eee","bbb/ddd/eee" , "aaa"];
+
+    ls(pathList,"aaa/");
+    ls(pathList,"aaa/ddd/");
+    function ls(x,y){ for( var i in x ) x[i].match('^.*' + y + '([^\\/]+(/|$))') &amp;&amp; say(RegExp.$1); }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4452'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4452
+  :user_name: talo
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/237/
+  :language: Java
+  :time: 2007/11/27 16:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>素朴に。</p>\n\n\t"
+  :code: |
+    import java.util.*;
+    public class Ls {
+        public static List&lt;String&gt; ls(String[] pathList, String path) {
+            List&lt;String&gt; ret = new ArrayList&lt;String&gt;();
+            for (String p : pathList) {
+                if (p.startsWith(path)) {
+                    int n = p.lastIndexOf("/");
+                    n = n == path.length() - 1 ? p.length() : n + 1;
+                    ret.add(p.substring(path.length(), n));
+                }
+            }
+            return ret;
+        }
+
+        public static void main(String[] args) {
+            String[] pathList = new String[] { "aaa/bbb","aaa/ccc","aaa/ddd/eee","bbb/ddd/eee" };
+            for (String path : ls(pathList, "aaa/")) {
+                System.out.println(path);
+            }
+            for (String path : ls(pathList, "aaa/ddd/")) {
+                System.out.println(path);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4453'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4453
+  :user_name: cho45
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/579/
+  :language: Ruby
+  :time: 2007/11/27 18:36 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <div class=\"section\">\n<p>正規表現です。grep に直接ブロックをわたし、Regexp.last_match
+    をつかってみました。</p>\n</div>\n\t"
+  :code: |
+    def ls(pl, q)
+        pl.grep(/^#{Regexp.quote(q)}\/?/) {|x|
+            x.sub(Regexp.last_match[0], "").sub(/\/.+/, "/")
+        }.delete_if {|i| i.empty? }
+    end
+
+    pathList = ["aaa/bbb","aaa/ccc","aaa/ddd/eee","bbb/ddd/eee"]
+    p ls(pathList, "aaa/")     == ["bbb", "ccc", "ddd/"]
+    p ls(pathList, "aaa/ddd/") == ["eee"]
+    p ls(pathList, "aaa/ddd")  == ["eee"]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4454'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4454
+  :user_name: 割と普通
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/581/
+  :language: C
+  :time: 2007/11/28 01:35 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>とりあえずでLINQを使ってみました。\nLINQを使う前提で作ったのが原因では無いと思いますが、可読性の低いコードだなぁ・・・</p>\n\n\t"
+  :code: |
+    class LsClone
+    {
+        static void Main(string[] args)
+        {
+            string[] pathList = {"aaa/bbb","aaa/ccc","aaa/ddd/eee","bbb/ddd/eee"};
+            Console.WriteLine( ls(pathList, "aaa/") );
+            Console.WriteLine(ls(pathList, "aaa/ddd/"));
+            Console.WriteLine(ls(pathList, "bbb/ddd/"));
+        }
+
+        public static string ls(string[] pathList, string pattern)
+        {
+            string str = "[";
+            var list = from path in pathList where  path.Length&gt; pattern.Length &amp;&amp; path.Substring(0, pattern.Length)==pattern
+                       select path.Remove(0, pattern.Length).IndexOf('/') == -1 ? path.Remove(0, pattern.Length) : path.Split( new char[]{'/'})[1]+"/";
+            foreach (string p in list) str += "\"" + p + "\",";
+            return str.Substring(0,str.Length-1) + "]";
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4459'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4459
+  :user_name: ocean
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/11/28 08:24 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <p>クロージャで実装してみました。</p>\n\n\t"
+  :code: |
+    def create(path_list):
+        root = {}
+        for path in path_list:
+            node = root
+            for name in path.rstrip("/").split("/"):
+                node = node.setdefault(name, {})
+        def ls(path):
+            node = root
+            for name in path.rstrip("/").split("/"):
+                node = node.get(name, None)
+                if node is None:
+                    return []
+            return [name + "/" if children else name \
+                for name, children in node.iteritems()]
+        return ls
+
+    ls = create(["aaa/bbb","aaa/ccc","aaa/ddd/eee","bbb/ddd/eee"])
+    print ls("aaa/")
+    print ls("aaa/ddd/")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4465'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4465
+  :user_name: odz
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/212/
+  :language: 
+  :time: 2007/11/28 13:33 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">ls([\"aaa/bbb/ccc\", \"aaa/bbb/ddd\"], \"aaa/\")\r\n=&gt;
+    [\"bbb/\", \"bbb/\"]\r\n\r\nとなるコードが多い気がするのだけど\r\nこういうのは気にしなくて良い？</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4469'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4469
+  :user_name: ところてん
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/11/28 17:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">&gt;クレバーなデータ構造をls内で毎回作ってもあまり速度に貢献しないだろうと判断。\r\n\r\n次にデータ構造の話を出そうと思っていたんですが、\r\n別の方がトピックで立ててくれたので、誘導してみる。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20081201191756/http://ja.doukaku.org/102/
+    :title: フォルダパス一覧のツリー構造への変換
+- :id: '4470'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4470
+  :user_name: さくらんぼ
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/577/
+  :language: Common
+  :time: 2007/11/28 17:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">初めての投稿です。\r\n\r\ncl-ppcreで正規表現を使ってみたかっただけです。\r\ncl-ppcreが入っていない環境では動作しません。\r\n\r\n第二引数は/で終わっていない場合にはnilを返すようにしてます。\r\n</pre>\n\t"
+  :code: "(asdf:oos 'asdf:load-op :cl-ppcre)\n(defun ls (pathlist path)\n  (let ((res
+    nil))\n    (if (cl-ppcre:scan \"(.*)/\" path) \n    (dolist (i pathlist res)\n
+    \     (multiple-value-bind (s e) (cl-ppcre:scan  path  i) \n        (if (and s
+    (= s '0) e) \n        (setq res (cons  (subseq i  e) res))))))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4471'
+  :parent_id: '94'
+  :url: http://ja.doukaku.org/comment/4471
+  :user_name: shiro
+  :user_url: /web/20081201191756/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/11/28 21:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  odzさんの#4465の指摘を見て修正。\r<br><br>gosh&gt; (ls '(\"aaa/bbb/ccc\" \"aaa/bbb/ddd\" \"aaa/ccc/zzz\") \"aaa\")\r<br>(\"ccc/\" \"bbb/\")\r<br>"
+  :code: |
+    (use srfi-1)
+    (use srfi-13)
+
+    (define (ls pathlist dir)
+      (let* ((prefix (string-trim-right dir #[/]))
+             (rx (string-&gt;regexp #`"^,(regexp-quote prefix)/")))
+        (fold (lambda (p rs)
+                (or (and-let* ([m (rx p)]
+                               [r (regexp-replace* (m'after) #/(?&lt;=\/).*/ "")]
+                               [ (not (member r rs)) ])
+                      (cons r rs))
+                    rs))
+              '() pathlist)))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 

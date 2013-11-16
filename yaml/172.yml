@@ -1,0 +1,106 @@
+---
+:id: '172'
+:title: 二重起動の禁止とコマンドライン引数の取得
+:comments:
+- :id: '6184'
+  :parent_id: '172'
+  :url: http://ja.doukaku.org/comment/6184
+  :user_name: あにす
+  :user_url: /web/20081203203136/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/04/19 14:08 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  マルチタスクな環境でアプリケーションの二重起動を禁止し、\r<br>後から起動されようとした実行ファイルに渡されたコマンドライン引数を取得、表示して下さい。\r<br><br>.NET Framework上のWindowsアプリケーションではこんな方法があります。\r<br><br>VBのWindowsFormsApplicationBaseクラスを利用するので\r<br>Microsoft.VisualBasicを参照に加えます。\r\n\t"
+  :code: |
+    using System;
+    using System.Windows.Forms;
+    using Microsoft.VisualBasic.ApplicationServices;
+
+    namespace ConsoleApplication1 {
+        static class Program {
+            [STAThread]
+            static void Main(string[] args) {
+                //Application.EnableVisualStyles();　　　　　　
+                //Application.SetCompatibleTextRenderingDefault(false);　　　
+                //Application.Run(new Form1());　
+                myApplication winAppBase = new myApplication();
+                winAppBase.Run(args);
+            }
+        }
+
+        class myApplication :WindowsFormsApplicationBase {
+            public myApplication()
+                : base() {
+                this.EnableVisualStyles = true;
+                this.IsSingleInstance = true;
+                this.MainForm = new Form();//スタートアップフォームを設定　　　　　　
+                this.StartupNextInstance += new StartupNextInstanceEventHandler(myApplication_StartupNextInstance);
+            }
+
+            void myApplication_StartupNextInstance(object sender, StartupNextInstanceEventArgs e) {
+                //ここに二重起動されたときの処理を書く　　　　　　
+                //e.CommandLineでコマンドライン引数を取得出来る
+                string cmd = "";
+                foreach(string str in e.CommandLine) {
+                    cmd += str + Environment.NewLine;
+                }
+                MessageBox.Show(cmd);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: /web/20081203203136/http://blogs.dion.ne.jp/anis7742/archives/2008-03-1.html/#6905607
+    :title: 貧脚レーサーのサボり日記
+- :id: '6224'
+  :parent_id: '172'
+  :url: http://ja.doukaku.org/comment/6224
+  :user_name: raynstard
+  :user_url: /web/20081203203136/http://ja.doukaku.org/user/127/
+  :language: Other
+  :time: 2008/04/26 14:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">二重起動を防止すればいいんですよね？\r\nかぶって隠れてしまったので投稿してみるテスト\r\nロック取得のところをループさせればシリアルに処理できるようになります。\r\nシェルの定石だと信じてるいつもの手法です。\r\n#
+    最新のトピックもトップページに出るようになればよいですね。\r\n# そしてPOSIXシェルのないことを知ったorz\r\n</pre>\n\t"
+  :code: |
+    #!/usr/bin/sh
+
+    # ロックファイル
+    readonly LOCKFILE="${TMPDIR:-/var/tmp}/.SAMPLE.lock"
+
+    ###
+    echo "$$"
+    if [ -e "${LOCKFILE}" ] ;then
+        # すでにロックされてる
+        echo "($$)" '後から起動～1:' "$@"
+        exit 1
+    fi
+
+    # ロック取得
+    set -o noclobber
+    echo "$$" &gt; "${LOCKFILE}"
+    LOCKED_PID="$(cat "${LOCKFILE}")"
+    if [ "$$" != "${LOCKED_PID}" ]; then
+        echo "($$)" '後から起動～2:' "$@"
+        exit 2
+    fi
+    set +o noclobber
+
+    # ロック取得完了
+    echo "($$)" 'ダミ～'
+    sleep $1
+    echo '終了～'
+
+    # 終わりロックファイルの削除
+
+    rm -f "${LOCKFILE}"
+    exit 0
+    #EOF
+  :tags:
+  - POSIX
+  - sh
+  :references:
+    :url: 
+    :title: 

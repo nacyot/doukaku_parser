@@ -1,0 +1,505 @@
+---
+:id: '99'
+:title: 文字列の八方向検索
+:comments:
+- :id: '4400'
+  :parent_id: '99'
+  :url: http://ja.doukaku.org/comment/4400
+  :user_name: kuromin
+  :user_url: /web/20081201190220/http://ja.doukaku.org/user/590/
+  :language: 
+  :time: 2007/11/25 18:15 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">与えられた矩形状の文字列中に存在する文字列\"ウオリ\"の位置を全て出力するプログラムを\r\n書いてください。\r\n文字列の検索方向は八方全てで、また連続している（左右や上下の境界をまたがない）ものを\r\n対象とします。出力は起点\"ウ\"の座標と方向のリストにしてください。\r\n\r\nサンプル入力：\r\n\r\nリオウウリウ\r\nウオリウオリ\r\nオリリオリウ\r\nリリオオウオ\r\n\r\nサンプル出力：\r\n\r\n(2,
+    0), 左\r\n(0, 1), 右\r\n(0, 1), 下\r\n(3, 1), 右\r\n(4, 3), 左上\r\n\r\n--\r\nより一般には、任意の検索文字列への対応も考えてみてください。</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4601'
+  :parent_id: '99'
+  :url: http://ja.doukaku.org/comment/4601
+  :user_name: sumim
+  :user_url: /web/20081201190220/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/12/04 17:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk で。\r<br><br>入力をマトリックス化。その全セルについて全方向にチェックして一致したものをメモして出力しています。\r<br><br>Smalltalk のインデックスは１ベースなので、最後の処理は、結果をサンプルと同じ０ベースに合わせるためのつじつま合わせなので通常は不要です。\n\t"
+  :code: "| in word cr nCol nRow mat results directions |\n\nin := 'リオウウリウ\nウオリウオリ\nオリリオリウ\nリリオオウオ'.\nword
+    := 'ウオリ'.\n\ncr := Character cr.\ndirections := {\n    #左上 -&gt; (-1@-1). #上 -&gt;
+    (0@-1). #右上 -&gt; (1@-1).\n    #左 -&gt; (-1@0).  #右 -&gt; (1@0).\n    #左下 -&gt;
+    (1@-1). #下 -&gt; (0@1). #右下 -&gt; (1@1)}.\nnCol := (in indexOf: cr) - 1.\nnRow
+    := (in occurrencesOf: cr) + 1.\nin := in copyWithout: cr. \n\nmat := Matrix rows:
+    nRow columns: nCol contents: in.\nresults := OrderedCollection new.\nmat indicesDo:
+    [:row :col |\n    | pos delta reader |\n    directions do: [:dirAssoc |\n        pos
+    := col@row.\n        delta := dirAssoc value.\n        reader := word readStream.\n
+    \       [(mat at: pos y at: pos x ifInvalid: #NG) = reader peek]\n            whileTrue:
+    [pos := pos + delta. reader next].\n        reader atEnd ifTrue: [results add:
+    col@row -&gt; dirAssoc key]]].\n^(results collect: [:each | each key: each key
+    - 1 asPoint]) asArray\n\n\"=&gt; {2@0-&gt;#左 . 0@1-&gt;#右 . 0@1-&gt;#下 . 3@1-&gt;#右
+    . 4@3-&gt;#左上} \"\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '4602'
+  :parent_id: '99'
+  :url: http://ja.doukaku.org/comment/4602
+  :user_name: sumim
+  :user_url: /web/20081201190220/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2007/12/04 17:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  #左下 -&gt; (-1@1) でした。orz\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4603'
+  :parent_id: '99'
+  :url: http://ja.doukaku.org/comment/4603
+  :user_name: あにす
+  :user_url: /web/20081201190220/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2007/12/04 18:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>C#で。\n動けばいいや的なコードです。</p>\n\n\t"
+  :code: "using System;\nusing System.Collections.Generic;\nusing System.Text;\nusing
+    Microsoft.VisualBasic;\n\nnamespace どう書く_org文字列の八方向検索 {\n    class Program {\n
+    \       static string search;\n        static List&lt;string&gt; list;\n        static
+    void Main(string[] args) {\n            string sample = \n@\"リオウウリウ\nウオリウオリ\nオリリオリウ\nリリオオウオ\";\n
+    \           search = \"ウオリ\";\n            char[] sp = new char[] { '\\n' };\n
+    \           int width = sample.Split(sp)[0].Length;\n            int height =
+    sample.Split(sp).Length;\n            list = new List&lt;string&gt;(sample.Split(sp));\n
+    \           for(int y = 0; y &lt; list.Count; y++) {\n                for(int
+    x = 0; x &lt; list[y].Length; x++) {\n                    if(list[y][x] == search[0])
+    {\n                        if(E(x, y) == search) {\n                            Console.WriteLine(\"(\"
+    + x + \",\" + y + \")\" + \",\" + \"右\");\n                        }\n                        if(W(x,
+    y) == search) {\n                            Console.WriteLine(\"(\" + x + \",\"
+    + y + \")\" + \",\" + \"左\");\n                        }\n                        if(S(x,
+    y) == search) {\n                            Console.WriteLine(\"(\" + x + \",\"
+    + y + \")\" + \",\" + \"下\");\n                        }\n                        if(N(x,
+    y) == search) {\n                            Console.WriteLine(\"(\" + x + \",\"
+    + y + \")\" + \",\" + \"上\");\n                        }\n                        if(NE(x,
+    y) == search) {\n                            Console.WriteLine(\"(\" + x + \",\"
+    + y + \")\" + \",\" + \"右上\");\n                        }\n                        if(SE(x,
+    y) == search) {\n                            Console.WriteLine(\"(\" + x + \",\"
+    + y + \")\" + \",\" + \"右下\");\n                        }\n                        if(NW(x,
+    y) == search) {\n                            Console.WriteLine(\"(\" + x + \",\"
+    + y + \")\" + \",\" + \"左上\");\n                        }\n                        if(SW(x,
+    y) == search) {\n                            Console.WriteLine(\"(\" + x + \",\"
+    + y + \")\" + \",\" + \"左下\");\n                        }\n                    }\n
+    \               }\n            }\n            Console.ReadLine();\n        }\n
+    \       static string E(int x, int y) {\n            try {\n                return
+    list[y].Substring(x, search.Length);\n            } catch(ArgumentOutOfRangeException)
+    { return \"\"; } catch(IndexOutOfRangeException) { return \"\"; }\n        }\n
+    \       static string W(int x, int y) {\n            try {\n                return
+    Strings.StrReverse(E(x - search.Length + 1, y));\n            } catch(ArgumentOutOfRangeException)
+    { return \"\"; } catch(IndexOutOfRangeException) { return \"\"; }\n        }\n
+    \       static string S(int x, int y) {\n            try {\n                StringBuilder
+    strb = new StringBuilder();\n                for(int i = 0; i &lt; search.Length;
+    i++) {\n                    strb.Append(list[y + i][x]);\n                }\n
+    \               return strb.ToString();\n            } catch(ArgumentOutOfRangeException)
+    { return \"\"; } catch(IndexOutOfRangeException) { return \"\"; }\n        }\n
+    \       static string N(int x, int y) {\n            try {\n                return
+    Strings.StrReverse(S(x, y - search.Length + 1));\n            } catch(ArgumentOutOfRangeException)
+    { return \"\"; } catch(IndexOutOfRangeException) { return \"\"; }\n        }\n
+    \       static string SE(int x, int y) {\n            try {\n                StringBuilder
+    strb = new StringBuilder();\n                for(int i = 0; i &lt; search.Length;
+    i++) {\n                    strb.Append(list[y + i][x + i]);\n                }\n
+    \               return strb.ToString();\n            } catch(ArgumentOutOfRangeException)
+    { return \"\"; } catch(IndexOutOfRangeException) { return \"\"; }\n        }\n
+    \       static string NW(int x, int y) {\n            try {\n                return
+    Strings.StrReverse(SE(x - search.Length + 1, y - search.Length + 1));\n            }
+    catch(ArgumentOutOfRangeException) { return \"\"; } catch(IndexOutOfRangeException)
+    { return \"\"; }\n        }\n        static string NE(int x, int y) {\n            try
+    {\n                StringBuilder strb = new StringBuilder();\n                for(int
+    i = 0; i &lt; search.Length; i++) {\n                    strb.Append(list[y -
+    i][x + i]);\n                }\n                return strb.ToString();\n            }
+    catch(ArgumentOutOfRangeException) { return \"\"; } catch(IndexOutOfRangeException)
+    { return \"\"; }\n        }\n        static string SW(int x, int y) {\n            try
+    {\n                return Strings.StrReverse(NE(x - search.Length + 1, y + search.Length
+    - 1));\n            } catch(ArgumentOutOfRangeException) { return \"\"; } catch(IndexOutOfRangeException)
+    { return \"\"; }\n        }\n    }\n}\n"
+  :tags:
+  - C#2.0
+  :references:
+    :url: /web/20081201190220/http://blogs.dion.ne.jp/anis7742/#6539284
+    :title: 貧脚レーサーのサボり日記
+- :id: '4605'
+  :parent_id: '99'
+  :url: http://ja.doukaku.org/comment/4605
+  :user_name: matyr
+  :user_url: /web/20081201190220/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/12/04 19:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  単純に総当たり。\n\t"
+  :code: |
+    function doukaku99(target, rect){ rect = rect.split(/[\r\n]+/);
+      var X = rect[0].length, Y = rect.length, find = function(x, y, dx, dy){
+        for(var i = 0, c;  c = target.charAt(i++); x += dx, y += dy)
+          if(!rect[y] || c !== rect[y].charAt(x)) return false;
+        return true;
+      }, dir = { '上': [ 0, 1], '右上': [ 1, 1], '右': [ 1, 0], '右下': [ 1, -1],
+                 '下': [ 0,-1], '左下': [-1,-1], '左': [-1, 0], '左上': [-1,  1] };
+      for(var out = [], o = 0, k, x, y = Y; y--;) for(x = X; x--;) for(k in dir)
+        if(find(x, y, dir[k][0], dir[k][1])) out[o++] = '('+ x +', '+ y +') '+ k;
+      return out.reverse().join('\n');
+    }
+
+    (typeof confirm != 'undefined' ? confirm : typeof print != 'undefined' ? print :
+     function($){ typeof WSH == 'object' &amp;&amp; WSH.echo($) })(doukaku99('ウオリ','\
+    リオウウリウ\n\
+    ウオリウオリ\n\
+    オリリオリウ\n\
+    リリオオウオ'));
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4608'
+  :parent_id: '99'
+  :url: http://ja.doukaku.org/comment/4608
+  :user_name: nido
+  :user_url: /web/20081201190220/http://ja.doukaku.org/user/589/
+  :language: Ruby
+  :time: 2007/12/05 02:18 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>普通のやり方ですか。</p>\n\n\t"
+  :code: |
+    TEXT=&lt;&lt;-EOS
+    リオウウリウ
+    ウオリウオリ
+    オリリオリウ
+    リリオオウオ
+    EOS
+
+    WORD="ウオリ"
+
+    M_TEXT=TEXT.split("\n").map{|e| e.split(//)}
+    A_WORD=WORD.split(//)
+    S_DEST=[
+      ["上",-1,0],["右上",-1,1],["右",0,1],["右下",1,1],
+      ["下",1,0],["左下",1,-1],["左",0,-1],["左上",-1,-1]
+    ]
+    M_TEXT.each_with_index do |line,y|
+      line.each_with_index do |c,x|
+        next unless c==A_WORD[0]
+        S_DEST.each do |desc,dy,dx|
+          unless (1...A_WORD.size).find do |i|
+              ((y+dy*i&lt;0)||M_TEXT[y+dy*i].nil?)||
+              (x+dx*i&lt;0)||(M_TEXT[y+dy*i][x+dx*i]!=A_WORD[i])
+            end
+            puts "#{desc}(#{x},#{y})"
+          end
+        end
+      end
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4609'
+  :parent_id: '99'
+  :url: http://ja.doukaku.org/comment/4609
+  :user_name: horiuchi
+  :user_url: /web/20081201190220/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2007/12/05 02:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>素直に総当りで解いてみました。\nenumをもうちょっと良い感じに使うと、さらに面白くなりそうな気もします。</p>\n\n\t"
+  :code: "import java.util.ArrayList;\nimport java.util.List;\n\npublic class Sample99
+    {\n    public enum Direction {\n        左上, 上, 右上, 右, 右下, 下, 左下, 左,\n    }\n\n
+    \   private final String[] matrix_;\n\n    public Sample99(String[] matrix) {\n
+    \       matrix_ = matrix;\n    }\n\n    public AnswerData[] search(String str)
+    {\n        List&lt;AnswerData&gt; result = new ArrayList&lt;AnswerData&gt;();\n
+    \       char[] input = str.toCharArray();\n        for (int y = 0; y &lt; matrix_.length;
+    y++) {\n            char[] cs = matrix_[y].toCharArray();\n            for (int
+    x = 0; x &lt; cs.length; x++) {\n                if (cs[x] != input[0]) continue;\n\n
+    \               for (Direction d: Direction.values()) {\n                    switch
+    (d) {\n                        case 左上:\n                            if (x &lt;
+    input.length - 1) break;\n                            if (y &lt; input.length
+    - 1) break;\n                            if (search(input, x, y, -1, -1)) {\n
+    \                               result.add(new AnswerData(x, y, d));\n                            }\n
+    \                           break;\n                        case 上:\n                            if
+    (y &lt; input.length - 1) break;\n                            if (search(input,
+    x, y, 0, -1)) {\n                                result.add(new AnswerData(x,
+    y, d));\n                            }\n                            break;\n                        case
+    右上:\n                            if (x &gt; cs.length - input.length) break;\n
+    \                           if (y &lt; input.length - 1) break;\n                            if
+    (search(input, x, y, 1, -1)) {\n                                result.add(new
+    AnswerData(x, y, d));\n                            }\n                            break;\n
+    \                       case 右:\n                            if (x &gt; cs.length
+    - input.length) break;\n                            if (search(input, x, y, 1,
+    0)) {\n                                result.add(new AnswerData(x, y, d));\n
+    \                           }\n                            break;\n                        case
+    右下:\n                            if (x &gt; cs.length - input.length) break;\n
+    \                           if (y &gt; matrix_.length - input.length) break;\n
+    \                           if (search(input, x, y, 1, 1)) {\n                                result.add(new
+    AnswerData(x, y, d));\n                            }\n                            break;\n
+    \                       case 下:\n                            if (y &gt; matrix_.length
+    - input.length) break;\n                            if (search(input, x, y, 0,
+    1)) {\n                                result.add(new AnswerData(x, y, d));\n
+    \                           }\n                            break;\n                        case
+    左下:\n                            if (x &lt; input.length - 1) break;\n                            if
+    (y &gt; matrix_.length - input.length) break;\n                            if
+    (search(input, x, y, -1, 1)) {\n                                result.add(new
+    AnswerData(x, y, d));\n                            }\n                            break;\n
+    \                       case 左:\n                            if (x &lt; input.length
+    - 1) break;\n                            if (search(input, x, y, -1, 0)) {\n                                result.add(new
+    AnswerData(x, y, d));\n                            }\n                            break;\n
+    \                   }\n                }\n            }\n        }\n        return
+    result.toArray(new AnswerData[0]);\n    }\n    private boolean search(char[] input,
+    int x, int y, int dx, int dy) {\n        for (int index = 1; index &lt; input.length;
+    index++) {\n            if (matrix_[y + dy * index].charAt(x + dx * index) !=
+    input[index]) {\n                return false;\n            }\n        }\n        return
+    true;\n    }\n\n    private static class AnswerData {\n        public final int
+    x;\n        public final int y;\n        public final Direction d;\n        \n
+    \       public AnswerData(int x, int y, Direction d) {\n            this.x = x;\n
+    \           this.y = y;\n            this.d = d;\n        }\n    }\n\n    public
+    static void main(String[] args) {\n        Sample99 s = new Sample99(new String[]
+    {\n                \"リオウウリウ\",\n                \"ウオリウオリ\",\n                \"オリリオリウ\",\n
+    \               \"リリオオウオ\",\n        });\n        AnswerData[] datas = s.search(\"ウオリ\");\n
+    \       for (AnswerData d: datas) {\n            System.out.format(\"(%d, %d),
+    %s%n\", d.x, d.y, d.d.name());\n        }\n    }\n}\n"
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '4610'
+  :parent_id: '99'
+  :url: http://ja.doukaku.org/comment/4610
+  :user_name: horiuchi
+  :user_url: /web/20081201190220/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2007/12/05 03:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>すいません、連投になってしまいますが短い版を投稿させていただきます。チェック手抜き版です。</p>\n\n\t"
+  :code: "import java.util.ArrayList;\nimport java.util.List;\n\npublic class Sample99_2
+    {\n    public enum Direction {\n        左上(-1, -1),\n        上(0, -1),\n        右上(1,
+    -1),\n        右(1, 0),\n        右下(1, 1),\n        下(0, 1),\n        左下(-1, 1),\n
+    \       左(-1, 0);\n\n        public final int dx_;\n        public final int dy_;\n\n
+    \       private Direction(int dx, int dy) {\n            dx_ = dx;\n            dy_
+    = dy;\n        }\n    }\n\n    private final String[] matrix_;\n\n    public Sample99_2(String[]
+    matrix) {\n        matrix_ = matrix;\n    }\n\n    public AnswerData[] search(String
+    str) {\n        List&lt;AnswerData&gt; result = new ArrayList&lt;AnswerData&gt;();\n
+    \       char[] input = str.toCharArray();\n        for (int y = 0; y &lt; matrix_.length;
+    y++) {\n            for (int x = 0, maxX = matrix_[y].length(); x &lt; maxX; x++)
+    {\n                for (Direction d: Direction.values()) {\n                    if
+    (search(input, x, y, d.dx_, d.dy_)) {\n                        result.add(new
+    AnswerData(x, y, d));\n                    }\n                }\n            }\n
+    \       }\n        return result.toArray(new AnswerData[0]);\n    }\n    private
+    boolean search(char[] input, int x, int y, int dx, int dy) {\n        try {\n
+    \           for (int index = 0; index &lt; input.length; index++) {\n                if
+    (matrix_[y + dy * index].charAt(x + dx * index) != input[index]) {\n                    return
+    false;\n                }\n            }\n            return true;\n        }
+    catch (IndexOutOfBoundsException ex) {\n            return false;\n        }\n
+    \   }\n\n    private static class AnswerData {\n        public final int x;\n
+    \       public final int y;\n        public final Direction d;\n        \n        public
+    AnswerData(int x, int y, Direction d) {\n            this.x = x;\n            this.y
+    = y;\n            this.d = d;\n        }\n    }\n\n    public static void main(String[]
+    args) {\n        Sample99_2 s = new Sample99_2(new String[] {\n                \"リオウウリウ\",\n
+    \               \"ウオリウオリ\",\n                \"オリリオリウ\",\n                \"リリオオウオ\",\n
+    \       });\n        AnswerData[] datas = s.search(\"ウオリ\");\n        for (AnswerData
+    d: datas) {\n            System.out.format(\"(%d, %d), %s%n\", d.x, d.y, d.d.name());\n
+    \       }\n    }\n}\n"
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '4612'
+  :parent_id: '99'
+  :url: http://ja.doukaku.org/comment/4612
+  :user_name: 梅紫蘇
+  :user_url: /web/20081201190220/http://ja.doukaku.org/user/596/
+  :language: C
+  :time: 2007/12/05 04:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>全角じゃないけど。反転した比較文字列をつくって、４方向（右方向＋下方向）の文字列チェック×２で、８方向...になってるとおもう....orz</p>\n\n\t"
+  :code: "#include &lt;iostream&gt;\n#include &lt;algorithm&gt;\n#include &lt;vector&gt;\n#include
+    &lt;string&gt;\n\nvoid output(int x, int y, std::string v)\n{\n    std::cout &lt;&lt;
+    \"(\" &lt;&lt; x &lt;&lt; \",\" &lt;&lt; y &lt;&lt; \"), \" &lt;&lt; v.c_str()
+    &lt;&lt; std::endl;\n}\n\nvoid search8way(std::vector&lt;std::string&gt; lines,
+    std::string str)\n{\n    if (str.empty() != false)\n        return;\n\n    std::string
+    rstr(str);\n    reverse(rstr.begin(), rstr.end());\n\n    int nLen = (int)str.size();\n
+    \   char cs = str[0];\n    char ce = str[nLen - 1];\n\n    int x = 0;\n    for
+    (int y = 0; y &lt; (int)lines.size(); y++)\n    {\n        std::string line =
+    lines[y];\n        for (int x = 0; x &lt; (int)line.size(); x++) \n        {\n
+    \           char c = line[x];\n            if ((c != cs) &amp;&amp; (c != ce))\n
+    \               continue;\n\n            std::string strDL(\"\"); strDL += c;\n
+    \           std::string strDD(\"\"); strDD += c;\n            std::string strDR(\"\");
+    strDR += c;\n            for (int d = 1; (d &lt; nLen) &amp;&amp; (y + d &lt;
+    (int)lines.size()); d++)\n            {\n                std::string buff = lines[y
+    + d];\n                if ( x      &lt; (int)buff.size()                ) { strDD
+    += buff[x    ]; }\n                if ((x - d) &lt; (int)buff.size() &amp;&amp;
+    (x - d &gt;= 0)) { strDL += buff[x - d]; }\n                if ((x + d) &lt; (int)buff.size()
+    \               ) { strDR += buff[x + d]; }\n            }\n\n            if (c
+    == cs)\n            {\n                if (line.compare(x, nLen, str) == 0) {
+    output(x, y, \"右\"); }\n                if (strDL.compare(str) == 0) { output(x,
+    y, \"左下\"); }\n                if (strDD.compare(str) == 0) { output(x, y, \"下\"
+    \ ); }\n                if (strDR.compare(str) == 0) { output(x, y, \"右下\"); }\n
+    \           }\n            if (c == ce)\n            {\n                if (line.compare(x,
+    nLen, rstr) == 0) { output(x + (nLen - 1), y, \"左\"); }\n                if (strDL.compare(rstr)
+    == 0) { output(x - (nLen - 1), y + (nLen - 1), \"右上\"); }\n                if
+    (strDD.compare(rstr) == 0) { output(x             , y + (nLen - 1), \"上\");   }\n
+    \               if (strDR.compare(rstr) == 0) { output(x + (nLen - 1), y + (nLen
+    - 1), \"左上\"); }\n            }\n        }\n    }\n}\n\nint main(int argc, char*
+    argv[])\n{\n    std::vector&lt;std::string&gt; lines;\n    lines.push_back(\"ABCBCBCBA\");\n
+    \   lines.push_back(\"ABCBBBCBA\");\n    lines.push_back(\"ABCBABCBA\");\n    lines.push_back(\"ABCBBBCBA\");\n
+    \   lines.push_back(\"ABCBCBCBA\");\n    search8way(lines, \"ABC\");\n    return
+    0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4613'
+  :parent_id: '99'
+  :url: http://ja.doukaku.org/comment/4613
+  :user_name: mamamoto
+  :user_url: /web/20081201190220/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2007/12/05 04:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>配列回転させて8個作る方式。</p>\n<p>アフィン変換させようかと思ったけど面倒そうだから斜めだけ作ればいいや、</p>\n<p>と思ってやったらこれはこれで面倒でした。汚いし。</p>\n<p>4方向で似たようなのがたしかanarchy
+    golfゴルフにありましたね。</p>\n<p>実行例:</p>\n<p>[[\"左\", [[2, 0]]],[\"右\", [[0, 1], [3, 1]]],[\"下\",
+    [0, 1]]],[\"左上\", [[4, 3]]]]</p>\n\n\t"
+  :code: |
+    #!ruby -Ku
+
+    require 'pp'
+
+    def slant(x,y)
+      a = []
+      until (x &lt; 0 || y &lt; 0)
+        a &lt;&lt; [x,y]
+        x-=1; y-=1
+      end
+      a
+    end
+
+    def slant_array(a)
+      ret = []
+      size_x = a[0].size
+      size_y = a.size
+
+      size_x.times{|i|
+        ret &lt;&lt; slant(i, size_y-1).map{|x,y| a[y][x]}
+      }
+      size_y.times{|i|
+        ret &lt;&lt; slant(size_x-1, i).map{|x,y| a[y][x]}
+      }
+      ret.uniq
+    end
+
+    def reverse_x(a)
+      a.map{|line| line.reverse}
+    end
+
+    def rotate_array(migi)
+      hidari = reverse_x(migi)
+      sita = migi.transpose
+      ue = reverse_x(sita)
+
+      hidari_ue = slant_array(migi)
+      migi_ue = slant_array(hidari)
+      hidari_sita = reverse_x(migi_ue)
+      migi_sita = reverse_x(hidari_ue)
+
+      a = [
+           ["左", hidari],
+           ["右", migi],
+           ["上", ue],
+           ["下", sita],
+           ["左上", hidari_ue],
+           ["左下", hidari_sita],
+           ["右上", migi_ue],
+           ["右下", migi_sita]
+          ]
+    end
+
+    def match_pos(str_ary, tar_ary, a)
+      ret = []
+      a.each{|e|
+        line = e.map{|x,y| str_ary[y][x]}
+        line.size.times{|i|
+          ret &lt;&lt; e[i] if line[i,tar_ary.size] == tar_ary
+        }
+      }
+      ret
+    end
+
+    def dk99(str, tar)
+      str_ary = str.split(/\n/).map{|e| e.split(//)}
+      tar_ary = tar.split(//)
+
+      migi = []
+      str_ary.size.times{|y|
+        str_ary[0].size.times{|x|
+          (migi[y] ||= []) &lt;&lt; [x,y]
+        }
+      }
+
+      rotate_array(migi).map{|vec, ary|
+        ret = match_pos(str_ary, tar_ary, ary)
+        [vec, ret] unless ret.empty?
+      }.compact
+    end
+
+    s =
+    "リオウウリウ
+    ウオリウオリ
+    オリリオリウ
+    リリオオウオ"
+
+    pp dk99(s, "ウオリ")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4614'
+  :parent_id: '99'
+  :url: http://ja.doukaku.org/comment/4614
+  :user_name: 匿名
+  :user_url: /web/20081201190220/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/12/05 05:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">11行目のif文をもう少しどうにかしたかったけど、思いつかなかったので投稿。\r\n</pre>\n\t"
+  :code: |-
+    # -*- coding: utf-8 -*-
+
+    def f(data, s):
+      a = [('-j', '+0'), ('+j', '+0'),
+
+
+
+
+    <!--
+         FILE ARCHIVED ON 19:02:20 Dec 1, 2008 AND RETRIEVED FROM THE
+         INTERNET ARCHIVE ON 13:30:06 Nov 16, 2013.
+         JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+         ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+         SECTION 108(a)(3)).
+    -->
+  :tags: []
+  :references:
+    :url: 
+    :title: 

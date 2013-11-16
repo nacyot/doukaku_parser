@@ -1,0 +1,809 @@
+---
+:id: '270'
+:title: メソッド数の多い組み込みクラスを列挙
+:comments:
+- :id: '9197'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9197
+  :user_name: sumim
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2009/06/19 04:52 GMT
+  :vote_count: '5'
+  :vote_score: '-1'
+  :body: "\r\n\t  <p>言語処理系に組み込みの全クラスについて、それぞれに定義されているメソッド数が多い順に上位10番目までのクラス名とメソッド数を出力するコードを書いてください。全クラス数も示してください。</p>\n<p>なお、「組み込み」「クラス」「メソッド」などについては、必要であれば、その言語にふさわしい対象や機能に適宜読み替えてください。（たとえば、組み込み→標準添付、クラス→型・モジュール・パッケージ…、メソッド→関数・プロシージャ…といった具合に）</p>\n\r\n\t"
+  :code: ''
+  :tags:
+  - jJvLlYmc
+  :references:
+    :url: 
+    :title: 
+- :id: '9230'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9230
+  :user_name: sumim
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2009/06/24 01:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>ああ…、ごめんなさい。大事な但し書きを忘れました。orz</p>\n<p>可能であれば、継承したメソッド数は含まずに、そのクラスで定義（再定義も含む）されたメソッド数のみをカウントしてください。</p>\n<p>言語処理系ごとに、普段目にするクラス群において、最大、どのくらいのメソッドを定義したクラスが存在するのか（心情的に許容されるのか）を知りたかったのですが、継承されたメソッドを含めてしまうと、階層が深くなるほどメソッド数が多くなる当たり前の傾向を見るだけになってしまうので…</p>\n\r\n\t"
+  :code: ''
+  :tags:
+  - boRhxLSC
+  :references:
+    :url: /web/20100712040233/http://d.hatena.ne.jp/sumim/20090619/p1
+    :title: Ruby がクラスにメソッドを詰め込みすぎだって？　ふっ…
+- :id: '9232'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9232
+  :user_name: sumim
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2009/06/24 02:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>おなじ理由で、メタクラスを持たない言語では、static メソッドについてもカウントから除いてください。もし数える場合でも別物としてカウントしてください（SomeClass
+    -&gt; 15, SomeClass static -&gt; 5 というように）。</p>\n<p>おそらく、わざわざ static メソッドだけ個別にカウントせずとも、省いてしまっても結果には影響しないだろうと思われます（static
+    メソッド数が上位10番に入るほど多く定義されているクラスは存在しないと予想されるので）。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9228'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9228
+  :user_name: horiuchi
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/570/
+  :language: C
+  :time: 2009/06/23 23:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>「言語処理系に組み込みの全クラス」が、.NET Frameworkのどこまでに該当するかが分からなかったので、そのプロジェクトで参照されている全クラスを対象としました。</p>\n<p>以下の実行結果は、普通にWindowsApplicationのプロジェクトを作ると参照されているものだけが対象になっています。参照するアセンブリを増やせば、結果が変わってくると思います。</p>\n<p>以下、実行結果:</p>\n<pre
+    class=\"literal-block\">\nSystem.Convert: 314\nSystem.Reflection.Emit.TypeBuilder:
+    170\nSystem.Runtime.InteropServices.Marshal: 156\nSystem.Type: 146\nSystem.Reflection.Emit.EnumBuilder:
+    135\nSystem.Net.Sockets.Socket: 135\nSystem.Reflection.Emit.GenericTypeParameterBuilder:
+    134\nSystem.RuntimeType: 131\nSystem.ReflectionOnlyType: 131\nSystem.Reflection.TypeDelegator:
+    129\nSystem.Reflection.Emit.SymbolType: 129\nSystem.Reflection.Emit.TypeBuilderInstantiation:
+    129\n全クラス数: 4295\n</pre>\n\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Reflection;
+
+    namespace Doukaku270 {
+        class Program {
+            static void Main(string[] args) {
+                int classCount = 0;
+                SortedDictionary&lt;int, List&lt;Type&gt;&gt; result = new SortedDictionary&lt;int, List&lt;Type&gt;&gt;();
+                foreach (AssemblyName name in typeof(Program).Assembly.GetReferencedAssemblies()) {
+                    Assembly asm = Assembly.Load(name);
+                    if (asm != null) {
+                        foreach (Type type in asm.GetTypes()) {
+                            int methodCount = type.GetMethods().Length;
+                            if (!result.ContainsKey(methodCount)) {
+                                result[methodCount] = new List&lt;Type&gt;();
+                            }
+                            result[methodCount].Add(type);
+                            classCount++;
+                        }
+                    }
+                }
+
+                List&lt;int&gt; keyList = new List&lt;int&gt;(result.Keys);
+                keyList.Reverse();
+                int count = 0;
+                foreach (int key in keyList.GetRange(0, 10)) {
+                    foreach (Type type in result[key]) {
+                        Console.WriteLine("{0}: {1}", type.FullName, key);
+                        count++;
+                    }
+                    if (count &gt;= 10)
+                        break;
+                }
+                Console.WriteLine("全クラス数: {0}", classCount);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9229'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9229
+  :user_name: sawat
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/322/
+  :language: Java
+  :time: 2009/06/24 00:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  java.homeのrt.jar (最も基本的なライブラリ) に含まれる java か javax で始まるパッケージに属するクラスを対象としました。\r<br>メソッド数はそのクラスが持つpublicメソッドの数で、継承されたものを含みます。\r<br><br>結果は以下の通り\r<br>javax.swing.JMenuItem                           : 407\r<br>javax.swing.JPasswordField                      : 407\r<br>javax.swing.text.html.FrameView$FrameEditorPane : 408\r<br>javax.swing.JEditorPane                         : 408\r<br>javax.swing.JCheckBoxMenuItem                   : 409\r<br>javax.swing.JFormattedTextField                 : 412\r<br>javax.swing.JTextPane                           : 422\r<br>javax.swing.JMenu                               : 433\r<br>javax.swing.JTree                               : 437\r<br>javax.swing.JTable                              : 456\n\t"
+  :code: |
+    package doukaku;
+
+    import java.io.File;
+    import java.util.*;
+    import java.util.concurrent.atomic.AtomicInteger;
+    import java.util.jar.*;
+
+    public class HugeClasses {
+        public static void main(String[] args) throws Exception {
+            final File rt = new File(System.getProperty("java.home"), "lib/rt.jar");
+
+            if (!rt.exists()) {
+                System.err.println("rt.jarが見つかりません。");
+                return;
+            }
+
+            final int topN = 10;
+            NavigableSet&lt;ClassHolder&gt; sortSet = new TreeSet&lt;ClassHolder&gt;();
+
+            for (JarEntry entry : Collections.list(new JarFile(rt).entries())) {
+                String name = entry.getName();
+                if ((name.startsWith("java/") || name.startsWith("javax/"))
+                        &amp;&amp; name.endsWith(".class")) {
+
+                    String className = name.substring(0, name.length() - 6)
+                            .replace('/', '.');
+                    Class&lt;?&gt; clazz = Class.forName(className);
+                    sortSet.add(new ClassHolder(clazz));
+                    if (sortSet.size() &gt; topN) sortSet.pollFirst();
+                }
+            }
+
+            for (ClassHolder classHolder : sortSet) {
+                System.out.printf("%-60s: %d%n", classHolder.className,
+                        classHolder.methodCount);
+            }
+        }
+
+        private static class ClassHolder implements Comparable&lt;ClassHolder&gt; {
+            private static final AtomicInteger idCounter = new AtomicInteger(0);
+            private String className;
+            private int methodCount;
+            private int id;
+
+            ClassHolder(Class&lt;?&gt; clazz) {
+                id = idCounter.getAndIncrement();
+                className = clazz.getName();
+                methodCount = clazz.getMethods().length;
+            }
+
+            @Override
+            public int compareTo(ClassHolder o) {
+                return methodCount != o.methodCount ?
+                        methodCount - o.methodCount
+                        : id - o.id;
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9230'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9230
+  :user_name: sumim
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2009/06/24 01:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ああ…、ごめんなさい。大事な但し書きを忘れました。orz</p>\n<p>可能であれば、継承したメソッド数は含まずに、そのクラスで定義（再定義も含む）されたメソッド数のみをカウントしてください。</p>\n<p>言語処理系ごとに、普段目にするクラス群において、最大、どのくらいのメソッドを定義したクラスが存在するのか（心情的に許容されるのか）を知りたかったのですが、継承されたメソッドを含めてしまうと、階層が深くなるほどメソッド数が多くなる当たり前の傾向を見るだけになってしまうので…</p>\n\n\t"
+  :code: ''
+  :tags:
+  - boRhxLSC
+  :references:
+    :url: /web/20100712040233/http://d.hatena.ne.jp/sumim/20090619/p1
+    :title: Ruby がクラスにメソッドを詰め込みすぎだって？　ふっ…
+- :id: '9231'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9231
+  :user_name: 割と普通
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/581/
+  :language: C
+  :time: 2009/06/24 02:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">私もhoriuchiさんと同じく、プロジェクトの参照しているアセンブリのみ対象として実施しました。\r\nワンライナー狙って見ましたが、やりすぎ感があったので、途中コードもコメントで残しておきました。\r\nhoriuchiさんとの差異については以下の部分かな？とか。\r\n\r\n■コード\r\nBindingFlagを使ってprivateも参照してる\r\n#
+    このフラグで合ってるはずですが・・・\r\n\r\n■環境\r\nVisual Studio 2010beta\r\n.NET Framework 4.0</pre>\n\t"
+  :code: |
+    //全クラス数 : 3634
+    //System.Linq.Expressions.Expression : 387
+    //System.Convert : 313
+    //System.Linq.ParallelEnumerable : 210
+    //System.Runtime.InteropServices.Marshal : 203
+    //System.Linq.Enumerable : 203
+    //Microsoft.Win32.Win32Native : 199
+    //System.Linq.Expressions.Strings : 180
+    //System.Linq.Expressions.Error : 146
+    //System.Linq.Queryable : 124
+    //System.Console : 117
+
+    using System;
+    using System.Linq;
+    using System.Reflection;
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            //var classTypes = typeof(Program).Assembly.GetReferencedAssemblies().Select(assemblyName =&gt; Assembly.Load(assemblyName).GetTypes()).SelectMany(classType =&gt; classType);
+            //var classCountDict = classTypes.ToDictionary(classType =&gt; classType, classType =&gt; classType.GetMethods(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly).Count());
+            //var result = classCountDict.OrderByDescending(pair =&gt; pair.Value).Take(10);
+            var classCountDict = typeof(Program).Assembly.GetReferencedAssemblies().Select(assemblyName =&gt; Assembly.Load(assemblyName).GetTypes()).SelectMany(classType =&gt; classType).ToDictionary(classType =&gt; classType, classType =&gt; classType.GetMethods(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly).Count());
+            Console.WriteLine("全クラス数 : {0}", classCountDict.Keys.Count());
+            foreach (var obj in classCountDict.OrderByDescending(pair =&gt; pair.Value).Take(10))
+            {
+                Console.WriteLine("{0} : {1}", obj.Key, obj.Value);
+            }
+            Console.ReadLine();
+        }
+    }
+  :tags:
+  - LINQ
+  :references:
+    :url: 
+    :title: 
+- :id: '9232'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9232
+  :user_name: sumim
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2009/06/24 02:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>おなじ理由で、メタクラスを持たない言語では、static メソッドについてもカウントから除いてください。もし数える場合でも別物としてカウントしてください（SomeClass
+    -&gt; 15, SomeClass static -&gt; 5 というように）。</p>\n<p>おそらく、わざわざ static メソッドだけ個別にカウントせずとも、省いてしまっても結果には影響しないだろうと思われます（static
+    メソッド数が上位10番に入るほど多く定義されているクラスは存在しないと予想されるので）。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9233'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9233
+  :user_name: sumim
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/06/24 03:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: "| clsCount result |\nclsCount := 0.\nresult := Dictionary new.\nSystemNavigation
+    default allBehaviorsDo: [:class |\n    clsCount := clsCount + 1.\n    result at:
+    class put: class selectors size].\n^{#全クラス数 -&gt; clsCount. (result associations
+    sort: [:a :b | a value &gt; b value]) first: 10}\n\n\n\"=&gt; {#全クラス数 -&gt; 4384.
+    {\n    Morph -&gt; 1165. \n    Player -&gt; 620. \n    PasteUpMorph -&gt; 469.
+    \n    Preferences class -&gt; 450. \n    Object -&gt; 436. \n    ParagraphEditor
+    -&gt; 284. \n    SyntaxMorph -&gt; 250. \n    Behavior -&gt; 243. \n    ScriptLoader
+    -&gt; 236. \n    String -&gt; 233\n}} \"\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '9234'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9234
+  :user_name: turugina
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/760/
+  :language: Perl
+  :time: 2009/06/24 03:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>何もuseしない場合のpackageとそこに定義されてるsubをSTASHから拾ってきて数えてます。</p>\n<p>手元の環境(v5.10.0
+    built for MSWin32-x86-multi-thread) では</p>\n<pre class=\"literal-block\">\nmain::Win32
+    --- 21\nmain::version --- 16\nTie::Hash::NamedCapture --- 9\nmain::mro --- 9\nmain::utf8
+    --- 8\nmain::Internals --- 6\nmain::re --- 4\nmain::UNIVERSAL --- 4\nPerlIO::Layer
+    --- 2\nmain::DynaLoader --- 1\n</pre>\n<p>という結果になりました</p>\n\n\t"
+  :code: |
+    my %cnt;
+    my $top = '*main::';
+    count_subs($top,\%cnt);
+    --$cnt{$top}; # sub count_subs の分を差し引く
+    my $i=0;
+    $\="\n";
+    print for map { "@{[substr($_-&gt;[0],1,-2)]} --- $_-&gt;[1]" }
+    grep { ++$i &lt;= 10 }
+    sort {$b-&gt;[1] &lt;=&gt; $a-&gt;[1]}
+    map { [$_, $cnt{$_}] } keys %cnt;
+
+    my %counted;
+    sub count_subs
+    {
+      my ($mod, $cnt) = @_;
+      return if exists $cnt-&gt;{$mod};
+      $cnt-&gt;{$mod} = 0;
+      return if !defined %{$mod};
+      while (my ($k,$v) = each %{$mod}) {
+        if ( substr($k, -2) eq '::' ) {
+          count_subs($v, \%cnt);
+        }
+        elsif (defined &amp;{$v} &amp;&amp; !exists $counted{$v}) {
+          ++$cnt-&gt;{$mod};
+          $counted{$v}=undef;
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9239'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9239
+  :user_name: athos
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/755/
+  :language: Scheme
+  :time: 2009/06/24 04:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">もっといい方法がありそうな気がします。\r\n\r\n$ gosh doukaku270.scm\r\n&lt;top&gt;
+    \     : 36\r\n&lt;class&gt;    : 17\r\n&lt;generic&gt;  :  7\r\n&lt;list&gt;     :
+    \ 7\r\n&lt;integer&gt;  :  7\r\n&lt;method&gt;   :  5\r\n&lt;symbol&gt;   :  5\r\n&lt;string&gt;
+    \  :  5\r\n&lt;regmatch&gt; :  4\r\n&lt;object&gt;   :  4\r\n$</pre>\n\t"
+  :code: |
+    (use srfi-1)
+
+    (define *builtin-identifiers*
+      (let1 module (find-module 'gauche)
+        (filter-map
+          (cut global-variable-ref module &lt;&gt; #f)
+          (remove (cut eq? '~$ &lt;&gt;)
+                  (hash-table-map (module-table module)
+                                  (lambda (sym _) sym))))))
+
+    (define *builtin-classes*
+      (filter (cut is-a? &lt;&gt; &lt;class&gt;) *builtin-identifiers*))
+
+    (define *builtin-generic-functions*
+      (filter (cut is-a? &lt;&gt; &lt;generic&gt;) *builtin-identifiers*))
+
+    (define (direct-methods class)
+      (filter-map (lambda (method)
+                    (let1 specs (slot-ref method 'specializers)
+                      (and (member class specs)
+                           method)))
+                  (append-map (cut slot-ref &lt;&gt; 'methods)
+                              *builtin-generic-functions*)))
+
+    (define (main args)
+      (for-each
+        (lambda (x) (format #t "~10a : ~2d~%" (class-name (car x)) (cdr x)))
+        (take (sort-by (map (lambda (class)
+                              (cons class (length (direct-methods class))))
+                            *builtin-classes*)
+                       cdr
+                       &gt;)
+              10))
+      0)
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '9241'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9241
+  :user_name: kozima
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2009/06/24 08:42 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>パッケージごとに、関数定義をもつシンボルの個数を数えました。他のパッケージから継承したシンボルは含めていません。</p>\n<p>CLISP
+    2.38 で動かしてみた結果:</p>\n<pre class=\"literal-block\">\nSYSTEM          : 1394\nCOMMON-LISP
+    \    : 755\nCS-COMMON-LISP  : 752\nCLOS            : 647\nEXT             : 503\nPOSIX
+    \          : 147\nFFI             : 127\nI18N            : 63\nGRAY            :
+    31\nEXPORTING       : 28\n</pre>\n\n\t"
+  :code: |
+    (loop for p in (list-all-packages) collect
+      (list (package-name p)
+            (loop for s being each present-symbol in p count (fboundp s)))
+      into x
+      finally (format t "~10{~{~15A : ~A~}~%~}~%"
+                      (sort x #'&gt; :key #'cadr)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9243'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9243
+  :user_name: 匿名
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2009/06/24 09:38 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  組み込みのクラスを「ブートストラップクラス」と解釈しました（ブートストラップクラスはシステムプロパティ sun.boot.class.path で示されます）。クラスパスで示される Jar ファイルからクラス名を取り出し、リフレクションでメソッド数を数えています。\r<br><br>Mac OS X 10.4.11 の java 1.5.0_19 で実行した結果は以下です。\r<br><br>com.sun.corba.se.impl.logging.ORBUtilSystemException -&gt; 1248\r<br>com.sun.corba.se.impl.logging.OMGSystemException -&gt; 524\r<br>com.sun.corba.se.impl.logging.POASystemException -&gt; 284\r<br>java.awt.Component -&gt; 277\r<br>org.w3c.dom.css.CSS2Properties -&gt; 244\r<br>com.sun.rowset.CachedRowSetImpl -&gt; 211\r<br>com.sun.rowset.internal.SyncResolverImpl -&gt; 206\r<br>com.sun.tools.example.debug.expr.ExpressionParser -&gt; 206\r<br>com.sun.org.apache.bcel.internal.generic.EmptyVisitor -&gt; 180\r<br>com.sun.org.apache.bcel.internal.generic.Visitor -&gt; 180\r<br><br>ちなみに、static メソッドのみを取り出した場合は以下です。\r<br><br>java.util.Arrays static -&gt; 114\r<br>java.nio.Bits static -&gt; 114\r<br>apple.laf.AquaImageFactory static -&gt; 98\r<br>java.lang.Character static -&gt; 80\r<br>sun.awt.FontConfiguration static -&gt; 79\r<br>com.sun.security.sasl.digest.DigestMD5Base static -&gt; 70\r<br>com.sun.org.apache.xalan.internal.xsltc.runtime.BasisLibrary static -&gt; 69\r<br>java.net.URI static -&gt; 66\r<br>apple.laf.AquaSliderUI static -&gt; 65\r<br>com.sun.tools.corba.se.idl.ParseException static -&gt; 63\n\t"
+  :code: "import java.io.*;\nimport java.lang.reflect.*;\nimport java.util.Map.Entry;\nimport
+    java.util.jar.*;\nimport java.util.*;\n\npublic class Sample {\n\n    public static
+    void main(String[] args) throws IOException, ClassNotFoundException {\n        Map&lt;String,
+    Integer&gt; classMap = new HashMap&lt;String, Integer&gt;();\n        for (String
+    jarName : System.getProperty(\"sun.boot.class.path\").split(System.getProperty(\"path.separator\")))
+    {\n            File jar = new File(jarName);\n            if (jar.isFile()) {\n
+    \               JarFile jf = new JarFile(jar);\n                for (Enumeration&lt;JarEntry&gt;
+    i = jf.entries(); i.hasMoreElements();) {\n                    String entry =
+    i.nextElement().getName();\n                    if (entry.endsWith(\".class\"))
+    {\n                        String className = entry.substring(0, entry.length()
+    - 6).replaceAll(\"/\", \".\");\n                        Class&lt;?&gt; cc = Class.forName(className,
+    false, null);\n                        int staticCount = 0, memberCount = 0;\n
+    \                       for (Method m : cc.getDeclaredMethods()) {\n                            if
+    ((m.getModifiers() &amp; Modifier.STATIC) != 0)\n                                staticCount++;\n
+    \                           else \n                                memberCount++;\n
+    \                       }\n                        classMap.put(className, memberCount);\n
+    \                       classMap.put(className + \" static\", staticCount);\n
+    \                   }\n                }\n            }\n        }\n        Map.Entry&lt;String,
+    Integer&gt;[] a = classMap.entrySet().toArray(new Map.Entry[0]);\n        Arrays.sort(a,
+    new Comparator&lt;Map.Entry&lt;String, Integer&gt;&gt; () {\n            public
+    int compare(Entry&lt;String, Integer&gt; o1, Entry&lt;String, Integer&gt; o2)
+    {\n                return -o1.getValue().compareTo(o2.getValue());\n            }
+    \   \n        });\n        for (int i = 0; i &lt; 10; i++) {\n            System.out.printf(\"%s
+    -&gt; %d%n\", a[i].getKey(), a[i].getValue());        \n        }\n    }\n\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9260'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9260
+  :user_name: Dubhead
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/785/
+  :language: Other
+  :time: 2009/06/29 04:23 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Fan 1.0.44で。\r\nPodはnamespaceのようなもの、Typeはクラスのようなものです。\r\n継承したメソッドを判別する綺麗な方法はないようで、いったん文字列に変換して比較する、という回りくどい事をやってます。\r\n出力行数は十分小さいと仮定してエラーチェック手抜きしてます。\r\n\r\n実行結果\r\n%
+    fan Doukaku270.fan\r\nweb::WebOutStream, 95\r\ncompiler::Parser, 84\r\ncompiler::CodeAsm,
+    75\r\ncompiler::CheckErrors, 74\r\nsys::Buf, 71\r\nsys::List, 65\r\nsys::Str,
+    65\r\ncompiler::CType, 62\r\ntestSys::DateTimeTest, 54\r\ntestSys::StrTest, 52\r\ntestSys::UriTest,
+    52\r\n%\r\n</pre>\n\t"
+  :code: |
+    class Doukaku270
+    {
+        static const Int numClassesToDisplay := 10
+
+        Void main() {
+            Int:Type[] counts := [:] // 連想配列: メソッド数 -&gt; クラスのリスト
+
+            // countsを埋める
+            Pod.list.each |Pod pod| {
+                pod.types.each |Type type| {
+                    numMethods := type.methods.findAll {
+                        // 継承したものでなく、このクラスで実装されたものを選ぶ
+                        it.toStr.startsWith("${type.toStr}.")
+                    }.size
+                    counts[numMethods] = counts.get(numMethods, [,]).add(type)
+                }
+            }
+
+            numPrints := 0  // 出力済みの行数
+            keys := counts.keys.sortr
+            while (numPrints &lt; numClassesToDisplay) {
+                numMethods := keys.removeAt(0)
+                counts[numMethods].each |Type type| {
+                    echo("${type.toStr}, $numMethods")
+                }
+                numPrints += counts[numMethods].size
+            }
+        }
+    }
+  :tags:
+  - Fan
+  :references:
+    :url: 
+    :title: 
+- :id: '9261'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9261
+  :user_name: lunlumo
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/813/
+  :language: Ruby
+  :time: 2009/06/29 12:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  　Rubyはこんな感じでした。\r<br><br>total:  135\r<br>String: 369\r<br>Array:  355\r<br>File:   349\r<br>IO:     340\r<br>Hash:   334\r<br>Class:  332\r<br>Module: 331\r<br>Fixnum: 329\r<br>Bignum: 327\r<br>File::Stat:     322\n\t"
+  :code: |
+    list = []
+    ObjectSpace.each_object(Class) do |klass|
+      info = {
+        :name =&gt; klass.name,
+        :methods =&gt; {
+          :instance_methods =&gt; {
+            :public =&gt; klass.public_instance_methods,
+            :protected =&gt; klass.protected_instance_methods,
+            :private =&gt; klass.private_instance_methods
+          },
+          :class_methods =&gt; {
+            :public =&gt; klass.class.public_instance_methods,
+            :protected =&gt; klass.class.protected_instance_methods,
+            :private =&gt; klass.class.private_instance_methods
+          }
+        }
+      }
+      info.instance_eval do |obj|
+        def name
+          self[:name]
+        end
+        def method_count
+          [:instance_methods, :class_methods].inject(0) do |c, t|
+            c + [:public, :protected, :private].inject(0) do |r, s|
+              r + self[:methods][t][s].size
+            end
+          end
+        end
+      end
+      list &lt;&lt; info
+    end
+    puts "total:\t#{list.size}"
+    list.sort { |a,b| b.method_count &lt;=&gt; a.method_count }[0..9].each do |e|
+      puts "#{e.name}:\t#{e.method_count}"
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9280'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9280
+  :user_name: lunlumo
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/813/
+  :language: Scala
+  :time: 2009/07/03 14:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  　scala-library.jarとscala-swing.jarについて調べてみました。Java側のリフレクションを使って調べているので，ソースコード上の値とはずれがあります。\r<br><br>total:  3173\r<br>scala.swing.Key:        206\r<br>scala.collection.jcl.Buffer$Projection: 166\r<br>scala.collection.jcl.ArrayList: 158\r<br>scala.collection.jcl.LinkedList:        158\r<br>scala.collection.jcl.Buffer$$anon$2:    155\r<br>scala.collection.jcl.SortedMap$$anon$1: 153\r<br>scala.collection.jcl.TreeMap:   153\r<br>scala.collection.jcl.SortedMap$$anon$2: 151\r<br>scala.collection.jcl.Buffer$Range:      150\r<br>scala.collection.jcl.TreeSet:   146\n\t"
+  :code: |
+    import scala.collection.jcl.Conversions
+    import java.io.File
+    import java.util.Collections
+    import java.util.jar.{JarEntry,JarFile}
+
+    object MethodCount {
+        def getClassInformations(l:List[String]):List[Pair[String,Int]] = {
+            def getInfo(n:String):Pair[String,Int] =
+                try { (n, Class.forName(n).getDeclaredMethods.size) } catch { case _ =&gt; (n, -1) }
+            def isClass(n:String):Boolean = n.endsWith(".class") &amp;&amp; !n.matches("\\$\\$anonfun\\$")
+            def getClassName(n:String):String = n.substring(0, n.length - 6).replace('/', '.')
+            def getJarEntries(f:File):List[JarEntry] =
+                Conversions.convertList(Collections.list((new JarFile(f)).entries)).toList
+            def getFiles(l:List[String]):List[File] =
+                l.map(new File(System.getProperty("scala.home"), _)).filter(_.exists)
+            getFiles(l).map(getJarEntries).flatten(identity(_)).map(_.getName).filter(isClass).map(getClassName).map(getInfo)
+        }
+        def main(args:Array[String]):Unit = {
+            val l:List[Pair[String,Int]] = getClassInformations(List("lib/scala-library.jar", "lib/scala-swing.jar"))
+            Console.printf("total:\t%d\n", l.size)
+            l.sort(_._2 &gt; _._2).take(10).foreach((i) =&gt; Console.printf("%s:\t%d\n", i._1, i._2))
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9348'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9348
+  :user_name: nobsun
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2009/07/13 06:35 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>ghc 限定．Preludeからエクスポートされているclassは15個しかないので全部列挙\n(10個に限定するなら，コード中のコメントアウトされている部分をuncommentする)\n括弧内がメソッドの数</p>\n<p>実行例:\n<a
+    href=\"/web/20100712040233/http://ja.doukaku.org/270/flatten/#id1\" name=\"id2\"><span
+    class=\"problematic\" id=\"id2\">*</span></a>Main&gt; :main\nFloating (18)\nRealFloat
+    (14)\nEnum (8)\nOrd (7)\nNum (7)\nIntegral (7)\nRealFrac (5)\nRead (5)\nMonad
+    (4)\nShow (3)\nFractional (3)\nEq (2)\nBounded (2)\nReal (1)\nFunctor (1)\n...\nnumber
+    of classes : 15</p>\n<div class=\"system-message\" id=\"id1\">\n<p class=\"system-message-title\">System
+    Message: <a name=\"id1\">WARNING/2</a> (<tt class=\"docutils\">&lt;string&gt;</tt>,
+    line 5); <em><a href=\"/web/20100712040233/http://ja.doukaku.org/270/flatten/#id2\">backlink</a></em></p>\nInline
+    emphasis start-string without end-string.</div>\n\n\t"
+  :code: "import Data.List\nimport Data.Ord\nimport System.Process\n\ndata ClassInfo
+    = CI { className :: String, numberOfMethods :: Int }\n\nmain = do { res &lt;-
+    readProcess \"ghc\" [\"-e\",\":browse Prelude\"] []\n          ; let cis = classInfos
+    [] $ lines res\n          ; let n = length cis\n          ; putStr $ unlines {-
+    $ take 10 -}\n          $ map showClassInfo $ sortBy (flip (comparing numberOfMethods))
+    cis\n          ; putStr $ unlines [\"...\",\"number of classes : \"++show n]\n
+    \         }\n\nshowClassInfo :: ClassInfo -&gt; String\nshowClassInfo (CI name
+    n) = name ++ \" (\" ++ show n ++ \")\"\n\nclassInfos :: [ClassInfo] -&gt; [String]
+    -&gt; [ClassInfo]\nclassInfos a [] = a\nclassInfos a (l:ls)\n | head lw /= \"class\"
+    = classInfos a ls\n | otherwise = classInfos (ci:a) ls''\n   where \n     lw =
+    words l\n     ci = CI name (if null ls' then 1 else length ls')\n     (ls',ls'')
+    = break (not . (\"  \" `isPrefixOf`)) ls\n     name = case break (\"=&gt;\"==)
+    lw of\n       (_,[])  -&gt; head $ tail lw\n       (_,lw') -&gt; head $ tail lw'\n"
+  :tags:
+  - System.Process
+  :references:
+    :url: 
+    :title: 
+- :id: '9349'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9349
+  :user_name: nobsun
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2009/07/13 06:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">すみません。プレビューせずに、形式をまちがえてupしたので実行例がこわれてしまいました。orz
+    \ 実行例だけupします\r\n\r\n*Main&gt; :main\r\nFloating (18)\r\nRealFloat (14)\r\nEnum
+    (8)\r\nOrd (7)\r\nNum (7)\r\nIntegral (7)\r\nRealFrac (5)\r\nRead (5)\r\nMonad
+    (4)\r\nShow (3)\r\nFractional (3)\r\nEq (2)\r\nBounded (2)\r\nReal (1)\r\nFunctor
+    (1)\r\n...\r\nnumber of classes : 15\r\n\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9352'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9352
+  :user_name: creeper
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/994/
+  :language: Other
+  :time: 2009/07/13 14:42 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Squirrel3.0で。\r\n「継承したメソッド数は含まずに」が出来なかったのでカッとなって横に伸ばした。\r\n反省はしていない。\r\n\r\n結果：\r\nroottable
+    \ :  56\r\nblob       :  13\r\nfile       :  10\r\nstream     :   9\r\nregexp
+    \    :   5\r\n\r\nええ、別に継承考慮しなくても結果変わらないんです。\r\nあまりにさみしいので、グローバル関数のようなものをroottableとしてカウントしています。\r\n自分自身が含まれてしまわないようにlocal
+    tab = のような書き方になっています。</pre>\n\t"
+  :code: |
+    local tab =
+    {
+        function count_function(cla)
+        {
+            local ret = 0;
+            foreach(k,v in cla) if (type(v) == "function") ret++;
+            return ret;
+        }
+
+        function main()
+        {
+            local result = [{ key="roottable", val=count_function(getroottable()) }];
+            foreach(k,v in getroottable()) if (type(v)=="class") result.append({ key=k, val=count_function(v) });
+            result.sort(@(a, b) b.val-a.val);
+            for(local i=0; i&lt;10 &amp;&amp; i&lt;result.len(); i++) print(format("%-10s : %3d\n", result[i].key, result[i].val));
+        }
+    }
+    tab.main();
+  :tags:
+  - Squirrel
+  :references:
+    :url: 
+    :title: 
+- :id: '9354'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9354
+  :user_name: creeper
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/994/
+  :language: 
+  :time: 2009/07/13 14:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>&gt;ええ、別に継承考慮しなくても結果変わらないんです。\nと思いましたが、fileとblobはstreamを継承してるっぽいですorz</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9361'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9361
+  :user_name: tanakahisateru
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/1025/
+  :language: Python
+  :time: 2009/07/13 16:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>結果</p>\n<p>Only regular methods: unicode(39), str(37), set(16),
+    dict(15), file(15), list(9), frozenset(7), complex(1), enumerate(1), reversed(1)</p>\n<p>Including
+    special methods: unicode(66), str(64), bool(53), int(53), long(53), set(49), float(46),
+    complex(45), list(41), dict(39)</p>\n<p>「標準ライブラリ」は数え切れないほどあって、サードパーティ製との境目が不明瞭になるので、「組み込み」を意味する__builtins__モジュールに限って調査しました。</p>\n<p>また、Pythonでは、__XXX__形式の特殊メソッドを実装してオブジェクトの暗黙的な振る舞いを定義するので、それらを含まない場合と含む場合で分けて調査しました。</p>\n\n\t"
+  :code: |
+    def bi_of(name):
+        return getattr(__builtins__, name)
+
+    def special_name(a):
+        return a[0:2] == "__" and a[-2:] == "__"
+
+    def bi_methods_of(name):
+        o = bi_of(name)
+        return filter(
+            lambda a: not special_name(a) and callable(getattr(o, a)),
+            dir(o))
+
+    def bi_all_methods_of(name):
+        o = bi_of(name)
+        return filter(
+            lambda a: callable(getattr(o, a)),
+            dir(o))
+
+    def class_method_ranking(counter_func, limit):
+        return map(
+            lambda name: "%s(%d)" % (name, len(counter_func(name))),
+            sorted(
+                filter(
+                    lambda name: type(bi_of(name)) == type,
+                    dir(__builtins__)),
+                lambda a,b: cmp(
+                    len(counter_func(a)),
+                    len(counter_func(b))
+                    ) * -1
+            )[0:limit]
+        )
+
+    print "Only regular methods: %s" % ", ".join(
+        class_method_ranking(bi_methods_of, 10))
+    print "Including special methods: %s" % ", ".join(
+        class_method_ranking(bi_all_methods_of, 10))
+  :tags:
+  - Python2.5
+  - WtUMGKcf
+  :references:
+    :url: 
+    :title: 
+- :id: '9541'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9541
+  :user_name: uehaj
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2009/08/30 23:04 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <div class=\"section\">\n<p>GDKの追加メソッドで調べてみました。具体的には、org.codehaus.groovy.runtime.*パッケージのDefaultGroovyMethods,
+    DefaultGroovyStaticMethods, SwingGroovyMethodの３つのクラスで定義されているメソッドからです。\r</p>\n<p>結果はこんな感じ。\r</p>\n<p>\r</p>\n<p>1
+    : class java.lang.String=72\r</p>\n<p>2 : class java.io.File=63\r</p>\n<p>3 :
+    class java.lang.Object=57\r</p>\n<p>4 : interface java.util.Collection=44\r</p>\n<p>5
+    : class java.lang.Number=33\r</p>\n<p>6 : class [Ljava.lang.Object;=31\r</p>\n<p>7
+    : interface java.util.Map=25\r</p>\n<p>8 : interface java.util.List=25\r</p>\n<p>9
+    : class java.io.InputStream=23\r</p>\n<p>10 : class java.lang.Character=22\r</p>\n</div>\n\t"
+  :code: |
+    import org.codehaus.groovy.runtime.*
+
+    counter=[:]
+
+    [DefaultGroovyMethods,
+     DefaultGroovyStaticMethods,
+     SwingGroovyMethods].each {
+        it.methods.each {
+            if (it.parameterTypes.size() != 0) {
+                cls = it.parameterTypes[0]
+                counter[cls]==null? counter[cls]=1 : counter[cls]++
+            }
+        }
+    }
+    counter.entrySet().sort { -it.value }[0..9].eachWithIndex { it, idx -&gt;
+        println "${idx+1} : $it"
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9714'
+  :parent_id: '270'
+  :url: http://ja.doukaku.org/comment/9714
+  :user_name: 匿名
+  :user_url: /web/20100712040233/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/12/05 07:44 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>Hello! :) is it work? &lt;a href=http://test.com&gt;test&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags:
+  - MKGPEHUJ
+  - qbeJUVNe
+  - xIoyWFFf
+  :references:
+    :url: /web/20100712040233/http://test.com/
+    :title: Hello

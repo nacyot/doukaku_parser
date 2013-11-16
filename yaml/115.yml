@@ -1,0 +1,761 @@
+---
+:id: '115'
+:title: 法演算
+:comments:
+- :id: '4808'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4808
+  :user_name: ihag
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/560/
+  :language: 
+  :time: 2007/12/14 06:10 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  <p>ここでいう法演算とは，与えられた数(ここでは「法」と言います)で剰余をとりながら行う計算のことです．たとえば，法が10である場合，以下のように計算します．</p>\n<ul>\n<li><dl
+    class=\"first docutils\">\n<dt>足し算</dt>\n<dd><ul class=\"first last simple\">\n<li>1
+    + 2 = 3</li>\n<li>7 + 3 = 0 (10を10で割った余りは0)</li>\n<li>11 + 12 = 1 + 2 = 3</li>\n</ul></dd>\n</dl></li>\n<li><dl
+    class=\"first docutils\">\n<dt>引き算</dt>\n<dd><ul class=\"first last simple\">\n<li>3
+    - 2 = 1</li>\n<li>2 - 3 = 9</li>\n</ul></dd>\n</dl></li>\n<li><dl class=\"first
+    docutils\">\n<dt>掛け算</dt>\n<dd><ul class=\"first last simple\">\n<li>2 * 3 = 6</li>\n<li>11
+    * 12 = 1 * 2 = 2</li>\n<li>18 * 39 = 8 * 9 = 2</li>\n</ul></dd>\n</dl></li>\n</ul>\n<p>式と法を与えたときに，このような法演算を行い，計算結果を表示するプログラムを作成してください．</p>\n<p>注意点</p>\n<ul>\n<li><dl
+    class=\"first docutils\">\n<dt>プログラムの入力には，式と法が与えられます．</dt>\n<dd><ul class=\"first
+    last simple\">\n<li>式に現れる数は，整数のみと仮定してかまいません．しかし，法より大きな数が与えられるかもしれませんし，負の数が与えられるかもしれません．</li>\n<li>法は2以上の正整数のみが与えられます．</li>\n<li>式と法は，プログラムにとって都合のよい形式で与えられると仮定してかまいません．ソースコード中に埋め込んでしまってもかまいません．</li>\n</ul></dd>\n</dl></li>\n<li><dl
+    class=\"first docutils\">\n<dt>足し算，引き算，掛け算に対応してください．</dt>\n<dd><ul class=\"first
+    last simple\">\n<li>法10の世界においては，1 - 2 と 1 + 8 は同じ意味です．引き算の計算においては，この性質を使い，足し算に変換してから計算してもかまいません．</li>\n</ul></dd>\n</dl></li>\n<li>\n<p
+    class=\"first\">プログラムの出力として，計算結果を表示して下さい．</p>\n</li>\n<li><dl class=\"first docutils\">\n<dt>与えられた式の中に，範囲外の数(負の数や，法の数以上の数)が現れた時には，必ず一度，式全体を正規化し，その結果を表示してから計算を行って下さい．</dt>\n<dd><ul
+    class=\"first last simple\">\n<li>ここでいう「正規化」とは，式の中のすべての項をいったん法で剰余をとり，0以上，法-1以下の範囲になるようにする，ということです</li>\n<li>正規化をする際に，引き算を足し算へ変換する処理を一緒に行ってもかまいません．</li>\n<li>計算過程で範囲外の数が現れたときには，正規化を行うことが望ましいですが，必ずしも行う必要はありません．(最終的な計算結果が正しければよしとします)</li>\n</ul></dd>\n</dl></li>\n</ul>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4929'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4929
+  :user_name: SiroKuro
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/540/
+  :language: C
+  :time: 2007/12/22 11:41 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  こんな感じで。とりあえず逆ポーランドで式を渡します。\r<br><br>&gt;hoo 10 1 2 +\r<br>-&gt; 3\r<br>&gt;hoo 10 7 3 +\r<br>-&gt; 0\r<br>&gt;hoo 10 11 12 +\r<br>-&gt; 3\r<br>&gt;hoo 10 3 2 -\r<br>-&gt; 1\r<br>&gt;hoo 10 2 3 -\r<br>-&gt; 9\r<br>&gt;hoo 10 2 3 *\r<br>-&gt; 6\r<br>&gt;hoo 10 11 12 *\r<br>-&gt; 2\r<br>&gt;hoo 10 18 39 *\r<br>-&gt; 2\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    static class Program {
+        static void Main(string[] args) {
+            int mod = int.Parse(args[0]);
+            Stack&lt;int&gt; stack = new Stack&lt;int&gt;();
+            for(int i = 1; i &lt; args.Length; i++) {
+                int value = 0;
+                if (args[i] == "+" || args[i] == "-" || args[i] == "*") {
+                    int y = stack.Pop();
+                    int x = stack.Pop();
+                    if (args[i] == "+")         value = x + y;
+                    else if (args[i] == "-")    value = x - y;
+                    else if (args[i] == "*")    value = x * y;
+                }
+                else {
+                    value = int.Parse(args[i]);
+                }
+                stack.Push((mod + value % mod) % mod);
+            }
+            Console.WriteLine("-&gt; {0}", stack.Pop());
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4930'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4930
+  :user_name: shiro
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/12/22 11:43 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  アルゴリズムよりも、言語ごとのイディオムを問うような問題かなと思いました。\r<br><br>用途によると思いますが、式を埋め込むならマクロが手軽です。\r<br><br>  (with-modular m &lt;式&gt; ...)\r<br><br>と書くと&lt;式&gt; 内の演算がmod m で行われます。\r<br><br><br> gosh&gt; (with-modular 10 (list (+ 1 2) (+ 7 3) (+ 11 12)))\r<br> (3 0 3)\r<br> gosh&gt; (with-modular 10 (list (- 3 2) (- 2 3)))\r<br> (1 9)\r<br> gosh&gt; (with-modular 10 (list (* 2 3) (* 11 12) (* 18 39)))\r<br> (6 2 2)\r<br> gosh&gt; (with-modular 10 (+ (- 1 2) (* 3 4) (+ 5 6 7) (* 8 9)))\r<br> 1\r<br><br><br>"
+  :code: |
+    (define-macro (with-modular m . body)
+      `(let ((+ (make-modular + ,m))
+             (- (make-modular - ,m))
+             (* (make-modular * ,m)))
+         ,@body))
+
+    (define (make-modular op m)
+      (lambda xs
+        (modulo (apply op (map (cut modulo &lt;&gt; m) xs)) m)))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '4931'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4931
+  :user_name: shiro
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/12/22 11:51 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  一方、式を外部から与えたいなら、+, -, * の束縛がmodular arithmeticに置き換わったようなモジュールを用意してその中でevalするという手が使えます。\r<br><br> gosh&gt; (eval-modular 10 '(+ 2 9))\r<br> 1\r<br> gosh&gt; (eval-modular 10 '(- 2 9))\r<br> 3\r<br> gosh&gt; (eval-modular 10 '(* 2 9))\r<br> 8\r<br>"
+  :code: |
+    (define (make-modular op m)
+      (lambda xs
+        (modulo (apply op (map (cut modulo &lt;&gt; m) xs)) m)))
+
+    (define (make-modular-module m)
+      (let1 mod (make-module #f)
+        (eval `(define + ,(make-modular + m)) mod)
+        (eval `(define - ,(make-modular - m)) mod)
+        (eval `(define * ,(make-modular * m)) mod)
+        mod))
+
+    (define (eval-modular m expr)
+      (eval expr (make-modular-module m)))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '4932'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4932
+  :user_name: dankogai
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/12/22 15:38 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  \n<p><a href=\"/web/20081120132931/http://search.cpan.org/perldoc?overload\">overload</a>の格好の事例。\n</p>\n<p>Dan
+    the Perl Monger\n</p>\n\n\n\n\t"
+  :code: |
+    package modulo;
+    use strict;
+    use warnings;
+    our $VERSION = 0.01;
+
+    use overload
+      '0+' =&gt; sub { $_[0]-&gt;[0] + 0 },
+      '+'  =&gt; sub { __PACKAGE__-&gt;new( $_[0]-&gt;[0] + $_[1]-&gt;[0], $_[0]-&gt;[1] ) },
+      '-'  =&gt; sub { __PACKAGE__-&gt;new( $_[0]-&gt;[0] - $_[1]-&gt;[0], $_[0]-&gt;[1] ) },
+      '*'  =&gt; sub { __PACKAGE__-&gt;new( $_[0]-&gt;[0] * $_[1]-&gt;[0], $_[0]-&gt;[1] ) },
+      ;
+
+    sub import {
+        my ( $pkg, undef, $mod ) = @_;
+        $mod &gt;= 2 or die 'usage: use ', __PACKAGE__, ' mod =&gt; n;';
+        overload::constant integer =&gt; sub { __PACKAGE__-&gt;new( shift, $mod ) };
+    }
+
+    sub new {
+        my $pkg = shift;
+        my ( $n, $m ) = @_;
+        $n %= $m;
+        bless [ $n, $m ], $pkg;
+    }
+
+    1;
+
+    #!/usr/local/bin/perl
+    use strict;
+    use warnings;
+    sub say { print @_, "\n" }
+    say "1 + 2 = ", 1 + 2;
+    say "3 - 4 = ", 3 - 4;
+    say "5 * 6 = ", 5 * 6;
+    {
+        say "# mod = 2";
+        use modulo mod =&gt; 2;
+        say "1 + 2 = ", 1 + 2;
+        say "3 - 4 = ", 3 - 4;
+        say "5 * 6 = ", 5 * 6;
+    }
+    {
+        say "# mod = 3";
+        use modulo mod =&gt; 3;
+        say "1 + 2 = ", 1 + 2;
+        say "3 - 4 = ", 3 - 4;
+        say "5 * 6 = ", 5 * 6;
+    }
+
+    say "# original scope";
+    say "1 + 2 = ", 1 + 2;
+    say "3 - 4 = ", 3 - 4;
+    say "5 * 6 = ", 5 * 6;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4933'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4933
+  :user_name: mc
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2007/12/22 20:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">shiroさんの#4930の真似で自分も演算子の上書きにしてみました。\r\nwith-modで囲んだ部分に指定した数字の法が適用されます。\r\n(with-mod
+    10\r\n  (print (= (print (* 18 39))\r\n            (print (* 8 9)))))\r\n=&gt;\r\n2\r\n2\r\nT</pre>\n\t"
+  :code: "(defmacro with-mod (div &amp;body body)\n  `(%with-mod ((+ - * /) ,div)
+    ,@body))\n\n(defmacro %with-mod (((&amp;rest fns) div) &amp;body body)\n  (let
+    ((g (gensym)))\n    `(let ((,g (labels ,(mapcar\n                         (lambda
+    (fn)\n                           `(,fn (&amp;rest expr) \n                                 (mod
+    (apply (symbol-function ',fn) expr) ,div)))\n                         fns)\n                 ,@body)))\n
+    \      (if (numberp ,g) (mod ,g ,div) ,g))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4936'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4936
+  :user_name: kozima
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/164/
+  :language: Haskell
+  :time: 2007/12/23 09:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>まるでどこかの教科書から拾ってきたような。</p>\n<p>出力:</p>\n<pre class=\"literal-block\">\n(1
+    + 2) = 3\n(7 + 3) = 0\n(11 + 12) = (1 + 2) = 3\n(3 - 2) = 1\n(2 - 3) = 9\n(2 *
+    3) = 6\n(11 * 12) = (1 * 2) = 2\n(18 * 39) = (8 * 9) = 2\n</pre>\n\n\t"
+  :code: |
+    data AExp = Val Integer | Add AExp AExp | Sub AExp AExp | Mul AExp AExp
+
+    isNormal :: Integer -&gt; AExp -&gt; Bool
+    isNormal m (Val n) = 0 &lt;= n &amp;&amp; n &lt; m
+    isNormal m (Add e1 e2) = isNormal m e1 &amp;&amp; isNormal m e2
+    isNormal m (Sub e1 e2) = isNormal m e1 &amp;&amp; isNormal m e2
+    isNormal m (Mul e1 e2) = isNormal m e1 &amp;&amp; isNormal m e2
+
+    normalizeExp :: Integer -&gt; AExp -&gt; AExp
+    normalizeExp m (Val n) = Val $ mod n m
+    normalizeExp m (Add e1 e2) = Add (normalizeExp m e1) (normalizeExp m e2)
+    normalizeExp m (Sub e1 e2) = Sub (normalizeExp m e1) (normalizeExp m e2)
+    normalizeExp m (Mul e1 e2) = Mul (normalizeExp m e1) (normalizeExp m e2)
+
+    showExp :: AExp -&gt; String
+    showExp (Val n) = show n
+    showExp (Add e1 e2) = "(" ++ showExp e1 ++ " + " ++ showExp e2 ++ ")"
+    showExp (Sub e1 e2) = "(" ++ showExp e1 ++ " - " ++ showExp e2 ++ ")"
+    showExp (Mul e1 e2) = "(" ++ showExp e1 ++ " * " ++ showExp e2 ++ ")"
+
+    isReduced :: AExp -&gt; Bool
+    isReduced (Val n) = True
+    isReduced _ = False
+
+    wrapBinOp :: (Integer -&gt; Integer -&gt; Integer) -&gt; AExp -&gt; AExp -&gt; AExp
+    wrapBinOp op (Val x) (Val y) = Val $ op x y
+
+    evalExp :: AExp -&gt; AExp
+    evalExp e@(Val n) = e
+    evalExp (Add e1 e2) = wrapBinOp (+) (evalExp e1) (evalExp e2)
+    evalExp (Sub e1 e2) = wrapBinOp (-) (evalExp e1) (evalExp e2)
+    evalExp (Mul e1 e2) = wrapBinOp (*) (evalExp e1) (evalExp e2)
+
+    evalExpMod :: Integer -&gt; AExp -&gt; AExp
+    evalExpMod m e = normalizeExp m $ evalExp e
+
+    evalPrintExp :: Integer -&gt; AExp -&gt; IO ()
+    evalPrintExp m e = do
+        putStr $ showExp e
+        if isNormal m e
+            then putStr $ " = " ++ showExp (evalExpMod m e)
+            else let e' = normalizeExp m e in
+                 do putStr $ " = " ++ showExp e'
+                    putStr $ " = " ++ showExp (evalExpMod m e)
+        putStr "\n"
+
+    tests = [Add (Val 1) (Val 2), Add (Val 7) (Val 3), Add (Val 11) (Val 12),
+             Sub (Val 3) (Val 2), Sub (Val 2) (Val 3),
+             Mul (Val 2) (Val 3), Mul (Val 11) (Val 12), Mul (Val 18) (Val 39)]
+
+    main = doTest tests
+     where doTest [] = return ()
+           doTest (t:ts) = evalPrintExp 10 t &gt;&gt; doTest ts
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4937'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4937
+  :user_name: ocean
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/12/23 10:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>なんか効率悪そうで気に入りませんが・・・</p>\n\n\t"
+  :code: |
+    import operator
+    import sys
+
+    def solve(expr, law):
+        sys.stdout.write(expr)
+        tokens = []
+        normalized = False
+        for s in expr.split():
+            if s in ('*', '+', '-'):
+                tokens.append(s)
+            else:
+                old = int(s)
+                new = old % law
+                if old != new:
+                    normalized = True
+                tokens.append(new)
+        if normalized:
+            sys.stdout.write(" = " + " ".join(str(x) for x in tokens))
+        def execute(op, f):
+            while 1:
+                try:
+                    i = tokens.index(op)
+                except ValueError:
+                    break
+                tokens[i - 1:i + 2] = [f(tokens[i - 1], tokens[i + 1]) % law]
+        execute("*", operator.mul)
+        execute("+", operator.add)
+        execute("-", operator.sub)
+        if not len(tokens) == 1:
+            raise ValueError("invalid expression")
+        sys.stdout.write(" = %d\n" % tokens[0])
+
+    def main():
+        # addition
+        solve("1 + 2", 10)
+        solve("7 + 3", 10)
+        solve("11 + 12", 10)
+        # substraction
+        solve("3 - 2", 10)
+        solve("2 - 3", 10)
+        # multipcation
+        solve("2 * 3", 10)
+        solve("11 * 12", 10)
+        solve("18 * 39", 10)
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4938'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4938
+  :user_name: 匿名
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/12/23 10:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">数値がマイナスの場合ってこれでいいのかな。\r\n</pre>\n\t"
+  :code: |
+    import re
+
+    def f(s, m):
+      t1 = re.findall('(-?[1-9]\d*)\s*([\+\-\*])\s*(\-?[1-9]\d*)\s*', s)[0]
+      t2 = (str(int(t1[0])%m), t1[1], str(int(t1[2])%m))
+      print '%s %s %s = ' % t1 + (('%s %s %s = ' % t2) if t1 != t2 else '') + str(eval(''.join(t2)) % m)
+
+    f('1 + 2', 10)
+    f('7 + 3', 10)
+    f('11 + 12', 10)
+    f('3 - 2', 10)
+    f('2 - 3', 10)
+    f('2 * 3', 10)
+    f('11 * 12', 10)
+    f('18 * 19', 10)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4939'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4939
+  :user_name: omoikani
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/374/
+  :language: StandardML
+  :time: 2007/12/23 13:21 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">functorで。各演算子は正規化したものを表示して、結果を返すようにしています。\r\n\r\n-
+    structure M10 = Modular (val m = 10);\r\n- open M10;\r\n- map (fn x =&gt; x) [1
+    + 2, 7 + 3, 11 + 12];\r\n1 + 2 = 3\r\n7 + 3 = 0\r\n11 + 12 = 1 + 2 = 3\r\nval
+    it = [3,0,3] : int list\r\n- map (fn x =&gt; x) [3 - 2, 2 - 3];\r\n3 - 2 = 1\r\n2
+    - 3 = 9\r\nval it = [1,9] : int list\r\n- map (fn x =&gt; x) [2 * 3, 11 * 12,
+    18 * 39];\r\n2 * 3 = 6\r\n11 * 12 = 1 * 2 = 2\r\n18 * 39 = 8 * 9 = 2\r\nval it
+    = [6,2,2] : int list</pre>\n\t"
+  :code: |
+    functor Modular (val m : int) = struct
+      infix 7 *
+      infix 6 + -
+
+      local
+        fun calc f x y s =
+          let
+            open Int
+
+            val _ = print (toString x ^ " " ^ s ^ " " ^ toString y ^ " = ")
+            val x' = x mod m and y' = y mod m
+            val _ = if x &gt;= m orelse y &gt;= m then
+                      print (toString x' ^ " " ^ s ^ " " ^ toString y' ^ " = ")
+                    else ()
+            val result = f (x', y') mod m
+          in
+            print (toString result ^ "\n");
+            result
+          end
+      in
+        fun x + y = calc Int.+ x y "+"
+        fun x - y = calc Int.- x y "-"
+        fun x * y = calc Int.* x y "*"
+      end
+
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4940'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4940
+  :user_name: 匿名
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/4/
+  :language: Common
+  :time: 2007/12/23 14:13 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">他の人の回答を見てからではやる気がでませんでしたが、別の情けないアプローチでやることにしました。\r\n法に支配される数値を「#m数値」のように表現するようにしています。</pre>\n\t"
+  :code: "(defvar *mod-base* 10)\n\n(defstruct (mod10\n             (:constructor
+    mk-mod (v))\n             (:print-function \n               (lambda (m s d)\n
+    \                   (format s \"#m~D\" (mod10-v m)))))\n           ( v 0 :type
+    (mod 10)))\n(set-dispatch-macro-character #\\# #\\m\n  #'(lambda (s c1 c2)\n      (declare
+    (ignore c1 c2))\n      (mk-mod (mod (read-preserving-whitespace s t nil t) *mod-base*))))\n(defun
+    mod10-plus (x y)(mk-mod (mod (+ (mod10-v x)(mod10-v y)) *mod-base*)))\n(defun
+    mod10-sub  (x y)(mk-mod (mod (- (mod10-v x)(mod10-v y)) *mod-base*)))\n(defun
+    mod10-mul  (x y)(mk-mod (mod (* (mod10-v x)(mod10-v y)) *mod-base*)))\n\n(flet\n
+    \ ((+ (&amp;rest l)\n     (if (mod10-p (car l))(reduce #'mod10-plus l)(apply #'+
+    l)))\n   (- (&amp;rest l)\n     (if (mod10-p (car l))(reduce #'mod10-sub l) (apply
+    #'- l)))\n   (* (&amp;rest l)\n     (if (mod10-p (car l))(reduce #'mod10-mul l)
+    (apply #'* l))))\n\n  (format t \"~&amp;#m1 + #m2 = ~A~%\" (+ #m1 #m2))\n  (format
+    t \"#m7 + #m3 = ~A~%\" (+ #m7 #m3))\n  (format t \"#m11 + #m12 = ~A~%\" (+ #m11
+    #m12))\n  (format t \"#m3 - #m2 = ~A~%\" (- #m3 #m2))\n  (format t \"#m2 - #m3
+    = ~A~%\" (- #m2 #m3))\n  (format t \"#m2 * #m3 = ~A~%\" (* #m2 #m3))\n  (format
+    t \"#m11 * #m12 = ~A~%\" (* #m11 #m12))\n  (format t \"#m18 * #m39 = ~A~%\" (*
+    #m18 #m39))\n)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4941'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4941
+  :user_name: susu
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/218/
+  :language: OCaml
+  :time: 2007/12/23 15:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "module Law = struct\n  (*normalize 10 (-1);; =&gt;9 *)\n  let normalize
+    m x =\n    let x = x mod m in\n    if x&lt;0 then m+x else x\n    \n  (* print
+    10 (+) '+' 7 3;; print 法 演算 演算文字 演算対象1,2 *)\n  let print m f op x y = \n    let
+    norm = normalize m in\n    Printf.printf \"%d %c %d = \" x op y;\n    \n    let
+    nx,ny = (norm x),(norm y) in\n    let answer = (norm (f nx ny)) in\n      if nx=x
+    or ny=y\n      then print_int answer\n      else Printf.printf \"%d %c %d = %d\"
+    nx op ny answer;\n    print_newline ()\n    \nend;;\n\n(*使用例*)\n  let add = Law.print
+    10 (+) '+' in\n    add 1 2;  add 7 3;  add 11 12;;\n\n  let sub = Law.print 10
+    (-) '-' in\n    sub 3 2;  sub 2 3;;\n\n  let ( * ) = Law.print 10 ( * ) '*' in\n
+    \   2*3;  11*12;  18*39;;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4942'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4942
+  :user_name: susu
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/218/
+  :language: 
+  :time: 2007/12/23 15:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>orじゃなくてandだった。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4943'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4943
+  :user_name: kenaxt
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/456/
+  :language: Ruby
+  :time: 2007/12/23 19:51 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">ひょっとして hou(\"-13 * 11\",7)  = -13 * 11 = 1
+    * 4 = 4 ?\r\nそうすると、例題は 3 - 2 = 3 + 8 = 11　?</pre>\n\t"
+  :code: "def hou(s,m)\n  print s + \" = \"\n  if (w = s.gsub(/\\d+/){$&amp;.to_i
+    % m}) != s\n    print w + \" = \" \n  end\n  p eval(w)%m\nend\n\nhou(\"-13 * 11\",7)
+    # -13 * 11 = -6 * 4 = 4\nhou(\"7 * 9\",7)    # 7 * 9 = 0 * 2 = 0\nhou(\"3 * 4\",7)
+    \   # 3 * 4 = 5\n"
+  :tags:
+  - Ruby1.8.6
+  :references:
+    :url: 
+    :title: 
+- :id: '4945'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4945
+  :user_name: sumim
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/12/24 01:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk で。\r<br><br>式文字列をパース（#parse:class:）して生成されるノードツリーを再帰的にスキャンして正規化。そうして得られた正規化後のノードから、あらためてバイトコードを生成（#generate）し、それをコール（#valueWithReceiver:arguments:)しています。\n\t"
+  :code: |
+    | houEval |
+    houEval := [:hou :expr |
+        | node rec result |
+        node := Parser new parse: 'DoIt ^', expr class: UndefinedObject.
+        rec := [:nd |
+            (nd isKindOf: LiteralNode) ifTrue: [nd key: nd key \\ hou].
+            (nd isKindOf: MessageNode) ifTrue: [
+                rec copy fixTemps value: nd receiver.
+                nd arguments do: [:arg | rec copy fixTemps value: arg]]].
+        rec copy fixTemps value: node body statements first expr.
+        result := (node generate valueWithReceiver: nil arguments: #()) \\ hou.
+        expr, ' = ', (node asString allButFirst: 8), ' = ', result printString].
+
+    houEval value: 10 value: '1 + 2'.   "=&gt; '1 + 2 = 1 + 2 = 3' "
+    houEval value: 10 value: '7 + 3'.   "=&gt; '7 + 3 = 7 + 3 = 0' "
+    houEval value: 10 value: '11 + 12'.   "=&gt; '11 + 12 = 1 + 2 = 3' "
+    houEval value: 10 value: '3 - 2'.   "=&gt; '3 - 2 = 3 - 2 = 1' "
+    houEval value: 10 value: '2 - 3'.   "=&gt; '2 - 3 = 2 - 3 = 9' "
+    houEval value: 10 value: '2 * 3'.   "=&gt; '2 * 3 = 2 * 3 = 6' "
+    houEval value: 10 value: '11 * 12'.   "=&gt; '11 * 12 = 1 * 2 = 2' "
+    houEval value: 10 value: '18 * 39'.   "=&gt; '18 * 39 = 8 * 9 = 2' "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '4948'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4948
+  :user_name: nobsun
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/12/24 05:58 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">依存型風に書いてみました．法は型で与えます．\r\n法を 3 とするなら，Modulo
+    (S(S(S Z))) Int を\r\n法を10 とするなら，Modulo (S(S(S(S(S(S(S(S(S(S Z)))))))))) Int を\r\nここでは簡単のために法
+    0 〜 10 に対応する型エイリアスを宣言してあります．\r\n\r\n*Modulo&gt; 1+2 :: Modulo10\r\n3\r\n*Modulo&gt;
+    7+3 :: Modulo10\r\n0\r\n*Modulo&gt; 11+12 :: Modulo10\r\n3\r\n*Modulo&gt; 3-2
+    :: Modulo10\r\n1\r\n*Modulo&gt; 2-3 :: Modulo10\r\n9\r\n*Modulo&gt; 2*3 :: Modulo10\r\n6\r\n*Modulo&gt;
+    11*12 :: Modulo10\r\n2\r\n*Modulo&gt; 18*39 :: Modulo10\r\n2\r\n*Modulo&gt; (1-2::Modulo10)
+    == (1+8::Modulo10)\r\nTrue\r\n*Modulo&gt; 1+2 :: Modulo7\r\n3\r\n*Modulo&gt; 7+3
+    :: Modulo7\r\n3\r\n*Modulo&gt; 11+12 :: Modulo7\r\n2\r\n*Modulo&gt; 3-2 :: Modulo7\r\n1\r\n*Modulo&gt;
+    2-3 :: Modulo7\r\n6\r\n*Modulo&gt; 2*3 :: Modulo7\r\n6\r\n*Modulo&gt; 11*12 ::
+    Modulo7\r\n6\r\n*Modulo&gt; 18*39 :: Modulo7\r\n2\r\n*Modulo&gt; (1-2::Modulo7)
+    == (1+8::Modulo7)\r\nFalse\r\n</pre>\n\t"
+  :code: |
+    {-# LANGUAGE EmptyDataDecls #-}
+
+    module Modulo where
+
+    data Z
+    zero :: Z
+    zero = undefined
+    data S a
+
+    predecessor :: S a -&gt; a
+    predecessor = undefined
+
+    class Nat a where
+      toInteger :: a -&gt; Integer
+
+    instance Nat Z where
+      toInteger _ = 0
+
+    instance Nat a =&gt; Nat (S a) where
+      toInteger = (1 +) . Modulo.toInteger . predecessor
+
+    newtype Modulo a b = Modulo (a,b)
+
+    instance Eq b =&gt; Eq (Modulo a b) where
+      Modulo (_,x) == Modulo (_,y) = x == y
+
+    instance Show b =&gt; Show (Modulo a b) where
+      show (Modulo (_,x)) = show x
+
+    instance (Nat a, Integral b) =&gt; Num (Modulo a b) where
+      Modulo (m,x) + Modulo (_,y) = Modulo (m,z)
+        where z = (x+y) `mod` fromInteger (Modulo.toInteger m)
+      Modulo (m,x) - Modulo (_,y) = Modulo (m,z)
+        where z = (x-y) `mod` fromInteger (Modulo.toInteger m)
+      Modulo (m,x) * Modulo (_,y) = Modulo (m,z)
+        where z = (x*y) `mod` fromInteger (Modulo.toInteger m)
+      abs = id
+      signum (Modulo (m,x)) = Modulo $ (m,signum x)
+      fromInteger n = Modulo (m,z)
+        where z = fromInteger (n `mod` Modulo.toInteger m)
+              m = undefined :: Nat a =&gt; a
+
+    type Zero  = Z
+    type One   = S Zero
+    type Two   = S One      ; type Modulo2 = Modulo Two Int
+    type Three = S Two      ; type Modulo3 = Modulo Three Int
+    type Four  = S Three    ; type Modulo4 = Modulo Four Int
+    type Five  = S Four     ; type Modulo5 = Modulo Five Int
+    type Six   = S Five     ; type Modulo6 = Modulo Six Int
+    type Seven = S Six      ; type Modulo7 = Modulo Seven Int
+    type Eight = S Seven    ; type Modulo8 = Modulo Eight Int
+    type Nine  = S Eight    ; type Modulo9 = Modulo Nine Int
+    type Ten   = S Nine     ; type Modulo10= Modulo Ten Int
+  :tags:
+  - ghc-6.8.2
+  - データコンストラクタの無い型
+  - 依存型風
+  :references:
+    :url: 
+    :title: 
+- :id: '4949'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4949
+  :user_name: horiuchi
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2007/12/24 07:02 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>整数環での四則演算と言うことで、素直に実装してみました。\n題意にはないですが除算(乗算の逆演算)も加えてみました。答えがない場合には
+    0を返します。</p>\n\n\t"
+  :code: |
+    public class Sample115 {
+        public enum Operator {
+            Plus {
+                @Override public String toString() { return "+"; }
+                @Override public int calc(int lhs, int rhs) { return lhs + rhs; }
+            },
+            Minus {
+                @Override public String toString() { return "-"; }
+                @Override public int calc(int lhs, int rhs) { return lhs - rhs; }
+            },
+            Times {
+                @Override public String toString() { return "*"; }
+                @Override public int calc(int lhs, int rhs) { return lhs * rhs; }
+            },
+            Divide {
+                @Override public String toString() { return "/"; }
+                @Override public int calc(int lhs, int rhs) { return lhs / rhs; }
+                @Override public int operate(int lhs, int rhs, int mod) {
+                    System.out.format("%d %s %d = ", lhs, toString(), rhs);
+                    int l = modulo(lhs, mod);
+                    int r = modulo(rhs, mod);
+                    if (lhs != l || rhs != r) {
+                        System.out.format("%d %s %d = ", l, toString(), r);
+                    }
+                    int ret = 0;
+                    for (int index = 0; index &lt; mod; index++) {
+                        if (l == modulo(r * index, mod)) {
+                            ret = index;
+                            break;
+                        }
+                    }
+                    System.out.println(ret);
+                    return ret;
+                }
+            };
+
+            public abstract int calc(int lhs, int rhs);
+            public int operate(int lhs, int rhs, int mod) {
+                System.out.format("%d %s %d = ", lhs, toString(), rhs);
+                int l = modulo(lhs, mod);
+                int r = modulo(rhs, mod);
+                if (lhs != l || rhs != r) {
+                    System.out.format("%d %s %d = ", l, toString(), r);
+                }
+                int ret = modulo(calc(l, r), mod);
+                System.out.println(ret);
+                return ret;
+            }
+            protected int modulo(int val, int mod) {
+                int ret = val;
+                while (ret &lt; 0) { ret += mod; }
+                while (ret &gt;= mod) { ret -= mod; }
+                return ret;
+            }
+        }
+
+        public static int calcModulo(Operator op, int lhs, int rhs, int mod) {
+            return op.operate(lhs, rhs, mod);
+        }
+
+
+        public static void main(String[] args) {
+            calcModulo(Operator.Plus, 1, 2, 10);
+            calcModulo(Operator.Plus, 1, 2, 3);
+            calcModulo(Operator.Plus, 7, 3, 10);
+            calcModulo(Operator.Plus, 11, 12, 10);
+            calcModulo(Operator.Minus, 3, 2, 10);
+            calcModulo(Operator.Minus, 2, 3, 10);
+            calcModulo(Operator.Times, 2, 3, 10);
+            calcModulo(Operator.Times, 11, 12, 10);
+            calcModulo(Operator.Times, 18, 39, 10);
+            calcModulo(Operator.Divide, 1, 2, 11);
+            calcModulo(Operator.Divide, 2, 18, 11);
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '4950'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4950
+  :user_name: shiro
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/12/24 08:19 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>これはおもしろい。適切なinstance定義が与えてあれば、型推論によって1などのリテラルさえも後つけのModulo型と解釈させることができちゃうわけですね。duck
+    typingみたいだなあ。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4951'
+  :parent_id: '115'
+  :url: http://ja.doukaku.org/comment/4951
+  :user_name: こう。
+  :user_url: /web/20081120132931/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2007/12/24 09:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>適当に書いてみました。</p>\n\n\t"
+  :code: "#include &lt;stdio.h&gt;\n\nint normalize(int num,int law){\n    num%=law;\n
+    \   if(num&lt;0) num=law+num;\n    return num;\n}\n\nvoid calc(char* expression
+    ,int law){\n    int num1;\n    char c;\n    int num2;\n    int ret;\n\n    ret=sscanf(expression,\"%d
+    %c %d =\",&amp;num1,&amp;c,&amp;num2);\n    if(ret!=3||(c!='+'&amp;&amp;c!='-'&amp;&amp;c!='*'))
+    {\n        printf(\"数式エラー:%s\\n\",expression);\n        \n\n\n\n\n<!--\n     FILE
+    ARCHIVED ON 13:29:31 Nov 20, 2008 AND RETRIEVED FROM THE\n     INTERNET ARCHIVE
+    ON 13:24:33 Nov 16, 2013.\n     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT
+    INTERNET ARCHIVE.\n\n     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT
+    (17 U.S.C.\n     SECTION 108(a)(3)).\n-->"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

@@ -1,0 +1,847 @@
+---
+:id: '51'
+:title: 文字列からの情報抽出
+:comments:
+- :id: '3407'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/3407
+  :user_name: にしお
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/26 06:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  与えられた文字列から特定の条件を満たす文字列を抽出するコードを書いてください。\r\n状況としてはテキスト形式で渡された原稿の中から、画像のファイル名を抽出するようなものをイメージしてください。\r\n<p>\r\nサンプル入力\r\n</p>\n<pre>\r\naaa
+    abc-hidden.png&gt;hoge-big.jpeg\r\n---foo-hidden-small.gif|^_^a.bmp\r\n--hiddena-hoge.png\r\n<p>\r\nサンプル出力\r\n</p><pre>\r\nname:'abc',
+    ext:'png', size: normal hidden: True\r\nname:'hoge', ext:'jpeg', size: big hidden:
+    False\r\nname:'foo', ext:'gif', size: small hidden: True\r\nname:'a', ext:'bmp',
+    size: normal hidden: False\r\nname:'hoge', ext:'png', size: normal hidden: False\r\nname:'small',
+    ext:'jpg', size: normal hidden: False\r\nname:'small', ext:'hoge', size: big hidden:
+    False\r\n</pre>\r\n<p>\r\n探すべき文字列は下の条件を満たします\r\n</p></pre>\n<ul>\n<li>アルファベットと1個のピリオド、ハイフンで構成される\r\n</li>\n<li>前後にはアルファベットではない文字がある(abcd.jpgがaaaabcd.jpghogeなどと書かれていることはない)\r\n</li>\n<li>ピリオドの後ろは拡張子で、アルファベットだけで構成されている\r\n</li>\n<li>ピリオドの直前に-hidden,
+    -small, -bigがある場合には特殊な意味がある。複数個ある場合(a-hidden-big.jpgなど)も同じ\r\n</li>\n<li>ファイル名に-hiddenと-smallまたは-hiddenと-bigの両方が含まれる場合は-hiddenの方が先にある\r\n</li>\n<li>特殊な意味の-hidden,
+    -small, -big以外でハイフンが使われることはない\r\n</li>\n<li>特殊な意味の-smallと-bigの両方が付くことはない\r\n</li>\n</ul>\n<p>\r\n出力は以下の条件を満たす必要があります\r\n</p>\n<ul>\n<li>ファイル名が出現した順に表示される\r\n</li>\n<li>ファイル名に-hiddenが含まれるかどうかを真偽値で表示する\r\n</li>\n<li>ファイル名に-smallまたは-bigが含まれる場合はsmallまたはbigと、含まれない場合はnormalと表示する\r\n</li>\n<li>-hidden,
+    -small, -bigを取り除いたファイル名部分と、拡張子を表示する\r\n</li>\n</ul>\n<p>\r\nこのお題は、正規表現のグループに名前をつけて連想配列として取得できるPythonからの挑戦状です。
+    \r\n\t</p>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2520'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2520
+  :user_name: shiro
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/08/26 06:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Gaucheには名前付きサブマッチがあるんですが、これを解こうとしていてバグを見つけました。\r\n(マッチしなかった名前付きサブマッチを問い合わせると#fではなく\"\"が返ってしまう)\r\n\r\nというわけで普通にregexpを使った回答です。\r\n</pre>\n\t"
+  :code: |
+    (define (pick string)
+      (cond
+       ((#/([a-zA-Z]+)(-hidden)?(?:-(small|big))?\.([a-zA-Z]+)/ string)
+        =&gt; (lambda (m)
+             (print "name: '"(m 1)"', ext: '"(m 4)"', size: "(or (m 3) "normal")
+                    ", hidden: "(if (m 2)"True" "False"))
+             (pick (m'after))))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '2521'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2521
+  :user_name: ocean
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/08/26 07:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  すみません、名前を付けた正規表現を知らないので、とりあえず普通の正規表現で。\n\t"
+  :code: |
+    import re
+
+    def extract(s):
+        for m in re.finditer('([a-zA-Z]+)(-hidden)?(?:-(big|small))?\.([a-zA-Z]+)', s):
+            print "name:%r, ext:%r, size: %s hidden: %r" % \
+                (m.group(1), m.group(4), m.group(3) or "normal", bool(m.group(2)))
+
+    def main():
+        extract("""\
+    aaa abc-hidden.png&gt;hoge-big.jpeg
+    ---foo-hidden-small.gif|^_^a.bmp
+    --hiddena-hoge.png&lt;=not hidden~~
+    --small.jpg&lt;=not small(^_^)
+    normal-small-big.hoge""")
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2522'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2522
+  :user_name: 匿名
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/08/26 07:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">やはり一番乗りは無理ですね……\r\n\r\n出力結果を示しておきます。\r\nname:'abc',
+    ext:'png', size: normal, hidden true\r\nname:'hoge', ext:'jpeg', size: big, hidden
+    false\r\nname:'foo', ext:'gif', size: small, hidden true\r\nname:'a', ext:'bmp',
+    size: normal, hidden false\r\nname:'hiddena', ext:'png', size: normal, hidden
+    false\r\nname:'small', ext:'jpg', size: normal, hidden false\r\nname:'normal',
+    ext:'hoge', size: big, hidden false\r\n\r\n＃5行目がサンプル出力と異なるのはサンプル入力の問題と思われます。</pre>\n\t"
+  :code: |
+    import java.util.regex.*;
+    import java.util.*;
+
+    public class Sample {
+        private static final Pattern FILE_NAME_PATTERN = Pattern.
+            compile("¥¥b(¥¥p{Alpha}+)((¥¥-¥¥p{Alpha}+)*)¥¥.(¥¥p{Alpha}+)¥¥b");
+        public static void filter(String in) {
+            Matcher m = FILE_NAME_PATTERN.matcher(in);
+            while (m.find()) {
+                Set&lt;String&gt; attrSet= new HashSet&lt;String&gt;(Arrays.asList(m.group(2).
+                                                                split("¥¥-")));
+                String size = "normal";
+                if (attrSet.contains("big")) {
+                    size = "big";
+                } else if (attrSet.contains("small")) {
+                    size = "small";
+                }
+                System.out.printf("name:'%s', ext:'%s', size: %s, hidden %b%n",
+                    m.group(1), m.group(4), size, attrSet.contains("hidden"));
+            }
+        }
+
+        public static void main(String[] args) {
+            filter("aaa abc-hidden.png&gt;hoge-big.jpeg¥n" +
+                   "---foo-hidden-small.gif|^_^a.bmp¥n" +
+                   "--hiddena-hoge.png&lt;=not hidden‾‾¥n" +
+                   "--small.jpg&lt;=not small(^_^)¥n" +
+                   "normal-small-big.hoge¥n");
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2523'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2523
+  :user_name: shiro
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/08/26 07:35 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">いや、「特別な意味の-hidden, -small, -big以外でハイフンが使われることはない」から、5番目の出力は
+    \"hoge.png\" で切れると解釈されると思います。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2524'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2524
+  :user_name: 匿名
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/4/
+  :language: diff
+  :time: 2007/08/26 07:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">どうやら、問題の解釈を間違っていたようです。失礼しました。\r\n題意に合うように訂正しました。</pre>\n\t"
+  :code: |
+    diff 2522.java Sample.java
+    5,6c5,6
+    &lt;     private static final Pattern FILE_NAME_PATTERN = Pattern.
+    &lt;       compile("¥¥b(¥¥p{Alpha}+)((¥¥-¥¥p{Alpha}+)*)¥¥.(¥¥p{Alpha}+)¥¥b");
+    ---
+    &gt;     private static final Pattern FILE_NAME_PATTERN = Pattern.compile(
+    &gt;         "¥¥b(¥¥p{Alpha}+)(((?:-hidden)|(?:-small)|(?:-big))*)¥¥.(¥¥p{Alpha}+)¥¥b");
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2525'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2525
+  :user_name: shiro
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/08/26 07:54 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  これだと7番目もうまくいかないのでは?\r\n(smallとbigが同時に出現しない、との制約から\r\nnameがsmallである、と解釈される)\r\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2527'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2527
+  :user_name: rubikitch
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/105/
+  :language: Ruby
+  :time: 2007/08/26 09:13 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">scanは強力無比</pre>\n\t"
+  :code: |
+    def print_image_spec(str)
+      str.scan(/([A-Za-z]+)(-hidden)?(?:-(small|big))?\.([A-Za-z]+)/) do |name, hidden, size, ext|
+        printf("name:'%s', ext:'%s', size: %s hidden: %s\n",
+          name, ext, size||'normal', hidden ? 'True' : 'False')
+      end
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2528'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2528
+  :user_name: 匿名
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/08/26 09:15 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">名前つき正規表現なら、大体こんな感じになると思いますが、\r\nこのお題の「-hidden」の処理のように、なんらかの操作が\r\n必要な場合は、ありがたみが少々落ちますね。\r\n</pre>\n\t"
+  :code: |
+    import re
+
+    dat = '''aaa abc-hidden.png&gt;hoge-big.jpeg
+    ---foo-hidden-small.gif|^_^a.bmp
+    --hiddena-hoge.png&lt;=not hidden~~
+    --small.jpg&lt;=not small(^_^)
+    normal-small-big.hoge
+    '''
+    ptn = '(?P&lt;name&gt;[a-zA-Z]+)(-hidden)?(?:-(?P&lt;size&gt;big|small))?\.(?P&lt;ext&gt;[a-zA-Z]+)'
+    fmt = "name:'%(name)s', ext:'%(ext)s', size: %(size)s, hidden: %%s"
+
+    for g in re.finditer(ptn, dat):
+      print fmt % g.groupdict('normal') % bool(g.group(2))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2529'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2529
+  :user_name: matyr
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/08/26 09:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t   クロージャで名前を（付けた気分に）。\r<br><br>javascript:alert((function($,r){r=[];$.replace(/([a-z]+)(-hidden)?(?:-(big|small))?\\.([a-z]+)/gi,function(_,n,h,s,e){r.push(['name:'+n,'ext:'+e,'size:'+(s||'normal'),'hidden:'+!!h].join(', '))});return r.join('\\n')})(document.body.innerHTML))\n\t"
+  :code: |
+    function doukaku51($){
+      var r = [];
+      $.replace(/([a-z]+)(-hidden)?(?:-(big|small))?\.([a-z]+)/gi, function(_, n, h, s, e){
+        r[r.length] = { name: n, ext: e, size: s || 'normal', hidden: !!h };
+      });
+      return r;
+    }
+    (this.WSH ? function($){WSH.echo($)} : alert)((function(a){
+      for(var i = a.length, k, t; t = [], i--;){
+        for(k in a[i]) t[t.length] = k +': '+ a[i][k];
+        a[i] = t.join(',  ');
+      }
+      return a.join('\n');
+    })(doukaku51('aaa abc-hidden.png&gt;hoge-big.jpeg\n'+
+                 '---foo-hidden-small.gif|^_^a.bmp\n'+
+                 '--hiddena-hoge.png&lt;=not hidden~~\n'+
+                 '--small.jpg&lt;=not small(^_^)\n'+
+                 'normal-small-big.hoge')));
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2530'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2530
+  :user_name: rubikitch
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/105/
+  :language: Perl
+  :time: 2007/08/26 09:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">きっともっといい方法あるだろう</pre>\n\t"
+  :code: |
+    sub print_image_spec {
+        $_ = $_[0];
+        while(my($name, $hidden, $size, $ext, $rest) = /([A-Za-z]+)(-hidden)?(?:-(small|big))?\.([A-Za-z]+)/) {
+            printf("name:'%s', ext:'%s', size: %s hidden: %s\n",
+                   $name, $ext, $size||'normal', $hidden ? 'True' : 'False');
+            $_ = $';
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2531'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2531
+  :user_name: rubikitch
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/105/
+  :language: Common
+  :time: 2007/08/26 09:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    (defun print-image-spec (str)
+      (ppcre:regex-replace-all "([A-Za-z]+)(-hidden)?(?:-(small|big))?\\.([A-Za-z]+)" str
+                               (lambda (m name hidden size ext)
+                                       (format t "name:'~a', ext:'~a', size: ~a hidden: ~a~%"
+                                               name ext
+                                               (if (zerop (length size)) "normal" size)
+                                               (if hidden "True" "False"))
+                                       m)
+                               :simple-calls t))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2532'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2532
+  :user_name: rubikitch
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/105/
+  :language: Emacs
+  :time: 2007/08/26 10:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">カレントバッファを入力としてM-x print-image-spec-on-bufferすると*image-spec*バッファに出力されます。</pre>\n\t"
+  :code: |
+    (require 'cl)
+    (defun print-image-spec-on-buffer ()
+      (interactive)
+      (save-excursion
+        (goto-char (point-min))
+        (with-output-to-temp-buffer "*image-spec*"
+          (while (re-search-forward "\\([A-Za-z]+\\)\\(-hidden\\)?\\(-\\(small\\|big\\)\\)?\\.\\([A-Za-z]+\\)" nil t)
+            (destructuring-bind (s0 e0  sname ename  shidden ehidden _ _ ssize esize  sext eext)
+                (match-data)
+             (princ (format "name:'%s', ext:'%s', size: %s hidden: %s\n"
+                            (buffer-substring sname ename)
+                            (buffer-substring sext eext)
+                            (if ssize (buffer-substring ssize esize) "normal")
+                            (if shidden "True" "False"))))))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2533'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2533
+  :user_name: yuin
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/08/26 10:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>Stringを拡張してます。\n</p>\n\n\n\n\t"
+  :code: "class ExtendedString(self:String) {\n  import java.util.regex._\n  def regexEach[A](reg:String)(f:(Matcher)=&gt;A)
+    = {\n    val m = Pattern.compile(reg).matcher(self)\n    while(m.find) {f(m)}\n
+    \ }\n}\nimplicit def string2ext(self:String) = new ExtendedString(self);\n\n\"\"\"\naaa
+    abc-hidden.png&gt;hoge-big.jpeg\n---foo-hidden-small.gif|^_^a.bmp\n--hiddena-hoge.png&lt;=not
+    hidden~~\n--small.jpg&lt;=not small(^_^)\nnormal-small-big.hoge\n\"\"\".trim.regexEach(\"([a-zA-Z]+)(-hidden)?(?:-(small|big))?\\\\.([a-zA-Z]+)\"){
+    m =&gt;\n  println(\"name: '\"+m.group(1)+\"', ext: '\"+m.group(4)+\n          \"',
+    size: \"+(if(m.group(3)==null){\"normal\"}else{m.group(3)}) + \n          \",
+    hidden: \"+(if(m.group(2)==null){\"False\"}else{\"True\"}))\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2534'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2534
+  :user_name: mz
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/403/
+  :language: Haskell
+  :time: 2007/08/26 10:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">良く分かりませんでした。\r\n取り合えずparsecの練習で。</pre>\n\t"
+  :code: |
+    module Main where
+
+    import System
+    import Char
+    import Text.ParserCombinators.Parsec hiding (spaces)
+    import Monad
+    import Control.Monad.Error
+    import IO hiding (try)
+
+    main = readFile "a.txt" &gt;&gt;= pp &gt;&gt;= print &gt;&gt; return ()
+    pp s = case parse (many $try(wordx)&lt;|&gt;other) "lisp" s of
+             (Right x) -&gt; return $filter okparse x
+             (Left x)  -&gt; error "error"
+    okparse ("",_,_,_) = False
+    okparse  (_,_,_,_)= True
+    w = many1 letter
+    hi = do  _ &lt;- char '-'
+             x &lt;- string "hidden"
+             return x
+    sz = do  _ &lt;- char '-'
+             x &lt;- try(string "big") &lt;|&gt; string "small"
+             return x
+
+    wordx = do x &lt;- w
+               (y, z) &lt;- (do yy &lt;-try (hi)
+                             zz &lt;-option "" sz
+                             return (yy,zz))
+                         &lt;|&gt;
+                         (do zz&lt;- option "" sz
+                             return ("", zz))
+               char '.'
+               ext &lt;- w
+               return (x,y,z, ext)
+
+    other = do x &lt;- noneOf ""
+               return ("", "","","")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2537'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2537
+  :user_name: mc
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2007/08/26 11:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ごめんなさい。プログラミング初心者です。\r\n初めてcl-ppcre使ってみました。\r\n勉強します。精進します。</pre>\n\t"
+  :code: "(defun frob (str)\n  (let ((l (remove-if-not (lambda (s) (cl-ppcre:scan
+    \"\\\\.\" s)) (cl-ppcre:split \"([^A-z-\\\\.]|_|\\\\^)\" str))))\n    (dolist
+    (item l)\n      (destructuring-bind (name prop _ ext)\n\t  (map 'list #'values\n\t
+    \      (nth-value 1 (cl-ppcre:scan-to-strings \"[^A-z]*([A-z]*)((-small|-big|-hidden)*)\\\\.([A-z]*)\"
+    item)))\n\t(declare (ignore _))\n\t(format t \"name: '~A',~,8@Text: '~A', ~,8@Tsize:
+    ~[Small~;Normal~;Big~], ~,8@THidden: ~:[False~;True~]~%\" \n\t\tname ext (big-or-small-or-nomal-p
+    prop) (hiddenp prop))))))\n\n(defun hiddenp (str)\n  (if (cl-ppcre:scan \"-hidden[\\\\.-]*\"
+    str) t nil))\n\n(defun big-or-small-or-nomal-p (str)\n  (cond ((cl-ppcre:scan
+    \"-big\" str) 2) \n\t((cl-ppcre:scan \"-small\" str) 0)\n\t('T 1)))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2538'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2538
+  :user_name: 匿名
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/08/26 12:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  その通りですね。訂正しました（今度こそ大丈夫でしょうか）\n\t"
+  :code: |
+    import java.util.regex.*;
+
+    public class Sample {
+        private static final Pattern FILE_NAME_PATTERN = Pattern.compile(
+            "¥¥b(¥¥p{Alpha}+)(-hidden)?(-small|-big)?¥¥.(¥¥p{Alpha}+)¥¥b");
+        public static void filter(String in) {
+            Matcher m = FILE_NAME_PATTERN.matcher(in);
+            while (m.find()) {
+                String size = "normal";
+                if ("-big".equals(m.group(3))) {
+                    size = "big";
+                } else if ("-small".equals(m.group(3))) {
+                    size = "small";
+                }
+                System.out.printf("name:'%s', ext:'%s', size: %s, hidden %b%n",
+                    m.group(1), m.group(4), size, "-hidden".equals(m.group(2)));
+            }
+        }
+
+        public static void main(String[] args) {
+            filter("aaa abc-hidden.png&gt;hoge-big.jpeg¥n" +
+                   "---foo-hidden-small.gif|^_^a.bmp¥n" +
+                   "--hiddena-hoge.png&lt;=not hidden‾‾¥n" +
+                   "--small.jpg&lt;=not small(^_^)¥n" +
+                   "normal-small-big.hoge¥n");
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2539'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2539
+  :user_name: ocean
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/177/
+  :language: C
+  :time: 2007/08/26 12:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">正規表現使わないと結構面倒ですね。</pre>\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;functional&gt;
+    #include &lt;iterator&gt;
+    #include &lt;ctype.h&gt; // isalpha()
+
+    struct is_alpha : public std::unary_function&lt;char, bool&gt;
+    {
+        bool operator()(char c) const
+        {
+            return isalpha(c);
+        }
+    };
+
+    bool option(
+        std::string::const_iterator beg,
+        std::string::const_iterator&amp; it,
+        const std::string&amp; name,
+        std::string&amp; ret)
+    {
+        const std::string s = "-" + name;
+
+        if (std::distance(beg, it) &gt;= s.size() &amp;&amp; std::equal(it - s.size(), it, s.begin()))
+        {
+            it -= s.size();
+
+            ret = name;
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    void extract(const std::string&amp; s)
+    {
+        std::string::const_iterator it = s.begin();
+
+        while ((it = std::find(it, s.end(), '.')) != s.end())
+        {
+            std::string::const_iterator it2;
+
+            it2 = std::find_if(it + 1, s.end(), std::not1(is_alpha()));
+
+            const std::string ext(it + 1, it2);
+
+            std::string size, hidden;
+
+            it2 = it;
+
+            option(s.begin(), it2, "big", size) || option(s.begin(), it2, "small", size);
+
+            option(s.begin(), it2, "hidden", hidden);
+
+            std::string name(
+                std::find_if(
+                    std::string::const_reverse_iterator(it2),
+                    s.rend(),
+                    std::not1(is_alpha())
+                ).base(), it2
+            );
+
+            if (name.empty())
+            {
+                if (!hidden.empty())
+                {
+                    name.swap(hidden);
+                }
+                else if (!size.empty())
+                {
+                    name.swap(size);
+                }
+            }
+
+            if (size.empty())
+            {
+                size = "normal";
+            }
+
+            std::cout
+                &lt;&lt; "name:'" &lt;&lt; name &lt;&lt; "', "
+                &lt;&lt; "ext:'" &lt;&lt; ext &lt;&lt; "', "
+                &lt;&lt; "size: " &lt;&lt; size &lt;&lt; " "
+                &lt;&lt; "hidden: " &lt;&lt; (!hidden.empty())
+                &lt;&lt; std::endl;
+
+            ++it;
+        }
+    }
+
+    int main()
+    {
+        std::boolalpha(std::cout);
+
+        extract(
+            "aaa abc-hidden.png&gt;hoge-big.jpeg\n"
+            "---foo-hidden-small.gif|^_^a.bmp\n"
+            "--hiddena-hoge.png&lt;=not hidden~~\n"
+            "--small.jpg&lt;=not small(^_^)\n"
+            "normal-small-big.hoge\n"
+        );
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2540'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2540
+  :user_name: rucker
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/08/26 13:01 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">今までPerl互換の方の正規表現関数は使わなかったのだけれど\r\n繰り返し検索はこっちにしかなかったので使ってみた。\r\n…これからもっと使おう。</pre>\n\t"
+  :code: "&lt;?php\n$str='aaa abc-hidden.png&gt;hoge-big.jpeg\n---foo-hidden-small.gif|^_^a.bmp\n--hiddena-hoge.png&lt;=not
+    hidden~~\n--small.jpg&lt;=not small(^_^)\nnormal-small-big.hoge';\n\n$matches=array();\npreg_match_all('/([a-zA-Z]+)(-hidden|)(-(small|big)|)\\.([a-zA-Z]+)/',
+    $str, $matches, PREG_SET_ORDER );\n\nwhile(list(,$v)=each($matches))\n{\t$hd=$v[2]?\"True\":\"False\";\n\t$sz=$v[4]?$v[4]:\"normal\";\n\techo
+    \"name:'${v[1]}', ext:'${v[5]}', size: $sz hidden: $hd\\n\";\n}\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2543'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2543
+  :user_name: nobsun
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/26 13:39 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">個人的はProgramming Policyにより、正規表現は封印中\r\nでもParsec
+    は使い方を思い出すのがちょっと面倒ね。\r\nということで。。。\r\n</pre>\n\t"
+  :code: "import Data.Char\nimport Text.ParserCombinators.ReadP\n\ntype Name = String\ntype
+    Size = String\ntype Hidden = Bool\n\ntype Info = (Name,Name,Size,Hidden)\n\npName
+    :: ReadP Name\npName = munch1 isAlpha\n\npSize :: ReadP Size\npSize = (string
+    \"-big\"   &gt;&gt; return \"big\")\n    +++ (string \"-small\" &gt;&gt; return
+    \"small\")\n    +++ (return \"normal\")\n\npHidden :: ReadP Hidden\npHidden =
+    (string \"-hidden\" &gt;&gt; return True)\n      +++ (return False)\n\npExt ::
+    ReadP Name\npExt =  char '.' &gt;&gt; pName\n\npInfo :: ReadP Info \npInfo = do
+    { name &lt;- pName\n\t   ; size &lt;- pSize\n\t   ; hidden &lt;- pHidden\n\t   ;
+    ext &lt;- pExt\n\t   ; return (name,ext,size,hidden)\n\t   }\n\nshowInfo :: Info
+    -&gt; String\nshowInfo (name,ext,size,hidden)\n = \"name:'\"++name++\"', ext:'\"++ext++\",
+    size: \"++size++\" hidden: \"++show hidden\n\nreadInfo :: ReadS Info\nreadInfo
+    = readP_to_S pInfo\n\ninfoReader :: String -&gt; [Info]\ninfoReader [] = []\ninfoReader
+    ccs@(c:cs) = case readInfo ccs of\n  []          -&gt; infoReader cs\n  (info,rs):_
+    -&gt; info : infoReader rs\n\nmain :: IO ()\nmain = test\n\ntest :: IO ()\ntest
+    = putStr $ unlines $ map showInfo $ infoReader $ testdata\n\ntestdata = unlines\n
+    [\"aaa abc-hidden.png&gt;hoge-big.jpeg\"\n ,\"---foo-hidden-small.gif|^_^a.bmp\"\n
+    ,\"--hiddena-hoge.png&lt;=not hidden~~\"\n ,\"--small.jpg&lt;=not small(^_^)\"\n
+    ,\"normal-small-big.hoge\"]\n\n{- 実行例\n*Main&gt; :main\nname:'abc', ext:'png,
+    size: normal hidden: True\nname:'hoge', ext:'jpeg, size: big hidden: False\nname:'hidden',
+    ext:'gif, size: small hidden: False\nname:'a', ext:'bmp, size: normal hidden:
+    False\nname:'hoge', ext:'png, size: normal hidden: False\nname:'small', ext:'jpg,
+    size: normal hidden: False\nname:'small', ext:'hoge, size: big hidden: False\n-}\n"
+  :tags:
+  - ghc-6.6.1
+  :references:
+    :url: 
+    :title: 
+- :id: '2544'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2544
+  :user_name: nobsun
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/08/26 13:54 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">書きわすれましたが、\r\nText.ParserCombinators.ReadP
+    モジュールを\r\nつかっています。Parsecほど細かい情報を扱えませんが、\r\nその分、お気軽に使えます。</pre>\n\t"
+  :code: ''
+  :tags:
+  - Text.ParserCombinators.ReadP
+  :references:
+    :url: 
+    :title: 
+- :id: '2546'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2546
+  :user_name: sumim
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/26 14:17 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Squeak の Smalltalk で。正規表現は使えないので、手続き的に。\n\t"
+  :code: "| in delimiters candidates |\nin := 'aaa abc-hidden.png&gt;hoge-big.jpeg\n---foo-hidden-small.gif|^_^a.bmp\n--hiddena-hoge.png&lt;=not
+    hidden~~\n--small.jpg&lt;=not small(^_^)\nnormal-small-big.hoge'.\n\ndelimiters
+    := in asSet reject: [:each | each isLetter or: ['-.' includes: each]].\ncandidates
+    := (in findTokens: delimiters) reject: [:each | each = each sansPeriodSuffix].\nWorld
+    findATranscript: nil.\ncandidates do: [:cand |\n\t| strm next ext size hidden
+    |\n\tstrm := (cand findTokens: '-.') reversed readStream.\n\text := strm next.\n\tnext
+    := strm next.\n\t(strm peek notNil and: [#(small big) includes: next])\n\t\tifTrue:
+    [size := next. next := strm next] ifFalse: [size := 'normal'].\n\t(hidden := strm
+    peek notNil and: [next = #hidden])\n\t\tifTrue: [next := strm next].\n\tTranscript
+    cr; show: {#name-&gt;next. #ext-&gt;ext. #size-&gt;size. #hidden-&gt;hidden}]\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '2550'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2550
+  :user_name: にしお
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2007/08/27 03:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">それは%の文字列フォーマット操作で全部やってしまおうとせずに\r\n素直にif文を使う方が後々読みやすくていいと思います。</pre>\n\t"
+  :code: "ptn = '(?P&lt;name&gt;[a-zA-Z]+)(?P&lt;hidden&gt;-hidden)?(?:-(?P&lt;size&gt;big|small))?\\.(?P&lt;ext&gt;[a-zA-Z]+)'\nfmt
+    = \"name:'%(name)s', ext:'%(ext)s', size: %(size)s, hidden: %(hidden)s\"\n\nfor
+    g in re.finditer(ptn, dat):\n\tparams = g.groupdict()\n\tparams[\"hidden\"] =
+    (params[\"hidden\"] == \"-hidden\")\n\tif not params[\"size\"]: params[\"size\"]
+    = \"normal\"\n\tprint fmt % params\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2551'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2551
+  :user_name: fkmn
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/190/
+  :language: Perl
+  :time: 2007/08/27 05:43 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <pre class=\"compact\">Perl 5.10（開発版はPerl 5.9.5）から、named capture が使えるようになります。</pre>\n\t"
+  :code: |
+    sub print_image_spec {
+        my $str = shift;
+        while ( $str =~ /(?&lt;name&gt;[A-Za-z]+)(?&lt;hidden&gt;-hidden)?(?:-(?&lt;size&gt;small|big))?\.(?&lt;ext&gt;[A-Za-z]+)/g ) {
+            printf(
+                "name:'%s', ext:'%s', size: %s hidden: %s\n",
+                $+{name}, $+{ext},
+                $+{size} || 'normal',
+                $+{hidden} ? 'True' : 'False'
+            );
+        }
+    }
+  :tags:
+  - Perl5.10
+  - Perl5.9.5
+  :references:
+    :url: /web/20081202145112/http://fleur.hio.jp/perldoc/mix/pod/perl595delta.mix.html#Regular_expressions
+    :title: perl v5.9.5 更新情報
+- :id: '2555'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2555
+  :user_name: naoya_t
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/348/
+  :language: awk
+  :time: 2007/08/27 15:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">とりあえず動くコードをup。\r\n最近のgawkだともっと効率の良い書き方ができるような気がします。</pre>\n\t"
+  :code: "{\n\ts = $0\n\twhile (match(s,/[a-z]+(-hidden)?(-small|-big)?\\.[a-z]+/))
+    {\n\t\tmatched = substr(s,RSTART,RLENGTH)\n\t\ts = substr(s,RSTART+RLENGTH+1)\n\n\t\thyphen
+    = index(matched,\"-\")\n\t\tperiod = index(matched,\".\")\n\n\t\tif (hyphen &gt;
+    0) {\n\t\t\tname = substr(matched, 1, hyphen-1)\n\t\t\textra = substr(matched,
+    hyphen, period - hyphen)\n\t\t\thidden = (extra ~ /-hidden/) ? \"True\" : \"False\"\n\t\t\tif
+    (extra ~ /-small/) size = \"small\"\n\t\t\telse if (extra ~ /-big/) size = \"big\"\n\t\t\telse
+    size = \"normal\"\n\t\t\text = substr(matched, period+1)\n\t\t} else {\n\t\t\tname
+    = substr(matched, 1, period-1)\n\t\t\thidden = \"False\"\n\t\t\tsize = \"normal\"\n\t\t\text
+    = substr(matched, period+1)\n\t\t}\n\t\tprintf(\"name:'%s', ext:'%s', size: %s
+    hidden: %s\\n\", name, ext, size, hidden)\n\t}\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2560'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2560
+  :user_name: nobsun
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/28 04:53 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">文字列からパターンにマッチする表現のデータをとりだしたり，\r\n特定のパターンにマッチする表現を別の表現で置換したり，\r\n\r\nというのが正規表現の使いどころなんだね．\r\n(という自明なことに今さら気づきました．^^;)\r\n\r\nとするとパターンを指定するのは正規表現ではなくて，たとえばもうすこし\r\n拡張してパーザで指定してもいいわけですよね．(これも自明か^^;)\r\n\r\nたとえば，ReadP
+    a が一般化されたパターンを表すと思えばいいわけでよね．．．\r\n\r\nそうすると性能の問題はあるにせよ、\r\n一般化したパターンをもらって，(雑音のある)文字列からデータを取り出す関数を\r\n生成する関数
+    reader とか，パターン(とデータを文字列に変換する関数)をもらって\r\n文字列のなかの部分列を置換する関数を生成する関数 replacer とかがあれば汎用性\r\nがあるはずですよねぇ．(正規表現はまさにこのように使うのでしょうから)\r\n\r\nそうすると先に投稿したコードでは
+    infoReader の定義は\r\n\r\ninfoReader = reader pInfo\r\n\r\nとなるし，たとえば入力文字列からデータ部分をとりのぞいて雑音部分だけに\r\nしてしまうにような
+    infoNoise は\r\n\r\ninfoNoise = replacer pInfo (const \"\") \r\n\r\nなんてことができますね．\r\n\r\n*Main&gt;
+    let infoNoise = replacer pInfo (const \"\")\r\n*Main&gt; infoNoise testdata\r\n\"aaa
+    &gt;\\n---foo-|^_^\\n--hiddena-&lt;=not hidden~~\\n--&lt;=not small(^_^)\\nnormal-\\n\"\r\n\r\n</pre>\n\t"
+  :code: |
+    reader :: ReadP a -&gt; (String -&gt; [a])
+    reader parser string = case string of
+     "" -&gt; []
+     _  -&gt; case readP_to_S parser string of
+       []            -&gt; reader parser (tail string)
+       (a,string'):_ -&gt; a : reader parser string'
+
+    replacer :: ReadP a -&gt; (a -&gt; String) -&gt; String -&gt; String
+    replacer p s str = case str of
+      "" -&gt; ""
+      _  -&gt; case readP_to_S p str of
+        []         -&gt; head str : replacer p s (tail str)
+        (a,str'):_ -&gt; s a ++ replacer p s str'
+  :tags:
+  - リファクタリング
+  :references:
+    :url: 
+    :title: 
+- :id: '2561'
+  :parent_id: '51'
+  :url: http://ja.doukaku.org/comment/2561
+  :user_name: nskj77
+  :user_url: /web/20081202145112/http://ja.doukaku.org/user/375/
+  :language: Haskell
+  :time: 2007/08/28 05:02 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">とりあえずサンプルはできた感じです。多分。\r\n\r\n*Main&gt; :!cat
+    sample.txt\r\naaa abc-hidden.png&gt;hoge-big.jpeg\r\n---foo-hidden-small.gif|^_^a.bmp\r\n--hiddena-hoge.png&lt;=not
+    hidden~~\r\n--small.jpg&lt;=not small(^_^)\r\nnormal-small-big.hoge\r\n*Main&gt;
+    \r\n*Main&gt; :main sample.txt\r\nname:'abc', ext:'png', size: normal hidden:
+    True\r\nname:'hoge', ext:'jpeg', size: big hidden: False\r\nname:'foo', ext:'gif',
+    size: small hidden: True\r\nname:'a', ext:'bmp', size: normal hidden: False\r\nname:'hoge',
+    ext:'png', size: normal hidden: False\r\nname:'small', ext:'jpg', size: normal
+    hidden: False\r\nname:'small', ext:'hoge', size: big hidden: False</pre>\n\t"
+  :code: "import System (getArgs)\nimport Control.Monad (liftM)\nimport Text.ParserCombinators.Parsec\n\ndata
+    Val = V {name :: String, ext :: String, hidden :: String, size :: String} | None
+    deriving Eq\n\ninstance Show Val where\n  show (V n e h s) = \"name:'\" ++ n ++
+    \"', ext:'\" ++ e ++ \"', size: \" ++ s ++ \" hidden: \" ++ h\n  show None = \"\"\n\nalpha
+    = ['a'..'z'] ++ ['A'..'Z']\n\nnameParser :: GenParser Char () String\nnameParser
+    = many1 (oneOf alpha)\n\nextParser :: GenParser Char () String\nextParser = char
+    '.' &gt;&gt; many1 (oneOf alpha)\n\nhiddenParser :: GenParser Char () String\nhiddenParser
+    = try ((string \"-hidden\") &gt;&gt; return \"True\") &lt;|&gt; return \"False\"\n\nsizeParser
+    :: GenParser Char () String\nsizeParser = try (string \"-small\" &gt;&gt; return
+    \"small\")\n   &lt;|&gt; try (string \"-big\" &gt;&gt; return \"big\")\n   &lt;|&gt;
+    return \"normal\"\n\nexpression :: GenParser Char () Val\nexpression = do\n     n
+    &lt;- nameParser\n     h &lt;- hiddenParser\n     s &lt;- sizeParser\n     e &lt;-
+    extParser\n     return $ V n e h s\n\nskip :: GenParser Char () Val\nskip = manyTill
+    (many1 (oneOf alpha)) (many1 (noneOf alpha)) &gt;&gt; return None\n        \nexpressionParser
+    :: GenParser Char () [Val]\nexpressionParser\n\n\n\n\n<!--\n     FILE ARCHIVED
+    ON 14:51:12 Dec 2, 2008 AND RETRIEVED FROM THE\n     INTERNET ARCHIVE ON 13:45:31
+    Nov 16, 2013.\n     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET
+    ARCHIVE.\n\n     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.\n
+    \    SECTION 108(a)(3)).\n-->"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

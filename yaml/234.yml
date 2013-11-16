@@ -1,0 +1,786 @@
+---
+:id: '234'
+:title: '文字列を指定されたバイト数で分割 '
+:comments:
+- :id: '8443'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8443
+  :user_name: fumokmm
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/856/
+  :language: Groovy
+  :time: 2009/02/04 11:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">与えられた文字列を指定されたバイト数以下に分割する関数\r\nsplitBytes
+    を書いてください。エンコーディングは実装側の\r\n自由としますが、日本語対応は必須とします。\r\nまた、分割した結果の表現方法は、各言語で都合のよいものを\r\n選択して下さい。(リスト，配列，改行区切りなど)\r\n\r\n[使用例]\r\n\"あいうえおabcdeかきくけこfghij\"
+    -&gt; 30バイト (Shift_JIS)\r\n\"あいうえおabcdeかきくけこfghij\" -&gt; 40バイト (UTF-8)\r\n\r\n★Shift_JISで10バイトで分割\r\nsplitBytes(\"あいうえおabcdeかきくけこfghij\",
+    10, \"Shift_JIS\")\r\n=&gt; [\"あいうえお\", \"abcdeかき\", \"くけこfghi\", \"j\"]\r\n    (10バイト,
+    9バイト, 10バイト, 1バイト)\r\n\r\n★UTF-8で10バイトで分割\r\nsplitBytes(\"あいうえおabcdeかきくけこfghij\",
+    10, \"UTF-8\")\r\n=&gt; [\"あいう\", \"えおabcd\", \"eかきく\", \"けこfghi\", \"j\"]\r\n
+    \   (9バイト, 10バイト, 10バイト, 1バイト)\r\n\r\n---補足-------------------------------------------\r\n当処理は文字列をデータベースの\r\n固定長フィールド(2000バイト)に投入できる最大サイズ\r\nぎりぎりまでに分割する時の利用を考えています。\r\n--------------------------------------------------\r\n\r\n●●●\r\n余力のある方は以下も行ってみて下さい。\r\n\r\n(1)
+    以下データを2000バイトずつに分割し、処理時間を計測する。\r\n\r\n日本郵便 - 香川県の郵便番号(CSV形式:10,513Byte)\r\nhttp://www.post.japanpost.jp/zipcode/dl/kogaki/lzh/37kagawa.lzh\r\n\r\n※ひとまず香川県が一番サイズが小さいので選びました。\r\n
+    \ 自信ありの方はさらに大きいサイズのファイルでもチャレンジして\r\n  みて下さい。(全国一括など)\r\nhttp://www.post.japanpost.jp/zipcode/dl/kogaki.html\r\n\r\n(2)
+    処理速度向上・コード短縮\r\n</pre>\r\n\t"
+  :code: |
+    // サンプルコード (Groovy版)
+    def splitBytes(str, len, encode) {
+       result = []
+       while (str) {
+          int stock = 0;
+          for (i in 0..&lt;str.size()){
+             if (str[0..i].getBytes(encode).size() &lt;= len) stock = i
+             else break
+          }
+          result &lt;&lt; str[0..stock]
+          str -= str[0..stock]
+       }
+       return result
+    }
+
+    println splitBytes("あいうえおabcdeかきくけこfghij", 10, "Shift_JIS")
+    println splitBytes("あいうえおabcdeかきくけこfghij", 10, "UTF-8")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8482'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8482
+  :user_name: hchbaw
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/950/
+  :language: Other
+  :time: 2009/02/10 12:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Clojure です。sequence を構築したり、 loop/recur したり、といった具合になりました。\n\t"
+  :code: |
+    (defn splitBytes [string len encode]
+      (let [count-bytes (fn [cs] (-&gt; (apply str cs) (.getBytes encode) count))
+            len1 (fn [cs]
+                   (let [n (count cs)]
+                     (loop [i 0]
+                       (if (and (&lt; i n)
+                                (&lt;= (count-bytes (take (inc i) cs)) len))
+                         (recur (inc i))
+                         i))))
+            step (fn step [cs]
+                   (when cs
+                     (let [[h t] (split-at (len1 cs) cs)]
+                       (when h
+                         (lazy-cons h (step t))))))]
+        (step string)))
+
+    (doseq [encode ["Shift_JIS" "UTF-8"]]
+      (-&gt; (splitBytes "あいうえおabcdeかきくけこfghij" 10 encode) prn))
+    ;; ((\あ \い \う \え \お) (\a \b \c \d \e \か \き) (\く \け \こ \f \g \h \i) (\j))
+    ;; ((\あ \い \う) (\え \お \a \b \c \d) (\e \か \き \く) (\け \こ \f \g \h \i) (\j))
+    ;; nil
+  :tags:
+  - Clojure
+  - clojure_20081217
+  :references:
+    :url: 
+    :title: 
+- :id: '8483'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8483
+  :user_name: あにす
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2009/02/11 01:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  こんな感じで。\r<br>UTF-8で391ミリ秒\r<br>Shift-Jisで641ミリ秒\r<br>(共に出力にかかる時間は抜き)\r<br>でした。\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text;
+
+    namespace どう書く_org_文字列を指定されたバイト数で分割 {
+        class Program {
+            static void Main(string[] args) {
+                string data;
+                using(StreamReader sr = new StreamReader(@"C:\Documents and Settings\Owner\デスクトップ\37kagawa\37KAGAWA.CSV",Encoding.GetEncoding("Shift-Jis"))) {
+                    data = sr.ReadToEnd();
+                }
+
+                long ticks = Environment.TickCount;
+                IList&lt;string&gt; r = splitBytes(data, 2000, Encoding.UTF8);
+                string time = (Environment.TickCount - ticks).ToString() + "ミリ秒";
+
+                foreach(string str in r) {
+                    Console.WriteLine(str);
+                }
+                Console.WriteLine("UTF-8:"+time);//391ミリ秒
+
+                ticks = Environment.TickCount;
+                r = splitBytes(data, 2000, Encoding.GetEncoding("Shift-Jis"));
+                time = (Environment.TickCount - ticks).ToString() + "ミリ秒";
+
+                foreach(string str in r) {
+                    Console.WriteLine(str);
+                }
+                Console.WriteLine("Shift-Jis:"+time);//641ミリ秒
+
+                Console.ReadLine();
+            }
+
+            static IList&lt;string&gt; splitBytes(string value, int byteLengh, Encoding encoding) {
+                List&lt;string&gt; r = new List&lt;string&gt;();
+                StringBuilder tmp = new StringBuilder();
+                for(int i = 0; i &lt; value.Length; i++) {
+                    tmp.Append(value[i]);
+                    if(encoding.GetByteCount(tmp.ToString()) &gt; byteLengh) {
+                        tmp.Remove(tmp.Length - 1, 1);
+                        i--;
+                        r.Add(tmp.ToString());
+                        tmp.Remove(0, tmp.Length);
+                        continue;
+                    }
+                }
+                r.Add(tmp.ToString());
+                return r;
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8484'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8484
+  :user_name: sumim
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/02/11 05:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    | splitBytes |
+    splitBytes := [:str :limit :enc |
+        | stream |
+        stream := Array new writeStream.
+        [str notEmpty] whileTrue: [
+            | max |
+            max := ((1 to: str size)
+                detect: [:each | (((str first: each) convertToEncoding: enc) byteSize &gt; limit)]
+                ifNone: [str size + 1]) - 1.
+            stream nextPut: (str first: max).
+            str := str allButFirst: max].
+        stream contents].
+
+    splitBytes valueWithArguments: #('あいうえおabcdeかきくけこfghij' 10 'sjis').
+        "=&gt; #('あいうえお' 'abcdeかき' 'くけこfghi' 'j') "
+    splitBytes valueWithArguments: #('あいうえおabcdeかきくけこfghij' 10 'utf8').
+        "=&gt; #('あいう' 'えおabcd' 'eかきく' 'けこfghi' 'j') "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '8485'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8485
+  :user_name: syat
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/766/
+  :language: C
+  :time: 2009/02/11 07:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Cで。\r<br>文字サイズの取得はmbstring.hを使用。\r<br>時間の測定にはclock関数を使用（つ 参考ページ）\r<br>Cなので比較的速いとは思います。\r<br>香川県（69KB）で15ms以下。北海道（842KB）で100ms付近。（マシンはP4 3GHz）\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n#include
+    &lt;mbstring.h&gt;\n#include &lt;time.h&gt;\n\n/* splitBytes : 文字列から指定した長さを切り出す\n
+    * 引数  data       : 文字列データ\n *       data_len   : 文字列データの長さ\n *       divide_len
+    : 切り出す長さ\n *       out        : 切り出した文字列を格納する領域\n * 戻り値 : 切り出した長さ\n */\nint splitBytes(char
+    *data, int data_len, int divide_len, char out[])\n{\n    char *p = data;\n    char
+    *q = out;\n\n    while (p &lt; data + data_len) {\n        int clen = _mbclen(p);\n
+    \       if (q - out + clen &gt; divide_len)\n            break;\n        _mbccpy(q,
+    p);\n        p += clen;\n        q += clen;\n    }\n    *q = '\\0';\n    \n    return
+    q - out;\n}\n\nint readFile(char *filename, char *buf, int buf_len)\n{\n    FILE
+    *fp;\n    int read_len;\n\n    fp = fopen(filename, \"r\");\n    read_len = fread(buf,
+    1, buf_len, fp);\n    fclose(fp);\n\n    return read_len;\n}\n\n#define DIVIDE_LEN
+    2000\n\nint main()\n{\n    char test[850 * 1024];\n    char buf[DIVIDE_LEN+1];\n
+    \   int data_len;\n    char *s;\n    clock_t start_tm, end_tm;\n    \n//    data_len
+    = readFile(\"01HOKKAI.CSV\", test, sizeof(test));\n    data_len = readFile(\"37KAGAWA.CSV\",
+    test, sizeof(test));\n    \n    start_tm = clock();\n    for (s = test; 0 &lt;
+    data_len; ) {\n        int cut_len = splitBytes(s, data_len, DIVIDE_LEN, buf);\n//
+    \       printf(\"buf=[%s] cut_len=[%d]\\n\", buf, cut_len);\n        s += cut_len;\n
+    \       data_len -= cut_len;\n    };\n    end_tm = clock();\n\n    printf(\"実行時間
+    %f ms\\n\", (double)(end_tm - start_tm)/CLOCKS_PER_SEC*1000);\n\n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: /web/20090317024640/http://kzk9.net/column/time.html
+    :title: 'C言語: 実行時間測定の方法'
+- :id: '8486'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8486
+  :user_name: mamamoto
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2009/02/11 19:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Ruby1.9ならではの感じで。</p>\n\n\t"
+  :code: |
+    # -*- coding: utf-8 -*-
+
+    def splitBytes(str, limit, encoding)
+      str.encode(encoding).each_char.inject([""]){|ret, char|
+        raise if char.bytesize &gt; limit
+
+        ret &lt;&lt; "" if (ret[-1]+char).bytesize &gt; limit
+        ret[-1] += char
+        ret
+      }
+    end
+
+    p splitBytes("あいうえおabcdeかきくけこfghij", 10, "Shift_JIS")
+    p splitBytes("あいうえおabcdeかきくけこfghij", 10, "UTF-8")
+
+    # ruby splitbytes.rb
+    # ["\202\240\202\242\202\244\202\246\202\250", "abcde\202\251\202\253", "\202\255\202\257\202\261fghi", "j"]
+    # ["あいう", "えおabcd", "eかきく", "けこfghi", "j"]
+  :tags: []
+  :references:
+    :url: /web/20090317024640/http://jp.rubyist.net/magazine/?0025-Ruby19_m17n
+    :title: Ruby M17N の設計と実装
+- :id: '8487'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8487
+  :user_name: horiuchi
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2009/02/11 20:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>Core2 Duo 2.0GHzで実行したところ、\r</p>\n<p>UTF-8
+    で約70ms、Shift_JIS で約140msとなりました。\r</p>\n</div>\n\t"
+  :code: |
+    import java.io.BufferedReader;
+    import java.io.FileInputStream;
+    import java.io.IOException;
+    import java.io.InputStreamReader;
+    import java.nio.charset.Charset;
+    import java.util.ArrayList;
+    import java.util.List;
+
+    public class Sample234 {
+        public static List&lt;String&gt; splitBytes(CharSequence input, int splitSize, Charset charset) {
+            List&lt;String&gt; result = new ArrayList&lt;String&gt;();
+
+            StringBuilder builder = new StringBuilder(splitSize);
+            int workLength = 0;
+            for (int index = 0, maxIndex = input.length(); index &lt; maxIndex; index++) {
+                char c = input.charAt(index);
+                int length = Character.toString(c).getBytes(charset).length;
+
+                if (workLength + length &gt; splitSize) {
+                    result.add(builder.toString());
+                    builder.setLength(0);
+                    workLength = 0;
+                }
+                builder.append(c);
+                workLength += length;
+            }
+            if (builder.length() &gt; 0) {
+                result.add(builder.toString());
+            }
+            return result;
+        }
+
+        public static void main(String[] args) throws IOException {
+            //System.out.println(splitBytes("あいうえおabcdeかきくけこfghij", 10, Charset.forName("Shift_JIS")));
+            //System.out.println(splitBytes("あいうえおabcdeかきくけこfghij", 10, Charset.forName("UTF-8")));
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(".\\37KAGAWA.CSV"), "Shift_JIS"));
+            StringBuilder builder = new StringBuilder();
+            char[] buffer = new char[4096];
+            while (reader.read(buffer) &gt;= 0) {
+                builder.append(buffer);
+            }
+
+            long start = System.currentTimeMillis();
+            List&lt;String&gt; list = splitBytes(builder, 2000, Charset.forName("UTF-8"));
+            long elapse = System.currentTimeMillis() - start;
+            System.out.println("UTF-8: " + elapse + "(ms)");
+
+            start = System.currentTimeMillis();
+            list = splitBytes(builder, 2000, Charset.forName("Shift_JIS"));
+            elapse = System.currentTimeMillis() - start;
+            System.out.println("Shift_JIS: " + elapse + "(ms)");
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '8488'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8488
+  :user_name: 99yen
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2009/02/11 21:03 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  なでしこには指定したバイト数で文字列を改行区切りにする「行揃え」があります。\n\t"
+  :code: |
+    "あいうえおabcdeかきくけこfghij"を10で行揃えして表示
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8489'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8489
+  :user_name: greentea
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/573/
+  :language: Python
+  :time: 2009/02/12 01:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>文字コードに関する処理を多様するなら、Python 2.xはお勧めできません。ややこしいし、3.xで大幅に変更されるので将来的に無駄知識になるので。\r</p>\n<p>けど、あえてPython
+    2.xで。\r</p>\n<p>バイト数を調べる方法が分からなかったので、unicodeオブジェクトに一度変換して、unicode文字1文字ずつ、文字コードにエンコードしなおして配列の大きさを見ています。かなり非効率だと思います。\r</p>\n<p>\r</p>\n<p>\r</p>\n<p>timeコマンドではかったところ、香川県は0.270sでした</p>\n</div>\n\t"
+  :code: |
+    #!/usr/bin/python
+    # coding: utf-8
+
+    import sys
+    import codecs
+
+    def splitBytes(s, n, coding = 'utf-8'):
+        uni = unicode(s, coding)
+        dec = codecs.getdecoder(coding)
+        enc = codecs.getencoder(coding)
+
+        l = ['']
+        for c in uni:
+            if len(l[-1]) + len(enc(c)[0]) &gt; n:
+                l.append(enc(c)[0])
+            else:
+                l[-1] += enc(c)[0]
+        return l
+
+    if __name__ == '__main__':
+        if len(sys.argv) == 1:
+            l = splitBytes("あいうえおabcdeかきくけこfghij", 10, "UTF-8")
+            for x in l: print x
+
+            l = splitBytes(u"あいうえおabcdeかきくけこfghij".encode("shift-jis"), 10, "shift-jis")
+            for x in l: print x.decode("shift-jis")
+        else:
+            l = splitBytes(open(sys.argv[1]).read(), 2000, "shift-jis")
+            for i,x in enumerate(l): print i, ":\n", x.decode("shift-jis"), "\n\n\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8490'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8490
+  :user_name: sekia
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/588/
+  :language: Perl
+  :time: 2009/02/12 12:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    #!/usr/bin/perl
+
+    use strict;
+    use warnings;
+    use utf8;
+    use Benchmark;
+    use Encode;
+
+    timethis(-5, sub {
+               open my $input, '&lt;:encoding(Shift_JIS)', './37KAGAWA.CSV' or die $!;
+               splitBytes(do { local $/; &lt;$input&gt; }, '2000', 'UTF-8')
+             });
+
+    sub splitBytes {
+      my ($str, $byte_len, $enc_name) = @_;
+      my $enc = find_encoding($enc_name);
+      my $str_bytes = sub { use bytes; length shift };
+      my @results;
+
+      my $acc_encoded = '';
+      my $acc_bytes = 0;
+      for my $char (split //, $str) {
+        my $encoded = $enc-&gt;encode($char);
+        my $bytes = $str_bytes-&gt;($encoded);
+        if ($acc_bytes + $bytes &lt;= $byte_len) {
+          $acc_encoded .= $encoded;
+          $acc_bytes += $bytes;
+        } else {
+          push @results, $acc_encoded;
+          $acc_encoded = $encoded;
+          $acc_bytes = $bytes;
+        }
+      }
+      push @results, $acc_encoded if $acc_bytes;
+      @results;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8492'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8492
+  :user_name: 匿名
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/4/
+  :language: Ruby
+  :time: 2009/02/12 09:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Ruby1.8.6です</p>\n\n\t"
+  :code: "$KCODE='u'\ndef splitBytes(str, split_size, encode)\n  require 'nkf'\n  case
+    encode\n  when \"Shift_JIS\"\n    $KCODE='s'\n    str =  NKF.nkf('-Ws', str)    \n
+    \ when \"UTF-8\"\n  else \n     puts \"bad encode\"\n     exit\n  end\n \n  result
+    = []\n  tmp = \"\"\n  total =0 \n\n  ary = str.split(//)\n  ary.each do |e|\n
+    \   if (e.size + total &lt;= split_size)\n      tmp &lt;&lt; e\n      total +=
+    e.size\n    else \n      result &lt;&lt; tmp\n      tmp = \"\"\n      total =
+    0\n      tmp &lt;&lt; e\n      total += e.size\n    end\n  end\n  result &lt;&lt;
+    tmp\n\n  if ($KCODE == \"SJIS\")\n    $KCODE = 'u'\n    result.each do |e|\n      e
+    = NKF.nkf('-Sw', e)         \n    end\n  end\n  result\nend\n\n&gt;&gt; splitBytes(\"あいうえおabcdeかきくけこfghij\",
+    10, \"UTF-8\")\n=&gt; [\"あいう\", \"えおabcd\", \"eかきく\", \"けこfghi\", \"j\"]\n&gt;&gt;
+    splitBytes(\"あいうえおabcdeかきくけこfghij\", 10, \"Shift_JIS\")\n=&gt; [\"\\202\\240\\202\\242\\202\\244\\202\\246\\202\\250\",
+    \"abcde\\202\\251\\202\\253\", \"\\202\\255\\202\\257\\202\\261fghi\", \"j\"]\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8493'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8493
+  :user_name: sekia
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/588/
+  :language: Other
+  :time: 2009/02/12 11:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  分割位置の探索をナイーブな方法から2分探索に改良したら当社比2倍くらい速くなりました（それでも遅いorz）。\r\nついでにベンチマーク方法も変更。\r\n\n\t"
+  :code: |
+    #!/usr/bin/perl
+
+    use strict;
+    use warnings;
+    use utf8;
+    use Benchmark;
+    use Encode;
+
+    open my $src_file, '&lt;:encoding(Shift_JIS)', './37KAGAWA.CSV' or die $!;
+    my $src = do { local $/; &lt;$src_file&gt; };
+    my $start = Benchmark-&gt;new;
+    my @results = splitBytes($src, 2000, 'Shift_JIS');
+    print timestr(timediff(Benchmark-&gt;new, $start)), "\n";
+
+    sub takeBytes {
+      my ($str, $bytes_lim, $enc) = @_;
+      my $len = length $str;
+      my $bytes = length $enc-&gt;encode($str);
+      return ($str, '') if $bytes &lt;= $bytes_lim;
+      return ('', $str) if $len == 1;
+
+      my $mid = int $len / 2;
+      my $lhs = substr($str, 0, $mid);
+      my $rhs = substr($str, $mid);
+      my ($head, $rest);
+      my $rest_bytes;
+      ($head, $rest) = takeBytes($lhs, $bytes_lim, $enc);
+      return ($head, $rest . $rhs)
+        if $rest
+           or ($rest_bytes = $bytes_lim - length $enc-&gt;encode($lhs)) == 0;
+      ($head, $rest) = takeBytes($rhs, $rest_bytes, $enc);
+      return ($lhs . $head, $rest);
+    }
+
+    sub splitBytes {
+      my ($str, $bytes_lim, $enc_name) = @_;
+      my $enc = find_encoding($enc_name);
+      my $taken;
+      my @results;
+
+      while ($str) {
+        ($taken, $str) = takeBytes($str, $bytes_lim, $enc);
+        push @results, $taken;
+      }
+      return @results;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8495'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8495
+  :user_name: nobsun
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2009/02/13 02:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>utf8限定\nData.ByteStringを使う</p>\n\n\t"
+  :code: "module Main where\n\nimport qualified Data.ByteString as B\nimport Data.List\nimport
+    System.Environment\n\nmain :: IO ()\nmain = do args &lt;- getArgs\n          mapM_
+    B.putStrLn . divid (read $ head $ args) =&lt;&lt; B.getContents\n\ndivid :: Int
+    -&gt; B.ByteString -&gt; [B.ByteString]\ndivid n = unfoldr phi \n  where phi xs
+    = if B.null xs then Nothing else Just (psi n xs)\n\npsi :: Int -&gt; B.ByteString
+    -&gt; (B.ByteString,B.ByteString)\npsi n xs\n = case B.splitAt n xs of\n     d0@(ys,zzs)
+    -&gt; case B.uncons zzs of\n       Nothing -&gt; d0\n       Just (z,zs) -&gt;
+    if start z then d0\n                      else psi (n-1) xs\n   where start z
+    = z &gt; 191 || z &lt; 128\n"
+  :tags:
+  - Data.ByteString
+  :references:
+    :url: 
+    :title: 
+- :id: '8496'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8496
+  :user_name: leque
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2009/02/13 08:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>手を抜いて UTF 32 で。戻り値はバイトベクタのリストになります。</p>\n\n\t"
+  :code: |
+    (import (rnrs))
+
+    (define (split-bytes s n)
+      (let ((nc (div n 4))
+            (l (string-length s)))
+        (do ((i 0 (+ i nc))
+             (rs '() (cons (substring s i (min (+ i nc) l)) rs)))
+            ((&gt;= i l) (map string-&gt;utf32 (reverse rs))))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8504'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8504
+  :user_name: 匿名
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/4/
+  :language: OCaml
+  :time: 2009/02/14 22:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>なんか汚いですが。</p>\n<p>香川県：10ms\n全県：1.3秒\nPentium M 1.7GHz\nです。</p>\n\n\t"
+  :code: |
+    open System;
+    open System.Text;
+    open System.IO;
+
+    let splitBytes (s:string) (len:int) (enc:Encoding)  =
+      let chars = s.ToCharArray() in
+      let next from =
+        let rec loop i bytes =
+          if i = s.Length then i
+          else
+            let bytes = bytes + enc.GetByteCount(chars, i, 1) in
+              if bytes &gt; len then i
+              else loop (i + 1) bytes
+        in loop from 0
+      in
+      let rec loop i chunks =
+        let ii = next i in
+        let chunks = s.Substring(i, ii - i) :: chunks in
+          if ii = s.Length then List.rev chunks
+          else loop ii chunks
+      in loop 0 []
+    in
+      if Sys.argv.Length &gt; 1 then
+        let start = Environment.TickCount in
+        let enc = Encoding.GetEncoding(Sys.argv.[1]) in
+        let data = Console.In.ReadToEnd() in
+        let tokens = splitBytes data 2000 enc in
+          List.iter (fun (x:string) -&gt; Console.Out.WriteLine(x)) tokens;
+          Console.Error.WriteLine("{0} millis", Environment.TickCount - start)
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '8510'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8510
+  :user_name: 匿名
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/4/
+  :language: OCaml
+  :time: 2009/02/15 08:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>どうも新しいバージョンのF#だとOCaml互換のSysモジュールが使えない？ようなので、ちょっと修正しました。</p>\n\n\t"
+  :code: |
+    #light "off"
+    open System;
+    open System.Text;
+    open System.IO;
+
+    let splitBytes (s:string) (len:int) (enc:Encoding)  =
+      let chars = s.ToCharArray() in
+      let next from =
+        let rec loop i bytes =
+          if i = s.Length then i
+          else
+            let bytes = bytes + enc.GetByteCount(chars, i, 1) in
+              if bytes &gt; len then i
+              else loop (i + 1) bytes
+        in loop from 0
+      in
+      let rec loop i chunks =
+        let ii = next i in
+        let chunks = s.Substring(i, ii - i) :: chunks in
+          if ii = s.Length then List.rev chunks
+          else loop ii chunks
+      in loop 0 []
+    in
+      let argv = Environment.GetCommandLineArgs() in
+        if argv.Length &gt; 1 then
+          let start = Environment.TickCount in
+          let enc = Encoding.GetEncoding(argv.[1]) in
+          let data = Console.In.ReadToEnd() in
+          let tokens = splitBytes data 2000 enc in
+            List.iter (fun (x:string) -&gt; Console.Out.WriteLine(x)) tokens;
+            Console.Error.WriteLine("{0} millis", Environment.TickCount - start)
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '8539'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8539
+  :user_name: nattou_curry
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/913/
+  :language: Java
+  :time: 2009/02/21 05:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Pentium M 1.30GHzでは以下の結果になりました。</p>\n<p>UTF-8: 1082(ms)\nShift_JIS:
+    2784(ms)</p>\n\n\t"
+  :code: "import java.util.*;\nimport java.io.*;\n\nclass Kadai {\n    \n    public
+    static String[] splitBytes(String s, int l, String e) throws Exception {\n        List
+    b = new ArrayList();\n        StringBuffer t = new StringBuffer();\n        for
+    (int i = 0; i &lt; s.length(); ++i) {\n            String u = s.substring(i,i+1);\n
+    \           if (t.toString().getBytes(e).length +  u.getBytes(e).length &gt; l)
+    {\n                b.add(t.toString());\n                t.delete(0,t.length());\n
+    \           }\n            t.append(u);\n        }\n        b.add(t.toString());\n
+    \       return (String[])b.toArray(new String[0]);\n    }\n\n    public static
+    void main(String[] args) throws Exception {\n        //System.out.println(splitBytes(\"あいうえおabcdeかきくけこfghij\",
+    10, Charset.forName(\"Shift_JIS\")));\n        //System.out.println(splitBytes(\"あいうえおabcdeかきくけこfghij\",
+    10, Charset.forName(\"UTF-8\")));\n\n        StringBuilder buf = new StringBuilder();\n
+    \       BufferedReader reader = null;\n        try {\n            reader = new
+    BufferedReader(new InputStreamReader(new FileInputStream(\".\\\\37KAGAWA.CSV\"),
+    \"Shift_JIS\"));\n            String line;\n            while ( ( line = reader.readLine()
+    ) != null ) {\n                buf.append( line );\n            }\n        } finally
+    {\n            if ( reader != null ) {\n                reader.close();\n            }\n
+    \       }\n        \n        String str = buf.toString();\n\n        long start;\n
+    \       long elapse;\n        \n        start = System.currentTimeMillis();\n
+    \       splitBytes(str, 2000, \"UTF-8\");\n        elapse = System.currentTimeMillis()
+    - start;\n        System.out.println(\"UTF-8: \" + elapse + \"(ms)\");\n\n        start
+    = System.currentTimeMillis();\n        splitBytes(str, 2000, \"Shift_JIS\");\n
+    \       elapse = System.currentTimeMillis() - start;\n        System.out.println(\"Shift_JIS:
+    \" + elapse + \"(ms)\");\n    }\n\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8546'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8546
+  :user_name: genzou
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2009/02/25 00:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>以下のコードで動作確認しました。</p>\n<p>// テスト\nassert splitBytes(\"あいうえおabcdeかきくけこfghij\",
+    10, \"SJIS\") == [\"あいうえお\", \"abcdeかき\", \"くけこfghi\", \"j\"]\nassert splitBytes(\"あいうえおabcdeかきくけこfghij\",
+    10, \"UTF-8\") == [\"あいう\", \"えおabcd\", \"eかきく\", \"けこfghi\", \"j\"]</p>\n\n\t"
+  :code: |
+    def splitBytes( text, size, charset ){
+        def list = []
+        text.each{
+            if( list.empty || (list[-1] + it).getBytes(charset).size() &gt; size )
+                list &lt;&lt; ""
+            list[-1] += it
+        }
+        list
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8611'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8611
+  :user_name: だいら
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/468/
+  :language: PHP
+  :time: 2009/03/10 00:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>とりあえずお題の消化だけ。</p>\n\n\t"
+  :code: "&lt;?php\n//ini_set('mbstring.internal_encoding', 'Shift_JIS');\nfunction
+    splitBytes($string, $length, $encode)\n{\n    $string = mb_convert_encoding($string,
+    $encode);\n    $local_encoding = mb_internal_encoding();\n    mb_internal_encoding($encode);\n
+    \   \n    $out = array();\n    $tmp = \"\";\n    $tmp2 = \"\";\n    for($i = 0;
+    $i &lt; mb_strlen($string); $i++)\n    {\n        $tmp = mb_substr($string, $i,
+    1);\n        if(strlen($tmp2.$tmp) &gt; $length)\n        {\n            $out[]
+    = $tmp2;\n            $tmp2 = \"\";\n        }\n        $tmp2 .= $tmp;\n    }\n
+    \   $out[] = $tmp2;\n    \n    foreach($out as $key =&gt; $val)\n    {\n        $out[$key]
+    = mb_convert_encoding($val, $local_encoding);\n    }\n    mb_internal_encoding($local_encoding);\n
+    \   return $out;\n}\n$out = splitBytes(\"あいうえおabcdeかきくけこfghij\", 10, \"Shift_JIS\");\nvar_dump($out);\n$out
+    = splitBytes(\"あいうえおabcdeかきくけこfghij\", 10, \"UTF-8\");\nvar_dump($out);\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8656'
+  :parent_id: '234'
+  :url: http://ja.doukaku.org/comment/8656
+  :user_name: airhead
+  :user_url: /web/20090317024640/http://ja.doukaku.org/user/1026/
+  :language: JavaScript
+  :time: 2009/03/13 05:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>JavaScriptでやることもないと思うけども、JavaScriptで。Pen4 2.5GHz + Firefox 3で香川県をやると、Shift_JISで110ms、UTF-8で150ms前後でした。</p>\n\n\t"
+  :code: |
+    function splitBytes(src, len, encode){
+        var re = {
+            "Shift_JIS": [/[\u0000-\u007F\uFF61-\uFF9F]/g, /[\u0080-\uFF60\uFFA0-\uFFFF]/g],
+            "UTF-8":     [/[\u0000-\u007F]/g, /[\u0080-\u07FF]/g, /[\u0800-\uFFFF]/g]
+        }[encode];
+        if (!(typeof src == "string") || !(typeof len == "number" &amp;&amp; len &gt; 0) || !re) return false;
+
+        var enc = src;
+        for (var i = 0; i &lt; re.length; i++){
+            enc = enc.replace(re[i], Math.pow(10, i));
+        }
+        var startSrc = 0, startEnc = 0, tmp, splitLen, rslt = [];
+
+        while (startSrc != src.length){
+            tmp = enc.substr(startEnc, len + 1);
+            if (tmp.length &gt; len) tmp = tmp.replace(/10*$/, "");
+            startEnc += tmp.length;
+
+            splitLen = tmp.replace(/0+/g, "").length;
+            rslt.push(src.substr(startSrc, splitLen));
+            startSrc += splitLen;
+        }
+        return rslt;
+    }
+  :tags: []
+  :references:
+    :url: /web/20090317024640/http://slashdot.jp/~airhead/journal/470059
+    :title: ' memo: 文字列を指定されたバイト数で分割'

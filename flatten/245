@@ -1,0 +1,3224 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja"> 
+  <head>
+
+<script type="text/javascript" src="/static/js/analytics.js" ></script>
+<link type="text/css" rel="stylesheet" href="/static/css/banner-styles.css"/>
+
+
+
+
+    <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+    <title>
+例外処理
+どう書く？org </title>
+
+    <link rel="stylesheet" type="text/css"
+	href="/web/20100628134232cs_/http://ja.doukaku.org/static/style/reset-fonts-grids.css" />
+    <link rel="stylesheet" type="text/css"
+	href="/web/20100628134232cs_/http://ja.doukaku.org/static/style/style.css?20071211?20071207" />
+	
+    <link rel="stylesheet" type="text/css"
+	href="/web/20100628134232cs_/http://ja.doukaku.org/static/style/pygments.css" />
+
+
+	
+<meta name="robots" content="noindex,nofollow">
+
+    <!--<script src="/web/20100628134232/http://ja.doukaku.org/static/js/ieerbug/ieerbug.js" type="text/javascript"></script>-->
+
+
+<!--<script src="/web/20100628134232/http://ja.doukaku.org/static/js/ieerbug/ieerbug.js" type="text/javascript"></script>-->
+<script src="/web/20100628134232js_/http://ja.doukaku.org/static/js/jquery-1.1.3.1.js" type="text/javascript"></script>
+<script src="/web/20100628134232js_/http://ja.doukaku.org/static/js/rating.js" type="text/javascript"></script>
+<script src="/web/20100628134232js_/http://ja.doukaku.org/static/js/addtag.js?20071129" type="text/javascript"></script>
+
+<script type="text/javascript">
+is_key_navigation_enable = true;
+</script>
+<script src="/web/20100628134232js_/http://ja.doukaku.org/static/js/utils.js?~~~" type="text/javascript"></script>
+
+</head>
+
+
+<body id="doukaku_org">
+<!-- BEGIN WAYBACK TOOLBAR INSERT -->
+<script> if (window.archive_analytics) { window.archive_analytics.values['server_name']="wwwb-app1.us.archive.org";}; </script>
+
+<script type="text/javascript" src="/static/js/disclaim-element.js" ></script>
+<script type="text/javascript" src="/static/js/graph-calc.js" ></script>
+<script type="text/javascript" src="/static/jflot/jquery.min.js" ></script>
+<script type="text/javascript">
+//<![CDATA[
+var firstDate = 820454400000;
+var lastDate = 1388534399999;
+var wbPrefix = "/web/";
+var wbCurrentUrl = "http:\/\/ja.doukaku.org\/245\/flatten\/";
+
+var curYear = -1;
+var curMonth = -1;
+var yearCount = 18;
+var firstYear = 1996;
+var imgWidth = 450;
+var yearImgWidth = 25;
+var monthImgWidth = 2;
+var trackerVal = "none";
+var displayDay = "28";
+var displayMonth = "Jun";
+var displayYear = "2010";
+var prettyMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function showTrackers(val) {
+	if(val == trackerVal) {
+		return;
+	}
+	if(val == "inline") {
+		document.getElementById("displayYearEl").style.color = "#ec008c";
+		document.getElementById("displayMonthEl").style.color = "#ec008c";
+		document.getElementById("displayDayEl").style.color = "#ec008c";		
+	} else {
+		document.getElementById("displayYearEl").innerHTML = displayYear;
+		document.getElementById("displayYearEl").style.color = "#ff0";
+		document.getElementById("displayMonthEl").innerHTML = displayMonth;
+		document.getElementById("displayMonthEl").style.color = "#ff0";
+		document.getElementById("displayDayEl").innerHTML = displayDay;
+		document.getElementById("displayDayEl").style.color = "#ff0";
+	}
+   document.getElementById("wbMouseTrackYearImg").style.display = val;
+   document.getElementById("wbMouseTrackMonthImg").style.display = val;
+   trackerVal = val;
+}
+function getElementX2(obj) {
+	var thing = jQuery(obj);
+	if((thing == undefined) 
+			|| (typeof thing == "undefined") 
+			|| (typeof thing.offset == "undefined")) {
+		return getElementX(obj);
+	}
+	return Math.round(thing.offset().left);
+}
+function trackMouseMove(event,element) {
+
+   var eventX = getEventX(event);
+   var elementX = getElementX2(element);
+   var xOff = eventX - elementX;
+	if(xOff < 0) {
+		xOff = 0;
+	} else if(xOff > imgWidth) {
+		xOff = imgWidth;
+	}
+   var monthOff = xOff % yearImgWidth;
+
+   var year = Math.floor(xOff / yearImgWidth);
+	var yearStart = year * yearImgWidth;
+   var monthOfYear = Math.floor(monthOff / monthImgWidth);
+   if(monthOfYear > 11) {
+       monthOfYear = 11;
+   }
+   // 1 extra border pixel at the left edge of the year:
+   var month = (year * 12) + monthOfYear;
+   var day = 1;
+	if(monthOff % 2 == 1) {
+		day = 15;
+	}
+	var dateString = 
+		zeroPad(year + firstYear) + 
+		zeroPad(monthOfYear+1,2) +
+		zeroPad(day,2) + "000000";
+
+	var monthString = prettyMonths[monthOfYear];
+	document.getElementById("displayYearEl").innerHTML = year + 1996;
+	document.getElementById("displayMonthEl").innerHTML = monthString;
+	// looks too jarring when it changes..
+	//document.getElementById("displayDayEl").innerHTML = zeroPad(day,2);
+
+	var url = wbPrefix + dateString + '/' +  wbCurrentUrl;
+	document.getElementById('wm-graph-anchor').href = url;
+
+   //document.getElementById("wmtbURL").value="evX("+eventX+") elX("+elementX+") xO("+xOff+") y("+year+") m("+month+") monthOff("+monthOff+") DS("+dateString+") Moy("+monthOfYear+") ms("+monthString+")";
+   if(curYear != year) {
+       var yrOff = year * yearImgWidth;
+       document.getElementById("wbMouseTrackYearImg").style.left = yrOff + "px";
+       curYear = year;
+   }
+   if(curMonth != month) {
+       var mtOff = year + (month * monthImgWidth) + 1;
+       document.getElementById("wbMouseTrackMonthImg").style.left = mtOff + "px";
+       curMonth = month;
+   }
+}
+//]]>
+</script>
+
+<style type="text/css">body{margin-top:0!important;padding-top:0!important;min-width:800px!important;}#wm-ipp a:hover{text-decoration:underline!important;}</style>
+<div id="wm-ipp" lang="en" class="__wb_banner_div" style="display:none; position:relative;padding:0 5px;min-height:70px;min-width:800px">
+
+
+<div id="wm-ipp-inside" class="__wb_banner_div" style="position:fixed;padding:0!important;margin:0!important;width:97%;min-width:780px;border:5px solid #000;border-top:none;background-image:url(/static/images/toolbar/wm_tb_bk_trns.png);text-align:center;-moz-box-shadow:1px 1px 3px #333;-webkit-box-shadow:1px 1px 3px #333;box-shadow:1px 1px 3px #333;font-size:11px!important;font-family:'Lucida Grande','Arial',sans-serif!important;">
+   <table style="border-collapse:collapse;margin:0;padding:0;width:100%;"><tbody><tr>
+   <td style="padding:10px;vertical-align:top;min-width:110px;">
+   <a href="/web/" title="Wayback Machine home page" style="background-color:transparent;border:none;"><img src="/static/images/toolbar/wayback-toolbar-logo.png" alt="Wayback Machine" width="110" height="39" border="0"/></a>
+   </td>
+   <td style="padding:0!important;text-align:center;vertical-align:top;width:100%;">
+
+       <table style="border-collapse:collapse;margin:0 auto;padding:0;width:570px;"><tbody><tr>
+       <td style="padding:3px 0;" colspan="2">
+       <form target="_top" method="get" action="/web/form-submit.jsp" name="wmtb" id="wmtb" style="margin:0!important;padding:0!important;"><input type="text" name="url" id="wmtbURL" value="http://ja.doukaku.org/245/flatten/" style="width:400px;font-size:11px;font-family:'Lucida Grande','Arial',sans-serif;" onfocus="javascript:this.focus();this.select();" /><input type="hidden" name="type" value="replay" /><input type="hidden" name="date" value="20100628134232" /><input type="submit" value="Go" style="font-size:11px;font-family:'Lucida Grande','Arial',sans-serif;margin-left:5px;width: inherit !important" /><span id="wm_tb_options" style="display:block;"></span></form>
+       </td>
+       <td style="vertical-align:bottom;padding:5px 0 0 0!important;" rowspan="2">
+           <table style="border-collapse:collapse;width:110px;color:#99a;font-family:'Helvetica','Lucida Grande','Arial',sans-serif;"><tbody>
+			
+           <!-- NEXT/PREV MONTH NAV AND MONTH INDICATOR -->
+           <tr style="width:110px;height:16px;font-size:10px!important;">
+           	<td style="padding-right:9px;font-size:11px!important;font-weight:bold;text-transform:uppercase;text-align:right;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+		                <a href="/web/20091213150012/http://ja.doukaku.org/245/flatten/" style="text-decoration:none;color:#33f;font-weight:bold;background-color:transparent;border:none;" title="13 Dec 2009"><strong>DEC</strong></a>
+		                
+               </td>
+               <td id="displayMonthEl" style="background:#000;color:#ff0;font-size:11px!important;font-weight:bold;text-transform:uppercase;width:34px;height:15px;padding-top:1px;text-align:center;" title="You are here: 13:42:32 Jun 28, 2010">JUN</td>
+				<td style="padding-left:9px;font-size:11px!important;font-weight:bold;text-transform:uppercase;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+                       Jul
+                       
+               </td>
+           </tr>
+
+           <!-- NEXT/PREV CAPTURE NAV AND DAY OF MONTH INDICATOR -->
+           <tr>
+               <td style="padding-right:9px;white-space:nowrap;overflow:visible;text-align:right!important;vertical-align:middle!important;" nowrap="nowrap">
+               
+		                <a href="/web/20091213150012/http://ja.doukaku.org/245/flatten/" title="15:00:12 Dec 13, 2009" style="background-color:transparent;border:none;"><img src="/static/images/toolbar/wm_tb_prv_on.png" alt="Previous capture" width="14" height="16" border="0" /></a>
+		                
+               </td>
+               <td id="displayDayEl" style="background:#000;color:#ff0;width:34px;height:24px;padding:2px 0 0 0;text-align:center;font-size:24px;font-weight: bold;" title="You are here: 13:42:32 Jun 28, 2010">28</td>
+				<td style="padding-left:9px;white-space:nowrap;overflow:visible;text-align:left!important;vertical-align:middle!important;" nowrap="nowrap">
+               
+                       <img src="/static/images/toolbar/wm_tb_nxt_off.png" alt="Next capture" width="14" height="16" border="0"/>
+                       
+			    </td>
+           </tr>
+
+           <!-- NEXT/PREV YEAR NAV AND YEAR INDICATOR -->
+           <tr style="width:110px;height:13px;font-size:9px!important;">
+				<td style="padding-right:9px;font-size:11px!important;font-weight: bold;text-align:right;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+		                <a href="/web/20090412213056/http://ja.doukaku.org/245/flatten/" style="text-decoration:none;color:#33f;font-weight:bold;background-color:transparent;border:none;" title="12 Apr 2009"><strong>2009</strong></a>
+		                
+               </td>
+               <td id="displayYearEl" style="background:#000;color:#ff0;font-size:11px!important;font-weight: bold;padding-top:1px;width:34px;height:13px;text-align:center;" title="You are here: 13:42:32 Jun 28, 2010">2010</td>
+				<td style="padding-left:9px;font-size:11px!important;font-weight: bold;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+                       2011
+                       
+				</td>
+           </tr>
+           </tbody></table>
+       </td>
+
+       </tr>
+       <tr>
+       <td style="vertical-align:middle;padding:0!important;">
+           <a href="/web/20100628134232*/http://ja.doukaku.org/245/flatten/" style="color:#33f;font-size:11px;font-weight:bold;background-color:transparent;border:none;" title="See a list of every capture for this URL"><strong>5 captures</strong></a>
+           <div class="__wb_banner_div" style="margin:0!important;padding:0!important;color:#666;font-size:9px;padding-top:2px!important;white-space:nowrap;" title="Timespan for captures of this URL">11 Apr 09 - 28 Jun 10</div>
+       </td>
+       <td style="padding:0!important;">
+       <a style="position:relative; white-space:nowrap; width:450px;height:27px;" href="" id="wm-graph-anchor">
+       <div class="__wb_banner_div" id="wm-ipp-sparkline" style="position:relative; white-space:nowrap; width:450px;height:27px;background-color:#fff;cursor:pointer;border-right:1px solid #ccc;" title="Explore captures for this URL">
+			<img id="sparklineImgId" style="position:absolute; z-index:9012; top:0px; left:0px;"
+				onmouseover="showTrackers('inline');" 
+				onmouseout="showTrackers('none');"
+				onmousemove="trackMouseMove(event,this)"
+				alt="sparklines"
+				width="450"
+				height="27"
+				border="0"
+				src="/web/jsp/graph.jsp?graphdata=450_27_1996:-1:000000000000_1997:-1:000000000000_1998:-1:000000000000_1999:-1:000000000000_2000:-1:000000000000_2001:-1:000000000000_2002:-1:000000000000_2003:-1:000000000000_2004:-1:000000000000_2005:-1:000000000000_2006:-1:000000000000_2007:-1:000000000000_2008:-1:000000000000_2009:-1:000300000001_2010:5:000001000000_2011:-1:000000000000_2012:-1:000000000000_2013:-1:000000000000"></img>
+			<img id="wbMouseTrackYearImg" 
+				style="display:none; position:absolute; z-index:9010;"
+				width="25" 
+				height="27"
+				border="0"
+				src="/static/images/toolbar/transp-yellow-pixel.png"></img>
+			<img id="wbMouseTrackMonthImg"
+				style="display:none; position:absolute; z-index:9011; " 
+				width="2"
+				height="27" 
+				border="0"
+				src="/static/images/toolbar/transp-red-pixel.png"></img>
+       </div>
+		</a>
+
+       </td>
+       </tr></tbody></table>
+   </td>
+   <td style="text-align:right;padding:5px;width:65px;font-size:11px!important;">
+       <a href="javascript:;" onclick="document.getElementById('wm-ipp').style.display='none';" style="display:block;padding-right:18px;background:url(/static/images/toolbar/wm_tb_close.png) no-repeat 100% 0;color:#33f;font-family:'Lucida Grande','Arial',sans-serif;margin-bottom:23px;background-color:transparent;border:none;" title="Close the toolbar">Close</a>
+       <a href="http://faq.web.archive.org/" style="display:block;padding-right:18px;background:url(/static/images/toolbar/wm_tb_help.png) no-repeat 100% 0;color:#33f;font-family:'Lucida Grande','Arial',sans-serif;background-color:transparent;border:none;" title="Get some help using the Wayback Machine">Help</a>
+   </td>
+   </tr></tbody></table>
+
+</div>
+</div>
+<script type="text/javascript">
+ var wmDisclaimBanner = document.getElementById("wm-ipp");
+ if(wmDisclaimBanner != null) {
+   disclaimElement(wmDisclaimBanner);
+ }
+</script>
+<!-- END WAYBACK TOOLBAR INSERT -->
+
+
+<div id="page_head" class="compact">
+  <h1 class="compact">
+    <a href="/web/20100628134232/http://ja.doukaku.org/">どう書く？org</a><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/beta.png" alt="beta">
+  </h1>
+</div>
+
+<div id="page_body" class="compact">
+<div id="content" class="compact">
+
+
+
+
+<h2 class="compact">
+<img src='/web/20100628134232im_/http://ja.doukaku.org/static/image/star_gold.png' alt=お題(出題済み)>
+<a href="/web/20100628134232/http://ja.doukaku.org/245/">例外処理</a>
+</h2>
+
+    
+
+
+
+
+
+<div class="comment" id="comment8712">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/760/" target="_top">turugina</a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8712/">#8712</a>(<script language="JavaScript">print_time(new Date("2009/03/23 04:30 GMT"));</script><noscript>2009/03/23 04:30 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #dfffdf;">2/2=1.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>例外処理の適当なサンプルを書いてください。</p>
+<p>但し、言語によって例外処理がサポートされている場合はそれを利用してください。</p>
+
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20100628134232/http://ja.wikipedia.org/wiki/%E4%BE%8B%E5%A4%96%E5%87%A6%E7%90%86">例外処理</a>
+	</p>  
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8712/addtag/" class="addtag" id="addtag_8712">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #dfffdf;"
+  >2/2=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8712"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8712"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8712"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8712/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+
+<div class="indent">
+<a href="/web/20100628134232/http://ja.doukaku.org/245/post_comment/">
+投稿する
+</a>
+</div>
+
+
+<h2>投稿されたコメント - フラット表示</h2>
+<a href="/web/20100628134232/http://ja.doukaku.org/245/nested/">ネスト表示</a>
+<a href="/web/20100628134232/http://ja.doukaku.org/245/">非表示</a> 
+
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8761">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/813/" target="_top">lunlumo</a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8761/">#8761</a>(<script language="JavaScript">print_time(new Date("2009/04/03 23:43 GMT"));</script><noscript>2009/04/03 23:43 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/ruby/">
+	  Ruby
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <blockquote>
+Rubyではbegin-rescure-ensure-endを使用します。</blockquote>
+
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20100628134232/http://www.ruby-lang.org/ja/man/html/_C0A9B8E6B9BDC2A4.html#a.ce.e3.b3.b0.bd.e8.cd.fd">Rubyリファレンスマニュアル</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></td><td class="code"><div class="highlight"><pre><span class="k">begin</span>
+    <span class="c1"># 処理本体はここに記述します</span>
+    <span class="k">raise</span> <span class="s2">&quot;サンプル例外です。&quot;</span>
+<span class="k">rescue</span> <span class="o">=&gt;</span> <span class="n">e</span>
+    <span class="nb">puts</span> <span class="s2">&quot;例外が発生しました。(「</span><span class="si">#{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">」)&quot;</span>
+<span class="k">else</span>
+    <span class="nb">puts</span> <span class="s2">&quot;例外が発生しなかった場合に実行されます。&quot;</span>
+<span class="k">ensure</span>
+    <span class="nb">puts</span> <span class="s2">&quot;例外の発生如何に関わらず実行されます。&quot;</span>
+<span class="k">end</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8761/addtag/" class="addtag" id="addtag_8761">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/ruby/">
+		Ruby
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8761/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8761/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8761"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8761"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8761"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8761/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8762">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/813/" target="_top">lunlumo</a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8762/">#8762</a>(<script language="JavaScript">print_time(new Date("2009/04/03 18:52 GMT"));</script><noscript>2009/04/03 18:52 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/perl/">
+	  Perl
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>　perlには例外用の構文はありませんが，evalを使用して処理するのが一般的です。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5</pre></td><td class="code"><div class="highlight"><pre><span class="nb">eval</span> <span class="p">{</span>
+    <span class="c1"># 処理本体はここに記述</span>
+    <span class="nb">die</span> <span class="s">&quot;サンプルエラーです。&quot;</span><span class="p">;</span>
+<span class="p">};</span>
+<span class="k">print</span> <span class="s">&quot;例外が発生しました。（「$@」）\n&quot;</span> <span class="k">if</span> <span class="p">(</span><span class="vg">$@</span><span class="p">);</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8762/addtag/" class="addtag" id="addtag_8762">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/perl/">
+		Perl
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8762/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8762/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8762"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8762"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8762"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8762/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8763">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/232/" target="_top">kkobayashi</a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8763/">#8763</a>(<script language="JavaScript">print_time(new Date("2009/04/03 20:49 GMT"));</script><noscript>2009/04/03 20:49 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/r/">
+	  R
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <pre class='compact'>RにはJavaライクな例外処理が実装されています。
+
+&gt; tryCatch(expr(1), error=e.handler, finally=f.handler())
+[1] "finished"
+&lt;simpleError: Exception&gt;
+&gt; tryCatch(expr(0), error=e.handler, finally=f.handler())
+[1] "not error"
+[1] "finished"</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></td><td class="code"><div class="highlight"><pre>expr &lt;- function(n=1){
+  if(n==1){
+    stop(simpleError(&quot;Exception&quot;))
+  }
+  print(&quot;not error&quot;)
+}
+e.handler &lt;- function(e) e
+f.handler &lt;- function() print(&quot;finished&quot;)
+
+tryCatch(expr(1), error=e.handler, finally=f.handler())
+tryCatch(expr(0), error=e.handler, finally=f.handler())
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8763/addtag/" class="addtag" id="addtag_8763">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/r/">
+		R
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8763/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8763/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8763"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8763"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8763"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8763/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8764">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/852/" target="_top">emasaka</a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8764/">#8764</a>(<script language="JavaScript">print_time(new Date("2009/04/03 21:59 GMT"));</script><noscript>2009/04/03 21:59 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/bash/">
+	  Bash
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <pre class='compact'>以下の2要素を組み合わせました。
+
+- エラーが起きた時点で実行を中断 → set -e
+- それ（とシグナル）を捕捉 → trap、サブシェル
+
+$ sh q245.sh
+beginning of program
+begenning of foo
+begenning of bar
+Catch!
+end of program
+</pre>
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20100628134232/http://ja.wikipedia.org/wiki/%E4%BE%8B%E5%A4%96%E5%87%A6%E7%90%86">例外処理 - Wikipedia</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></td><td class="code"><div class="highlight"><pre><span class="c">#!/bin/sh</span>
+
+bar<span class="o">()</span> <span class="o">{</span>
+  <span class="nb">echo</span> <span class="s1">&#39;begenning of bar&#39;</span>
+  <span class="o">[</span> <span class="nv">1</span> <span class="o">=</span> <span class="m">2</span> <span class="o">]</span>             <span class="c"># raise error</span>
+  <span class="nb">echo</span> <span class="s1">&#39;end of bar&#39;</span>
+<span class="o">}</span>
+
+foo<span class="o">()</span> <span class="o">(</span>                 <span class="c"># () runs subshell</span>
+  <span class="nb">echo</span> <span class="s1">&#39;begenning of foo&#39;</span>
+
+  <span class="c"># catch</span>
+  <span class="nb">set</span> -e
+  <span class="nb">trap</span> <span class="s1">&#39;echo &quot;Catch!&quot;&#39;</span> EXIT
+
+  bar
+  <span class="nb">echo</span> <span class="s1">&#39;end of foo&#39;</span>
+<span class="o">)</span>
+
+<span class="nb">echo</span> <span class="s1">&#39;beginning of program&#39;</span>
+foo
+<span class="nb">echo</span> <span class="s1">&#39;end of program&#39;</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8764/addtag/" class="addtag" id="addtag_8764">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/bash/">
+		Bash
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8764/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8764/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8764"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8764"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8764"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8764/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8765">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/943/" target="_top">pa</a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8765/">#8765</a>(<script language="JavaScript">print_time(new Date("2009/04/04 05:32 GMT"));</script><noscript>2009/04/04 05:32 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <pre class='compact'>Limboでは処理ブロックの後にexceptionブロックを
+つけることで例外処理が実現できるそうです。
+
+例外処理ブロックはcase文と似た構文で、
+"要因" =&gt;
+の後にその要因に対応する処理を書きます。
+
+要因は
+out of memory
+zero divide
+等が指定でき、*でワイルドカードが使えるようです。</pre>
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20100628134232/http://www.vitanuova.com/inferno/man/2/0intro.html">Inferno's INTRO(2):</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7</pre></td><td class="code"><div class="highlight"><pre>    {
+        # 処理本体
+    } exception e {
+       # 例外処理ブロック
+    &quot;*&quot; =&gt;
+        # 処理内容
+    }
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8765/addtag/" class="addtag" id="addtag_8765">タグ</a>:
+	
+    
+    <a href="/web/20100628134232/http://ja.doukaku.org/tag/Limbo/">Limbo</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8765/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8765/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8765"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8765"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8765"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8765/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8767">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/1013/" target="_top">selpo</a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8767/">#8767</a>(<script language="JavaScript">print_time(new Date("2009/04/04 07:27 GMT"));</script><noscript>2009/04/04 07:27 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/csharp/">
+	  C#
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24</pre></td><td class="code"><div class="highlight"><pre><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">class</span> <span class="nc">P</span>
+<span class="k">{</span>
+    <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+    <span class="k">{</span>
+        <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
+        <span class="kt">string</span> <span class="n">str</span><span class="p">;</span>
+        <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">&quot;逆数を求めます。整数を入力してください。&quot;</span><span class="p">);</span>
+        <span class="n">str</span> <span class="p">=</span> <span class="n">Console</span><span class="p">.</span><span class="n">ReadLine</span><span class="p">();</span>
+        <span class="k">try</span>
+        <span class="k">{</span>
+            <span class="n">a</span> <span class="p">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="kt">double</span><span class="p">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">str</span><span class="p">);</span>
+            <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">&quot;1 / {0} = {1}&quot;</span><span class="p">,</span> <span class="n">str</span><span class="p">,</span> <span class="m">1.0</span> <span class="p">/</span> <span class="n">a</span><span class="p">);</span>
+        <span class="k">}</span>
+        <span class="k">catch</span> <span class="p">(</span><span class="n">FormatException</span><span class="p">)</span>
+        <span class="k">{</span>
+            <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">&quot;{0}は整数として有効ではありません。&quot;</span><span class="p">,</span> <span class="n">str</span><span class="p">);</span>
+        <span class="k">}</span>
+        <span class="k">catch</span> <span class="p">(</span><span class="n">DivideByZeroException</span><span class="p">)</span>
+        <span class="k">{</span>
+            <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">&quot;0では割れません。&quot;</span><span class="p">);</span>
+        <span class="k">}</span>
+    <span class="k">}</span>
+<span class="k">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8767/addtag/" class="addtag" id="addtag_8767">タグ</a>:
+	
+    
+    <a href="/web/20100628134232/http://ja.doukaku.org/tag/C%232.0/">C#2.0</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/csharp/">
+		C#
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8767/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8767/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8767"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8767"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8767"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8767/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8769">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/913/" target="_top">nattou_curry</a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8769/">#8769</a>(<script language="JavaScript">print_time(new Date("2009/04/04 12:58 GMT"));</script><noscript>2009/04/04 12:58 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/java/">
+	  Java
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>javaではtry-catch-finallyを使います。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></td><td class="code"><div class="highlight"><pre><span class="k">public</span> <span class="k">class</span> <span class="nc">ExTest</span> <span class="o">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="kt">void</span> <span class="n">main</span><span class="o">(</span> <span class="n">String</span><span class="o">[]</span> <span class="n">args</span> <span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="n">Exception</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span> <span class="n">Exception</span> <span class="n">e</span> <span class="o">)</span> <span class="o">{</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span> <span class="s">&quot;例外が発生しました。&quot;</span> <span class="o">);</span>
+            <span class="c">// スタックトレースを表示する。</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span> 
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span> <span class="s">&quot;必ず実行されます。&quot;</span> <span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8769/addtag/" class="addtag" id="addtag_8769">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/java/">
+		Java
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8769/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8769/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8769"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8769"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8769"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8769/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8774">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/1022/" target="_top">陽炎</a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8774/">#8774</a>(<script language="JavaScript">print_time(new Date("2009/04/04 17:27 GMT"));</script><noscript>2009/04/04 17:27 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/fortress/">
+	  Fortress
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></td><td class="code"><div class="highlight"><pre>component doukaku245
+  export Executable
+
+  object NewException extends Exception
+    toString(): String = &quot;Exception occured!&quot;
+  end
+
+  run(args: String...): () = do
+    try
+      throw NewException
+    catch e
+      NewException =&gt; fail(e.toString())
+    finally
+      println(&quot;End of Exception test.&quot;)
+    end
+
+  end
+end
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8774/addtag/" class="addtag" id="addtag_8774">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/fortress/">
+		Fortress
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8774/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8774/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8774"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8774"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8774"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8774/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8775">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/759/" target="_top">egtra</a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8775/">#8775</a>(<script language="JavaScript">print_time(new Date("2009/04/05 06:03 GMT"));</script><noscript>2009/04/05 06:03 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/cpp/">
+	  C++
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  std::vectorで範囲外エラー (std::out_of_rangeクラスが投げられる) を起こさせました。なお、catchではconst無しの参照 (std::exception&amp; e) で受け取るのが一般的ですが、自分はconstを付ける派なのです。 
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;iostream&gt;</span>
+<span class="cp">#include &lt;vector&gt;</span>
+
+<span class="kt">int</span> <span class="n">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">try</span>
+    <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span> <span class="c">//要素数2つ</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;3つ値を入力してください。&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">v</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">v</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">v</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span> <span class="c">//いや、そんなにないですって</span>
+    <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">exception</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">e</span><span class="p">.</span><span class="n">what</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8775/addtag/" class="addtag" id="addtag_8775">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/cpp/">
+		C++
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8775/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8775/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8775"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8775"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8775"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8775/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8777">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/759/" target="_top">egtra</a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8777/">#8777</a>(<script language="JavaScript">print_time(new Date("2009/04/05 01:34 GMT"));</script><noscript>2009/04/05 01:34 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/c/">
+	  C
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  
+<p>C言語、ただしシグナルやsetjmpではありません。Windowsの構造化例外処理 (SEH) です。
+</p>
+<p>例外を投げるにはRaiseException関数を呼ぶ方法もありますが、今回はCPUに例外を発生させました。
+</p>
+<p><em>_exceptの丸括弧の中の式では、例外をキャッチするか否かを指定する値を指定します。filter</em>exception関数内で、判定を行っています。ちなみに、今回使いませんでしたが、EXCEPTION_CONTINUE_EXECUTIONという__exceptブロック{}を実行せず、例外が発生した場所から実行再開するという指定もあります。
+</p>
+<p>また、GetExceptionCodeの代わりにGetExceptionInformationを使うと詳しい情報の入ったEXCEPTION_POINTERS構造体（へのポインタ）が得られます。RaiseExceptionと組み合わせればC++などのようなオブジェクトの引き渡しを模倣できるはずです。
+</p>
+
+
+
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20100628134232/http://msdn.microsoft.com/ja-jp/library/cc440193.aspx">C と C++ での例外処理、第 2 部</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23</pre></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;windows.h&gt;</span>
+<span class="cp">#include &lt;stdio.h&gt;</span>
+
+<span class="kt">int</span> <span class="nf">filter_exception</span><span class="p">(</span><span class="n">DWORD</span> <span class="n">exceptionCode</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="n">exceptionCode</span> <span class="o">==</span> <span class="n">EXCEPTION_ACCESS_VIOLATION</span>
+        <span class="o">?</span> <span class="n">EXCEPTION_EXECUTE_HANDLER</span>
+        <span class="o">:</span> <span class="n">EXCEPTION_CONTINUE_SEARCH</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kr">__try</span>
+    <span class="p">{</span>
+        <span class="kt">int</span><span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+        <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="mi">42</span><span class="p">;</span> <span class="c">// ぬるぽ</span>
+    <span class="p">}</span>
+    <span class="kr">__except</span><span class="p">(</span><span class="n">filter_exception</span><span class="p">(</span><span class="n">GetExceptionCode</span><span class="p">()))</span> <span class="c">//例外をキャッチして処理する</span>
+    <span class="p">{</span>
+        <span class="n">fputs</span><span class="p">(</span><span class="s">&quot;ガッ！</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8777/addtag/" class="addtag" id="addtag_8777">タグ</a>:
+	
+    
+    <a href="/web/20100628134232/http://ja.doukaku.org/tag/Windows/">Windows</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/c/">
+		C
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8777/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8777/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8777"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8777"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8777"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8777/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8781">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/831/" target="_top">a2c</a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8781/">#8781</a>(<script language="JavaScript">print_time(new Date("2009/04/05 09:25 GMT"));</script><noscript>2009/04/05 09:25 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/python/">
+	  Python
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td><td class="code"><div class="highlight"><pre><span class="k">def</span> <span class="nf">hoge</span><span class="p">():</span>
+  <span class="n">arr</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="k">return</span> <span class="n">arr</span><span class="p">[</span><span class="mi">100</span><span class="p">]</span>
+
+<span class="k">try</span><span class="p">:</span>
+  <span class="n">hoge</span><span class="p">()</span>
+<span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;hoge() faild&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8781/addtag/" class="addtag" id="addtag_8781">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/python/">
+		Python
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8781/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8781/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8781"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8781"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8781"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8781/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8783">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/1024/" target="_top">rennos</a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8783/">#8783</a>(<script language="JavaScript">print_time(new Date("2009/04/05 08:41 GMT"));</script><noscript>2009/04/05 08:41 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/hsp/">
+	  HSP
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>HSPには例外処理機構が無いので、マクロで実装します。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44</pre></td><td class="code"><div class="highlight"><pre>#define global try %tExcepHandling %i0 %i0 %i0 %i0 if (1)
+#define global end_try %tExcepHandling *%p1 : %o0 %o0 %o0 %o0
+#define global catch_list %tExcepHandling \
+    if (0) : *%p : %p3 = 0
+#define global TEMP_CATCH(%1,%2) %tExcepHandling \
+    if ( %p3 ) { goto *%p1 } else { %p3 = 1 }\
+    } if (%1) { %2 = THREW_VALUE
+#define global ctype catch(%1,%2=THREW_VALUE) %tExcepHandling \
+    TEMP_CATCH ( vartype(THREW_VALUE) == vartype(&quot;%1&quot;) ), %2
+#define global ctype finally(%1=THREW_VALUE) %tExcepHandling \
+TEMP_CATCH 1, %1
+#define global throw(%1) %tExcepHandling \
+THREW_VALUE = %1 : goto *%p
+#define global try_break %tExcepHandling goto *%p1
+#define global THREW_VALUE %tExcepHandling %p2
+
+// サンプル・スクリプト
+#if 1
+    randomize
+    repeat
+        wait 50
+        try {
+            // メイン処理、この中でしか throw できない。
+            switch ( rnd(3) )
+                case 0 : throw 2147483647 : swbreak
+                case 1 : throw &quot;Hello, world!&quot; : swbreak
+                case 2 : throw 3.141592 : swbreak
+            swend
+            
+        } catch_list {
+            // throw されたらここに来る。
+            catch (int, x)
+                mes &quot;int\t: &quot;+ x
+                
+            catch(str)
+                mes &quot;str\t: \&quot;&quot;+ THREW_VALUE +&quot;\&quot;&quot;
+                
+            finally()
+                mes &quot;final\t: &quot;+ THREW_VALUE
+        } end_try
+        // catch_list を抜けるとここに来る
+    loop
+    stop
+#endif
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8783/addtag/" class="addtag" id="addtag_8783">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/hsp/">
+		HSP
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8783/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8783/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8783"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8783"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8783"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  <a href="/web/20100628134232/http://ja.doukaku.org/comment/8783/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8783/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8791">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/813/" target="_top">lunlumo</a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8791/">#8791</a>(<script language="JavaScript">print_time(new Date("2009/04/06 10:04 GMT"));</script><noscript>2009/04/06 10:04 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/scala/">
+	  Scala
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>　ScalaはJavaと同じくtry-catch-finallyとなりますが，例外の振り分けにcaseによるマッチングを使う様になっている所がらしいでしょうか。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17</pre></td><td class="code"><div class="highlight"><pre>object ExceptionSample {
+    def main(args:Array[String]):Unit = {
+        try {
+            println(&quot;処理本体&quot;)
+            args.size match {
+                case 0 =&gt; throw new IllegalArgumentException(&quot;引数が指定されていません&quot;)
+                case 1 =&gt; printf(&quot;引数: %s\n&quot;, args.first)
+                case _ =&gt; throw new Exception(&quot;引数の指定が不正です&quot;)
+            }
+        } catch {
+            case e:IllegalArgumentException =&gt; printf(&quot;例外発生(「%s」)\n&quot;, e.getMessage)
+            case e =&gt; e.printStackTrace
+        } finally {
+            println(&quot;例外の発生如何に関わらず実行&quot;)
+        }
+    }
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8791/addtag/" class="addtag" id="addtag_8791">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/scala/">
+		Scala
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8791/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8791/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8791"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8791"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8791"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8791/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8794">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/793/" target="_top">genzou</a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8794/">#8794</a>(<script language="JavaScript">print_time(new Date("2009/04/07 07:56 GMT"));</script><noscript>2009/04/07 07:56 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/groovy/">
+	  Groovy
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <pre class='compact'>以下のjavaの投稿を参考に、
+groovy風に書き換えてみました。
+
+どう書く？org 8769 nattou_curry: javaではtry-catch-fina...(例外処理) - 投稿の詳細 &lt;http://ja.doukaku.org/comment/8769/&gt;</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></td><td class="code"><div class="highlight"><pre>try {
+    throw new Exception()
+} catch ( e ) {
+    println( &quot;例外が発生しました。&quot; )
+    e.printStackTrace()
+} finally {
+    println( &quot;必ず実行されます。&quot; )
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8794/addtag/" class="addtag" id="addtag_8794">タグ</a>:
+	
+    
+    <a href="/web/20100628134232/http://ja.doukaku.org/tag/groovy/">groovy</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/groovy/">
+		Groovy
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8794/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8794/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8794"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8794"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8794"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8794/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8797">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/88/" target="_top">sumim</a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8797/">#8797</a>(<script language="JavaScript">print_time(new Date("2009/04/09 00:03 GMT"));</script><noscript>2009/04/09 00:03 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/smalltalk/">
+	  Smalltalk
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>Smalltalk では、例外処理は #on:do: を、後処理は #ensure: を用います。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5</pre></td><td class="code"><div class="highlight"><pre>[1/0]
+    on: ZeroDivide 
+    do: [:ex | Float infinity]   &quot;#=&gt; Infinity&quot;
+
+[self error: &#39;エラー発生&#39;] ensure: [Transcript cr; show: &#39;必ず実行&#39;]
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8797/addtag/" class="addtag" id="addtag_8797">タグ</a>:
+	
+    
+    <a href="/web/20100628134232/http://ja.doukaku.org/tag/Squeak_Smalltalk/">Squeak_Smalltalk</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/smalltalk/">
+		Smalltalk
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8797/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8797/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8797"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8797"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8797"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8797/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8828">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/1036/" target="_top">spoon</a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8828/">#8828</a>(<script language="JavaScript">print_time(new Date("2009/04/17 18:11 GMT"));</script><noscript>2009/04/17 18:11 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/python/">
+	  Python
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td><td class="code"><div class="highlight"><pre><span class="k">try</span><span class="p">:</span>
+    <span class="c"># 処理本体はここに記述します</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;サンプル例外です。&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;例外が発生しました。(「</span><span class="si">%s</span><span class="s">」)&quot;</span> <span class="o">%</span> <span class="n">e</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;例外が発生しなかった場合に実行されます。&quot;</span>
+<span class="k">finally</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;例外の発生如何に関わらず実行されます。&quot;</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8828/addtag/" class="addtag" id="addtag_8828">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/python/">
+		Python
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8828/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8828/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8828"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8828"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8828"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8828/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8873">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/646/" target="_top">silverwire</a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/star_silver.png" border=0/></a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8873/">#8873</a>(<script language="JavaScript">print_time(new Date("2009/05/01 05:37 GMT"));</script><noscript>2009/05/01 05:37 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <pre class='compact'>InstallShield Scriptです。
+
+InstallShield Scriptは Windowsアプリケーション用のインストーラーを作成するための
+言語ですが、ヘルプを見ていて意外にも(?) 例外処理をサポートしていることに気がつき
+ました。
+
+以下はヘルプに載っている内容を手直ししたものですが、この処理だと try ... catchを
+利用するメリットは... ありませんよね。(すみません。)
+
+# InstallShield Profesional 7.01でビルドして動作を確認しました。</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29</pre></td><td class="code"><div class="highlight"><pre>#include &quot;ifx.h&quot;
+#include &quot;ErrorsObj.h&quot;
+
+NUMBER n;
+STRING p;
+
+program
+    _:
+    AskText(&quot;ファイルのパスを入力してください。&quot;, &quot;&quot;, p);
+
+    try
+        if (!Is(FILE_EXISTS, p)) then
+            Err.Raise(OBJ_STATUS_FILENOTFOUND);
+        endif;
+        MessageBox(&quot;指定されたファイルは存在します。&quot;, INFORMATION);
+    catch
+        n = Err.Number;
+        switch (n)
+            case OBJ_STATUS_FILENOTFOUND : 
+                MessageBox(&quot;指定されたファイルは存在しません。&quot;, WARNING);
+            default : 
+                MessageBox(Err.Description, SEVERE);
+        endswitch;
+    endcatch;
+
+    if (AskYesNo(&quot;パスを再入力しますか? &quot;, YES) = YES) goto _;
+
+    abort;
+endprogram
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8873/addtag/" class="addtag" id="addtag_8873">タグ</a>:
+	
+    
+    <a href="/web/20100628134232/http://ja.doukaku.org/tag/InstallShield/">InstallShield</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8873/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8873/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8873"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8873"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8873"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8873/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8884">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/380/" target="_top">vtwntmtn</a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/star_silver.png" border=0/></a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8884/">#8884</a>(<script language="JavaScript">print_time(new Date("2009/05/04 07:16 GMT"));</script><noscript>2009/05/04 07:16 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/erlang/">
+	  Erlang
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></td><td class="code"><div class="highlight"><pre>-module(exception).
+-export([exception/0]).
+
+f() -&gt; throw(&quot;exception&quot;).
+
+exception() -&gt;
+    X =  try f()
+    catch
+        throw : Y -&gt; &quot;catch : &quot; ++ Y
+    end,
+    io:format(X).
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8884/addtag/" class="addtag" id="addtag_8884">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/erlang/">
+		Erlang
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8884/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8884/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8884"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8884"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8884"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8884/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment8962">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/497/" target="_top">Otter</a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8962/">#8962</a>(<script language="JavaScript">print_time(new Date("2009/05/20 03:16 GMT"));</script><noscript>2009/05/20 03:16 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/haskell/">
+	  Haskell
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>Haskellの例外処理は世代がいくつかあるみたいですが、Control.Exceptionのやつを使ってみました…</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></td><td class="code"><div class="highlight"><pre><span class="kr">module</span> <span class="n">Main</span> <span class="kr">where</span>
+
+<span class="kr">import</span> <span class="n">Prelude</span> <span class="nv">hiding</span> <span class="p">(</span><span class="nv">catch</span><span class="p">)</span>
+<span class="kr">import</span> <span class="n">Control</span><span class="o">.</span><span class="n">Exception</span>
+
+<span class="nv">thrower</span> <span class="o">::</span> <span class="n">IO</span> <span class="p">()</span>
+<span class="nv">thrower</span> <span class="o">=</span> <span class="kr">do</span>
+    <span class="nv">putStrLn</span> <span class="s">&quot;thrower throws exception&quot;</span>
+    <span class="nv">throwIO</span> <span class="p">(</span><span class="n">ErrorCall</span> <span class="s">&quot;can&#39;t call this&quot;</span><span class="p">)</span>
+
+<span class="nv">catcher</span> <span class="o">::</span> <span class="n">ErrorCall</span> <span class="o">-&gt;</span> <span class="n">IO</span> <span class="p">()</span>    
+<span class="nv">catcher</span> <span class="nv">e</span> <span class="o">=</span> <span class="nv">putStrLn</span> <span class="o">$</span> <span class="s">&quot;caught \&quot;&quot; ++ (show e) ++ &quot;</span><span class="o">\</span><span class="s">&quot; exception.&quot;</span>
+
+<span class="nv">main</span> <span class="o">=</span> <span class="nv">catch</span> <span class="nv">thrower</span> <span class="p">(</span><span class="nv">catcher</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/8962/addtag/" class="addtag" id="addtag_8962">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/haskell/">
+		Haskell
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8962/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/8962/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8962"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8962"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8962"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/8962/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment9107">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/1064/" target="_top">yamamoto</a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/9107/">#9107</a>(<script language="JavaScript">print_time(new Date("2009/06/10 17:08 GMT"));</script><noscript>2009/06/10 17:08 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/scala/">
+	  Scala
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  <p>いろいろな例外。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></td><td class="code"><div class="highlight"><pre>object ExceptionSample {
+  def main(args : Array[String]) : Unit = {
+    try{
+      val a = Array(1,2,3)
+      println (a(5)) // --&gt; java.lang.ArrayIndexOutOfBoundsException
+      val f=new java.io.FileReader(&quot;\\.txt&quot;) // --&gt;java.io.FileNotFoundException
+      val re = &quot;[A-Za-0]&quot;.r //--&gt; java.util.regex.PatternSyntaxException
+      
+      ()
+    }catch{
+      case e:java.io.IOException =&gt; println( &quot;IO Err &quot;+e)
+      case e:Exception =&gt; println (&quot;Err &quot;+e)
+      case _ =&gt; println (&quot;Unknown error&quot;)
+    }finally{
+      println (&quot;Done&quot;)
+    }
+    
+  }
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/9107/addtag/" class="addtag" id="addtag_9107">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/scala/">
+		Scala
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/9107/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/9107/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_9107"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_9107"
+  >0</span><span 
+  class="button green"
+  id="rating_p_9107"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/9107/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment9206">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/1045/" target="_top">ワサビ</a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/9206/">#9206</a>(<script language="JavaScript">print_time(new Date("2009/06/19 21:14 GMT"));</script><noscript>2009/06/19 21:14 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100628134232/http://ja.doukaku.org/lang/ocaml/">
+	  OCaml
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  F#ではtry～withで例外処理を行えます。<br/>with部分で例外の種類を特定するのにパターンマッチを使用する点が特徴です。
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></td><td class="code"><div class="highlight"><pre><span class="k">#</span><span class="n">light</span>
+
+<span class="kr">open</span> <span class="n">System</span>
+
+<span class="kr">exception</span> <span class="n">Original</span> <span class="kr">of</span> <span class="n">string</span> <span class="k">*</span> <span class="n">string</span>    <span class="o">//</span> <span class="n">F</span><span class="k">#</span><span class="err">例外の定義</span>
+
+<span class="kr">type</span> <span class="n">Example</span><span class="k">()</span> <span class="k">=</span>
+    <span class="n">member</span> <span class="n">this</span><span class="k">.</span><span class="n">Func</span><span class="k">()</span> <span class="k">=</span>
+        <span class="n">Original</span><span class="k">(</span><span class="s2">&quot;ユーザー定義例外&quot;</span><span class="k">,</span> <span class="s2">&quot;例外発生&quot;</span><span class="k">)</span> <span class="k">|&gt;</span> <span class="n">raise</span>
+    <span class="n">interface</span> <span class="n">IDisposable</span> <span class="kr">with</span>
+        <span class="n">member</span> <span class="n">this</span><span class="k">.</span><span class="n">Dispose</span><span class="k">()</span> <span class="k">=</span>
+            <span class="n">printfn</span> <span class="s2">&quot;資源解放&quot;</span>
+
+<span class="kr">try</span>
+    <span class="n">use</span> <span class="n">ex</span> <span class="k">=</span> <span class="kr">new</span> <span class="n">Example</span><span class="k">()</span>
+    <span class="n">ex</span><span class="k">.</span><span class="n">Func</span><span class="k">()</span>
+<span class="kr">with</span>
+    <span class="k">|</span> <span class="k">:?</span> <span class="n">NullReferenceException</span> <span class="kr">as</span> <span class="n">e</span> <span class="k">-&gt;</span>  <span class="o">//</span> <span class="k">.</span><span class="n">NET</span><span class="err">例外の捕捉</span>
+        <span class="n">printfn</span> <span class="s2">&quot;ぬるぽ　%s&quot;</span> <span class="n">e</span><span class="k">.</span><span class="n">Message</span>
+        <span class="n">rethrow</span><span class="k">()</span>
+    <span class="k">|</span> <span class="n">Original</span><span class="k">(</span><span class="n">name</span><span class="k">,</span> <span class="n">msg</span><span class="k">)</span> <span class="k">-&gt;</span>             <span class="o">//</span> <span class="n">F</span><span class="k">#</span><span class="err">例外の捕捉</span>
+        <span class="n">printfn</span> <span class="s2">&quot;例外名：%s　メッセージ：%s&quot;</span> <span class="n">name</span> <span class="n">msg</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/9206/addtag/" class="addtag" id="addtag_9206">タグ</a>:
+	
+    
+    <a href="/web/20100628134232/http://ja.doukaku.org/tag/F%23/">F#</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100628134232/http://ja.doukaku.org/lang/ocaml/">
+		OCaml
+      </a>]
+	  
+      [<a href="/web/20100628134232/http://ja.doukaku.org/comment/9206/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100628134232/http://ja.doukaku.org/comment/9206/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_9206"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_9206"
+  >0</span><span 
+  class="button green"
+  id="rating_p_9206"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/9206/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+  
+  
+
+
+
+
+<div class="comment" id="comment10481">
+  <p class="banner"><a href="/web/20100628134232/http://ja.doukaku.org/user/1024/" target="_top">rennos</a><a href="/web/20100628134232/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/10481/">#10481</a>(<script language="JavaScript">print_time(new Date("2010/05/01 00:19 GMT"));</script><noscript>2010/05/01 00:19 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content">
+	<div class="comment_body">
+	  ※注意<br/>この&nbsp;finally&nbsp;は&nbsp;(Java&nbsp;などでいう)&nbsp;finally&nbsp;ではなく、(C++でいう)&nbsp;catch(...)&nbsp;、&nbsp;switch&nbsp;の&nbsp;default&nbsp;のようなものです。<br/>勘違いしていました。<br/>
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100628134232/http://ja.doukaku.org/comment/10481/addtag/" class="addtag" id="addtag_10481">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10481"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10481"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10481"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+    <a href="/web/20100628134232/http://ja.doukaku.org/comment/8783/"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20100628134232/http://ja.doukaku.org/comment/10481/root/"><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20100628134232/http://ja.doukaku.org/245/reply_to/10481/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+  
+  <br/>
+
+
+
+
+
+
+
+</div>
+
+<div id="side_menu" class="compact">
+
+<iframe src="/web/20100628134232if_/http://ja.doukaku.org/login_info/" frameborder=0 width=100% id="login_info">
+iframe required
+</iframe>
+
+<h4 class="semi_compact">一覧</h4>
+
+<ul>
+<!--<li><a href="/web/20100628134232/http://ja.doukaku.org/user/">ユーザ</a>-->
+<li><a href="/web/20100628134232/http://ja.doukaku.org/lang/">言語</a>
+<li><a href="/web/20100628134232/http://ja.doukaku.org/challenge/">お題</a>
+<li><a href="/web/20100628134232/http://ja.doukaku.org/topic/">トピック</a>
+<li><a href="/web/20100628134232/http://ja.doukaku.org/comment/">投稿</a>
+<li><a href="/web/20100628134232/http://ja.doukaku.org/good_comments/">評価の高い投稿</a>
+<li><a href="/web/20100628134232/http://ja.doukaku.org/tag/">タグ</a>
+</ul>
+
+<h4 class="compact">フィード</h4>
+<ul>
+<li><a href="/web/20100628134232/http://ja.doukaku.org/feeds/challenges/">最新のお題</a><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/feed_icon.png">
+<li><a href="/web/20100628134232/http://ja.doukaku.org/feeds/topics/">最新のトピック</a><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/feed_icon.png">
+<li><a href="/web/20100628134232/http://ja.doukaku.org/feeds/comments/">新着投稿</a><img src="/web/20100628134232im_/http://ja.doukaku.org/static/image/feed_icon.png">
+</ul>
+
+
+
+
+
+
+
+<h4 class="compact">その他</h4>
+<ul>
+<li><a href="/web/20100628134232/http://ja.doukaku.org/qa/">Q&A</a>
+<li><a href="/web/20100628134232/http://ja.doukaku.org/feedback/">フィードバック</a>
+<!--<li><a href="/web/20100628134232/http://ja.doukaku.org/terms">用語集</a>-->
+</ul>
+
+
+<h4 class="compact">リンク</h4>
+<ul>
+<li><a href="/web/20100628134232/http://www.lingr.com/room/doukaku_ja">チャットルーム(Lingr)</a>
+<li><a href="/web/20100628134232/http://labs.cybozu.co.jp/">サイボウズ・ラボ</a>
+<li><a href="/web/20100628134232/http://www.djangoproject.com/">Django</a>
+</ul>
+
+<h4 id="pathtraq" class="compact"><a href="/web/20100628134232/http://pathtraq.com/analytics?url=http%3A%2F%2Fja.doukaku.org%2Fcomment%2F*%2F%20desc%3A%E3%81%A9%E3%81%86%E6%9B%B8%E3%81%8Forg&m=popular">Pathtraq</a></h4>
+<div class="indent">
+<span id="pathtraq_sentinel">loading...</span>
+</div>
+
+
+</div>
+</div>
+
+
+<div id="page_foot" class="bordered">
+
+<a rel="license" href="/web/20100628134232/http://creativecommons.org/licenses/by/2.1/jp/">
+<img alt="Creative Commons License" style="border-width:0" src="/web/20100628134232im_/http://i.creativecommons.org/l/by/2.1/jp/88x31.png" /></a>
+このサイトの内容は、
+<a rel="license" href="/web/20100628134232/http://creativecommons.org/licenses/by/2.1/jp/">クリエイティブ・コモンズ・ライセンス</a>の下でライセンスされています。
+<a href="/web/20100628134232/http://ja.doukaku.org/qa/#licence">[詳細]</a>
+
+</div>
+
+</body>
+
+
+
+
+<script type="text/javascript">
+$(document).ready(function(){$("#doukaku_org").after("<script src='/web/20100628134232/http://api.pathtraq.com/pages?url=http%3A%2F%2Fja.doukaku.org%2Fcomment%2F*%2F%20desc%3A%E3%81%A9%E3%81%86%E6%9B%B8%E3%81%8Forg&api=json&callback=addPathtraq'><" + "/script>")});
+</script>
+
+<script src="/web/20100628134232js_/http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-2136157-1";
+urchinTracker();
+</script>
+
+
+
+
+</html>
+
+
+
+
+
+<!--
+     FILE ARCHIVED ON 13:42:32 Jun 28, 2010 AND RETRIEVED FROM THE
+     INTERNET ARCHIVE ON 12:45:27 Nov 16, 2013.
+     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+     SECTION 108(a)(3)).
+-->

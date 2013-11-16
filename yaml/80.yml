@@ -1,0 +1,3426 @@
+---
+:id: '80'
+:title: BFコンパイラー
+:comments:
+- :id: '3886'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3886
+  :user_name: dankogai
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/26/
+  :language: 
+  :time: 2007/11/12 01:21 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\r\n\t  \n<p>「どう書く?」でまだ出ていないのが不思議なお題。それが<a href=\"/web/20090527033636/http://ja.doukaku.org/80/flatten/404\"
+    title=\"Blog Not Found:brainfu.k - perl と javascript による処理系\">BF</a>処理系。\n   ここでは、BFで書かれたソースを、同じ言語に変換するコンパイラーを募集します。\n</p>\n<p>私自身、すでにPerlとJavaScriptに関しては\n
+    \  <a href=\"/web/20090527033636/http://blog.livedoor.jp/dankogai/archives/50545151.html\">http://blog.livedoor.jp/dankogai/archives/50545151.html</a>\n
+    \  でやっているのですが、他の言語バージョンも是非見たいので。\n</p>\n<p>Dan the Brainf.ucker\n</p>\n\n\n\r\n\t"
+  :code: ''
+  :tags:
+  - BF
+  :references:
+    :url: /web/20090527033636/http://ja.wikipedia.org/wiki/Brainfuck
+    :title: Brainfuck - Wikipedia
+- :id: '3947'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3947
+  :user_name: dankogai
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/13 12:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \n<p>以下のようにonelinerで可能です。\n   ただし<code>Language::BF 0.03</code>が必要です。
+    \n   <a href=\"/web/20090527033636/http://coderepos.org/share/browser/lang/perl/Language-BF/trunk\">CodeRepos経由</a>\n
+    \  で、\n</p>\n<ul>\n<li>\n     svn co svn.coderepos.org/share/lang/perl/Language-BF\n
+    </li>\n\n <li>\n     cd Language-BF/trunk\n </li>\n\n <li>\n     perl Makefile.PL\n
+    </li>\n\n <li>\n     make install\n </li>\n</ul>\n<p>するか、CPANにVersion 0.03が現れるのをお待ち下さい。\n</p>\n<p>Dan
+    the Brainf.cker\n</p>\n\n\n\r\n\t"
+  :code: |
+    perl -MLanguage::BF \
+      -e 'print Language::BF-&gt;new_from_file(shift)-&gt;as_perl' t/hello.bf \
+      | perl
+    Hello World!
+  :tags:
+  - BF
+  - oneliner
+  :references:
+    :url: 
+    :title: 
+- :id: '3941'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3941
+  :user_name: yuin
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/11/13 11:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ひさびさの一番かな？\r\n\r\n入力を文字列にしたい場合なんかは\r\nConsole.withInを使うとできます。</pre>\n\t"
+  :code: |
+    import scala.io.Source.fromFile
+
+    object BF{
+      def main(args:Array[String]) = {
+        if(args.size == 0) print("scala BF [sourcecode filename]")
+        else
+        args.foreach{f=&gt; (new Machine).interpret(fromFile(f).mkString("")) }
+      }
+    }
+
+    object Machine {
+      final val MEM = 0xffffff
+      final val VAL = 0xff
+    }
+
+    class Machine{
+      var _p = 0
+      val _mem = new Array[int](Machine.MEM)
+      def p_=(v:int) = _p = v&amp;Machine.MEM
+      def p = _p
+      def mem_=(v:int) = _mem(p)=v&amp;Machine.VAL
+      def mem = _mem(p)
+
+      def abort = error("Missing corresponding parenthesis.")
+
+      def interpret(code:String):unit = interpret(code.toArray)
+      def interpret(code:Array[char]):unit = {
+        val (s,m) = ((List[int](), List[(int,int)]()) /: code.zipWithIndex){
+          (r,c) =&gt; c._1 match {
+            case '[' =&gt; (c._2::r._1, r._2)
+            case ']' =&gt; r._1 match {
+              case x::xs =&gt; (xs, (x,c._2)::(c._2,x)::r._2)
+              case _ =&gt; abort
+            }
+            case _   =&gt; r
+        }}
+        if(s.size &gt; 0) abort
+        val parenMap = Map(m:_*)
+
+        var i = -1;while({i=i+1;i&lt;code.size}) code(i) match {
+          case '&gt;' =&gt; p = p+1
+          case '&lt;' =&gt; p = p-1
+          case '+' =&gt; mem = mem+1
+          case '-' =&gt; mem = mem-1
+          case '.' =&gt; print(mem.asInstanceOf[char])
+          case ',' =&gt; mem = readChar.asInstanceOf[int]
+          case '[' if mem == 0 =&gt; i = parenMap(i)
+          case ']' if mem != 0 =&gt; i = parenMap(i)
+          case _   =&gt; ()
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3945'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3945
+  :user_name: SiroKuro
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/540/
+  :language: C
+  :time: 2007/11/13 12:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  お題を見て「BF→言語Ａへのトランスレータを言語Ａで製作する」のだと思ったんですけど、お手本見るとなんかちょっと違う感じがしたので全部やってみました
+    (^-^;;\r\nBF ソースファイルから C# ソースと実行ファイルを生成してそれを実行します。\n\t"
+  :code: |
+    using System;
+    using System.CodeDom.Compiler;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Reflection;
+    using Microsoft.CSharp;
+    static class BFCompiler {
+        public static void Main(String[] args) {
+            if (0 &lt; args.Length &amp;&amp; File.Exists(args[0])) {
+                using(StringWriter sw = new StringWriter())
+                using(StreamReader sr = new StreamReader(args[0])) {
+                    Stack&lt;string&gt; labels = new Stack&lt;string&gt;();
+                    int label_num = 0;
+                    sw.WriteLine("using System; static class BF {");
+                    sw.WriteLine("public static void Main() {");
+                    sw.WriteLine("byte[] m = new byte[256]; int p = 0;");
+                    foreach(char c in sr.ReadToEnd()) {
+                        switch(c) {
+                            case '+': sw.WriteLine("m[p]++;"); break;
+                            case '-': sw.WriteLine("m[p]--;"); break;
+                            case '&gt;': sw.WriteLine("p++;"); break;
+                            case '&lt;': sw.WriteLine("p--;"); break;
+                            case '.': sw.WriteLine("Console.Write((char)m[p]);"); break;
+                            case ',': sw.WriteLine("m[p] = (byte)Console.Read();"); break;
+                            case '[': {
+                                string ll = "L" + (label_num++);
+                                labels.Push(ll);
+                                sw.WriteLine("if (m[p] == 0) goto {0}_END;", ll);
+                                sw.WriteLine("{0}_START:;", ll);
+                                break;
+                            }
+                            case ']': {
+                                string ll = labels.Pop();
+                                sw.WriteLine("if (m[p] != 0) goto {0}_START;", ll);
+                                sw.WriteLine("{0}_END:;", ll);
+                                break;
+                            }
+                        }
+                    }
+                    sw.WriteLine("}}");
+                    Generate(Path.GetFileNameWithoutExtension(args[0]), sw.ToString());
+                }
+            }
+            else {
+                Console.WriteLine("usage: bfc [sourcefile]");
+            }
+        }
+        private static void Generate(string filename, string cs_code) {
+            // ソースファイル生成
+            using (StreamWriter sw = new StreamWriter(filename + ".cs")) {
+                sw.Write(cs_code);
+            }
+            // 実行ファイル生成
+            CompilerParameters param = new CompilerParameters();
+            param.OutputAssembly = filename + ".exe";
+            param.GenerateExecutable = true;
+            CompilerResults rs = new CSharpCodeProvider().CompileAssemblyFromSource(param, cs_code);
+            // 実行
+            rs.CompiledAssembly.GetType("BF").GetMethod("Main").Invoke(null, null);
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3947'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3947
+  :user_name: dankogai
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/13 12:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>以下のようにonelinerで可能です。\n   ただし<code>Language::BF 0.03</code>が必要です。
+    \n   <a href=\"/web/20090527033636/http://coderepos.org/share/browser/lang/perl/Language-BF/trunk\">CodeRepos経由</a>\n
+    \  で、\n</p>\n<ul>\n<li>\n     svn co svn.coderepos.org/share/lang/perl/Language-BF\n
+    </li>\n\n <li>\n     cd Language-BF/trunk\n </li>\n\n <li>\n     perl Makefile.PL\n
+    </li>\n\n <li>\n     make install\n </li>\n</ul>\n<p>するか、CPANにVersion 0.03が現れるのをお待ち下さい。\n</p>\n<p>Dan
+    the Brainf.cker\n</p>\n\n\n\n\t"
+  :code: |
+    perl -MLanguage::BF \
+      -e 'print Language::BF-&gt;new_from_file(shift)-&gt;as_perl' t/hello.bf \
+      | perl
+    Hello World!
+  :tags:
+  - BF
+  - oneliner
+  :references:
+    :url: 
+    :title: 
+- :id: '3949'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3949
+  :user_name: にしお
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/13 13:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>&gt;お題を見て「BF→言語Ａへのトランスレータを言語Ａで製作する」のだと思ったんですけど</p>\n<p>それであっていると思いますよ。お手本は\n「Language::BF-&gt;new_from_file(shift)-&gt;as_perl」というコードで「t/hello.bf」というBrainf*ckで書かれたコードを読んでPerlに変換し、その出力をさいごの「|
+    perl」でもう一度Perlに食わせて実行させているわけです。</p>\n<pre class=\"literal-block\">\nperl -MLanguage::BF
+    \\\n-e 'print Language::BF-&gt;new_from_file(shift)-&gt;as_perl' t/hello.bf \\\n|
+    perl\nHello World!\n</pre>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3951'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3951
+  :user_name: yuin
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/82/
+  :language: 
+  :time: 2007/11/13 13:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">SiroKuroさんがおっしゃっているお手本は\r\nhttp://blog.livedoor.jp/dankogai/archives/50545151.html
+    \ \r\n\r\nのほうだと思います。投稿時間を見てみるとわかります。\r\n\r\n僕もURLの方だけみて勘違いしてました･･･\r\n今から書き直します(^^;</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3952'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3952
+  :user_name: dpp
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/433/
+  :language: Python
+  :time: 2007/11/13 13:17 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">ひねり無し。\r\npython bf.py -o hello.py hello.bf
+    \ みたいな感じで使います。</pre>\n\t"
+  :code: "import sys\nfrom getopt import getopt\n\ndef encode(bfcode):\n    depth
+    = code = 0\n    pycode = []\n    stack = []\n    \n    f = file(default['-o'],
+    'w')\n    \n    pycode.append('import sys')\n    pycode.append('tape, ptr, code
+    = {}, 0, 0')\n    \n    while code != len(bfcode):\n        c = bfcode[code]\n
+    \       \n        if c == '&gt;':\n            pycode.append('\\t' * depth + 'ptr
+    += 1')\n        elif c == '&lt;':\n            pycode.append('\\t' * depth + 'ptr
+    -= 1')\n        elif c == '+':\n            pycode.append('\\t' * depth + 'tape[ptr]
+    = tape.get(ptr, 0) + 1')\n        elif c == '-':\n            pycode.append('\\t'
+    * depth + 'tape[ptr] = tape.get(ptr, 0) - 1')\n        elif c == ',':\n            pycode.append('\\t'
+    * depth + 'tape[ptr] = sys.stdin.read(1)')\n        elif c == '.':\n            pycode.append('\\t'
+    * depth + 'sys.stdout.write(chr(tape.get(ptr, 0)))')\n        elif c == '[':\n
+    \           pycode.append('\\t' * depth + 'while tape.get(ptr, 0):')\n            stack.append(depth)\n
+    \           depth += 1\n        elif c == ']':\n            depth = stack.pop()\n
+    \       \n        code += 1\n    \n    file(default['-o'], 'w').write('\\n'.join(pycode))\n\n\nif
+    __name__ == '__main__':\n    default = {'-o': 'a.py'}\n    optlist, args = getopt(sys.argv[1:],
+    'o:', [])\n    if args:\n        default.update(optlist)\n        encode(''.join(file(args[0]).readlines()))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3953'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3953
+  :user_name: yohei
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/415/
+  :language: C
+  :time: 2007/11/13 13:29 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">簡単の為、標準出力を使用。</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n\nint main(int arg_c,
+    char **arg_v) {\n    FILE *fp;\n    int c;\n\n    if (*++arg_v == NULL) {\n        fprintf(stderr,
+    \"usage: bfc [source file]\\n\");\n        exit(EXIT_FAILURE);\n    }\n    if
+    ((fp = fopen(*arg_v, \"r\")) == NULL) {\n        fprintf(stderr, \"file open error.\\n\");\n
+    \       exit(EXIT_FAILURE);\n    }\n    \n    puts(\"#include &lt;stdio.h&gt;\");\n
+    \   puts(\"#include &lt;stdlib.h&gt;\");\n    puts(\"int main(void) {\");\n    puts(\"
+    char *s, *p;\");\n    puts(\" p = s = (char *)calloc(1024, 1);\");\n    \n    while
+    ((c = getc(fp)) != EOF) {\n        switch (c) {\n            case '&gt;': puts(\"
+    ++p;\"); break;\n            case '&lt;': puts(\" --p;\"); break;\n            case
+    '+': puts(\" ++*p;\"); break;\n            case '-': puts(\" --*p;\"); break;\n
+    \           case '.': puts(\" putchar(*p);\"); break;\n            case ',': puts(\"
+    *p = getchar();\"); break;\n            case '[': puts(\" while (*p) {\"); break;\n
+    \           case ']': puts(\" }\"); break;\n            default: break;\n        }\n
+    \   }\n    \n    puts(\" free(s);\");\n    puts(\"}\");\n    \n    fclose(fp);\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3954'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3954
+  :user_name: SiroKuro
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/540/
+  :language: 
+  :time: 2007/11/13 13:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  あ、ごめんなさい。yuin さんの仰るとおり、弾さんのブログを見ての疑問でした。弾さんのブログだと普通に実行してるみたいでしたので……。\r\nんで、トランスレートかな？コンパイルかな？実行かな？と迷ったので全部やってみた感じです。どれか１つはあってると思いたい
+    (^-^;;\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3955'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3955
+  :user_name: mtsuyugu
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/481/
+  :language: C
+  :time: 2007/11/13 13:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  出力のインデント処理と配列の長さを引数で調整できるようにしてみました。\r<br>./bf2c hello.bf &gt; hello.c\r<br>または\r<br>./bf2c hello.bf 128 &gt; hello.c\r<br>のように使います。\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+
+    char *code[] = { "sp++;", "sp--;", "(*sp)++;", "(*sp)--;", "putchar(*sp);",
+                     "*sp = getchar();", "while(*sp){", "}" };
+
+    int main( int argc, char *argv[] ){
+       int c,i,j,n=0;
+       int indent = 1;
+       int length;
+       FILE *fp;
+
+       if( argc &lt; 2 ){
+          fprintf(stderr,"Usage: %s sourcefile\n", argv[0] );
+          return EXIT_FAILURE;
+       }
+       if( (fp = fopen( argv[1], "r" )) == NULL ){
+          fprintf(stderr,"Error: %s cannot opened\n", argv[1] );
+          return EXIT_FAILURE;
+       }
+       if( !argv[2] || (length = atoi( argv[2] )) &lt;= 0 ){
+          length = 256;
+       }
+
+       puts("#include &lt;stdio.h&gt;");
+       puts("#include &lt;stdlib.h&gt;");
+       printf("#define DATA_LEN %d\n", length);
+       puts("char code[DATA_LEN];");
+       puts("int main (void){");
+       puts("   char *sp = code;");
+       while( (c=fgetc( fp )) != EOF ){
+          switch(c){
+          case '&gt;': i = 0; break;
+          case '&lt;': i = 1; break;
+          case '+': i = 2; break;
+          case '-': i = 3; break;
+          case '.': i = 4; break;
+          case ',': i = 5; break;
+          case '[': i = 6; indent++; break;
+          case ']': i = 7; indent--; break;
+          default:
+             /* skip other characters */
+             continue;
+          }
+          for( j = 0; j &lt; (indent+(i==6?-1:0)); j++ ){
+             printf("   ");
+          }
+          printf("%s\n", code[i] );
+       }
+       puts("   return EXIT_SUCCESS;");
+       puts("}");
+       fclose(fp);
+       return EXIT_SUCCESS;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3956'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3956
+  :user_name: kozima
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/11/13 13:55 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">コードをラベルと命令の列みたいなのにして、\r\nprog の中へ放り込みます。</pre>\n\t"
+  :code: |
+    (defun compile-bf (str &amp;optional (size 30000) (offset 0))
+      (let ((tags ()))
+        (flet ((translate (c)
+                 (case c
+                   (#\&gt; '((incf ptr)))
+                   (#\&lt; '((decf ptr)))
+                   (#\+ '((setf *ptr (logand (1+ *ptr) #xff))))
+                   (#\- '((setf *ptr (logand (1- *ptr) #xff))))
+                   (#\. '((write-char (code-char *ptr))))
+                   (#\, '((setf *ptr (char-code (read-char)))))
+                   (#\[ (let ((t1 (gensym)) (t2 (gensym)))
+                          (setf tags (list* t1 t2 tags))
+                          `(,t1 (if (= *ptr 0) (go ,t2)))))
+                   (#\] (let ((t1 (pop tags)) (t2 (pop tags)))
+                          `((if (/= *ptr 0) (go ,t1)) ,t2))))))
+          `(symbol-macrolet ((*ptr (aref array ptr)))
+             (prog ((array ,(make-array size :initial-element 0))
+                    (ptr ,offset))
+               ,@(loop for c across str append (translate c)))))))
+
+    ;;; test
+    (eval (compile-bf "+++++++++[&gt;++++++++&gt;+++++++++++&gt;+++++&lt;&lt;&lt;-]&gt;.&gt;++.
+    +++++++..+++.&gt;-.------------.&lt;++++++++.--------.+++.------.--------.&gt;+."))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3957'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3957
+  :user_name: dankogai
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/26/
+  :language: 
+  :time: 2007/11/13 14:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">はっきりしなくてごめんなさい。にしおさんが言う通り。\r\n\r\nコンパイラー(トランスレーター)\r\n
+    \ BF ====&gt; 言語A\r\n      言語A\r\n\r\nというのが本来の趣旨で、そしてBFの場合こちらの方が\r\n\r\nインタープリター(ランタイム)\r\n
+    \ BF =&gt; 言語Aで書かれた実行環境\r\n\r\nよりもずっと実装が簡単なので。\r\nちなみにLanguage::BFはどちらの機能も持っています。\r\n\r\nDan
+    the Brainf.cker</pre>\n\t"
+  :code: ''
+  :tags:
+  - BF
+  :references:
+    :url: 
+    :title: 
+- :id: '3960'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3960
+  :user_name: yuin
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/11/13 14:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">題意を読み間違えてたので。\r\n\r\nこっちのほうがかなり楽です。</pre>\n\t"
+  :code: |
+    import scala.io.Source.fromFile
+
+    object BFC{
+      def main(args:Array[String]) = {
+        if(args.size == 0){
+          println("Usage:scala BFC [sourcecode filename]")
+        }else{
+          println("""
+            object Machine {
+              final val MEM = 0xffffff
+              final val VAL = 0xff
+            }
+
+            class Machine{
+              var _p = 0
+              val _mem = new Array[int](Machine.MEM)
+              def p_=(v:int) = _p = v&amp;Machine.MEM
+              def p = _p
+              def mem_=(v:int) = _mem(p)=v&amp;Machine.VAL
+              def mem = _mem(p)
+
+              def eval = {
+          """)
+          val code = fromFile(args(0)).mkString("").toList
+          if(code.count('['==_) != code.count(']'==_)) {
+            error("Missing corresponding parenthesis.")
+          }
+          code.foreach(c=&gt;println(c match {
+            case '&gt;' =&gt; "p = p+1"
+            case '&lt;' =&gt; "p = p-1"
+            case '+' =&gt; "mem = mem+1"
+            case '-' =&gt; "mem = mem-1"
+            case '.' =&gt; "print(mem.asInstanceOf[char])"
+            case ',' =&gt; "mem = readChar.asInstanceOf[int]"
+            case '[' =&gt; "while(mem != 0){"
+            case ']' =&gt; "}"
+            case _   =&gt; ""
+          }))
+          println("}};(new Machine).eval;")
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3961'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3961
+  :user_name: dankogai
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/26/
+  :language: C
+  :time: 2007/11/13 14:30 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n<p>ケースが嫌いな私は、以下のように書き換えてしまいました。機能的には<a href=\"/web/20090527033636/http://ja.doukaku.org/comment/3955/\">#3955</a>と互換ですが、出力されたCコードのコンパイルには差し支えないのでインデントは省略しました。\n</p>\n<p>Dan
+    the Brainf.cker\n</p>\n\n\n\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n\nint main( int argc,
+    char *argv[] ){\n    int c;\n    char *code[256];\n    int length;\n    FILE *fp;\n\n
+    \   if( argc &lt; 2 ){\n        fprintf(stderr,\"Usage: %s sourcefile\\n\", argv[0]
+    );\n        return EXIT_FAILURE;\n    }\n    if( (fp = fopen( argv[1], \"r\" ))
+    == NULL ){\n        fprintf(stderr,\"Error: %s cannot opened\\n\", argv[1] );\n
+    \       return EXIT_FAILURE;\n    }\n    if( !argv[2] || (length = atoi( argv[2]
+    )) &lt;= 0 ){\n        length = 256;\n    }\n\n    for (c = 0; c &lt; 256; c++)
+    code[c] = NULL;\n    code['&gt;'] = \"sp++;\";\n    code['&lt;'] = \"sp--;\";\n
+    \   code['+'] = \"(*sp)++;\";\n    code['-'] = \"(*sp)--;\";\n    code['.'] =
+    \"putchar(*sp);\";\n    code[','] = \"*sp = getchar();\";\n    code['['] = \"while(*sp){\";\n
+    \   code[']'] = \"}\";\n\n    puts(\"#include &lt;stdio.h&gt;\");\n    puts(\"#include
+    &lt;stdlib.h&gt;\");\n    printf(\"#define DATA_LEN %d\\n\", length);\n    puts(\"char
+    code[DATA_LEN];\");\n    puts(\"int main (void){\");\n    puts(\"   char *sp =
+    code;\");\n    while( (c=fgetc( fp )) != EOF ) if (code[c]) printf(\"%s\\n\",
+    code[c]); \n    puts(\"   return EXIT_SUCCESS;\");\n    puts(\"}\");\n    fclose(fp);\n
+    \   return EXIT_SUCCESS;\n}\n"
+  :tags:
+  - BF
+  :references:
+    :url: 
+    :title: 
+- :id: '3962'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3962
+  :user_name: ぱみ
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/420/
+  :language: Ruby
+  :time: 2007/11/13 14:50 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">ひねりなし。\r\n配列の値がbyte型を越える場合についてはとりあえず考慮しない方向で…</pre>\n\t"
+  :code: "class BF\n  def compile(str)\n    depth = 0\n    code = []\n    code &lt;&lt;
+    \"mem = [0]\"\n    code &lt;&lt; \"ptr = 0\"\n    str.each_byte do |ch|   \n      if
+    ch == ?&gt;\n        code &lt;&lt; \"\\t\" * depth + \"ptr += 1; mem[ptr] = 0
+    if ptr &gt;= mem.size\"\n      elsif ch == ?&lt;\n        code &lt;&lt; \"\\t\"
+    * depth + \"(ptr == 0)? mem.unshift(0) : ptr -= 1\"\n      elsif ch == ?+\n        code
+    &lt;&lt; \"\\t\" * depth + \"mem[ptr] += 1\"\n      elsif ch == ?-\n        code
+    &lt;&lt; \"\\t\" * depth + \"mem[ptr] -= 1\"\n      elsif ch == ?.\n        code
+    &lt;&lt; \"\\t\" * depth + \"putc(mem[ptr])\"\n      elsif ch == ?,\n        code
+    &lt;&lt; \"\\t\" * depth + \"mem[ptr] = STDIN.getc\"\n      elsif ch == ?[\n        code
+    &lt;&lt; \"\\t\" * depth + \"while(mem[ptr] != 0) do\"\n        depth += 1\n      elsif
+    ch == ?]\n        depth -= 1\n        code &lt;&lt; \"\\t\" * depth + \"end\"\n
+    \     end\n    end\n   code.join \"\\n\"\n  end\nend\n\neval BF.new.compile(\"++++++++++[&gt;+++++++&gt;++++++++++&gt;+++&gt;+&lt;&lt;&lt;&lt;-]&gt;++.&gt;+.+++++++..+++.&gt;++.&lt;&lt;+++++++++++++++.&gt;.+++.------.--------.&gt;+.&gt;.\")
+    # =&gt; Hello World!\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3963'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3963
+  :user_name: dpp
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/433/
+  :language: diff
+  :time: 2007/11/13 15:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">自己ツッコミ。\r\nこのままだと\"～[]～\" のようなBFコードがあった際にwhile文のところで文法エラーを起こすので、\r\n']'が出た時にはpassをダミーで放り込んだ方がよさそうです。\r\n\r\n\r\nあと、最初間違えてインタプリタを書いてしまった名残で変なやり方になっていました。</pre>\n\t"
+  :code: "def encode(bfcode):\n-   depth = code = 0 \n+   depth = 0\n    pycode =
+    []\n    stack = []\n    \n    f = file(default['-o'], 'w')\n    \n    pycode.append('import
+    sys')\n-   pycode.append('tape, ptr, code = {}, 0, 0')\n+   pycode.append('tape,
+    ptr = {}, 0')\n    \n\n-     while code != len(bfcode):\n-        c = bfcode[code]\n+
+    \    for c in bfcode:\n        if c == '&gt;':\n            pycode.append('\\t'
+    * depth + 'ptr += 1')\n        elif c == '&lt;':\n            pycode.append('\\t'
+    * depth + 'ptr -= 1')\n        elif c == '+':\n            pycode.append('\\t'
+    * depth + 'tape[ptr] = tape.get(ptr, 0) + 1')\n        elif c == '-':\n            pycode.append('\\t'
+    * depth + 'tape[ptr] = tape.get(ptr, 0) - 1')\n        elif c == ',':\n            pycode.append('\\t'
+    * depth + 'tape[ptr] = sys.stdin.read(1)')\n        elif c == '.':\n            pycode.append('\\t'
+    * depth + 'sys.stdout.write(chr(tape.get(ptr, 0)))')\n        elif c == '[':\n
+    \           pycode.append('\\t' * depth + 'while tape.get(ptr, 0):')\n            stack.append(depth)\n
+    \           depth += 1\n        elif c == ']':\n+           pycode.append('\\t'
+    * depth + 'pass')\n            depth = stack.pop()\n\n-    code += 1\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3964'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3964
+  :user_name: naoya_t
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/348/
+  :language: awk
+  :time: 2007/11/13 15:54 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">久しぶりに投稿します。\r\n-v optimize=1 とするとオプティマイズされます（笑\r\n\r\nhelloworld.bf:\r\n++++++++++[&gt;+++++++&gt;++++++++++&gt;+++&gt;+&lt;&lt;&lt;&lt;-]\r\n&gt;++.&gt;+.+++++++..+++.&gt;++.&lt;&lt;+++++++++++++++.\r\n&gt;.+++.------.--------.&gt;+.&gt;.\r\n\r\n%
+    awk -f bf2awk.awk helloworld.bf &gt; helloworld.awk\r\n% awk -f helloworld.awk
+    \r\nHello World!\r\n\r\nhelloworld.awk:\r\nBEGIN {\r\n  ix = 0\r\n  st[ix]++\r\n
+    \ st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n
+    \ st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n  while (st[ix]) {\r\n    ix++\r\n    st[ix]++\r\n
+    \   st[ix]++\r\n    st[ix]++\r\n    st[ix]++\r\n    st[ix]++\r\n    st[ix]++\r\n
+    \   st[ix]++\r\n    ix++\r\n    st[ix]++\r\n    st[ix]++\r\n    st[ix]++\r\n    st[ix]++\r\n
+    \   st[ix]++\r\n    st[ix]++\r\n    st[ix]++\r\n    st[ix]++\r\n    st[ix]++\r\n
+    \   st[ix]++\r\n    ix++\r\n    st[ix]++\r\n    st[ix]++\r\n    st[ix]++\r\n    ix++\r\n
+    \   st[ix]++\r\n    ix--\r\n    ix--\r\n    ix--\r\n    ix--\r\n    st[ix]--\r\n
+    \ }\r\n  ix++\r\n  st[ix]++\r\n  st[ix]++\r\n  printf(\"%c\", st[ix])\r\n  ix++\r\n
+    \ st[ix]++\r\n  printf(\"%c\", st[ix])\r\n  st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n
+    \ st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n  printf(\"%c\", st[ix])\r\n
+    \ printf(\"%c\", st[ix])\r\n  st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n  printf(\"%c\",
+    st[ix])\r\n  ix++\r\n  st[ix]++\r\n  st[ix]++\r\n  printf(\"%c\", st[ix])\r\n
+    \ ix--\r\n  ix--\r\n  st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n
+    \ st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n
+    \ st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n  printf(\"%c\", st[ix])\r\n
+    \ ix++\r\n  printf(\"%c\", st[ix])\r\n  st[ix]++\r\n  st[ix]++\r\n  st[ix]++\r\n
+    \ printf(\"%c\", st[ix])\r\n  st[ix]--\r\n  st[ix]--\r\n  st[ix]--\r\n  st[ix]--\r\n
+    \ st[ix]--\r\n  st[ix]--\r\n  printf(\"%c\", st[ix])\r\n  st[ix]--\r\n  st[ix]--\r\n
+    \ st[ix]--\r\n  st[ix]--\r\n  st[ix]--\r\n  st[ix]--\r\n  st[ix]--\r\n  st[ix]--\r\n
+    \ printf(\"%c\", st[ix])\r\n  ix++\r\n  st[ix]++\r\n  printf(\"%c\", st[ix])\r\n
+    \ ix++\r\n  printf(\"%c\", st[ix])\r\n}\r\n\r\n% awk -v optimize=1 -f bf2awk.awk
+    helloworld.bf &gt; helloworld-optimized.awk\r\n% awk -f helloworld-optimized.awk
+    \r\nHello World!\r\n\r\nhelloworld-optimized.awk:\r\nBEGIN {\r\n  ix = 0\r\n  st[ix]
+    += 10\r\n  while (st[ix]) {\r\n    st[++ix]++\r\n    st[ix] += 6\r\n    st[++ix]++\r\n
+    \   st[ix] += 9\r\n    st[++ix]++\r\n    st[ix] += 2\r\n    st[++ix]++\r\n    ix
+    -= 4\r\n    st[ix]--\r\n  }\r\n  st[++ix]++\r\n  st[ix]++\r\n  printf(\"%c\",
+    st[ix])\r\n  st[++ix]++\r\n  printf(\"%c\", st[ix])\r\n  st[ix] += 7\r\n  printf(\"%c\",
+    st[ix])\r\n  printf(\"%c\", st[ix])\r\n  st[ix] += 3\r\n  printf(\"%c\", st[ix])\r\n
+    \ st[++ix]++\r\n  st[ix]++\r\n  printf(\"%c\", st[ix])\r\n  ix -= 2\r\n  st[ix]
+    += 15\r\n  printf(\"%c\", st[ix])\r\n  printf(\"%c\", st[++ix])\r\n  st[ix] +=
+    3\r\n  printf(\"%c\", st[ix])\r\n  st[ix] -= 6\r\n  printf(\"%c\", st[ix])\r\n
+    \ st[ix] -= 8\r\n  printf(\"%c\", st[ix])\r\n  st[++ix]++\r\n  printf(\"%c\",
+    st[ix])\r\n  printf(\"%c\", st[++ix])\r\n}\r\n</pre>\n\t"
+  :code: |
+    BEGIN {
+        read_buf = ""
+        if (optimize) reset_last()
+
+        indent = ""
+        indent_print("BEGIN {")
+
+        indent_incr()
+        indent_print("ix = 0")
+    }
+    {
+        gsub(/#.*$/,""); # comment
+        gsub(/[^\[\]&lt;&gt;+\-.,]/,""); if (/^$/) next
+
+        N = split($0, op, "")
+        for (i=1; i&lt;=N; i++) {
+            if (op[i] == "&gt;") {
+                if (optimize) {
+                    if (last_inst == "ix") {
+                        last_arg++
+                    } else {
+                        out_last()
+                        set_last("ix", 1)
+                    }
+                } else {
+                    indent_print("ix++")
+                }
+            } else if (op[i] == "&lt;") {
+                if (optimize) {
+                    if (last_inst == "ix") {
+                        last_arg--
+                    } else {
+                        out_last()
+                        set_last("ix", -1)
+                    }
+                } else {
+                    indent_print("ix--")
+                }
+            } else if (op[i] == "+") {
+                if (optimize) {
+                    if (last_inst == "st[ix]") {
+                        last_arg++
+                    } else {
+                        s = set_incr_decr("st[ix]")
+                        if (last_inst) out_last()
+                        set_last(s, 1)
+                    }
+                } else {
+                    indent_print("st[ix]++")
+                }
+            } else if (op[i] == "-") {
+                if (optimize) {
+                    if (last_inst == "st[ix]") {
+                        last_arg--
+                    } else {
+                        s = set_incr_decr("st[ix]")
+                        if (last_inst) out_last()
+                        set_last(s, -1)
+                    }
+                } else {
+                    indent_print("st[ix]--")
+                }
+            } else if (op[i] == ".") {
+                if (optimize) {
+                    s = set_incr_decr("printf(\"%c\", st[ix])")
+                    if (last_inst) out_last()
+                    indent_print(s)
+                } else {
+                    indent_print("printf(\"%c\", st[ix])")
+                }
+            } else if (op[i] == ",") {
+                if (optimize) {
+                    s = set_incr_decr("st[ix] = getchar()")
+                    if (last_inst) out_last()
+                    indent_print(s)
+                } else {
+                    indent_print("st[ix] = getchar()")
+                }
+            } else if (op[i] == "[") {
+                if (optimize) {
+                    s = set_incr_decr("while (st[ix]) {")
+                    if (last_inst) out_last()
+                    indent_print(s)
+                    indent_incr()
+                } else {
+                    indent_print("while (st[ix]) {")
+                    indent_incr()
+                }
+            } else if (op[i] == "]") {
+                if (optimize) out_last()
+                indent_decr()
+                indent_print("}")
+            } else {
+                ;
+            }
+        }
+    }
+    END {
+        if (optimize) out_last()
+        indent_decr()
+        indent_print("}")
+    }
+
+    function getchar(  ch)
+    {
+        if (read_buf ~ /^$/) getline read_buf
+        ch = substr(read_buf,1,1)
+        read_buf = substr(read_buf,2)
+        return ch
+    }
+    function indent_incr()
+    {
+        indent = "  " indent
+    }
+    function indent_decr()
+    {
+        indent = substr(indent, 3)
+    }
+    function indent_print(line)
+    {
+        print indent line
+    }
+    function set_last(inst,arg)
+    {
+        last_inst = inst
+        last_arg = arg
+    }
+    function reset_last()
+    {
+        last_inst = ""
+        last_arg = 0
+    }
+    function out_last(  diff)
+    {
+        if (last_inst ~ /ix/) {
+            if (last_arg &gt; 1)
+                diff = " += " last_arg
+            else if (last_arg == 1)
+                diff = "++"
+            else if (last_arg == 0)
+                diff = ""
+            else if (last_arg == -1)
+                diff = "--"
+            else if (last_arg &lt; -1)
+                diff = " -= " (0 - last_arg)
+
+            if (diff) indent_print(last_inst diff)
+        }
+        last_inst = ""
+    }
+    function set_incr_decr(s)
+    {
+        if (last_inst == "ix") {
+            if (last_arg == 1) { gsub(/ix/, "++ix", s); last_inst = "" }
+            else if (last_arg == -1) { gsub(/ix/, "--ix", s); last_inst = "" }
+        }
+        return s
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3965'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3965
+  :user_name: dankogai
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/26/
+  :language: Ruby
+  :time: 2007/11/13 16:13 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <pre class=\"compact\">これまたif文の羅列を置き換える方向で書き換えてみました。\r\nCと違ってHashが気軽に使えるのがうれしい。\r\nnext
+    unless が使えるのもPerl Mongerとしてはうれしい。\r\n    str.unpack(\"C*\").map{|c| c.chr}.each
+    do |ch|\r\nは、単に{}とdo endを両方使ってみたかったから。\r\nDan the Occasional Rubyist</pre>\n\t"
+  :code: |
+    class BF
+      @@opcode = {
+        '&gt;' =&gt; "ptr += 1; mem[ptr] = 0 if ptr &gt;= mem.size",
+        '&lt;' =&gt; "(ptr == 0)? mem.unshift(0) : ptr -= 1",
+        '+' =&gt; "mem[ptr] += 1",
+        '-' =&gt; "mem[ptr] -= 1",
+        '.' =&gt; "putc(mem[ptr])",
+        ',' =&gt; "mem[ptr] = STDIN.getc",
+        '[' =&gt; "while(mem[ptr] != 0) do",
+        ']' =&gt; "end"
+      }
+      def compile(str)
+        code = ["mem = [0]", "ptr = 0"]
+        str.unpack("C*").map{|c| c.chr}.each do |ch|
+          next unless @@opcode[ch]
+          code &lt;&lt; @@opcode[ch]
+        end
+       code.join "\n"
+      end
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3966'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3966
+  :user_name: sumim
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/11/13 16:15 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Squeak Smalltalk で。\n\t"
+  :code: |
+    | bf st op in |
+    bf := FileStream fileNamed: 'hello.bf'.
+    in := FileStream fileNamed: 'in.txt'.
+    in binary.
+    st := WriteStream with: '| ss | ss := ReadWriteStream with: #(0). ss reset'.
+    [(op := bf next) notNil] whileTrue: [
+        st nextPutAll: (op caseOf: {
+            [$&gt;] -&gt; ['. ss next. ss atEnd ifTrue: [ss nextPut: 0; back]'].
+            [$&lt;] -&gt; ['. ss back'].
+            [$+] -&gt; ['. ss nextPut: ss peek + 1; back'].
+            [$-] -&gt; ['. ss nextPut: ss peek - 1; back'].
+            [$.] -&gt; ['. Transcript show: (ss peek asCharacter)'].
+            [$,] -&gt; ['. ss nextPut: ', in next printString,' value; back'].
+            [$[] -&gt; ['. [ss peek isZero] whileFalse: ['].
+            [$]] -&gt; [']']} otherwise: [''])].
+    bf close.  in close.
+    World findATranscript: nil.
+    Compiler evaluate: st contents
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '3968'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3968
+  :user_name: ぱみ
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/420/
+  :language: 
+  :time: 2007/11/13 16:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">おぉ、なるほど。勉強になります。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3969'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3969
+  :user_name: dankogai
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/26/
+  :language: Other
+  :time: 2007/11/13 16:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>a2p的にもきれいなawkコードを吐きますねwww\n</p>\n<p>Dan the Cyberpolyglot\n</p>\n\n\n\n\t"
+  :code: |
+    % awk -f bfcc.awk helloworld.bf | a2p | perl
+    Hello, World!
+  :tags:
+  - a2p
+  - mutilingual
+  :references:
+    :url: 
+    :title: 
+- :id: '3972'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3972
+  :user_name: naoya_t
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/348/
+  :language: awk
+  :time: 2007/11/13 16:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">optimize=1 の時に while(st[ix]) の直前に ix++ や ix--
+    が来ると while(st[++ix]) のように誤ったオプティマイズが行われるバグを修正</pre>\n\t"
+  :code: |
+    --- bf2awk.awk.orig    2007-11-14 00:43:07.000000000 +0900
+    +++ bf2awk.awk    2007-11-14 01:46:46.000000000 +0900
+    @@ -77,15 +77,9 @@
+                     indent_print("st[ix] = getchar()")
+                 }
+             } else if (op[i] == "[") {
+    -            if (optimize) {
+    -                s = set_incr_decr("while (st[ix]) {")
+    -                if (last_inst) out_last()
+    -                indent_print(s)
+    -                indent_incr()
+    -            } else {
+    -                indent_print("while (st[ix]) {")
+    -                indent_incr()
+    -            }
+    +            if (optimize) out_last()
+    +            indent_print("while (st[ix]) {")
+    +            indent_incr()
+             } else if (op[i] == "]") {
+                 if (optimize) out_last()
+                 indent_decr()
+  :tags:
+  - bugfix
+  :references:
+    :url: 
+    :title: 
+- :id: '3975'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3975
+  :user_name: naoya_t
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/348/
+  :language: awk
+  :time: 2007/11/13 17:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">オプティマイズ時に\r\n++ix\r\nst[ix]++\r\nst[ix]++\r\nst[ix]++\r\nが\r\nst[++ix]++\r\nst[ix]
+    += 2\r\nとなっていたのを\r\nst[++ix] += 3\r\nのようにちゃんとまとめるように修正するパッチ</pre>\n\t"
+  :code: |
+    --- bf2awk.awk.orig    2007-11-14 00:43:07.000000000 +0900
+    +++ bf2awk.awk    2007-11-14 01:55:50.000000000 +0900
+    @@ -38,7 +38,7 @@
+                 }
+             } else if (op[i] == "+") {
+                 if (optimize) {
+    -                if (last_inst == "st[ix]") {
+    +                if (last_inst ~ /^st\[/) {
+                         last_arg++
+                     } else {
+                         s = set_incr_decr("st[ix]")
+    @@ -50,7 +50,7 @@
+                 }
+             } else if (op[i] == "-") {
+                 if (optimize) {
+    -                if (last_inst == "st[ix]") {
+    +                if (last_inst ~ /^st\[/) {
+                         last_arg--
+                     } else {
+                         s = set_incr_decr("st[ix]")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3976'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3976
+  :user_name: dankogai
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/26/
+  :language: Brainf
+  :time: 2007/11/13 17:00 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n<p>BFによるBFコンパイラーは、これほど簡単です:-)\n</p>\n<p>種明かしは、<a href=\"/web/20090527033636/http://en.wikipedia.org/wiki/Brainfuck#Trivial\">こちら</a>。\n</p>\n<p>本来であれば、<code>,[.,]</code>でもOKなのですが、これだとEOFが処理できません。\n</p>\n<p>Dan
+    the Brainf.cker\n</p>\n\n\n\n\t"
+  :code: |
+    ,+[-.,+]
+  :tags:
+  - BF
+  :references:
+    :url: 
+    :title: 
+- :id: '3977'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3977
+  :user_name: dankogai
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/26/
+  :language: Python
+  :time: 2007/11/13 17:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>これまたifの羅列をHashに置き換え。ただし、pythonの場合、<code>[]</code>は少し特別扱いが必要。こちらはindent不要とは行かないので。\n
+    \  あと、関数名やインターフェースも好みにあわせて変えました。\n</p>\n<p>Dan the Novice Snake Tamer\n</p>\n\n\n\n\t"
+  :code: "#!/usr/bin/env python\nimport sys\nfrom getopt import getopt\n\ndef bf2py(bfcode):\n
+    \   depth = 0\n    opcode = {\n        '&gt;':'ptr += 1',\n        '&lt;':'ptr
+    -= 1',\n        '+':'tape[ptr] = tape.get(ptr, 0) + 1',\n        '-':'tape[ptr]
+    = tape.get(ptr, 0) - 1',\n        ',':'tape[ptr] = sys.stdin.read(1)',\n        '.':'sys.stdout.write(chr(tape.get(ptr,
+    0)))',\n        '[':'while tape.get(ptr, 0):',\n        ']':'pass'\n    }\n    pycode
+    = []\n    stack = []\n    \n    pycode.append('import sys')\n    pycode.append('tape,
+    ptr = {}, 0')\n    \n    for c in bfcode:\n        if opcode.has_key(c):\n            pycode.append(
+    '\\t' * depth + opcode[c])\n            if c == '[':\n                stack.append(depth)\n
+    \               depth += 1\n            elif c == ']':\n                depth
+    = stack.pop()\n     \n    return '\\n'.join(pycode)\n\nif __name__ == '__main__':\n
+    \   defout = 'a.py'\n    optlist, args = getopt(sys.argv[1:], 'o:', [])\n    if
+    args:\n        pysrc = bf2py(''.join(file(args[0]).readlines()));\n        file(defout
+    or ops['-o'], 'w').write(pysrc)\n"
+  :tags:
+  - BF
+  :references:
+    :url: 
+    :title: 
+- :id: '3978'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3978
+  :user_name: naoya_t
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/348/
+  :language: awk
+  :time: 2007/11/13 17:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">うう駄目だ、getchar() の定義が出力されないので、#3976の ,+[-.,+]
+    をコンパイルしても動かない。\r\nしかも getchar() が文字コードを返すようになってない。ord() を実装。\r\n全面書き換え。\r\n\r\na2pをかましても動くように
+    getline, index 回りを微調整。</pre>\n\t"
+  :code: |
+    BEGIN {
+        if (optimize) reset_last()
+
+        indent = ""
+        print "BEGIN {"
+
+        indent_incr()
+        indent_print("read_buf = \"\"")
+        indent_print("ix = 0")
+    }
+    {
+        gsub(/#.*$/,""); # comment
+        gsub(/[^\[\]&lt;&gt;+\-.,]/,""); if (/^$/) next
+
+        N = split($0, op, "")
+        for (i=1; i&lt;=N; i++) {
+            if (op[i] == "&gt;") {
+                if (optimize) {
+                    if (last_inst == "ix") {
+                        last_arg++
+                    } else {
+                        out_last()
+                        set_last("ix", 1)
+                    }
+                } else {
+                    indent_print("ix++")
+                }
+            } else if (op[i] == "&lt;") {
+                if (optimize) {
+                    if (last_inst == "ix") {
+                        last_arg--
+                    } else {
+                        out_last()
+                        set_last("ix", -1)
+                    }
+                } else {
+                    indent_print("ix--")
+                }
+            } else if (op[i] == "+") {
+                if (optimize) {
+                    if (last_inst ~ /^st\[/) {
+                        last_arg++
+                    } else {
+                        s = set_incr_decr("st[ix]")
+                        if (last_inst) out_last()
+                        set_last(s, 1)
+                    }
+                } else {
+                    indent_print("st[ix]++")
+                }
+            } else if (op[i] == "-") {
+                if (optimize) {
+                    if (last_inst ~ /^st\[/) {
+                        last_arg--
+                    } else {
+                        s = set_incr_decr("st[ix]")
+                        if (last_inst) out_last()
+                        set_last(s, -1)
+                    }
+                } else {
+                    indent_print("st[ix]--")
+                }
+            } else if (op[i] == ".") {
+                if (optimize) {
+                    s = set_incr_decr("printf(\"%c\", st[ix])")
+                    if (last_inst) out_last()
+                    indent_print(s)
+                } else {
+                    indent_print("printf(\"%c\", st[ix])")
+                }
+            } else if (op[i] == ",") {
+                if (optimize) {
+                    s = set_incr_decr("st[ix] = getchar()")
+                    if (last_inst) out_last()
+                    indent_print(s)
+                } else {
+                    indent_print("st[ix] = getchar()")
+                }
+            } else if (op[i] == "[") {
+                if (optimize) {
+                    s = set_incr_decr("while (st[ix]) {")
+                    if (last_inst) out_last()
+                    indent_print(s)
+                    indent_incr()
+                } else {
+                    indent_print("while (st[ix]) {")
+                    indent_incr()
+                }
+            } else if (op[i] == "]") {
+                if (optimize) out_last()
+                indent_decr()
+                indent_print("}")
+            } else {
+                ;
+            }
+        }
+    }
+    END {
+        if (optimize) out_last()
+        indent_decr()
+        indent_print("}")
+
+        print "function getchar(  ch)"
+        print "{"
+        print "  if (read_buf ~ /^$/) {"
+        print "    if (eof) return -1"
+    #    print "    if ((getline read_buf) &lt; 1) { eof = 1; return -1 }"
+        print "    if (getline != 1) { eof = 1; return -1 }" # a2p
+        print "    read_buf = $0" # a2p
+        print "  }"
+        print "  ch = ord(substr(read_buf,1,1))"
+        print "  read_buf = substr(read_buf,2)"
+        print "  return ch"
+        print "}"
+
+        print "function ord(ch, ofs)"
+        print "{"
+        print "  if (ch == \"\\t\") return 9"
+        print "  if (ch == \"\\n\") return 13"
+    #    print "  ofs = index(\" !\\\"#$%&amp;'()*+,-./0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\", ch)"
+        print "  if (ch == \"@\") return 64" # a2p
+        print "  ofs = index(\" !\\\"#$%&amp;'()*+,-./0123456789:;&lt;=&gt;?.ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\", ch)" # a2p
+        print "  return ofs ? 31 + ofs : 0"
+        print "}"
+    }
+
+    function indent_incr()
+    {
+        indent = "  " indent
+    }
+    function indent_decr()
+    {
+        indent = substr(indent, 3)
+    }
+    function indent_print(line)
+    {
+        print indent line
+    }
+    function set_last(inst,arg)
+    {
+        last_inst = inst
+        last_arg = arg
+    }
+    function reset_last()
+    {
+        last_inst = ""
+        last_arg = 0
+    }
+    function out_last(  diff)
+    {
+        if (last_inst ~ /ix/) {
+            if (last_arg &gt; 1)
+                diff = " += " last_arg
+            else if (last_arg == 1)
+                diff = "++"
+            else if (last_arg == 0)
+                diff = ""
+            else if (last_arg == -1)
+                diff = "--"
+            else if (last_arg &lt; -1)
+                diff = " -= " (0 - last_arg)
+
+            if (diff) indent_print(last_inst diff)
+        }
+        last_inst = ""
+    }
+    function set_incr_decr(s)
+    {
+        if (last_inst == "ix") {
+            if (last_arg == 1) { gsub(/ix/, "++ix", s); last_inst = "" }
+            else if (last_arg == -1) { gsub(/ix/, "--ix", s); last_inst = "" }
+        }
+        return s
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3981'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3981
+  :user_name: matyr
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/11/13 22:13 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  処理系間の差を吸収するため，入出力用の関数を受け取る関数を生成。\n\t"
+  :code: |
+    function BF(code){
+      var s = '', o = {
+        '&gt;': 'm[p+=?]|=0;',
+        '&lt;': 'm[p-=?]|=0;',
+        '+': 'm[p]+=?;',
+        '-': 'm[p]-=?;',
+        ',': 'm[p]=get().charCodeAt(0);',
+        '.': 'put(c(m[p]));',
+        '[': 'while(m[p]){',
+        ']': '}' };
+      code.replace(/&gt;+|&lt;+|\++|-+|([,.[\]])/g, function($, _){
+        s += _ ? o[$] : o[$.charAt(0)].replace('?', $.length) });
+      return eval('0,function(get,put){var m=[0],p=0,c=String.fromCharCode;'+ s +'}');
+    }
+    /// Rhinoで「hello world」のテスト ///
+    BF('++++++++++[&gt;+++++++&gt;++++++++++&gt;+++&gt;+&lt;&lt;&lt;&lt;-]\
+        &gt;++.&gt;+.+++++++..+++.&gt;++.&lt;&lt;+++++++++++++++.&gt;.+++.------.--------.&gt;+.&gt;.'
+    )(function(){ return '?' }, function(c){ java.lang.System.out.print(c) });
+
+    /// WSHで「echo」のテスト ///
+    //BF(',+[-.,+]')(function(){ return WSH.stdIn.read(1) }, function(c){ WSH.stdOut.write(c) });
+  :tags:
+  - Rhino
+  - WSH
+  :references:
+    :url: 
+    :title: 
+- :id: '3983'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3983
+  :user_name: mad
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/418/
+  :language: Haskell
+  :time: 2007/11/14 03:42 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <pre class=\"compact\">あまり綺麗なコードではないですが...。\r\nメモリは左右に伸びる無限リストで表現しました。\r\n\r\n&gt;=&gt;演算子
+    (Kleisli composition)は非常に便利です。\r\nGHC6.8で新しく追加されましたが,一応定義を書きました。</pre>\n\t"
+  :code: "import Data.List\nimport System.Environment\n\nputCode '&gt;' = putStr \"incP
+    &gt;=&gt; \"\nputCode '&lt;' = putStr \"decP &gt;=&gt; \"\nputCode '+' = putStr
+    \"inc &gt;=&gt; \" \nputCode '-' = putStr \"dec &gt;=&gt; \" \nputCode '.' = putStr
+    \"put &gt;=&gt; \" \nputCode ',' = putStr \"get &gt;=&gt; \" \nputCode '[' = putStr
+    \"loop(\"\nputCode ']' = putStr \"return) &gt;=&gt; \"\n\ngenCode source \n    =
+    do putStr \"runBF = \"\n         mapM_ putCode (source `intersect` \"&gt;&lt;+-.,[]\")\n
+    \        putStrLn \"return\"\n\nmain = do\n    source &lt;- readFile . head =&lt;&lt;
+    getArgs\n\n    putStrLn \"import Data.Char\"\n    putStrLn \"(&gt;=&gt;) m1 m2
+    = \\\\s -&gt; m1 s &gt;&gt;= m2\"\n    putStrLn \"incP (ps, n:ns)    = return
+    (n:ps, ns)\"\n    putStrLn \"decP (p:ps, ns)    = return (ps, p:ns)\"\n    putStrLn
+    \"inc (ps, n:ns)     = return (ps, n+1:ns)\"\n    putStrLn \"dec (ps, n:ns)     =
+    return (ps, n-1:ns)\"\n    putStrLn \"put mem@(_, n:_)   = putChar (chr n) &gt;&gt;
+    return mem\"\n    putStrLn \"get mem@(ps, _:ns) = getChar &gt;&gt; (\\\\c -&gt;
+    return (ps, ord c:ns))\"\n    putStrLn \"loop code mem@(_, 0:_) = return mem\"\n
+    \   putStrLn \"loop code mem = code mem &gt;&gt;= loop code\"\n    genCode source\n
+    \   putStrLn \"main = runBF ([0,0..], [0,0..])\"\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3984'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3984
+  :user_name: herumi
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/564/
+  :language: C
+  :time: 2007/11/14 03:54 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  C++→Cの変化球．\r\n\r\nXbyakを使ってオブジェクトコードを出力．\r\n./bf hello.bf\r\nなら即実行\r\n./bf
+    hello.bf 1 &gt; a.c\r\nでx86 32bit用Cコードを生成します．これでも32bit x86ならMac/Win/Linuxで動作します．\r\ngccの場合は-fno-operator-namesをつけてコンパイルしてください．\r\n\n\t"
+  :code: "/*\n    出力例\n#include &lt;stdio.h&gt;\nstatic int stack[32768];\nstatic
+    const unsigned char code[] = {\n0x55,0x56,0x57,0x8b,0x74,0x24,0x10,0x8b,0x7c,0x24,0x14,0x8b,0x6c,0x24,0x18,0x83,\n...\n};\nmain()\n{\n
+    \   ((void (*)(void*, void*, int *))code)((void*)putchar, (void*)getchar, stack);\n}\n\n*/\n#include
+    \"xbyak/xbyak.h\"\n#include &lt;stdio.h&gt;\n#include &lt;stack&gt;\n#include
+    &lt;fstream&gt;\n\nstruct Brainfuck : public Xbyak::CodeGenerator {\n    Brainfuck(std::istream&amp;
+    is) : CodeGenerator(10000)\n    {\n        push(ebp); // stack\n        push(esi);\n
+    \       push(edi);\n        const int _P = 4 * 3;\n        mov(esi, ptr[esp +
+    _P + 4]);\n        mov(edi, ptr[esp + _P + 8]);\n        mov(ebp, ptr[esp + _P
+    + 12]);\n        int labelNo = 0;\n        std::stack&lt;int&gt; keepLabelNo;\n
+    \       char label[32];\n        char c;\n        while (is &gt;&gt; c) {\n            switch
+    (c) {\n            case '+': inc(dword [ebp]); break;\n            case '-': dec(dword
+    [ebp]); break;\n            case '.': push(dword [ebp]); call(esi); pop(eax);
+    break;\n            case ',': call(edi); mov(dword [ebp], eax); break;\n            case
+    '&gt;': add(ebp, 4); break;\n            case '&lt;': sub(ebp, 4); break;\n            case
+    '[':\n                sprintf(label, \"B%d\", labelNo); L(label);\n                mov(eax,
+    dword [ebp]);\n                test(eax, eax);\n                sprintf(label,
+    \"F%d\", labelNo); jz(label, T_NEAR);\n                keepLabelNo.push(labelNo++);\n
+    \               break;\n            case ']':\n                {\n                    int
+    no = keepLabelNo.top(); keepLabelNo.pop();\n                    sprintf(label,
+    \"B%d\", no); jmp(label);\n                    sprintf(label, \"F%d\", no); L(label);\n
+    \               }\n                break;\n            default:\n                break;\n
+    \           }\n        }\n        pop(edi);\n        pop(esi);\n        pop(ebp);\n
+    \       ret();\n    }\n};\n\nvoid dump(const Xbyak::uint8 *code, size_t size)\n{\n
+    \   puts(\"#include &lt;stdio.h&gt;\\nstatic int stack[32768];\\nstatic const
+    unsigned char code[] = {\");\n    for (size_t i = 0; i &lt; size; i++) {\n        printf(\"0x%02x,\",
+    code[i]); if ((i % 16) == 15) putchar('\\n');\n    }\n    puts(\"\\n};\");\n#ifdef
+    __linux__\n    puts(\"#include &lt;unistd.h&gt;\");\n    puts(\"#include &lt;sys/mman.h&gt;\");\n#endif\n
+    \   puts(\"main()\\n{\");\n#ifdef __linux__\n    puts(\"\\tlong pageSize = sysconf(_SC_PAGESIZE)
+    - 1;\");\n    puts(\"\\tmprotect((void*)code, (sizeof(code) + pageSize) &amp;
+    ~pageSize, PROT_READ | PROT_EXEC);\");\n#endif\n    puts(\n        \"\\t((void
+    (*)(void*, void*, int *))code)((void*)putchar, (void*)getchar, stack);\\n\"\n
+    \       \"}\"\n    );\n}\n\nint main(int argc, char *argv[])\n{\n    if (argc
+    == 1) {\n        fprintf(stderr, \"bf filename.bf [0|1]\\n\");\n        return
+    1;\n    }\n    std::ifstream ifs(argv[1]);\n    int mode = argc == 3 ? atoi(argv[2])
+    : 0; \n    Brainfuck bf(ifs);\n    if (mode == 0) {\n        static int stack[32768];\n
+    \       ((void (*)(void*, void*, int *))bf.getCode())((void*)putchar, (void*)getchar,
+    stack);\n    } else {\n        dump(bf.getCode(), bf.getSize());\n    }\n    return
+    0;\n}\n"
+  :tags:
+  - Xbyak,asm
+  :references:
+    :url: /web/20090527033636/http://homepage1.nifty.com/herumi/soft/xbyak.html
+    :title: Xbyak
+- :id: '3986'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3986
+  :user_name: nobsun
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/11/14 04:19 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <div class=\"section\">\n<p>仮想機械(機械状態とインストラクションセット)を明示的に定義した．\r</p>\n<p>機械状態は，プログラムカウンタのスタック，プログラムカウンタ，ヒープ，ヒープポインタの4つ組み．インストラクションはBFのインストラクションに対応する.\r</p>\n<p>\r</p>\n<ul>\n<li>\n
+    '&gt;' → incp\r\n</li>\n<li>\n '&lt;' → decp\r\n</li>\n<li>\n '+' → incp\r\n</li>\n<li>\n
+    '-' → decc\r\n</li>\n<li>\n '.' → putc\r\n</li>\n<li>\n ',' → getc\r\n</li>\n<li>\n
+    ']' → jmpb\r\n</li>\n<li> '[' → jmpf &lt;PC&gt;\r</li>\n</ul>\n<p>\r</p>\n<p>jmpf
+    以外はオペランドのないインストラクション．jmpfは飛び先をオペランドとする．\r</p>\n<p> % runghc bfc.hs hello_world\r</p>\n<p>とやるとhello_world.bというBFコードファイルを読み，インストラクション列をbfrts.templというランタイムテンプレートの最後に追加して，hello_world.hsというHaskellのファイルを作成する．上のhello_world.bをコンパイルしてできたインストラクション列は，\r</p>\n<p>\r</p>\n<p>codeL
+    :: [Instruction]\r</p>\n<p>codeL = [incc,incc,incc,incc,incc,incc,incc,incc,jmpf
+    22,incp,incc,incc,incc,incc,incc,incc,incc,incc,incc,decp,decc,jmpb,incp,putc,decp,incc,incc,incc,incc,incc,jmpf
+    41,incp,incc,incc,incc,incc,incc,incc,decp,decc,jmpb,incp,decc,putc,incc,incc,incc,incc,incc,incc,incc,putc,putc,incc,incc,incc,putc,decp,incc,incc,incc,incc,incc,incc,incc,incc,jmpf
+    77,incp,incp,incc,incc,incc,incc,decp,decp,decc,jmpb,incp,incp,putc,decp,decp,incc,incc,incc,incc,jmpf
+    97,incp,decc,decc,decc,decc,decc,decc,decp,decc,jmpb,incp,putc,decp,incc,incc,incc,incc,jmpf
+    115,incp,incc,incc,incc,incc,incc,incc,decp,decc,jmpb,incp,putc,incc,incc,incc,putc,decc,decc,decc,decc,decc,decc,putc,decc,decc,decc,decc,decc,decc,decc,decc,putc,incp,incc,putc]\r</p>\n<p>\r</p>\n<p>で，これがbfrts.templの最後の追加されて
+    hello_world.hs が出きる．\r</p>\n</div>\n\t"
+  :code: "-- bfc.hs : BF コンパイラ ---------------------------------------------------\nmodule
+    Main where\n\nimport Data.Char\nimport Data.List\nimport System.IO\nimport System.Environment\n\nmain
+    = do { args &lt;- getArgs\n          ; case args of\n              []  -&gt; runcompiler
+    stdin stdout\n              s:_ -&gt; do { ih &lt;- openFile (s++\".b\") ReadMode\n
+    \                       ; oh &lt;- openFile (s++\".hs\") WriteMode\n                        ;
+    runcompiler ih oh\n                        }\n          }\n\nruncompiler ih oh
+    =\n do { cs &lt;- hGetContents ih\n    ; let cs' = zip [0..] $ filter (not . isSpace)
+    cs\n    ; outputCode oh $ compile cs'\n    }\n\ncompile [] = []\ncompile (c:cs)
+    = case c of\n  (_,'&gt;') -&gt; \"incp\" : compile cs\n  (_,'&lt;') -&gt; \"decp\"
+    : compile cs\n  (_,'+') -&gt; \"incc\" : compile cs\n  (_,'-') -&gt; \"decc\"
+    : compile cs\n  (_,'.') -&gt; \"putc\" : compile cs\n  (_,',') -&gt; \"getc\"
+    : compile cs\n  (_,']') -&gt; \"jmpb\" : compile cs\n  (_,'[') -&gt; (\"jmpf \"++show
+    pc) : compile cs\n               where pc = findpc [] cs\n  _       -&gt; error
+    \"invalid input\"\n\nfindpc s []     = error \"syntax error\"\nfindpc s (c:cs)
+    = case c of\n  (_,'[') -&gt; findpc ('[':s) cs\n  (p,']') -&gt; case s of\n               []
+    -&gt; p+1\n               _  -&gt; findpc (tail s) cs\n  _       -&gt; findpc
+    s cs\n\noutputCode h s \n = do { hd &lt;- readFile \"bfrts.tmpl\"\n      ; hPutStrLn
+    h hd\n      ; hPutStrLn h \"codeL :: [Instruction]\"\n      ; hPutStr h \"codeL
+    = [\"\n      ; hPutStr h (concat (intersperse \",\" s))\n      ; hPutStr h \"]\\n\"\n
+    \     }\n\n-- bfrts.templ : ランタイムテンプレート -------------------------------------\n\nmodule
+    Main where\n\nimport Control.Monad.State\nimport Data.Array as A\nimport Data.Char\nimport
+    Data.IntMap as M\nimport Debug.Trace\n\ntype PC      = Int\ntype Code    = Array
+    PC Instruction\ntype Heap    = M.IntMap Char\ntype Stack   = [PC]\ntype Pointer
+    = Int\ntype VM   = (Stack,PC,Heap,Pointer)\n\ntype Instruction = VM -&gt; StateT
+    VM IO ()\n\ntop = head\npop = tail\npush = (:)\n\n-- initial machine state\n\niStat
+    = ([],0,M.fromList $ zip [0..29999] (repeat $ chr 0),0)\n\n-- instruction set\n\nincp,decp,incc,decc,putc,getc,jmpb
+    :: Instruction\njmpf :: PC -&gt; Instruction\nincp (s,c,h,p) = put (s,succ c,h,succ
+    p)\ndecp (s,c,h,p) = put (s,succ c,h,pred p)\nincc (s,c,h,p) = put (s,succ c,M.update
+    (Just . succ) p h,p)\ndecc (s,c,h,p) = put (s,succ c,M.update (Just . pred) p
+    h,p)\nputc (s,c,h,p) = liftIO (putChar (h M.! p)) &gt;&gt; put (s,succ c,h,p)\ngetc
+    (s,c,h,p) = liftIO (getChar &gt;&gt;= \\ ch -&gt; return (s,succ c,M.update (const
+    (Just ch)) p h,p)) &gt;&gt;= put\njmpb (s,c,h,p) = if h M.! p == chr 0 then put
+    (pop s,succ c,h,p) else put (s,top s,h,p)\njmpf pc (s,c,h,p) = if h M.! p == chr
+    0 then put (s,pc,h,p) else put (push (succ c) s,succ c,h,p)\n\n-- run compiled
+    bf code\n             \nmain :: IO ()\nmain = evalStateT execute iStat &gt;&gt;
+    putStrLn \"\"\n\nrun = do { stat@(s,c,h,p) &lt;- get\n         ; if inRange (bounds
+    code) c then (code A.! c) stat &gt;&gt; run\n           else return () \n         }\n\ncode
+    :: Code \ncode = listArray (0,length codeL - 1) codeL\n\n-- この下にコンパイル済みの codeL
+    :: [Instruction] が追加される\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3988'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3988
+  :user_name: にしお
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2007/11/14 04:32 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>せっかくなので++++がbf.inc(4)に置き換わるような設計にしてみました。</p>\n<p>この程度の規模なら正規表現でも十分いけるんじゃないかと思いつつ勉強がてらにlexとyaccを使いました。</p>\n<p><strong>PLY
+    (Python Lex-Yacc)</strong></p>\n<ul class=\"simple\">\n<li><a class=\"reference\"
+    href=\"/web/20090527033636/http://www.dabeaz.com/ply/ply.html\">http://www.dabeaz.com/ply/ply.html</a></li>\n<li><a
+    class=\"reference\" href=\"/web/20090527033636/http://www.dabeaz.com/ply/\">http://www.dabeaz.com/ply/</a></li>\n</ul>\n<p>あとインデントうんぬんを考慮しないといけないのはそもそも直接while文を使うからなので式で表現しました。</p>\n<p>,+[-.,+]を入力するとbf.get()or
+    bf.inc(1)or bf.loop(lambda: bf.inc(-1)or bf.put()or bf.get()or bf.inc\n(1))と出力されます。</p>\n<p>下のFizzBuzzコードを食わせると2638バイトの出力で、処理時間はあっという間でした。\n<a
+    class=\"reference\" href=\"/web/20090527033636/http://d.hatena.ne.jp/n_shuyo/20070516/fizzbuzz\">http://d.hatena.ne.jp/n_shuyo/20070516/fizzbuzz</a></p>\n\n\t"
+  :code: "from ply import lex, yacc\nimport sys\n\n# lex\ntokens = \"PLUS MINUS LEFT
+    RIGHT WHILE WEND PUT GET COMMENT\".split()\n\nt_WHILE = \"\\[\"\nt_WEND = \"]\"\nt_PUT
+    = \"\\.\"\nt_GET = \",\"\n\ndef t_PLUS(t):\n    \"\\++\"\n    t.value = len(t.value)\n
+    \   return t\n\ndef t_MINUS(t):\n    \"-+\"\n    t.value = len(t.value)\n    return
+    t\n\ndef t_LEFT(t):\n    \"&lt;+\"\n    t.value = len(t.value)\n    return t\n\ndef
+    t_RIGHT(t):\n    \"&gt;+\"\n    t.value = len(t.value)\n    return t\n\ndef t_COMMENT(t):\n
+    \   '[^[\\]&gt;&lt;+-,.]' # return nothing\n\ndef t_error(t): pass\n    \n# yacc\n\"\"\"***
+    grammar definition\nsequence : sequence command\n         | command\n\ncommand
+    : PLUS\n        | MINUS\n        | LEFT\n        | RIGHT\n        | PUT\n        |
+    GET\n        | loop\n\nloop : WHILE sequence WEND\n\"\"\"\n\ndef p_sequence(p):\n
+    \   \"sequence : sequence command\"\n    p[0] = p[1] + \"or \" + p[2]\n\ndef p_sequence_command(p):\n
+    \   \"sequence : command\"\n    p[0] = p[1]\n\ndef p_command_PLUS(p):\n    \"command
+    : PLUS\"\n    p[0] = \"bf.inc(%s)\" % p[1]\n\ndef p_command_MINUS(p):\n    \"command
+    : MINUS\"\n    p[0] = \"bf.inc(%s)\" % -p[1]\n\ndef p_command_LEFT(p):\n    \"command
+    : LEFT\"\n    p[0] = \"bf.mov(%s)\" % -p[1]\n\ndef p_command_RIGHT(p):\n    \"command
+    : RIGHT\"\n    p[0] = \"bf.mov(%s)\" % p[1]\n\ndef p_command_PUT(p):\n    \"command
+    : PUT\"\n    p[0] = \"bf.put()\"\n\ndef p_command_GET(p):\n    \"command : GET\"\n
+    \   p[0] = \"bf.get()\"\n\ndef p_command_loop(p):\n    \"command : loop\"\n    p[0]
+    = p[1]\n    \ndef p_loop(p):\n    \"loop : WHILE sequence WEND\"\n    p[0] = \"bf.loop(lambda:
+    %s)\" % p[2]\n\ndef p_error(p): pass\n\n# input and parse\ndata = sys.stdin.read()\nlex.lex()\nyacc.yacc()\nresult
+    = yacc.parse(data)\n\n# output\nprint \"\"\"\nfrom collections import defaultdict\nimport
+    sys\nclass BF(object):\n    mem = defaultdict(int)\n    cur = 0\n    def inc(self,
+    n):\n        self.mem[self.cur] += n\n        self.mem[self.cur] %= 256\n    def
+    mov(self, n):\n        self.cur += n\n    def put(self):\n        c = chr(self.mem[self.cur])\n
+    \       sys.stdout.write(c)\n    def get(self):\n        c = sys.stdin.read(1)\n
+    \       self.mem[self.cur] = ord(c)\n    def loop(self, seq):\n        while self.mem[self.cur]:\n
+    \           seq()\n\nbf = BF()\n\"\"\"\n\nprint result\n"
+  :tags:
+  - PLY
+  - Python-Lex-Yacc
+  :references:
+    :url: 
+    :title: 
+- :id: '3989'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3989
+  :user_name: にしお
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/14 04:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>素数探索のコード：</p>\n<p><a class=\"reference\" href=\"/web/20090527033636/http://labs.cybozu.co.jp/blog/kazuho/archives/2006/06/bf_prime.php\">http://labs.cybozu.co.jp/blog/kazuho/archives/2006/06/bf_prime.php</a></p>\n<p>さすがに結構時間がかかるなー。Core2Duo
+    @2.4GHzで1分くらい。</p>\n<pre class=\"literal-block\">\nreal    1m2.317s\nuser    0m0.015s\nsys
+    \    0m0.031s\n</pre>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3990'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3990
+  :user_name: にしお
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/14 04:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>8行修正して[-]を単体で「リセット命令」にしたらreal　0m54.380sになった。</p>\n<p>うーん、これ以上高速化するとなるとコピーの処理を置き換えるとかになりそうだけど、それは正規表現では無理な気がするなぁ。パースしながら出力文字列を作るのをやめて、sequenceを文字列に変換する際にmovとincだけで構成されているかどうかをチェックして…となるのかな。面倒だな。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3991'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3991
+  :user_name: naoya_t
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/348/
+  :language: awk
+  :time: 2007/11/14 05:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#3964-#3978を、optimize=2 を指定すると身も蓋もなく最適化を行うように改良(?)したもの。\r\n\r\n-
+    http://namazu.org/~takesako/ppencode/bpencode.html\r\n- http://pc11.2ch.net/test/read.cgi/tech/1177988460/135\r\nあたりのソースを通してみると面白いです。\r\n\r\n%
+    cat helloworld.bf\r\n++++++++++[&gt;+++++++&gt;++++++++++&gt;+++&gt;+&lt;&lt;&lt;&lt;-]\r\n&gt;++.&gt;+.+++++++..+++.&gt;++.&lt;&lt;+++++++++++++++.\r\n&gt;.+++.------.--------.&gt;+.&gt;.\r\n\r\n%
+    awk -v optimize=1 -f bf2awk.awk &lt; helloworld.bf\r\nBEGIN {\r\n  ix = 0\r\n
+    \ st[ix] += 10\r\n  while (st[ix]) {\r\n    st[++ix] += 7\r\n    st[++ix] += 10\r\n
+    \   st[++ix] += 3\r\n    st[++ix]++\r\n    ix -= 4\r\n    st[ix]--\r\n  }\r\n
+    \ st[++ix] += 2\r\n  printf(\"%c\", st[ix])\r\n  printf(\"%c\", ++st[++ix])\r\n
+    \ st[ix] += 7\r\n  printf(\"%c\", st[ix])\r\n  printf(\"%c\", st[ix])\r\n  st[ix]
+    += 3\r\n  printf(\"%c\", st[ix])\r\n  st[++ix] += 2\r\n  printf(\"%c\", st[ix])\r\n
+    \ ix -= 2\r\n  st[ix] += 15\r\n  printf(\"%c\", st[ix])\r\n  printf(\"%c\", st[++ix])\r\n
+    \ st[ix] += 3\r\n  printf(\"%c\", st[ix])\r\n  st[ix] -= 6\r\n  printf(\"%c\",
+    st[ix])\r\n  st[ix] -= 8\r\n  printf(\"%c\", st[ix])\r\n  printf(\"%c\", ++st[++ix])\r\n
+    \ printf(\"%c\", st[++ix])\r\n}\r\n\r\n% awk -v optimize=2 -f bf2awk.awk &lt;
+    helloworld.bf\r\nBEGIN {\r\n  print \"Hello World!\"\r\n}\r\n</pre>\n\t"
+  :code: "#\n# Brainf*ck to AWK compiler, written in AWK by naoya_t/\n#\nBEGIN {\n
+    \   inst_buf = \"\"\n    ix = 0\n}\n{\n    gsub(/#.*$/,\"\"); # comment\n    gsub(/[^\\[\\]&lt;&gt;+\\-.,]/,\"\");
+    if (/^$/) next\n    inst_buf = inst_buf $0\n}\nEND {\n    if (inst_buf ~ /,/)
+    getchar_used = 1\n\n    # compile\n    if (optimize &gt;= 1) reset_last()\n    output_buf
+    = \"\"\n\n    indent = \"\"\n    print \"BEGIN {\"\n\n    indent_incr()\n    if
+    (getchar_used) indent_print(\"read_buf = \\\"\\\"\")\n    if (getchar_used ||
+    optimize &lt; 2) indent_print(\"ix = 0\")\n\n    diff_value[\"&gt;\"] = diff_value[\"+\"]
+    = 1\n    diff_value[\"&lt;\"] = diff_value[\"-\"] = -1\n    incr_decr[\"&gt;\"]
+    = incr_decr[\"+\"] = \"++\"\n    incr_decr[\"&lt;\"] = incr_decr[\"-\"] = \"--\"\n\n
+    \   N = split(inst_buf, ops, \"\")\n    eval(ops,1,N)\n\n    if (optimize &gt;=
+    1) out_last()\n    flush_buf(0)\n\n    indent_decr()\n    indent_print(\"}\")\n\n
+    \   if (getchar_used) output_getchar_funcs()\n}\n\nfunction eval(ops,begin,end,
+    \ i,j,op,s,till)\n{\n    for (i=begin; i&lt;=end; i++) {\n        op = ops[i]\n
+    \       if (op ~ /[&gt;&lt;]/) {\n            ix += diff_value[op] # emulation\n
+    \           if (optimize &gt;= 1) {\n                if (last_inst == \"ix\")
+    {\n                    last_arg += diff_value[op]\n                } else {\n
+    \                   out_last()\n                    set_last(\"ix\", diff_value[op])\n
+    \               }\n            } else {\n                if (getchar_used || optimize
+    &lt; 2) indent_print(\"ix\" incr_decr[op])\n            }\n        } else if (op
+    ~ /[+-]/) {\n            st[ix] += diff_value[op] # emulation\n            if
+    (optimize &gt;= 1) {\n                if (last_inst ~ /^st\\[/) {\n                    last_arg
+    += diff_value[op]\n                } else {\n                    s = set_incr_decr(\"st[ix]\")\n
+    \                   if (last_inst) out_last()\n                    set_last(s,
+    diff_value[op])\n                }\n            } else {\n                if (getchar_used
+    || optimize &lt; 2) indent_print(\"st[ix]\" incr_decr[op])\n            }\n        }
+    else if (op == \".\") {\n            s = \"printf(\\\"%c\\\", st[ix])\"\n            if
+    (optimize &gt;= 1) {\n                s = set_incr_decr(s)\n                if
+    (last_inst) out_last()\n            }\n            if (getchar_used || optimize
+    &lt; 2)\n                indent_print(s)\n            else\n                putchar(st[ix])\n
+    \       } else if (op == \",\") {\n            s = \"st[ix] = getchar()\"\n            if
+    (optimize &gt;= 1) {\n                s = set_incr_decr(s)\n                if
+    (last_inst) out_last()\n            }\n            indent_print(s)\n        }
+    else if (op == \"[\") {\n            nest = 1\n            for (j=i+1; j&lt;=N;
+    j++) {\n                if (ops[j] == \"[\") nest++\n                if (ops[j]
+    == \"]\") nest--\n                if (nest == 0) { till = j ; break }\n            }\n
+    \           while_loop(ops, i+1, till-1)\n            i = till\n        } else
+    {\n            ;\n        }\n    }\n}\nfunction while_loop(ops,begin,end,  i,j,putchar_used)\n{\n
+    \   putchar_used = 0\n    for (j=begin; j&lt;=end; j++) if (ops[j] == \".\") {
+    putchar_used = 1; break }\n\n    if (getchar_used || optimize &lt; 2) {\n        out_last()\n
+    \       indent_print(\"while (st[ix]) {\")\n        indent_incr()\n\n        eval(ops,begin,end)\n\n
+    \       if (optimize &gt;= 1) out_last()\n        indent_decr()\n        indent_print(\"}\")\n
+    \   } else {\n        while (st[ix]) eval(ops,begin,end)\n    }\n}\n\nfunction
+    putchar(ch)\n{\n    if (ch == 10 || ch == 13) {\n        flush_buf(1)\n    } else
+    {\n        output_buf = output_buf sprintf(\"%c\", st[ix])\n    }\n}\nfunction
+    flush_buf(cr)\n{\n    if (output_buf) {\n        gsub(/\\\\/, \"\\\\\\\\\", output_buf)\n
+    \       if (cr)\n            indent_print(\"print \\\"\" output_buf \"\\\"\")\n
+    \       else\n            indent_print(\"printf(\\\"%s\\\", \\\"\" output_buf
+    \"\\\")\")\n        output_buf = \"\"\n    }\n}\n\nfunction indent_incr()\n{\n
+    \   indent = \"  \" indent\n}\nfunction indent_decr()\n{\n    indent = substr(indent,
+    3)\n}\nfunction indent_print(line)\n{\n    print indent line\n}\nfunction set_last(inst,arg)\n{\n
+    \   last_inst = inst\n    last_arg = arg\n}\nfunction reset_last()\n{\n    last_inst
+    = \"\"\n    last_arg = 0\n}\nfunction out_last(  diff)\n{\n    if (last_inst ~
+    /ix/) {\n        if (last_arg &gt; 1)\n            diff = \" += \" last_arg\n
+    \       else if (last_arg == 1)\n            diff = \"++\"\n        else if (last_arg
+    == 0)\n            diff = \"\"\n        else if (last_arg == -1)\n            diff
+    = \"--\"\n        else if (last_arg &lt; -1)\n            diff = \" -= \" (0 -
+    last_arg)\n\n        if (diff &amp;&amp; (getchar_used || optimize &lt; 2)) indent_print(last_inst
+    diff)\n    }\n    last_inst = \"\"\n}\nfunction set_incr_decr(s)\n{\n    if (last_inst
+    == \"ix\") {\n        if (last_arg == 1) { gsub(/ix/, \"++ix\", s); last_inst
+    = \"\" }\n        else if (last_arg == -1) { gsub(/ix/, \"--ix\", s); last_inst
+    = \"\" }\n    } else if (last_inst ~ /^st\\[/ &amp;&amp; s ~ /printf/) {\n        if
+    (last_arg == 1) { gsub(/st\\[ix\\]/, \"++\" last_inst, s); last_inst = \"\" }\n
+    \       else if (last_arg == -1) { gsub(/st\\[ix\\]/, \"--\" last_inst, s); last_inst
+    = \"\" }\n    }\n\n    return s\n}\n\nfunction output_getchar_funcs()\n{\n    print
+    \"function getchar(  ch)\"\n    print \"{\"\n    print \"  if (read_buf ~ /^$/)
+    {\"\n    print \"    if (eof) return -1\"\n#    print \"    if ((getline read_buf)
+    &lt; 1) { eof = 1; return -1 }\"\n    print \"    if (getline != 1) { eof = 1;
+    return -1 } ; read_buf = $0\" # a2p\n    print \"  }\"\n    print \"  ch = ord(substr(read_buf,1,1))\"\n
+    \   print \"  read_buf = substr(read_buf,2)\"\n    print \"  return ch\"\n    print
+    \"}\"\n    \n    print \"function ord(ch, ofs)\"\n    print \"{\"\n    print \"
+    \ if (ch == \\\"\\\\t\\\") return 9\"\n    print \"  if (ch == \\\"\\\\n\\\")
+    return 13\"\n#    print \"  ofs = index(\\\" !\\\\\\\"#$%&amp;'()*+,-./0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\\\",
+    ch)\"\n    print \"  if (ch == \\\"@\\\") return 64\" # a2p\n    print \"  ofs
+    = index(\\\" !\\\\\\\"#$%&amp;'()*+,-./0123456789:;&lt;=&gt;?.ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\\\",
+    ch)\" # a2p\n    print \"  return ofs ? 31 + ofs : 0\"\n    print \"}\"\n}\n"
+  :tags:
+  - neta
+  :references:
+    :url: 
+    :title: 
+- :id: '3994'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3994
+  :user_name: herumi
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/564/
+  :language: C
+  :time: 2007/11/14 05:43 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  にしおさんに倣って，若干最適化コードを生成するようにしました．素数計算のだと3割ぐらい出力コード長が短くなるようです．\n\t"
+  :code: |
+    +       int getContinuousChar(std::istream&amp; is, char c)
+    +       {
+    +               int count = 1;
+    +               char p;
+    +               while (is &gt;&gt; p) {
+    +                       if (p != c) break;
+    +                       count++;
+    +               }
+    +               is.unget();
+    +               return count;
+    +       }
+
+    +#if 0
+            case '+': inc(dword [ebp]); break;
+            case '-': dec(dword [ebp]); break;
+            case '&gt;': add(ebp, 4); break;
+            case '&lt;': sub(ebp, 4); break;
+    #else
+           case '+':
+           case '-':
+                   {
+                           int count = getContinuousChar(is, c);
+                           if (count == 1) {
+                                   c == '+' ? inc(dword [ebp]) : dec(dword [ebp]);
+                           } else {
+                                   add(dword [ebp], (c == '+' ? count : -count));
+                           }
+                   }
+                   break;
+           case '&gt;':
+           case '&lt;':
+                   {
+                           int count = getContinuousChar(is, c);
+                           add(ebp, 4 * (c == '&gt;' ? count : -count));
+                   }
+                   break;
+    #endif
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3997'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/3997
+  :user_name: yuin
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/82/
+  :language: 
+  :time: 2007/11/14 07:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Pythonだとこれだけ時間がかかるんですね。\r\n参考になります。\r\n\r\nScalaでもやってみたところ、#3960のコードで\r\n出力したものを、コンパイルせずインタプリタで\r\n実行しても1秒以内に結果が出ました。\r\nScalaは実はできる子です（笑</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4003'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4003
+  :user_name: naranja
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/448/
+  :language: D
+  :time: 2007/11/14 10:09 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">素直に変換。</pre>\n\t"
+  :code: |
+    import std.stdio;
+    import std.file;
+    import std.string;
+
+    void main(string[] args){
+        string bfCode = cast(string)read(args[1]);
+        string[] buf;
+        uint ptrIndex;
+        uint maxPtrIndex;
+        uint indentLevel = 1;
+
+        void addLine(string line){
+            buf ~= repeat("\t", indentLevel) ~ line;
+        }
+
+        foreach(c; bfCode){
+            switch(c){
+                case '&gt;':
+                    addLine("ptr++;");
+                    if(++ptrIndex &gt; maxPtrIndex){
+                        maxPtrIndex++;
+                    }
+                    break;
+                case '&lt;':
+                    addLine("ptr--;");
+                    ptrIndex--;
+                    break;
+                case '+':
+                    addLine("mem[ptr]++;");
+                    break;
+                case '-':
+                    addLine("mem[ptr]--;");
+                    break;
+                case '.':
+                    addLine("putchar(cast(char)mem[ptr]);");
+                    break;
+                case ',':
+                    addLine("mem[ptr] = cast(ubyte)getchar();");
+                    break;
+                case '[':
+                    addLine("while(mem[ptr]){");
+                    indentLevel++;
+                    break;
+                case ']':
+                    indentLevel--;
+                    addLine("}");
+                    break;
+                default:
+            }
+        }
+        writefln("import std.c.stdio;");
+        writefln("void main(){");
+        writefln("\tubyte mem[", maxPtrIndex + 1, "];");
+        writefln("\tuint ptr;");
+        writefln(buf.join("\n"));
+        writefln("}");
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4007'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4007
+  :user_name: odz
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/212/
+  :language: Python
+  :time: 2007/11/14 10:41 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">こんなもの dict にするのがいいに決まっている、と思ったら Dan さんに先こされているし。\r\n仕方がないので、インデント情報も
+    dict に突っ込んだやつを。</pre>\n\t"
+  :code: |
+    from __future__ import with_statement
+    import sys
+
+    def brainfuck_compile(source):
+        try:
+            from cStringIO import StringIO
+        except:
+            from StringIO import StringIO
+
+        actions = {
+            '&gt;': ('pointer += 1', 0),
+            '&lt;': ('pointer -= 1', 0),
+            '+': ('tape[pointer] = tape.get(pointer, 0) + 1', 0),
+            '-': ('tape[pointer] = tape.get(pointer, 0) - 1', 0),
+            '.': ('sys.stdout.write(chr(tape.get(pointer, 0)))', 0),
+            ',': ('tape[pointer] = sys.stdin.read(1)', 0),
+            '[': ('while tape.get(pointer, 0):', 1),
+            ']': ('', -1),
+        }
+
+        generated = StringIO()
+        print &gt;&gt;generated, 'import sys'
+        print &gt;&gt;generated, 'tape, pointer = dict(), 0'
+        indent = 0
+        for c in source:
+            if c.isspace(): continue
+            stmt, indent_diff = actions[c]
+            print &gt;&gt;generated, '%*s%s' % (indent, '', stmt)
+            indent += indent_diff
+
+        return generated.getvalue()
+
+    def iterchar(fp):
+        for line in fp:
+            for c in line: yield c
+
+    def main(args):
+        if args:
+            for arg in args:
+                with file(arg) as fp:
+                    code = brainfuck_compile(iterchar(fp))
+                    print code
+        else:
+            code = brainfuck_compile(iterchar(sys.stdin))
+            print code
+
+    if __name__ == '__main__':
+        main(sys.argv[1:])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4009'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4009
+  :user_name: にしお
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/14 11:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>うーん、それはちょっと違いますね。\n#3960のコードはコードを一つの関数の中にローカルに展開しているのに対して、上のコードは一つ一つの命令がメソッド呼び出しですから。PythonとScalaの性能の違いと言うより、生成されたコードの質の違い思います。</p>\n<p>#
+    要するに僕のコードが生成したのは質が悪いと！orz</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4012'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4012
+  :user_name: にしお
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/14 11:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>毎回bf.fooとメソッド名の解決をしているのをやめるとreal：0m32.481sになり、きちんとインデントするようにしたら(毎回関数呼び出しをするのをやめたら)real：0m15.548sになりました。</p>\n<p>それでもScalaには全然追いつかないのか…orz</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4014'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4014
+  :user_name: にしお
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/14 11:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>これ</p>\n<p>tape[ptr] = sys.stdin.read(1)</p>\n<p>の部分でordしていないのでテープに文字列が書き込まる気が。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4015'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4015
+  :user_name: にしお
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2007/11/14 11:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">コードを張り忘れたので。</pre>\n\t"
+  :code: "def p_sequence(p):\n    \"sequence : sequence command\"\n    p[0] = p[1]
+    + p[2]\n\ndef p_sequence_command(p):\n    \"sequence : command\"\n    p[0] = p[1]\n\ndef
+    p_command_PLUS(p):\n    \"command : PLUS\"\n    p[0] = \"\\nmem[cur] = (mem[cur]
+    + %s) %% 256\" % p[1]\n\ndef p_command_MINUS(p):\n    \"command : MINUS\"\n    p[0]
+    = \"\\nmem[cur] = (mem[cur] - %s) %% 256\" % p[1]\n\ndef p_command_LEFT(p):\n
+    \   \"command : LEFT\"\n    p[0] = \"\\ncur -= %s\" % p[1]\n\ndef p_command_RIGHT(p):\n
+    \   \"command : RIGHT\"\n    p[0] = \"\\ncur += %s\" % p[1]\n\ndef p_command_PUT(p):\n
+    \   \"command : PUT\"\n    p[0] = \"\\nsys.stdout.write(chr(mem[cur]))\"\n\ndef
+    p_command_GET(p):\n    \"command : GET\"\n    p[0] = \"\\nmem[cur] = ord(sys.stdin.read(1))\"\n\ndef
+    p_command_RESET(p):\n    \"command : RESET\"\n    p[0] = \"\\nmem[cur] = 0\"\n\ndef
+    p_command_loop(p):\n    \"command : loop\"\n    p[0] = p[1]\n    \ndef p_loop(p):\n
+    \   \"loop : WHILE sequence WEND\"\n    p[0] = \"\\nwhile mem[cur]:%s\" % p[2].replace(\"\\n\",
+    \"\\n    \")\n\ndef p_error(p): pass\n\n# input and parse\ndata = sys.stdin.read()\nlex.lex()\nyacc.yacc()\nresult
+    = yacc.parse(data)\n\n# output\nprint \"\"\"\nfrom collections import defaultdict\nimport
+    sys\nmem = defaultdict(int)\ncur = 0\n\"\"\"\n\nprint result\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4016'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4016
+  :user_name: yuin
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/82/
+  :language: 
+  :time: 2007/11/14 11:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あ、確かにそうですね。見落としてました。\r\n\r\nせっかくなので#3952の素朴なタイプでも手元で時間とって見ましたが、\r\n\r\ndppさんの#3952：55秒程度\r\nにしおさんの#3988：2分10秒程度\r\n\r\nでした。\r\n\r\nあと、メモリとしてdictを使っているけど、\r\n[0]*0xffffみたいにリストで長さ決めうちにすると\r\nだいぶマシですね。55
+    -&gt; 31秒程度まで短縮できました。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4017'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4017
+  :user_name: odz
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/212/
+  :language: Perl
+  :time: 2007/11/14 12:24 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <pre class=\"compact\">正規表現とハッシュの合わせ技で</pre>\n\t"
+  :code: |
+    use strict;
+    use warnings;
+
+    sub compile {
+        my $source = shift;
+        my $out = '';
+
+        my $code = 'sub{no warnings;my(@t, $p, @o);';
+
+        my %patterns = (
+            '&gt;' =&gt; sub { sprintf '$p+=%d;', length $_[0] },
+            '&lt;' =&gt; sub { sprintf '$p-=%d;', length $_[0] },
+            '+' =&gt; sub { sprintf '$t[$p]+=%s;', length $_[0] },
+            '-' =&gt; sub { sprintf '$t[$p]-=%d;', length $_[0] },
+            '.' =&gt; sub { sprintf 'push @o,$t[$p];' },
+            ',' =&gt; sub { sprintf '$t[$p] = shift;' },
+            '[' =&gt; sub { 'while($t[$p]){' },
+            ']' =&gt; sub { '}' },
+        );
+        my $re = qr/&gt;+|&lt;+|\++|-+|\.|,|\[|\]/;
+
+        my $tmp = $source;
+        $tmp =~ tr/&lt;&gt;+\-,.[]//cd;
+        $tmp =~ s/$re/$patterns{substr($&amp;, 0, 1)}-&gt;($&amp;)/ge;
+
+        $code .= $tmp;
+        $code .= '@o;}';
+    }
+
+    sub main {
+        my $source = do { local $/; &lt;&gt; };
+        my $code = compile($source);
+
+        my @out = do { eval $code }-&gt;();
+        print pack('c*', @out);
+    }
+
+    main;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4026'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4026
+  :user_name: 匿名
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/11/14 14:33 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">引数にBFのプログラムを与えて実行します。\r\n\r\njava Sample '&gt;,----------[&gt;,----------]&lt;[++++++++++.&lt;]'\r\n\r\nBF.javaという名前のファイルが作られるので、さらにjavacでコンパイルします。\r\n上記の例は入力を逆順に出力するプログラム（入力の終了は改行(\\n)）です。</pre>\n\t"
+  :code: |
+    import java.io.*;
+    import java.util.*;
+
+    public class Sample {
+        static final String NL = System.getProperty("line.separator");
+        static final String HEADER = "import java.io.*;"+NL+NL+"public class BF {"+NL+
+            "    static final int SIZE = 32768;"+NL+"    static byte[] a = new byte[SIZE];"+NL+
+            "    public static void main(String[] args) throws IOException {"+NL+
+            "\tBufferedReader r = new BufferedReader(new InputStreamReader(System.in));"+NL+
+            "\tint ptr = 0;";
+        static final String FOOTER = "\tSystem.out.println();"+NL+"    }"+NL+"}";
+        static HashMap&lt;Character, String&gt; bfCode = new HashMap&lt;Character, String&gt;();
+        static {
+            bfCode.put('&gt;', "\tptr++;");
+            bfCode.put('&lt;', "\tptr--;");
+            bfCode.put('+', "\ta[ptr]++;");
+            bfCode.put('-', "\ta[ptr]--;");
+            bfCode.put('.', "\tSystem.out.write(a[ptr]);");
+            bfCode.put(',', "\ta[ptr] = (byte)r.read();");
+            bfCode.put('[', "\twhile (a[ptr] != 0) {");
+            bfCode.put(']', "\t}");
+        }
+        public static void main(String[] args) throws IOException {
+            PrintWriter w = new PrintWriter("BF.java");
+            w.println(HEADER);
+            for (char c : args[0].toCharArray()) {
+                String code = bfCode.get(c);
+                if (code != null)
+                    w.println(code);
+            }
+            w.println(FOOTER);
+            w.close();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4034'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4034
+  :user_name: ocean
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/177/
+  :language: C
+  :time: 2007/11/14 17:56 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;fstream&gt;
+    #include &lt;cctype&gt;
+    using namespace std;
+
+    #define REP(n) for (size_t i = 0; i &lt; n; ++i)
+
+    void compile(istream&amp; in, ostream&amp; out)
+    {
+        size_t indent = 0;
+
+    #define OUTPUT(s) REP(indent) out &lt;&lt; "\t"; out &lt;&lt; s &lt;&lt; endl;
+
+        OUTPUT("#include &lt;stdio.h&gt;");
+        OUTPUT("#include &lt;mem.h&gt;");
+        OUTPUT("");
+        OUTPUT("int main()");
+        OUTPUT("{");
+        ++indent;
+        OUTPUT("unsigned char buf[33000], *p = buf;");
+        OUTPUT("memset(buf, 0, sizeof(buf));");
+        OUTPUT("");
+
+        char c;
+
+        while (in.get(c))
+        {
+            if (isspace(c))
+            {
+                // pass
+            }
+            else if (c == '&lt;')
+            {
+                OUTPUT("--p;");
+            }
+            else if (c == '&gt;')
+            {
+                OUTPUT("++p;");
+            }
+            else if (c == '+')
+            {
+                OUTPUT("++*p;");
+            }
+            else if (c == '-')
+            {
+                OUTPUT("--*p;");
+            }
+            else if (c == '.')
+            {
+                OUTPUT("putchar(*p);");
+            }
+            else if (c == ',')
+            {
+                OUTPUT("*p = getchar();");
+            }
+            else if (c == '[')
+            {
+                OUTPUT("while (*p)");
+                OUTPUT("{");
+                ++indent;
+            }
+            else if (c == ']')
+            {
+                --indent;
+                OUTPUT("}");
+            }
+        }
+
+        --indent;
+        OUTPUT("}");
+
+    #undef OUTPUT
+    }
+
+    int main(int argc, char* argv[])
+    {
+        if (argc != 2)
+        {
+            cerr &lt;&lt; "usage: name" &lt;&lt; endl;
+
+            return -1;
+        }
+
+        compile(ifstream(argv[1]), cout);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4057'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4057
+  :user_name: susu
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/218/
+  :language: OCaml
+  :time: 2007/11/15 09:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">スタックオーバーフローすると反対側に出ます。</pre>\n\t"
+  :code: "let parse = function\n  | '&gt;' -&gt; \"stackincr p;\"\n  | '&lt;' -&gt;
+    \"stackdecr p;\"\n  | '+' -&gt; \"incr code.(!p);\"\n  | '-' -&gt; \"decr code.(!p);\"\n
+    \ | '.' -&gt; \"print_char (char_of_int !(code.(!p)));\"\n  | ',' -&gt; \"code.(!p)
+    := read_char ();\"\n  | '[' -&gt; \"while 0 &lt;&gt; !(code.(!p)) do\"\n  | ']'
+    -&gt; \"done;;\"\n  |  _  -&gt; \"\"  ;;\n\nlet main ?(stacksize=256) filename
+    =\n  let file = open_in filename in\n  Printf.printf \"\\\n    let stackincr x
+    = if %d &lt; (incr x; !x) then x:=0;;\\n\\\n    let stackdecr x = if 0 &gt; (decr
+    x; !x) then x:=%d;;\\n\\\n    let read_char () = int_of_char (read_line () ).[0];;\\n\\\n
+    \   let code = Array.init %d (fun i -&gt; ref 0);;\\n\\\n    let p = ref 0;;\\n\\n\"\n
+    \   (stacksize-1) (stacksize-1) stacksize;\n      \n  let rec read_loop () =\n
+    \   try\n      let next = input_line file in\n      String.iter (fun x -&gt; print_endline
+    (parse x)) next;\n      read_loop ();\n    with\n      End_of_file -&gt; close_in
+    file   \n  in read_loop ();;\n  \n\nif !(Sys.interactive)=false then\n  match
+    (Array.length Sys.argv) with\n  | n when n=2 -&gt; main Sys.argv.(1)\n  | n when
+    2&lt;n -&gt; main ~stacksize:(int_of_string Sys.argv.(2)) Sys.argv.(1)\n  | n
+    \         -&gt; print_endline \"usage: ocaml bf2ml.ml [stacksize] filename\"\n;;\n"
+  :tags: []
+  :references:
+    :url: /web/20090527033636/http://tlas.i.kyushu-u.ac.jp/~bannai/ocaml-intro/traps.html#mutable_array
+    :title: 配列の中の一つの値を変更しようとすると全部変更されてしまう!?!
+- :id: '4058'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4058
+  :user_name: susu
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/218/
+  :language: 
+  :time: 2007/11/15 09:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ああ、スタックじゃなくてー</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4071'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4071
+  :user_name: にしお
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/15 14:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>リングバッファ？</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4076'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4076
+  :user_name: kozima
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/164/
+  :language: 
+  :time: 2007/11/15 15:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">',' の処理が変じゃありません？\r\necho を試してみましたが、各行頭の一文字しか出力されませんでした。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4078'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4078
+  :user_name: kozima
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/164/
+  :language: diff
+  :time: 2007/11/15 15:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">書き換えてみました。echo はそれらしい動きをしています。</pre>\n\t"
+  :code: |
+    @@ -4,7 +4,7 @@
+       | '+' -&gt; "incr code.(!p);"
+       | '-' -&gt; "decr code.(!p);"
+       | '.' -&gt; "print_char (char_of_int !(code.(!p)));"
+    -  | ',' -&gt; "code.(!p) := read_char ();"
+    +  | ',' -&gt; "code.(!p) := input_byte stdin;"
+       | '[' -&gt; "while 0 &lt;&gt; !(code.(!p)) do"
+       | ']' -&gt; "done;;"
+       |  _  -&gt; ""  ;;
+    @@ -14,7 +14,6 @@
+       Printf.printf "\
+         let stackincr x = if %d &lt; (incr x; !x) then x:=0;;\n\
+         let stackdecr x = if 0 &gt; (decr x; !x) then x:=%d;;\n\
+    -    let read_char () = int_of_char (read_line () ).[0];;\n\
+         let code = Array.init %d (fun i -&gt; ref 0);;\n\
+         let p = ref 0;;\n\n"
+         (stacksize-1) (stacksize-1) stacksize;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4081'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4081
+  :user_name: kkobayashi
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2007/11/15 17:28 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Wikipediaの説明をそのままコードにしただけですが・・・\n\t"
+  :code: |
+    bf &lt;- function(str){
+        cat("ptr &lt;- 1", "\n")
+        cat("buf &lt;- numeric(1)", "\n")
+        for(c in unlist(strsplit(str, ''))){
+            switch(c,
+                '&gt;' = cat("ptr &lt;- ptr+1; if(is.na(buf[ptr])) buf[ptr] &lt;- 0", "\n"),
+                '&lt;' = cat("ptr &lt;- ptr-1; if(is.na(buf[ptr])) buf[ptr] &lt;- 0", "\n"),
+                '+' = cat("buf[ptr] &lt;- buf[ptr]+1", "\n"),
+                '-' = cat("buf[ptr] &lt;- buf[ptr]-1", "\n"),
+                '.' = cat("cat(rawToChar(as.raw(buf[ptr])))", "\n"),
+                ',' = cat("buf[ptr] &lt;- as.integer(charToRaw(readLines(n=1)))", "\n"),
+                '[' = cat("while(buf[ptr]){", "\n"),
+                ']' = cat("}", "\n"))
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4084'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4084
+  :user_name: xsd
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/154/
+  :language: OCaml
+  :time: 2007/11/15 17:29 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">トランスレーターといえばcamlp4ということで、camlp4の3.10版で書いてみました。\r\n\r\nLexerはBF用に書いていますが、TokenはOCaml用のものを流用しています。\r\n\r\nParserのコンパイル:\r\n
+    ocamlc -c -I +camlp4 -pp camlp4orf dk80.ml\r\n\r\nParserを利用したBFファイルのトランスレート結果の確認:\r\n
+    camlp4orf dk80.cmo -impl helloworld.bf \r\n\r\nParserを利用したBFファイルのコンパイル:\r\n ocamlc
+    -o dk80 -pp \"camlp4 -printer Camlp4OCamlPrinter dk80.cmo -impl\" -impl helloworld.bf\r\n\r\n</pre>\n\t"
+  :code: |
+    open Camlp4.PreCast
+
+    module MyLexer = struct
+      module Loc = Loc
+      module Token = Token
+      module Error = Token.Error
+
+      let mk () loc sc =
+        let rec next n = match Stream.peek sc with
+          | None   -&gt; Some(EOI, loc)
+          | Some x -&gt; let _ = Stream.junk sc in (match x with
+            |'&gt;'|'&lt;'|'+'|'-'|'.'|','|'['|']'-&gt; Some((SYMBOL (Printf.sprintf "%c" x)), loc)
+            | _                             -&gt; next n)
+        in Stream.from next
+    end
+
+    module BF = MakeGram MyLexer
+
+    let expr = BF.Entry.mk "expr"
+    let repr = BF.Entry.mk "repr"
+    let term = BF.Entry.mk "term"
+
+    EXTEND BF
+      expr: [[
+          t = repr; `EOI     -&gt; &lt;:str_item&lt;
+            let p = ref 0 in
+            let a = Array.create 1024 0 in
+            let inc a p = a.(!p) := a.(!p) + 1 in
+            let dec a p = a.(!p) := a.(!p) - 1 in
+            let prt a p = print_char (char_of_int a.(!p)) in
+            ( $t$ )
+          &gt;&gt;
+      ]];
+
+      repr: [[
+          t = term           -&gt; t
+        | t = term; u = repr -&gt; &lt;:expr&lt; $t$; $u$ &gt;&gt;
+      ]];
+
+      term: [[
+          "&gt;"                -&gt; &lt;:expr&lt; incr  p &gt;&gt;
+        | "&lt;"                -&gt; &lt;:expr&lt; decr  p &gt;&gt;
+        | "+"                -&gt; &lt;:expr&lt; inc a p &gt;&gt;
+        | "-"                -&gt; &lt;:expr&lt; dec a p &gt;&gt;
+        | "."                -&gt; &lt;:expr&lt; prt a p &gt;&gt;
+        | ","                -&gt; &lt;:expr&lt; a.(!p) := input_byte stdin &gt;&gt;
+        | "["; t = repr; "]" -&gt; &lt;:expr&lt; while a.(!p) &lt;&gt; 0 do ( $t$ ) done &gt;&gt;
+      ]];
+    END
+
+    let myparse  ?(directive_handler = fun _ -&gt; None) _loc cs = BF.parse expr _loc cs
+    let myparse2 ?(directive_handler = fun _ -&gt; None) _loc _  = &lt;:sig_item&lt; &gt;&gt;
+
+    let _ = Camlp4.Register.register_parser myparse myparse2;
+  :tags:
+  - camlp4_3.10
+  :references:
+    :url: 
+    :title: 
+- :id: '4085'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4085
+  :user_name: 匿名
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2007/11/15 17:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Wikipedia と dankogai さんの実装を見つつ、C# で書いてみました。誰か添削してくださいｗ\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+
+    namespace Kinoko
+    {
+        /*
+            BrainF*ck
+        */
+        class Program
+        {
+            public static void Main(string[] args)
+            {
+                LinkedList&lt;int&gt; Tape = new LinkedList&lt;int&gt;();
+                Tape.AddLast(0);
+                LinkedListNode&lt;int&gt; Head = Tape.First;
+
+                for(int i=0; i &lt; args[0].Length; i++)
+                {
+                    String op = args[0].Substring(i,1);
+                    switch(op)
+                    {
+                        case "+":
+                        {
+                            Head.Value++;
+                            break;
+                        }
+                        case "-":
+                        {
+                            Head.Value--;
+                            break;
+                        }
+                        case "&lt;":
+                        {
+                            if(Head == Tape.First)
+                            {
+                                Tape.AddFirst(0);
+                            }
+                            Head=Head.Previous;
+                            break;
+                        }
+                        case "&gt;":
+                        {
+                            if(Head == Tape.Last)
+                            {
+                                Tape.AddLast(0);
+                            }
+                            Head=Head.Next;
+                            break;
+                        }
+                        case "[":
+                        {
+                            if(Head.Value == 0)
+                            {
+                                int nest = 1;
+                                int step = 1;
+                                while(nest &gt; 0)
+                                {
+                                    if(args[0].Substring(i+step, 1) == "[")
+                                    {
+                                        nest++;
+                                    }
+                                    else if(args[0].Substring(i+step, 1) == "]")
+                                    {
+                                        nest--;
+                                    }
+                                    step++;
+                                    if(i+step &gt; args[0].Length)
+                                    {
+                                        break;
+                                    }
+                                }
+                                i += step;
+                            }
+                            break;
+                        }
+                        case "]":
+                        {
+                            if(Head.Value != 0)
+                            {
+                                int nest = 1;
+                                int step = 1;
+                                while(nest &gt; 0)
+                                {
+                                    if(args[0].Substring(i-step, 1) == "]")
+                                    {
+                                        nest++;
+                                    }
+                                    else if(args[0].Substring(i-step, 1) == "[")
+                                    {
+                                        nest--;
+                                    }
+                                    step++;
+                                    if(i-step &lt; 0)
+                                    {
+                                        break;
+                                    }
+                                }
+                                i -= step;
+                            }
+                            break;
+                        }
+                        case ".":
+                        {
+                            Console.Write("{0}", ((Char)Head.Value));
+                            break;
+                        }
+                        case ",":
+                        {
+                            int input = 0;
+                            Console.Write("input:");
+                            input = Console.Read();
+                            Head.Value = input;
+                            break;
+                        }
+                        default:
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+  :tags:
+  - Brainfuck
+  :references:
+    :url: /web/20090527033636/http://d.hatena.ne.jp/noliaqui/20071116
+    :title: がぶるでぃぐく - Brainfuck書いた
+- :id: '4093'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4093
+  :user_name: uho
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/498/
+  :language: C
+  :time: 2007/11/16 02:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>unsafeを使って、\nC#でポインタを使ってみました。</p>\n\n\t"
+  :code: |
+    using System;
+    using System.IO;
+
+    namespace BrainFuck
+    {
+        class Program
+        {
+            static void Main(string[] args)
+            {
+                StreamWriter sw = new StreamWriter("C:\\txt.txt");
+
+                sw.WriteLine("using System;");
+                sw.WriteLine("namespace BrainFuck{");
+                sw.WriteLine("class Program{");
+                sw.WriteLine("unsafe static void Main(string[] args){");
+                sw.WriteLine("fixed (byte* b = new byte[1024]){");
+                sw.WriteLine("byte* ptr = b;");
+
+                foreach (char s in args[0])
+                {
+                    switch (s)
+                    {
+                        case '&gt;':
+                            sw.WriteLine("ptr++;");
+                            break;
+                        case '&lt;':
+                            sw.WriteLine("ptr--;");
+                            break;
+                        case '+':
+                            sw.WriteLine("(*ptr)++;");
+                            break;
+                        case '-':
+                            sw.WriteLine("(*ptr)--;");
+                            break;
+                        case '.':
+                            sw.WriteLine("Console.Write((char)*ptr);");
+                            break;
+                        case ',':
+                            sw.WriteLine("*ptr = Console.Read();");
+                            break;
+                        case '[':
+                            sw.WriteLine("while(*ptr != 0){");
+                            break;
+                        case ']':
+                            sw.WriteLine("}");
+                            break;
+                    }
+                }
+
+                sw.WriteLine("}}}}");
+                sw.Close();
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4095'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4095
+  :user_name: dankogai
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/16 04:28 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  \n<p>strictもwarningsも通るけど一文。\n</p>\n<p>Dan the Brainf.cker\n</p>\n\n\n\n\t"
+  :code: |
+    #!/usr/local/bin/perl
+    use strict;
+    use warnings;
+    s/(.)/do{no warnings 'syntax';my %c=qw!
+    &lt; $p--;
+    &gt; $p++;
+    + $d[$p]++;
+    - $d[$p]--;
+    . print(chr$d[$p]);
+    , $d[$p]=getc;
+    [ while($d[$p]){
+    ] }
+    !;\%c}-&gt;{$1}/egx and print for(&lt;&gt;);
+  :tags:
+  - BF
+  :references:
+    :url: 
+    :title: 
+- :id: '4103'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4103
+  :user_name: ihag
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/560/
+  :language: Ruby
+  :time: 2007/11/16 10:02 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  ポインタとメモリ領域を，文字列stackの中に置き，regexpなどでstackを操作しつつ動作するようなコードを吐きます．\r<br>例)\r<br>% cat hello.bf\r<br>++++++++++[&gt;+++++++&gt;++++++++++&gt;+++&gt;+&lt;&lt;&lt;&lt;-]\r<br>&gt;++.&gt;+.+++++++..+++.&gt;++.&lt;&lt;+++++++++++++++.\r<br>&gt;.+++.------.--------.&gt;+.&gt;.\r<br><br>% make\r<br>ruby bfcompile.rb &lt; hello.bf &gt; hello.rb\r<br>ruby hello.rb\r<br>Hello World!\r<br><br>% cat hello.rb\r<br>class String\r<br>  def until_nz\r<br>    while self[self[0] + 1] != 0\r<br>      replace(yield(self))\r<br>    end\r<br>    self\r<br>  end\r<br><br>  def refer\r<br>    self.sub(/\\A(.)(.*)\\Z/m) do\r<br>      $1 + $2.sub(/^(.{#{$1[0]}})(.)/m) do\r<br>        $1 + yield($2)\r<br>      end\r<br>    end\r<br>  end\r<br>end\r<br><br>stack = \"\\000\" + \"\\000\" * 256\r<br>stack.refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>until_nz {|stack|\r<br>stack.\r<br>sub(/./m) {|p| (p[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>sub(/./m) {|p| (p[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>sub(/./m) {|p| (p[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>sub(/./m) {|p| (p[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>sub(/./m) {|p| (p[0] - 1).chr }.\r<br>sub(/./m) {|p| (p[0] - 1).chr }.\r<br>sub(/./m) {|p| (p[0] - 1).chr }.\r<br>sub(/./m) {|p| (p[0] - 1).chr }.\r<br>refer {|mem| (mem[0] - 1).chr }.\r<br>to_s\r<br>}.\r<br>sub(/./m) {|p| (p[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| putc(mem) }.\r<br>sub(/./m) {|p| (p[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| putc(mem) }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| putc(mem) }.\r<br>refer {|mem| putc(mem) }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| putc(mem) }.\r<br>sub(/./m) {|p| (p[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| putc(mem) }.\r<br>sub(/./m) {|p| (p[0] - 1).chr }.\r<br>sub(/./m) {|p| (p[0] - 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| putc(mem) }.\r<br>sub(/./m) {|p| (p[0] + 1).chr }.\r<br>refer {|mem| putc(mem) }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| putc(mem) }.\r<br>refer {|mem| (mem[0] - 1).chr }.\r<br>refer {|mem| (mem[0] - 1).chr }.\r<br>refer {|mem| (mem[0] - 1).chr }.\r<br>refer {|mem| (mem[0] - 1).chr }.\r<br>refer {|mem| (mem[0] - 1).chr }.\r<br>refer {|mem| (mem[0] - 1).chr }.\r<br>refer {|mem| putc(mem) }.\r<br>refer {|mem| (mem[0] - 1).chr }.\r<br>refer {|mem| (mem[0] - 1).chr }.\r<br>refer {|mem| (mem[0] - 1).chr }.\r<br>refer {|mem| (mem[0] - 1).chr }.\r<br>refer {|mem| (mem[0] - 1).chr }.\r<br>refer {|mem| (mem[0] - 1).chr }.\r<br>refer {|mem| (mem[0] - 1).chr }.\r<br>refer {|mem| (mem[0] - 1).chr }.\r<br>refer {|mem| putc(mem) }.\r<br>sub(/./m) {|p| (p[0] + 1).chr }.\r<br>refer {|mem| (mem[0] + 1).chr }.\r<br>refer {|mem| putc(mem) }.\r<br>sub(/./m) {|p| (p[0] + 1).chr }.\r<br>refer {|mem| putc(mem) }.\r<br>to_s\n\t"
+  :code: |
+    puts &lt;&lt;'EOS'
+    class String
+      def until_nz
+        while self[self[0] + 1] != 0
+          replace(yield(self))
+        end
+        self
+      end
+
+      def refer
+        self.sub(/\A(.)(.*)\Z/m) do
+          $1 + $2.sub(/^(.{#{$1[0]}})(.)/m) do
+            $1 + yield($2)
+          end
+        end
+      end
+    end
+
+    stack = "\000" + "\000" * 256
+    EOS
+
+    print 'stack.'
+
+    code = {
+      '&gt;' =&gt; [ 'sub(/./m) {|p| (p[0] + 1).chr }.' ],
+      '&lt;' =&gt; [ 'sub(/./m) {|p| (p[0] - 1).chr }.' ],
+      '+' =&gt; [ 'refer {|mem| (mem[0] + 1).chr }.' ],
+      '-' =&gt; [ 'refer {|mem| (mem[0] - 1).chr }.' ],
+      '.' =&gt; [ 'refer {|mem| putc(mem) }.' ],
+      ',' =&gt; [ 'refer { STDIN.getc }.' ],
+      '[' =&gt; [ 'until_nz {|stack|', 'stack.' ],
+      ']' =&gt; [ 'to_s', '}.' ],
+    }
+    while ch = STDIN.getc
+      next if code[ch.chr].nil?
+      puts code[ch.chr]
+    end
+    puts 'to_s'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4104'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4104
+  :user_name: こう。
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2007/11/16 10:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>少しだけ最適化を行います。</p>\n\n\t"
+  :code: "#include &lt;stdio.h&gt;\n\nvoid putnest(FILE* fout,int n){\n    while(n--){\n
+    \       fprintf(fout,\"\\t\");\n    };\n}\n\nint main(){\n    char filename[]=\"test.bf\";\n
+    \   FILE *fin;\n    FILE *fout;\n    int cmd=' ',lastcmd;\n    int count=0;\n
+    \   int nest=1;\n    fin =fopen(filename,\"r\");\n    fout=fopen(\"bf.c\",\"w\");\n
+    \   \n    fprintf(fout,\"#include&lt;stdio.h&gt;\\n\");\n    fprintf(fout,\"\\n\");\n
+    \   fprintf(fout,\"int main(){\\n\");\n    fprintf(fout,\"\\tint  buf[256];\\n\");\n
+    \   fprintf(fout,\"\\tint *ptr;\\n\");\n    fprintf(fout,\"\\tint i;\");\n    fprintf(fout,\"\\n\");\n
+    \   fprintf(fout,\"\\tfor(i=0;i&lt;256;i++) buf[i]=0;\\n\");\n    fprintf(fout,\"\\tptr=buf;\\n\");\n
+    \   fprintf(fout,\"\\n\");\n    \n    do{\n        lastcmd=cmd;\n        cmd=fgetc(fin);\n
+    \       if(lastcmd!=cmd){\n            switch(lastcmd){\n            case '+':\n
+    \           case '-':\n            case '&gt;':\n            case '&lt;':\n                putnest(fout,nest);\n
+    \               fprintf(fout,\"%s%c\",lastcmd&amp;0x10?\"ptr\":\"(*ptr)\",lastcmd&amp;0x02?'+':'-');\n
+    \               if(count==1)\n                    fprintf(fout,\"%c;\\n\",lastcmd&amp;0x02?'+':'-');\n
+    \               else\n                    fprintf(fout,\"=%d;\\n\",count);\n                count=0;\n
+    \               break;\n            }\n        }\n        switch(cmd){\n            case
+    '+':\n            case '-':\n            case '&gt;':\n            case '&lt;':\n
+    \               count++;\n                break;\n            case '[':\n                putnest(fout,nest);\n
+    \               fprintf(fout,\"while(*ptr){\\n\");\n                nest++;\n
+    \               break;\n            case ']':\n                nest--;\n                putnest(fout,nest);\n
+    \               fprintf(fout,\"}\\n\");\n                break;\n            case
+    '.':\n                putnest(fout,nest);\n                fprintf(fout,\"putchar(*ptr);\\n\");\n
+    \               break;\n            case ',':\n                putnest(fout,nest);\n
+    \               fprintf(fout,\"*ptr=getchar();\\n\");\n                break;\n
+    \       }\n    }while(cmd!=EOF);\n    fprintf(fout,\"    return 0;\\n\");\n    fprintf(fout,\"}\\n\");\n
+    \   fprintf(fout,\"\\n\");\n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4110'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4110
+  :user_name: takatoh
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/189/
+  :language: Ruby
+  :time: 2007/11/16 12:37 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>メモリとポインタを用意しておいて，あとは命令を1つずつRubyに置き換えるだけ。他の人と々アプローチだけど，いくらかわかりやすく書いたつもり。</p>\n<p>書いてて気がついたけど，BFのループって終了判定が2カ所（前後）にあるんだな。</p>\n\n\t"
+  :code: |
+    print &lt;&lt;"EOBF"
+    class BF
+      def initialize
+        @memory = [0]
+        @pointer = 0
+      end
+      def current
+        @memory[@pointer]
+      end
+      def incr
+        @memory[@pointer] += 1
+      end
+      def decr
+        @memory[@pointer] -= 1
+      end
+      def right
+        @pointer += 1
+        unless @memory[@pointer]
+          @memory &lt;&lt; 0
+        end
+      end
+      def left
+        @pointer -= 1
+      end
+      def set(c)
+        @memory[@pointer] = c
+      end
+      def printc
+        print @memory[@pointer].chr
+      end
+    end
+
+    bf = BF.new
+
+    EOBF
+
+    commands = {
+      "&gt;" =&gt; "bf.right",
+      "&lt;" =&gt; "bf.left",
+      "+" =&gt; "bf.incr",
+      "-" =&gt; "bf.decr",
+      "." =&gt; "bf.printc",
+      "," =&gt; "c = STDIN.getc; bf.set(c)",
+      "[" =&gt; "begin; break if bf.current.zero?",
+      "]" =&gt; "end until bf.current.zero?"
+    }
+    ARGF.each_byte do |c|
+      cmd = commands[c.chr]
+      puts cmd if cmd
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4111'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4111
+  :user_name: SiroKuro
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/540/
+  :language: C
+  :time: 2007/11/16 13:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  なんか弄ってたら得体の知れないものに……ｗ\n\t"
+  :code: |
+    using System;
+    using System.IO;
+    static class BFCompiler {
+        public static void Main(String[] args) {
+            Console.WriteLine(0 == args.Length || !File.Exists(args[0]) ? "usage: bfc [sourcefile]" : "using System;static class BF{static void Main(){byte[]m=new byte[256];int p=0;" + new StreamReader(args[0]).ReadToEnd().Replace("]","}").Replace("[","while(m[p]!=0){").Replace(".","Console.Write((char)m[p]);").Replace(",","m[p]=(byte)Console.Read();").Replace("+","m[p]++;").Replace("-","m[p]--;").Replace("&gt;","p++;").Replace("&lt;","p--;") + "}}");
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4114'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4114
+  :user_name: にしお
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/16 14:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>うーんと、]が条件判断を行わなわずに[に無条件ジャンプしても[が判断して]の後にジャンプするので同じということでしょう。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4154'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4154
+  :user_name: konbu
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/389/
+  :language: C
+  :time: 2007/11/17 13:27 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <p>にしおさんのlex/yacc見てなるほど思ったので、本家lexのお勉強。\n下のコードをbf.lとすると\n% lex bf.l\n%
+    cc lex.yy.c -ll -o bfc\nとしてコンパイル。\n% ./bfc &lt;hello.bf &gt;hello.c\n% cc hello.c\n%
+    ./a.out\nHello World!\nのように使います。</p>\n<p>一応\n++++++ → <a href=\"/web/20090527033636/http://ja.doukaku.org/80/flatten/#id1\"
+    name=\"id2\"><span class=\"problematic\" id=\"id2\">*</span></a>pt = 6\nみたいなことするようにしてみました。</p>\n<div
+    class=\"system-message\" id=\"id1\">\n<p class=\"system-message-title\">System
+    Message: <a name=\"id1\">WARNING/2</a> (<tt class=\"docutils\">&lt;string&gt;</tt>,
+    line 12); <em><a href=\"/web/20090527033636/http://ja.doukaku.org/80/flatten/#id2\">backlink</a></em></p>\nInline
+    emphasis start-string without end-string.</div>\n\n\t"
+  :code: |
+    %{
+    #include &lt;stdio.h&gt;
+    #include &lt;string.h&gt;
+    %}
+    %option noyywrap
+    %%
+    \++ printf("*pt+=%d;\n", strlen(yytext));
+    \-+ printf("*pt-=%d;\n", strlen(yytext));
+    \&gt;+ printf("pt+=%d;\n", strlen(yytext));
+    \&lt;+ printf("pt-=%d;\n", strlen(yytext));
+    \, puts("*pt=getchar();");
+    \. puts("putchar(*pt);");
+    \[ puts("while(*pt){");
+    \] puts("}");
+    . ;
+    %%
+    int main(int argc, char **argv)
+    {
+      puts("#include &lt;stdio.h&gt;\n"
+      "int mem[30000];\n"
+      "int *pt = mem;\n"
+      "int main(){");
+      yylex();
+      puts("return 0;\n}");
+      return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4260'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4260
+  :user_name: koguro
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/438/
+  :language: Scheme
+  :time: 2007/11/19 15:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>無理矢理ですけど健全なマクロで解いてみました。</p>\n<p>なお、出力されたコードもbf.scmを参照するのでロードパスを適切に設定しておく必要があります。</p>\n<p>;;;
+    bf-test.scm (サンプル)</p>\n<p>(use bf)</p>\n<p>(bf-compiler \"+++++++++[&gt;++++++++&gt;+++++++++++&gt;+++++&lt;&lt;&lt;-]&gt;.&gt;++.+++++++..+++.&gt;-.------------.&lt;++++++++.--------.+++.------.--------.&gt;+.\"
+    32)</p>\n<p>;;; gosh bf-test.scm | gosh で\"Hello, world!\"が出力されます</p>\n\n\t"
+  :code: ";;; bf.scm\n(define-module bf\n  (export-all))\n\n(define-syntax %bf-compiler\n
+    \ (syntax-rules (&lt; &gt; + - |.| |,|)\n    ((_ proc)\n     proc)\n    ((_ proc
+    &lt; rest ...)\n     (%bf-compiler (compose (lambda (tape)\n                              (cons
+    (cons (cadr tape) (car tape))\n                                    (cddr tape)))\n
+    \                           proc)\n                   rest ...))\n    ((_ proc
+    &gt; rest ...)\n     (%bf-compiler (compose (lambda (tape)\n                              (cons
+    (cdar tape)\n                                    (cons (caar tape) (cdr tape))))\n
+    \                           proc)\n                   rest ...))\n    ((_ proc
+    + rest ...)\n     (%bf-compiler (compose (lambda (tape)\n                              (cons
+    (car tape) (cons (modulo (+ (cadr tape) 1) 256)\n                                                     (cddr
+    tape))))\n                            proc)\n                   rest ...))\n    ((_
+    proc - rest ...)\n     (%bf-compiler (compose (lambda (tape)\n                              (cons
+    (car tape) (cons (modulo (- (cadr tape) 1) 256)\n                                                     (cddr
+    tape))))\n                            proc)\n                   rest ...))\n    ((_
+    proc |.| rest ...)\n     (%bf-compiler (compose (lambda (tape)\n                              (write-byte
+    (cadr tape))\n                              (flush)\n                              tape)\n
+    \                           proc)\n                   rest ...))     \n    ((_
+    proc |,| rest ...)\n     (%bf-compiler (compose (lambda (tape)\n                              (let1
+    c (read-byte)\n                              (cons (car tape)\n                                    (cons
+    (if (eof-object? c) 0 c) (cddr tape)))))\n                            proc)\n
+    \                  rest ...))                   \n    ((_ proc [body ...] rest
+    ...)\n     (%bf-compiler (compose (lambda (tape)\n                              (if
+    (eq? (cadr tape) 0)\n                                  tape\n                                  (let1
+    f (%bf-compiler values body ...)\n                                    (let loop
+    ((t (f tape)))\n                                      (if (eq? (cadr t) 0)\n                                          t\n
+    \                                         (loop (f t)))))))\n                            proc)\n
+    \                  rest ...))))\n\n(define (bf-compiler str n)\n  (write '(use
+    bf))\n  (write `((%bf-compiler values ,@(with-input-from-string\n                              (regexp-replace-all
+    #/[.,+-&lt;&gt;]/ #`\"(,str)\" \"|\\\\0|\")\n                            read))\n
+    \          ',(tape n))))\n                              \n(define (tape n)\n  (let1
+    t (make-list n 0)\n    (cons t t)))\n\n(provide \"bf\")\n"
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '4261'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4261
+  :user_name: koguro
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/438/
+  :language: Other
+  :time: 2007/11/19 15:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>あっ、tapeの実装がちょっと変だった。前のやつだと&lt;でポインタが戻りすぎたときに変な挙動になります(修正版ではエラーになるはず)。</p>\n<p>まあ、変なプログラムを書かなければさっきのでも問題ないはずです。</p>\n\n\t"
+  :code: |
+    (define (tape n)
+      (let1 t (make-list n 0)
+        (cons '() t)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4262'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4262
+  :user_name: koguro
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/438/
+  :language: Scheme
+  :time: 2007/11/19 16:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ぐぁ、ポインタの進む向き逆にしてた。コードをあげなおします。</p>\n\n\t"
+  :code: ";;; bf.scm\n(define-module bf\n  (export-all))\n\n(define-syntax %bf-compiler\n
+    \ (syntax-rules (&lt; &gt; + - |.| |,|)\n    ((_ proc)\n     proc)\n    ((_ proc
+    &gt; rest ...)\n     (%bf-compiler (compose (lambda (tape)\n                              (cons
+    (cons (cadr tape) (car tape))\n                                    (cddr tape)))\n
+    \                           proc)\n                   rest ...))\n    ((_ proc
+    &lt; rest ...)\n     (%bf-compiler (compose (lambda (tape)\n                              (cons
+    (cdar tape)\n                                    (cons (caar tape) (cdr tape))))\n
+    \                           proc)\n                   rest ...))\n    ((_ proc
+    + rest ...)\n     (%bf-compiler (compose (lambda (tape)\n                              (cons
+    (car tape) (cons (modulo (+ (cadr tape) 1) 256)\n                                                     (cddr
+    tape))))\n                            proc)\n                   rest ...))\n    ((_
+    proc - rest ...)\n     (%bf-compiler (compose (lambda (tape)\n                              (cons
+    (car tape) (cons (modulo (- (cadr tape) 1) 256)\n                                                     (cddr
+    tape))))\n                            proc)\n                   rest ...))\n    ((_
+    proc |.| rest ...)\n     (%bf-compiler (compose (lambda (tape)\n                              (write-byte
+    (cadr tape))\n                              (flush)\n                              tape)\n
+    \                           proc)\n                   rest ...))     \n    ((_
+    proc |,| rest ...)\n     (%bf-compiler (compose (lambda (tape)\n                              (let1
+    c (read-byte)\n                              (cons (car tape)\n                                    (cons
+    (if (eof-object? c) 0 c) (cddr tape)))))\n                            proc)\n
+    \                  rest ...))                   \n    ((_ proc [body ...] rest
+    ...)\n     (%bf-compiler (compose (lambda (tape)\n                              (if
+    (eq? (cadr tape) 0)\n                                  tape\n                                  (let1
+    f (%bf-compiler values body ...)\n                                    (let loop
+    ((t (f tape)))\n                                      (if (eq? (cadr t) 0)\n                                          t\n
+    \                                         (loop (f t)))))))\n                            proc)\n
+    \                  rest ...))))\n\n(define (bf-compiler str n)\n  (write '(use
+    bf))\n  (write `((%bf-compiler values ,@(with-input-from-string\n                              (regexp-replace-all
+    #/[.,+-&lt;&gt;]/ #`\"(,str)\" \"|\\\\0|\")\n                            read))\n
+    \          ',(tape n))))\n                              \n(define (tape n)\n  (let1
+    t (make-list n 0)\n    (cons '() t)))\n\n(provide \"bf\")\n"
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '4282'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4282
+  :user_name: nobsun
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/11/21 00:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">バグ発見。ランタイムテンプレート\r\n\r\nコメント内のファイル名\r\n  bfrts.templ
+    → bfrts.tmpl\r\n\r\nmain の定義の右辺\r\n  execute → run\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4288'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4288
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2007/11/21 09:36 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">高階関数を使ってみたい年頃なので高階関数使った版findpc を書いてみました。\r\n\r\nfindpc
+    はループがネストしているとき '[' が来るごとに何度も呼ばれるのが\r\nちょっともったいない気もします。\r\n\r\nそれと hClose oh しないとバッファが
+    flush されませんでした。\r\n</pre>\n\t"
+  :code: |
+    -- import Maybe
+    -- import Control.Monad
+
+    -- -- where pc = findpc [] cs
+    -- where pc = findpc cs
+
+    findpc cs = fromMaybe (error "syntax error")
+      $ msum $ snd $ mapAccumL f 0 cs  where
+        f 0 (p,']') = (0, Just (p+1))
+        f s (_,c) = (s+d, Nothing) where
+          d = case c of; ']' -&gt; (-1); '[' -&gt; 1; _ -&gt; 0
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4340'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4340
+  :user_name: 匿名
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/11/22 13:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>なでしこへ変換。1.50047以降用。出力されるコードはもはや日本語でもなんでもない(^ ^;</p>\n\n\t"
+  :code: |
+    !変数宣言が必要
+    FNとは文字列
+    BFCODEとは文字列
+    NAKOとは文字列=`mとは配列　
+    pとは整数=0
+    //コード開始
+    `
+    INDとは文字列=""
+    TABとは整数=0
+
+    FN="bf"の""でファイル選択
+    もし(FN="")ならば、おわり
+    BFCODE=FNを開く
+    BFCODEの改行を""に置換して文字列分解
+    反復
+        対象で条件分岐
+            "&gt;"ならば
+                NAKO=NAKO&amp;IND&amp;`p=p+1`&amp;改行
+            "&lt;"ならば
+                NAKO=NAKO&amp;IND&amp;`p=p-1`&amp;改行
+            "+"ならば
+                NAKO=NAKO&amp;IND&amp;`m[p]=m[p]+1`&amp;改行
+            "-"ならば
+                NAKO=NAKO&amp;IND&amp;`m[p]=m[p]-1`&amp;改行
+            "."ならば
+                NAKO=NAKO&amp;IND&amp;`継続表示(CHR(m[p]))`&amp;改行
+            ","ならば
+                NAKO=NAKO&amp;IND&amp;`m[p]=INT("${HEXエンコード(文字抜出(入力(空),1,1))}")`&amp;改行
+            "["ならば
+                NAKO=NAKO&amp;IND&amp;`(m[p]&lt;&gt;0)の間`&amp;改行
+                TAB=TAB+1
+                IND=リフレイン(タブ,TAB)
+            "]"ならば
+                TAB=TAB-1
+                IND=リフレイン(タブ,TAB)
+    「nako」のファイル名抽出(FN)&amp;「.nako」で保存ファイル選択
+    NAKOをそれに保存
+    おわり
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4434'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4434
+  :user_name: jijixi
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/582/
+  :language: OCaml
+  :time: 2007/11/27 10:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">素朴な実装。\r\n一応、連続したインクリメント・デクリメントは一つにまとめる程度の最適化はしてます。\r\nサンプルコードは弾さんのページからコピペしました。\r\n\r\n%
+    cat hello.bf\r\n++++++++++[&gt;+++++++&gt;++++++++++&gt;+++&gt;+&lt;&lt;&lt;&lt;-]\r\n&gt;++.&gt;+.+++++++..+++.&gt;++.&lt;&lt;+++++++++++++++.\r\n&gt;.+++.------.--------.&gt;+.&gt;.\r\n\r\n%
+    ./bf.byte hello.bf\r\n% cat hello.ml\r\n(* runtime *)\r\nlet p = ref 0\r\nlet
+    buf_size = 256\r\nlet make_buf () = Array.make buf_size 0\r\nlet buf = ref (make_buf
+    ())\r\nlet extend () = buf := Array.append !buf (make_buf ())\r\nlet pincr n =
+    p := !p + n; if Array.length !buf &gt;= !p then extend ()\r\nlet pdecr n = p :=
+    !p - n; if !p &lt; 0 then failwith \"invalid pointer address!\"\r\ntype vtype
+    = INCR | DECR\r\nlet vset v n = !buf.(!p) &lt;- !buf.(!p) + (match v with INCR
+    -&gt; n | DECR -&gt; -n)\r\nlet output () = print_char (char_of_int !buf.(!p))\r\nlet
+    input () = !buf.(!p) &lt;- int_of_char (input_char stdin)\r\n(* end of runtime
+    *)\r\nlet () =\r\n(* begin of code *)\r\nvset INCR 10;\r\nwhile !buf.(!p) &lt;&gt;
+    0 do\r\npincr 1;\r\nvset INCR 7;\r\npincr 1;\r\nvset INCR 10;\r\npincr 1;\r\nvset
+    INCR 3;\r\npincr 1;\r\nvset INCR 1;\r\npdecr 4;\r\nvset DECR 1;\r\ndone;\r\npincr
+    1;\r\nvset INCR 2;\r\noutput ();\r\npincr 1;\r\nvset INCR 1;\r\noutput ();\r\nvset
+    INCR 7;\r\noutput ();\r\nvset INCR 3;\r\noutput ();\r\npincr 1;\r\nvset INCR 2;\r\noutput
+    ();\r\npdecr 2;\r\nvset INCR 15;\r\noutput ();\r\npincr 1;\r\noutput ();\r\nvset
+    INCR 3;\r\noutput ();\r\nvset DECR 6;\r\noutput ();\r\nvset DECR 8;\r\noutput
+    ();\r\npincr 1;\r\nvset INCR 1;\r\noutput ();\r\npincr 1;\r\noutput ();\r\n(*
+    end of code *)\r\n()\r\n\r\n</pre>\n\t"
+  :code: |
+    (* lexer.mll *)
+    {
+    exception Eof
+    type instruction =
+    | PINCR of int | PDECR of int
+    | VINCR of int | VDECR of int
+    | OUTPUT | INPUT | FJUMP | BJUMP
+    }
+
+    rule token = parse
+       | ('&gt;' +) as s { PINCR (String.length s) }
+       | ('&lt;' +) as s { PDECR (String.length s) }
+       | ('+' +) as s { VINCR (String.length s) }
+       | ('-' +) as s { VDECR (String.length s) }
+       | ('.' +)      { OUTPUT }
+       | (',' +)      { INPUT }
+       | ('[' +)      { FJUMP }
+       | (']' +)      { BJUMP }
+       | ['\n' '\r']  { token lexbuf }
+       | eof          { raise Eof }
+
+    (* bf.ml *)
+    let runtime = "\
+    (* runtime *)
+    let p = ref 0
+    let buf_size = 256
+    let make_buf () = Array.make buf_size 0
+    let buf = ref (make_buf ())
+    let extend () = buf := Array.append !buf (make_buf ())
+    let pincr n = p := !p + n; if Array.length !buf &gt;= !p then extend ()
+    let pdecr n = p := !p - n; if !p &lt; 0 then failwith \"invalid pointer address!\"
+    type vtype = INCR | DECR
+    let vset v n = !buf.(!p) &lt;- !buf.(!p) + (match v with INCR -&gt; n | DECR -&gt; -n)
+    let output () = print_char (char_of_int !buf.(!p))
+    let input () = !buf.(!p) &lt;- int_of_char (input_char stdin)
+    (* end of runtime *)
+    "
+    let code_begin = "\
+    let () =
+    (* begin of code *)
+    "
+    let code_end = "\
+    (* end of code *)
+    ()
+    "
+
+    open Lexer
+
+    let code_of_instruction token =
+       let to_s = string_of_int in
+       match token with
+       | PINCR i -&gt; "pincr " ^ (to_s i) ^ ";\n"
+       | PDECR i -&gt; "pdecr " ^ (to_s i) ^ ";\n"
+       | VINCR i -&gt; "vset INCR " ^ (to_s i) ^ ";\n"
+       | VDECR i -&gt; "vset DECR " ^ (to_s i) ^ ";\n"
+       | OUTPUT  -&gt; "output ();\n"
+       | INPUT   -&gt; "input ();\n"
+       | FJUMP   -&gt; "while !buf.(!p) &lt;&gt; 0 do\n"
+       | BJUMP   -&gt; "done;\n"
+
+    let translate str =
+       let buf = Buffer.create ((String.length runtime) * 2) in
+       let add = Buffer.add_string buf in
+       let ()  = add runtime; add code_begin in
+       let lexbuf = Lexing.from_string str in
+       try
+          while true do
+             add (code_of_instruction (Lexer.token lexbuf))
+          done;
+          failwith "unreached"
+       with Lexer.Eof -&gt;
+          add code_end;
+          Buffer.contents buf
+
+    let main () =
+       match Sys.argv with
+       | [|_; fname |] -&gt; begin
+            let out_file_name =
+               try (Filename.chop_extension fname) ^ ".ml"
+               with _ -&gt; fname ^ ".ml"
+            in
+            let in_ch = open_in fname in
+            let buf = Buffer.create 10 in
+            try
+               while true do
+                  Buffer.add_string buf (input_line in_ch)
+               done
+            with End_of_file -&gt;
+               close_in in_ch;
+               let code = translate (Buffer.contents buf) in
+               let out_ch = open_out out_file_name in
+               output_string out_ch code;
+               close_out out_ch
+         end
+       | _ -&gt;
+            print_endline ("usage: " ^ Sys.argv.(0) ^ " BF_file")
+    let () = if not !Sys.interactive then main ()
+  :tags:
+  - ocamllex
+  :references:
+    :url: 
+    :title: 
+- :id: '4640'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4640
+  :user_name: susu
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/218/
+  :language: Other
+  :time: 2007/12/06 06:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    名前が付いてたんですかっっ。
+    でも上のは、スタックオーバーフローじゃなくて単に
+    Out of rangeなんだろうかとふらふら考えてた跡です。
+    すみません。
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4641'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/4641
+  :user_name: susu
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/218/
+  :language: 
+  :time: 2007/12/06 06:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ありがとうございます。ぴったしな関数があったんですね。\r<br>Pervasivesなんて聞き慣れないモジュール名だったので\r<br>リファレンスも見逃してました。基本だったのに……\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5116'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/5116
+  :user_name: fujidig
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/507/
+  :language: 
+  :time: 2008/01/02 09:45 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  一番手間がかかったのはgetcharの実装です。\n\t"
+  :code: |
+    begingroupundo;
+    gofiletop;
+    $code['&gt;'] = "#ptr=#ptr+1;";
+    $code['&lt;'] = "#ptr=#ptr-1;";
+    $code['+'] = "#buf[#ptr]=#buf[#ptr]+1;";
+    $code['-'] = "#buf[#ptr]=#buf[#ptr]-1;";
+    $code['.'] = "insert char(#buf[#ptr]);";
+    $code[','] = "call get;";
+    $code['['] = "while(#buf[#ptr]){";
+    $code[']'] = "}";
+    #isUsedGetchar = false;
+    while( code != eof ) {
+        if( code == ',' ) #isUsedGetchar = true;
+        insert $code[code];
+        delete;
+    }
+    if( #isUsedGetchar ) {
+        insert "endmacro;get:if($get==\"\"&amp;&amp;#c&lt;=0)$get=input(\"入力\");#c=ascii($get);if($get==\"\")#c=-1;$get=rightstr($get,strlen($get)-strlen(char(#c)));#buf[#ptr]=#c;return;";
+    }
+    endgroupundo;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5264'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/5264
+  :user_name: szktty
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/648/
+  :language: Other
+  :time: 2008/01/11 06:35 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Mac OS X (PowerPC 32bit) アセンブリで。コマンドラインでBFのソースを書いて、標準出力にアセンブリを出力します。当方ヘタレなもんで、Mac
+    OS X PowerPCアセンブリでのファイルの扱いがよくわかりません。</p>\n<pre class=\"literal-block\">\n# BFコンパイラのコンパイル\n%
+    gcc -o bfc-osxppc bfc-osxppc.s\n% ./bfc-osxppc \"++++++++++[&gt;+++++++&gt;++++++++++&gt;+++&gt;+&lt;&lt;&lt;&lt;-]&gt;++.&gt;+.+++++++..+++.&gt;++.&lt;&lt;+++++++++++++++.&gt;.+++.------.--------.&gt;+.\"
+    &gt; hello-bf.s\n\n# 出力されたソースのコンパイルと実行\n% gcc -o hello-bf hello-bf.s\n% ./hello-bf\nHello
+    World!\n</pre>\n\n\t"
+  :code: ";; % gcc -o bfc-osxppc bfc-osxppc.s\n;; \n;; Usage: ./bfc-osxppc \"source...\"
+    &gt; output\n;;\n;; ex)\n;; % ./bfc-osxppc \"++++++++++[&gt;+++++++&gt;++++++++++&gt;+++&gt;+&lt;&lt;&lt;&lt;-]&gt;++.&gt;+.+++++++..+++.&gt;++.&lt;&lt;+++++++++++++++.&gt;.+++.------.--------.&gt;+.\"
+    &gt; hello-bf.s\n;; % gcc -o hello-bf hello-bf.s\n;; % ./hello-bf\n;; Hello World!\n\n
+    \       .machine ppc\n        .globl _main\n        \n        .macro  PUSH\n                stwu
+    \   r3, -4(r1)\n                stwu    r4, -4(r1)\n                stwu    r5,
+    -4(r1)\n                stwu    r6, -4(r1)\n                stwu    r7, -4(r1)\n
+    \               stwu    r8, -4(r1)\n                stwu    r9, -4(r1)\n                stwu
+    \   r10, -4(r1)\n                stwu    r11, -4(r1)\n                stwu    r12,
+    -4(r1)\n                stwu    r13, -4(r1)\n                mflr    r20\n                stwu
+    \   r20, -4(r1)\n        .endmacro\n\n        .macro POP\n                lwz
+    \    r20, 0(r1)\n                mtlr    r20\n                lwzu    r13, 4(r1)\n
+    \               lwzu    r12, 4(r1)\n                lwzu    r11, 4(r1)\n                lwzu
+    \   r10, 4(r1)\n                lwzu    r9, 4(r1)\n                lwzu    r8,
+    4(r1)\n                lwzu    r7, 4(r1)\n                lwzu    r6, 4(r1)\n
+    \               lwzu    r5, 4(r1)\n                lwzu    r4, 4(r1)\n                lwzu
+    \   r3, 4(r1)\n                addi    r1, r1, 4\n        .endmacro\n\n        .macro
+    PRINT\n                PUSH\n                li      r3, 1\n                lis
+    \    r4, hi16($0)\n                addi    r4, r4, lo16($0)\n                lis
+    \    r5, hi16($0_len)\n                addi    r5, r5, lo16($0_len)\n                li
+    \     r0, 4\n                sc\n                POP\n        .endmacro\n\n        .macro
+    PRINT_DIGIT\n                PUSH\n                mr      r3, $0\n                bl
+    \     print_digit\n                POP\n        .endmacro\n\n;; r7:  ソースコード\n;;
+    r8:  読み込んだ文字\n;; r9:  配列のサイズ\n;; r10: ラベルの数\n_main:\n        lwz     r7, 4(r4)
+    \      ; argv[1]\n        li      r8, 0\n        li      r9, 10\n        li      r10,
+    0\n\n;; ヘッダを出力\nprint_header:\n        PRINT   bf_header\n\ncompile:\n        lbz
+    \    r8, 0(r7)\n        cmpli   cr7, r8, 0\n        beq     cr7, finish_compile\n
+    \       addi    r7, r7, 1\n\n        cmpli   cr7, r8, 62     ; '&gt;'\n        beq
+    \    cr7, compile_inc\n        cmpli   cr7, r8, 60     ; '&lt;'\n        beq     cr7,
+    compile_dec\n        cmpli   cr7, r8, 43     ; '+'\n        beq     cr7, compile_plus\n
+    \       cmpli   cr7, r8, 45     ; '-'\n        beq     cr7, compile_minus\n        cmpli
+    \  cr7, r8, 46     ; '.'\n        beq     cr7, compile_output\n        cmpli   cr7,
+    r8, 44     ; ','\n        beq     cr7, compile_input\n        cmpli   cr7, r8,
+    91     ; '['\n        beq     cr7, compile_forward\n        cmpli   cr7, r8, 93
+    \    ; ']'\n        beq     cr7, compile_backward\n\n        ;; 他の文字は無視\n        b
+    \      compile\n\ncompile_inc:\n        addi    r9, r9, 1\n        PRINT   bf_inc\n
+    \       b       compile\n\ncompile_dec:\n        subi    r9, r9, 1\n        PRINT
+    \  bf_dec\n        b       compile\n\ncompile_plus:\n        PRINT   bf_plus\n
+    \       b       compile\n\ncompile_minus:\n        PRINT   bf_minus\n        b
+    \      compile\n\ncompile_output:\n        PRINT   bf_output\n        b       compile\n\ncompile_input:\n
+    \       PRINT   bf_input\n        b       compile\n\ncompile_forward:\n        addi
+    \   r10, r10, 1\n        stwu    r10, -4(r1)\n        PRINT   bf_forward_cmp\n
+    \       PRINT   bf_end_label\n        PRINT_DIGIT     r10\n        PRINT   lf\n
+    \       PRINT   bf_begin_label\n        PRINT_DIGIT     r10\n        PRINT   bf_label_term\n
+    \       b       compile\n\ncompile_backward:\n        lwz     r2, 0(r1)\n        addi
+    \   r1, r1, 4\n        PRINT   bf_backward_cmp\n        PRINT   bf_begin_label\n
+    \       PRINT_DIGIT     r2\n        PRINT   lf\n        PRINT   bf_end_label\n
+    \       PRINT_DIGIT     r2\n        PRINT   bf_label_term\n        b       compile\n\nfinish_compile:\n
+    \       PRINT   lf\n        PRINT   bf_exit\n        PRINT   bf_data\n        PRINT
+    \  bf_array_decl\n\nprint_array:\n        PRINT   bf_array_element\n        cmpli
+    \  cr7, r9, 0\n        subi    r9, r9, 1\n        bgt     cr7, print_array\n        PRINT
+    \  bf_array_decl_end\n        \nexit:\n        PRINT   lf\n        \n        ;;
+    sys_exit()\n        li      r3, 0\n        li      r0, 1           ; sys_exit\n
+    \       sc\n\n\n;; 正の整数を10進数で出力\n;; r3: 出力する整数\nprint_digit:\n        mr      r10,
+    r3\n        li      r11, 25000      ; fig, 桁\n        mulli   r11, r11, 4\n        li
+    \     r14, 10         ; 桁の除算用\n        li      r15, 0          ; 残りの数字をすべて表示するか\n\n;;
+    上の桁から順に出力する\nprint_each_digit:\n        divw    r12, r10, r11   ; d = i / fig\n
+    \       mullw   r13, r11, r12   ; rem = i - fig * d\n        sub     r10, r10,
+    r13\n\n        cmpli   cr7, r15, 0\n        cmpli   cr6, r12, 0     ; d == 0\n
+    \       cmpli   cr5, r11, 1     ; fig &gt; 1\n        crand   2, 30, 26       ;
+    cr0[eq] = cr7[eq] &amp;&amp; cr6[eq]\n        crand   2, 2, 21        ; cr0[eq]
+    = cr0[eq] &amp;&amp; cr5[gt]\n        divw    r11, r11, r14   ; fig /= 10\n        beq
+    \    cr0, print_each_digit\n\n        ;; 出力\n        li      r15, 1\n        addi
+    \   r12, r12, 48    ; ASCIIコードにする\n        li      r3, 1           ; 標準出力\n        lis
+    \    r4, hi16(temp)\n        addi    r4, r4, lo16(temp)\n        li      r5, 1\n
+    \       li      r0, 4           ; sys_write\n        stb     r12, 0(r4)\n        PUSH\n
+    \       sc\n        POP\n\n        cmpli   cr7, r11, 0     ; fig == 0 なら終了\n        beqlr
+    \  cr7\n        b       print_each_digit\n\n\n;; 定数\n\n        .data\n        .align
+    \ 4\n\ntemp:\n        .asciz  \"    \"\n        .align  4\n\nlf:\n        .asciz
+    \ \"\\n\"\n        .align  4\n        lf_len = 1\n        .align  4\n\nbf_header:\n
+    \       .asciz  \";; This file is automatically generated. Do not edit.\\n\\n
+    \   .machine ppc\\n    .globl _main\\n\\n    .macro  PUSH\\n            stwu    r7,
+    -4(r1)\\n            stwu    r8, -4(r1)\\n            stwu    r9, -4(r1)\\n    .endmacro\\n\\n
+    \   .macro  POP\\n            lwz     r9, 0(r1)\\n            lwzu    r8, 4(r1)\\n
+    \           lwzu    r7, 4(r1)\\n            addi    r1, r1, 4\\n    .endmacro\\n\\n
+    \   .macro  OUTPUT\\n            PUSH\\n            li      r3, 1\\n            lis
+    \    r4, hi16(temp)\\n            addi    r4, r4, lo16(temp)\\n            stb
+    \    r8, 0(r4)\\n            li      r5, 1\\n            li      r0, 4\\n            sc\\n
+    \           POP\\n    .endmacro\\n\\n\\n_main:\\n    lis     r7, hi16(array)\\n
+    \   addi    r7, r7, lo16(array)\\n    li      r8, 0\\n\\n\"\n        bf_header_len
+    = . - bf_header - 1\n        .align  4\n\nbf_exit:\n        .asciz  \"exit:\\n
+    \   li      r8, 10\\n    OUTPUT\\n    li      r3, 0\\n    li      r0, 1\\n    sc\\n\\n\"\n
+    \       bf_exit_len = . - bf_exit - 1\n        .align  4\n\nbf_data:\n        .asciz
+    \ \"\\n\\n    .data\\n    .align  4\\n\\ntemp:\\n    .asciz  \\\"  \\\"\\n    .align
+    \ 4\\n\\n\"\n        bf_data_len = . - bf_data - 1\n        .align  4\n\nbf_array_decl:\n
+    \       .asciz  \"array:\\n    .long \"\n        bf_array_decl_len = . - bf_array_decl
+    - 1\n        .align  4\n\nbf_array_element:\n        .asciz  \"0, \"\n        bf_array_element_len
+    = . - bf_array_element - 1\n        .align  4\n\nbf_array_decl_end:\n        .asciz
+    \ \"0\\n    .align  4\\n\"\n        bf_array_decl_end_len = . - bf_array_decl_end
+    - 1\n        .align  4\n\nbf_inc:\n        .asciz  \"    addi    r7, r7, 4\\n\"\n
+    \       bf_inc_len = . - bf_inc - 1\n        .align  4\n\nbf_dec:\n        .asciz
+    \ \"    subi    r7, r7, 4\\n\"\n        bf_dec_len = . - bf_dec - 1\n        .align
+    \ 4\n\nbf_plus:\n        .asciz  \"    lwz     r8, 0(r7)\\n    addi    r8, r8,
+    1\\n    stw     r8, 0(r7)\\n\"\n        bf_plus_len = . - bf_plus - 1\n        .align
+    \ 4\n\nbf_minus:\n        .asciz  \"    lwz     r8, 0(r7)\\n    subi    r8, r8,
+    1\\n    stw     r8, 0(r7)\\n\"\n        bf_minus_len = . - bf_minus - 1\n        .align
+    \ 4\n\nbf_output:\n        .asciz  \"    lwz     r8, 0(r7)\\n    OUTPUT\\n\"\n
+    \       bf_output_len = . - bf_output - 1\n        .align  4\n\nbf_input:\n        .asciz
+    \ \"    INPUT\\n\"\n        bf_input_len = . - bf_input - 1\n        .align  4\n\nbf_forward_cmp:\n
+    \       .asciz  \"    lwz     r8, 0(r7)\\n    cmpi    cr7, r8, 0\\n    beq     cr7,
+    \"\n        bf_forward_cmp_len = . - bf_forward_cmp - 1\n        .align  4\n\nbf_begin_label:\n
+    \       .asciz  \"begin\"\n        bf_begin_label_len = . - bf_begin_label - 1\n
+    \       .align  4\n\nbf_end_label:\n        .asciz  \"end\"\n        bf_end_label_len
+    = . - bf_end_label - 1\n        .align  4\n\nbf_label_term:\n        .asciz  \":\\n\"\n
+    \       bf_label_term_len = . - bf_label_term - 1\n        .align  4\n\nbf_backward_cmp:\n
+    \       .asciz  \"    lwz     r8, 0(r7)\\n    cmpi    cr7, r8, 0\\n    bne     cr7,
+    \"\n        bf_backward_cmp_len = . - bf_backward_cmp - 1\n        .align  4\n"
+  :tags:
+  - Assembly
+  - MacOSX
+  - PowerPC
+  :references:
+    :url: 
+    :title: 
+- :id: '5594'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/5594
+  :user_name: 匿名
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/01/31 06:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">昔七行スレに投下したのを投稿してみる。\r\n要gcc、出力はa.outで固定です。\r\n$
+    gcc bfc.c -o bfc #コンパイラのコンパイル\r\n$ ./bfc hoge.bf #コンパイル\r\n$ ./a.out #実行\r\n</pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    int system(),i;int main(int c,char**v){FILE*f=fopen(*++v,"r"),*g=fopen("!.c","w"
+    );char s[99],*o[]={"putchar(*p);","*p=getchar();","while(*p){","}","++p;","--p;"
+    ,"++*p;","--*p;"};fputs("#include&lt;stdio.h&gt;\nint main(void){static int b[30000],"
+    "*p=b;",g);for(;f&amp;&amp;(c=fgetc(f))-EOF;)for(i=8;0&lt;i--;)fputs(".,[]&gt;&lt;+-"[i]-c?"":o[i
+    ],g);fputs("return 0;}",g);fclose(f);fclose(g);sprintf(s,"gcc !.c -o%s",*++v);
+    return system(s);}
+  :tags: []
+  :references:
+    :url: /web/20090527033636/http://pc2.2ch.net/tech/kako/1033/10331/1033143528.html
+    :title: ''
+- :id: '5925'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/5925
+  :user_name: kozima
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/164/
+  :language: OCaml
+  :time: 2008/03/02 15:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>MetaOCaml 使ってみました。コード生成部が読みにくい……</p>\n<p>出力されるコードはこんな風になります:</p>\n<pre
+    class=\"literal-block\">\n# compile \"++++++++[&gt;++++++++&lt;-]&gt;+.\";;\n-
+    : ('a, state -&gt; unit) code =\n.&lt;fun s_1 -&gt;\n   let _ = (s_1.array).(s_1.ptr)
+    &lt;- ((s_1.array).(s_1.ptr) + 8) in\n   let _ =\n    while ((s_1.array).(s_1.ptr)
+    &lt;&gt; 0) do\n     let _ = s_1.ptr &lt;- ((s_1.ptr + 1) mod s_1.array_size)
+    in\n     let _ = (s_1.array).(s_1.ptr) &lt;- ((s_1.array).(s_1.ptr) + 8) in\n
+    \    let _ = s_1.ptr &lt;- ((s_1.ptr + (-1)) mod s_1.array_size) in\n     let
+    _ = (s_1.array).(s_1.ptr) &lt;- ((s_1.array).(s_1.ptr) + (-1)) in ()\n    done
+    in\n   let _ = s_1.ptr &lt;- ((s_1.ptr + 1) mod s_1.array_size) in\n   let _ =
+    (s_1.array).(s_1.ptr) &lt;- ((s_1.array).(s_1.ptr) + 1) in\n   let _ =\n    (output_char
+    stdout\n      (((* cross-stage persistent value (as id: Char.chr) *))\n        (s_1.array).(s_1.ptr)))
+    in\n   ()&gt;.\n</pre>\n\n\t"
+  :code: |
+    type inst = Inc of int | Shift of int | Input | Output | Loop of inst list
+
+    let count_while c s =
+      let rec loop m =
+        match Stream.peek s with
+          | Some c' when c = c' -&gt; Stream.junk s; loop (m+1)
+          | _ -&gt; m
+      in loop 1
+
+    let rec parse1 s =
+      match Stream.next s with
+        | '+' -&gt; Inc (count_while '+' s)
+        | '-' -&gt; Inc (- (count_while '-' s))
+        | '&gt;' -&gt; Shift (count_while '&gt;' s)
+        | '&lt;' -&gt; Shift (- (count_while '&lt;' s))
+        | '.' -&gt; Output
+        | ',' -&gt; Input
+        | '[' -&gt; Loop (parseloop s [])
+        | _   -&gt; parse1 s
+    and parse s acc =
+      try let i = parse1 s in parse s (i :: acc)
+      with Stream.Failure -&gt; List.rev acc
+    and parseloop s acc =
+      if Stream.peek s = Some ']' then (Stream.junk s; List.rev acc)
+      else parseloop s (parse1 s :: acc)
+
+    type state = { mutable ptr : int; array : int array; array_size : int; }
+
+    let rec trans1 i s =
+      match i with
+        | Inc n   -&gt; .&lt; (.~s).array.((.~s).ptr) &lt;- (.~s).array.((.~s).ptr) + n &gt;.
+        | Shift n -&gt; .&lt; (.~s).ptr &lt;- ((.~s).ptr + n) mod (.~s).array_size &gt;.
+        | Output  -&gt; .&lt; output_char stdout (Char.chr (.~s).array.((.~s).ptr)) &gt;.
+        | Input   -&gt; .&lt; (.~s).array.((.~s).ptr) &lt;- Char.code (input_char stdin) &gt;.
+        | Loop is -&gt;
+            .&lt; while (.~s).array.((.~s).ptr) &lt;&gt; 0 do .~(trans is s) done &gt;.
+    and trans insts s =
+      let f i code = .&lt; let _ = .~(trans1 i s) in .~code &gt;.
+      in List.fold_right f insts .&lt;()&gt;.
+
+    let make_state n = { ptr = 0; array = Array.create n 0; array_size = n; }
+    let compile str =
+      .&lt;fun s -&gt; .~(trans (parse (Stream.of_string str) []) .&lt;s&gt;.)&gt;.
+    let execute str = (.! compile str) (make_state 100)
+  :tags:
+  - MetaOCaml
+  :references:
+    :url: 
+    :title: 
+- :id: '6259'
+  :parent_id: '80'
+  :url: http://ja.doukaku.org/comment/6259
+  :user_name: Unkun
+  :user_url: /web/20090527033636/http://ja.doukaku.org/user/801/
+  :language: Other
+  :time: 2008/05/04 14:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>VBAを使用せず、Excelの普通(?)の関数のみでBrainfuckインタプリタを作りました。</p>\n<p>メモリセル(16個だけ)、プログラムの長さ(1024文字まで)、実行ステップ数(1024ステップまで)に制限があります。\nあと、Excelで表示できない文字は出力されないようにしました。</p>\n\n\t"
+  :code: |
+    ソースを貼り付けることができないので、
+    Excelファイルをここにアップロードしておきました。
+    http://unkun.ikaduchi.com/uploadFiles/BF.xls
+  :tags: []
+  :references:
+    :url: 
+    :title: 

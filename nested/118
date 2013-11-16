@@ -1,0 +1,7351 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja"> 
+  <head>
+
+<script type="text/javascript" src="/static/js/analytics.js" ></script>
+<link type="text/css" rel="stylesheet" href="/static/css/banner-styles.css"/>
+
+
+
+
+    <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+    <title>
+コマンドライン引数の取得
+どう書く？org </title>
+
+    <link rel="stylesheet" type="text/css"
+	href="/web/20111027190926cs_/http://ja.doukaku.org/static/style/reset-fonts-grids.css" />
+    <link rel="stylesheet" type="text/css"
+	href="/web/20111027190926cs_/http://ja.doukaku.org/static/style/style.css" />
+	
+    <link rel="stylesheet" type="text/css"
+	href="/web/20111027190926cs_/http://ja.doukaku.org/static/style/pygments.css" />
+
+
+	
+    <!--<script src="/static/js/ieerbug/ieerbug.js" type="text/javascript"></script>-->
+
+
+<script src="/web/20111027190926js_/http://ja.doukaku.org/static/js/jquery-1.1.3.1.js" type="text/javascript"></script>
+<script src="/web/20111027190926js_/http://ja.doukaku.org/static/js/rating.js" type="text/javascript"></script>
+<script src="/web/20111027190926js_/http://ja.doukaku.org/static/js/addtag.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+is_key_navigation_enable = true;
+</script>
+<script src="/web/20111027190926js_/http://ja.doukaku.org/static/js/utils.js" type="text/javascript"></script>
+
+</head>
+
+
+<body id="doukaku_org">
+<!-- BEGIN WAYBACK TOOLBAR INSERT -->
+<script> if (window.archive_analytics) { window.archive_analytics.values['server_name']="wwwb-app19.us.archive.org";}; </script>
+
+<script type="text/javascript" src="/static/js/disclaim-element.js" ></script>
+<script type="text/javascript" src="/static/js/graph-calc.js" ></script>
+<script type="text/javascript" src="/static/jflot/jquery.min.js" ></script>
+<script type="text/javascript">
+//<![CDATA[
+var firstDate = 820454400000;
+var lastDate = 1388534399999;
+var wbPrefix = "/web/";
+var wbCurrentUrl = "http:\/\/ja.doukaku.org\/118\/nested";
+
+var curYear = -1;
+var curMonth = -1;
+var yearCount = 18;
+var firstYear = 1996;
+var imgWidth = 450;
+var yearImgWidth = 25;
+var monthImgWidth = 2;
+var trackerVal = "none";
+var displayDay = "27";
+var displayMonth = "Oct";
+var displayYear = "2011";
+var prettyMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function showTrackers(val) {
+	if(val == trackerVal) {
+		return;
+	}
+	if(val == "inline") {
+		document.getElementById("displayYearEl").style.color = "#ec008c";
+		document.getElementById("displayMonthEl").style.color = "#ec008c";
+		document.getElementById("displayDayEl").style.color = "#ec008c";		
+	} else {
+		document.getElementById("displayYearEl").innerHTML = displayYear;
+		document.getElementById("displayYearEl").style.color = "#ff0";
+		document.getElementById("displayMonthEl").innerHTML = displayMonth;
+		document.getElementById("displayMonthEl").style.color = "#ff0";
+		document.getElementById("displayDayEl").innerHTML = displayDay;
+		document.getElementById("displayDayEl").style.color = "#ff0";
+	}
+   document.getElementById("wbMouseTrackYearImg").style.display = val;
+   document.getElementById("wbMouseTrackMonthImg").style.display = val;
+   trackerVal = val;
+}
+function getElementX2(obj) {
+	var thing = jQuery(obj);
+	if((thing == undefined) 
+			|| (typeof thing == "undefined") 
+			|| (typeof thing.offset == "undefined")) {
+		return getElementX(obj);
+	}
+	return Math.round(thing.offset().left);
+}
+function trackMouseMove(event,element) {
+
+   var eventX = getEventX(event);
+   var elementX = getElementX2(element);
+   var xOff = eventX - elementX;
+	if(xOff < 0) {
+		xOff = 0;
+	} else if(xOff > imgWidth) {
+		xOff = imgWidth;
+	}
+   var monthOff = xOff % yearImgWidth;
+
+   var year = Math.floor(xOff / yearImgWidth);
+	var yearStart = year * yearImgWidth;
+   var monthOfYear = Math.floor(monthOff / monthImgWidth);
+   if(monthOfYear > 11) {
+       monthOfYear = 11;
+   }
+   // 1 extra border pixel at the left edge of the year:
+   var month = (year * 12) + monthOfYear;
+   var day = 1;
+	if(monthOff % 2 == 1) {
+		day = 15;
+	}
+	var dateString = 
+		zeroPad(year + firstYear) + 
+		zeroPad(monthOfYear+1,2) +
+		zeroPad(day,2) + "000000";
+
+	var monthString = prettyMonths[monthOfYear];
+	document.getElementById("displayYearEl").innerHTML = year + 1996;
+	document.getElementById("displayMonthEl").innerHTML = monthString;
+	// looks too jarring when it changes..
+	//document.getElementById("displayDayEl").innerHTML = zeroPad(day,2);
+
+	var url = wbPrefix + dateString + '/' +  wbCurrentUrl;
+	document.getElementById('wm-graph-anchor').href = url;
+
+   //document.getElementById("wmtbURL").value="evX("+eventX+") elX("+elementX+") xO("+xOff+") y("+year+") m("+month+") monthOff("+monthOff+") DS("+dateString+") Moy("+monthOfYear+") ms("+monthString+")";
+   if(curYear != year) {
+       var yrOff = year * yearImgWidth;
+       document.getElementById("wbMouseTrackYearImg").style.left = yrOff + "px";
+       curYear = year;
+   }
+   if(curMonth != month) {
+       var mtOff = year + (month * monthImgWidth) + 1;
+       document.getElementById("wbMouseTrackMonthImg").style.left = mtOff + "px";
+       curMonth = month;
+   }
+}
+//]]>
+</script>
+
+<style type="text/css">body{margin-top:0!important;padding-top:0!important;min-width:800px!important;}#wm-ipp a:hover{text-decoration:underline!important;}</style>
+<div id="wm-ipp" lang="en" class="__wb_banner_div" style="display:none; position:relative;padding:0 5px;min-height:70px;min-width:800px">
+
+
+<div id="wm-ipp-inside" class="__wb_banner_div" style="position:fixed;padding:0!important;margin:0!important;width:97%;min-width:780px;border:5px solid #000;border-top:none;background-image:url(/static/images/toolbar/wm_tb_bk_trns.png);text-align:center;-moz-box-shadow:1px 1px 3px #333;-webkit-box-shadow:1px 1px 3px #333;box-shadow:1px 1px 3px #333;font-size:11px!important;font-family:'Lucida Grande','Arial',sans-serif!important;">
+   <table style="border-collapse:collapse;margin:0;padding:0;width:100%;"><tbody><tr>
+   <td style="padding:10px;vertical-align:top;min-width:110px;">
+   <a href="/web/" title="Wayback Machine home page" style="background-color:transparent;border:none;"><img src="/static/images/toolbar/wayback-toolbar-logo.png" alt="Wayback Machine" width="110" height="39" border="0"/></a>
+   </td>
+   <td style="padding:0!important;text-align:center;vertical-align:top;width:100%;">
+
+       <table style="border-collapse:collapse;margin:0 auto;padding:0;width:570px;"><tbody><tr>
+       <td style="padding:3px 0;" colspan="2">
+       <form target="_top" method="get" action="/web/form-submit.jsp" name="wmtb" id="wmtb" style="margin:0!important;padding:0!important;"><input type="text" name="url" id="wmtbURL" value="http://ja.doukaku.org/118/nested" style="width:400px;font-size:11px;font-family:'Lucida Grande','Arial',sans-serif;" onfocus="javascript:this.focus();this.select();" /><input type="hidden" name="type" value="replay" /><input type="hidden" name="date" value="20111027190926" /><input type="submit" value="Go" style="font-size:11px;font-family:'Lucida Grande','Arial',sans-serif;margin-left:5px;width: inherit !important" /><span id="wm_tb_options" style="display:block;"></span></form>
+       </td>
+       <td style="vertical-align:bottom;padding:5px 0 0 0!important;" rowspan="2">
+           <table style="border-collapse:collapse;width:110px;color:#99a;font-family:'Helvetica','Lucida Grande','Arial',sans-serif;"><tbody>
+			
+           <!-- NEXT/PREV MONTH NAV AND MONTH INDICATOR -->
+           <tr style="width:110px;height:16px;font-size:10px!important;">
+           	<td style="padding-right:9px;font-size:11px!important;font-weight:bold;text-transform:uppercase;text-align:right;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+		                <a href="/web/20080922192503/http://ja.doukaku.org/118/nested/" style="text-decoration:none;color:#33f;font-weight:bold;background-color:transparent;border:none;" title="22 Sep 2008"><strong>SEP</strong></a>
+		                
+               </td>
+               <td id="displayMonthEl" style="background:#000;color:#ff0;font-size:11px!important;font-weight:bold;text-transform:uppercase;width:34px;height:15px;padding-top:1px;text-align:center;" title="You are here: 19:09:26 Oct 27, 2011">OCT</td>
+				<td style="padding-left:9px;font-size:11px!important;font-weight:bold;text-transform:uppercase;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+		                <a href="/web/20111228004820/http://ja.doukaku.org/118/nested" style="text-decoration:none;color:#33f;font-weight:bold;background-color:transparent;border:none;" title="28 Dec 2011"><strong>DEC</strong></a>
+		                
+               </td>
+           </tr>
+
+           <!-- NEXT/PREV CAPTURE NAV AND DAY OF MONTH INDICATOR -->
+           <tr>
+               <td style="padding-right:9px;white-space:nowrap;overflow:visible;text-align:right!important;vertical-align:middle!important;" nowrap="nowrap">
+               
+		                <a href="/web/20080922192503/http://ja.doukaku.org/118/nested/" title="19:25:03 Sep 22, 2008" style="background-color:transparent;border:none;"><img src="/static/images/toolbar/wm_tb_prv_on.png" alt="Previous capture" width="14" height="16" border="0" /></a>
+		                
+               </td>
+               <td id="displayDayEl" style="background:#000;color:#ff0;width:34px;height:24px;padding:2px 0 0 0;text-align:center;font-size:24px;font-weight: bold;" title="You are here: 19:09:26 Oct 27, 2011">27</td>
+				<td style="padding-left:9px;white-space:nowrap;overflow:visible;text-align:left!important;vertical-align:middle!important;" nowrap="nowrap">
+               
+		                <a href="/web/20111127095632/http://ja.doukaku.org/118/nested" title="9:56:32 Nov 27, 2011" style="background-color:transparent;border:none;"><img src="/static/images/toolbar/wm_tb_nxt_on.png" alt="Next capture" width="14" height="16" border="0"/></a>
+		                
+			    </td>
+           </tr>
+
+           <!-- NEXT/PREV YEAR NAV AND YEAR INDICATOR -->
+           <tr style="width:110px;height:13px;font-size:9px!important;">
+				<td style="padding-right:9px;font-size:11px!important;font-weight: bold;text-align:right;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+		                <a href="/web/20080922192503/http://ja.doukaku.org/118/nested/" style="text-decoration:none;color:#33f;font-weight:bold;background-color:transparent;border:none;" title="22 Sep 2008"><strong>2008</strong></a>
+		                
+               </td>
+               <td id="displayYearEl" style="background:#000;color:#ff0;font-size:11px!important;font-weight: bold;padding-top:1px;width:34px;height:13px;text-align:center;" title="You are here: 19:09:26 Oct 27, 2011">2011</td>
+				<td style="padding-left:9px;font-size:11px!important;font-weight: bold;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+                       2012
+                       
+				</td>
+           </tr>
+           </tbody></table>
+       </td>
+
+       </tr>
+       <tr>
+       <td style="vertical-align:middle;padding:0!important;">
+           <a href="/web/20111027190926*/http://ja.doukaku.org/118/nested" style="color:#33f;font-size:11px;font-weight:bold;background-color:transparent;border:none;" title="See a list of every capture for this URL"><strong>12 captures</strong></a>
+           <div class="__wb_banner_div" style="margin:0!important;padding:0!important;color:#666;font-size:9px;padding-top:2px!important;white-space:nowrap;" title="Timespan for captures of this URL">13 May 07 - 28 Dec 11</div>
+       </td>
+       <td style="padding:0!important;">
+       <a style="position:relative; white-space:nowrap; width:450px;height:27px;" href="" id="wm-graph-anchor">
+       <div class="__wb_banner_div" id="wm-ipp-sparkline" style="position:relative; white-space:nowrap; width:450px;height:27px;background-color:#fff;cursor:pointer;border-right:1px solid #ccc;" title="Explore captures for this URL">
+			<img id="sparklineImgId" style="position:absolute; z-index:9012; top:0px; left:0px;"
+				onmouseover="showTrackers('inline');" 
+				onmouseout="showTrackers('none');"
+				onmousemove="trackMouseMove(event,this)"
+				alt="sparklines"
+				width="450"
+				height="27"
+				border="0"
+				src="/web/jsp/graph.jsp?graphdata=450_27_1996:-1:000000000000_1997:-1:000000000000_1998:-1:000000000000_1999:-1:000000000000_2000:-1:000000000000_2001:-1:000000000000_2002:-1:000000000000_2003:-1:000000000000_2004:-1:000000000000_2005:-1:000000000000_2006:-1:000000000000_2007:-1:000010000002_2008:-1:011100001000_2009:-1:000000000000_2010:-1:000000000000_2011:9:000000000221_2012:-1:000000000000_2013:-1:000000000000"></img>
+			<img id="wbMouseTrackYearImg" 
+				style="display:none; position:absolute; z-index:9010;"
+				width="25" 
+				height="27"
+				border="0"
+				src="/static/images/toolbar/transp-yellow-pixel.png"></img>
+			<img id="wbMouseTrackMonthImg"
+				style="display:none; position:absolute; z-index:9011; " 
+				width="2"
+				height="27" 
+				border="0"
+				src="/static/images/toolbar/transp-red-pixel.png"></img>
+       </div>
+		</a>
+
+       </td>
+       </tr></tbody></table>
+   </td>
+   <td style="text-align:right;padding:5px;width:65px;font-size:11px!important;">
+       <a href="javascript:;" onclick="document.getElementById('wm-ipp').style.display='none';" style="display:block;padding-right:18px;background:url(/static/images/toolbar/wm_tb_close.png) no-repeat 100% 0;color:#33f;font-family:'Lucida Grande','Arial',sans-serif;margin-bottom:23px;background-color:transparent;border:none;" title="Close the toolbar">Close</a>
+       <a href="http://faq.web.archive.org/" style="display:block;padding-right:18px;background:url(/static/images/toolbar/wm_tb_help.png) no-repeat 100% 0;color:#33f;font-family:'Lucida Grande','Arial',sans-serif;background-color:transparent;border:none;" title="Get some help using the Wayback Machine">Help</a>
+   </td>
+   </tr></tbody></table>
+
+</div>
+</div>
+<script type="text/javascript">
+ var wmDisclaimBanner = document.getElementById("wm-ipp");
+ if(wmDisclaimBanner != null) {
+   disclaimElement(wmDisclaimBanner);
+ }
+</script>
+<!-- END WAYBACK TOOLBAR INSERT -->
+
+
+<div id="page_head" class="compact">
+  <h1 class="compact">
+    <a href="/web/20111027190926/http://ja.doukaku.org/">どう書く？org</a><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/beta.png" alt="beta">
+  </h1>
+</div>
+
+<div id="page_body" class="compact">
+<div id="content" class="compact">
+
+
+
+
+<h2 class="compact">
+<img src='/web/20111027190926im_/http://ja.doukaku.org/static/image/star_gold.png' alt=challenge>
+<a href="/web/20111027190926/http://ja.doukaku.org/118/">コマンドライン引数の取得</a>
+</h2>
+
+    
+
+
+
+
+<div class="comment" id="comment4868"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/26/" target="_top">dankogai</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4868/">#4868</a>(<script language="JavaScript">print_time(new Date("2007/12/18 14:47 GMT"));</script><noscript>2007/12/18 14:47 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #33ff00;">12/18=0.67</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  
+<p>以下にけだし同感なので。
+</p>
+<p><a href="/web/20111027190926/http://inforno.net/articles/2007/12/18/i-dont-know-the-doukaku-org-will-be-a-multilingual-cookbook">inferno :: どう書く？orgは多言語クックブックになれるか</a>
+   &gt; 一般投稿が可になった時に、ちょっと感じてたんですがやっぱり最近ある傾向が顕著で。というのは数学パズル系とか、(数学的な、事務処理などではない)アルゴリズム勝負！なお題ばっかりなんですよね。
+</p>
+<p>というわけで、たまには簡単でその場で答えが出て、なによりある言語使いにとって「外国語」ではこういうんだというのがわかる問題として考えてみました。
+</p>
+<p><code>% program a b c d</code>
+</p>
+<p>で a, b, c, d を得るにはどうしたらよいかという、それこそネイティブには刺身タンポポより簡単だけど、「外国人」にはとっさに浮かばないという問題です。
+</p>
+<p>Dan the Practical Programmer
+</p>
+
+
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4868/addtag/" class="addtag" id="addtag_4868">タグ</a>:
+	なし&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #33ff00;"
+  >12/18=0.67</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_4868"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_4868"
+  >0</span><span 
+  class="button green"
+  id="rating_p_4868"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://reply_to/4868/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+
+<div class="indent">
+<a href="/web/20111027190926/http://ja.doukaku.org/118/post_comment/">
+コメントを投稿する
+</a>
+</div>
+
+
+<h2>投稿されたコメント - ネスト表示</h2>
+<a href="/web/20111027190926/http://ja.doukaku.org/118/flatten/">フラット表示</a> 
+<a href="/web/20111027190926/http://ja.doukaku.org/118/">非表示</a> 
+
+
+  
+    
+
+
+
+
+<div class="comment" id="comment6161"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/760/" target="_top">turugina</a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/6161/">#6161</a>(<script language="JavaScript">print_time(new Date("2008/04/09 09:26 GMT"));</script><noscript>2008/04/09 09:26 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/cpp/">
+	  C++
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  ほぼCと一緒ですが..
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7</pre></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;iostream&gt;</span>
+<span class="cp">#include &lt;iterator&gt;</span>
+<span class="cp">#include &lt;algorithm&gt;</span>
+<span class="kt">int</span> <span class="n">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">c</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">copy</span><span class="p">(</span><span class="n">v</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">v</span><span class="o">+</span><span class="n">c</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">ostream_iterator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">));</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/6161/addtag/" class="addtag" id="addtag_6161">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/cpp/">
+		C++
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/6161/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/6161/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6161"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6161"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6161"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/6161/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment4998"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/579/" target="_top">cho45</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4998/">#4998</a>(<script language="JavaScript">print_time(new Date("2007/12/27 10:13 GMT"));</script><noscript>2007/12/27 10:13 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/ruby/">
+	  Ruby
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <div class="section">
+<p>$* も同じです。</p>
+</div>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1</pre></td><td class="code"><div class="highlight"><pre><span class="nb">p</span> <span class="no">ARGV</span> <span class="c1">#=&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;]</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4998/addtag/" class="addtag" id="addtag_4998">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/ruby/">
+		Ruby
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/4998/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/4998/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_4998"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_4998"
+  >0</span><span 
+  class="button green"
+  id="rating_p_4998"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/4998/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5015"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/232/" target="_top">kkobayashi</a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5015/">#5015</a>(<script language="JavaScript">print_time(new Date("2007/12/27 15:40 GMT"));</script><noscript>2007/12/27 15:40 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/r/">
+	  R
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #dfffdf;">2/2=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>Rは対話型インターフェイスが基本なので、コマンドライン引数の取得は
+実はあまり「簡単なお仕事」ではないかもしれません。
+
+起動オプションに --args a b c d と指定するとコマンドライン引数として使うことができます。
+trailingOnly=TRUE にしない場合（デフォルト）は全ての起動オプションを取得します。
+</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></td><td class="code"><div class="highlight"><pre>&gt; commandArgs(trailingOnly=TRUE)
+[1] &quot;a&quot; &quot;b&quot; &quot;c&quot; &quot;d&quot;
+
+&gt; commandArgs()
+[1] &quot;(略)\\R\\bin\\Rgui.exe&quot;
+[2] &quot;--args&quot;                                          
+[3] &quot;a&quot;                                               
+[4] &quot;b&quot;                                               
+[5] &quot;c&quot;                                               
+[6] &quot;d&quot;
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5015/addtag/" class="addtag" id="addtag_5015">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/r/">
+		R
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5015/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5015/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #dfffdf;"
+  >2/2=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5015"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5015"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5015"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5015/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5440"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/681/" target="_top">queck</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5440/">#5440</a>(<script language="JavaScript">print_time(new Date("2008/01/24 03:45 GMT"));</script><noscript>2008/01/24 03:45 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  
+<p>Factor では &quot;-&quot; 以外で始まる引数はファイル名とみなされてしまいます。&quot;-引数名=値&quot; という形式で渡す必要があります。引数名がそのままグローバル変数名になるので get で取得します。
+</p>
+<p>factor-nt.exe -script arg.factor -arg1=a -arg2=b -arg3=c -arg4=d
+</p>
+
+
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5</pre></td><td class="code"><div class="highlight"><pre>USING: command-line prettyprint namespaces ;
+&quot;arg1&quot; get .
+&quot;arg2&quot; get .
+&quot;arg3&quot; get .
+&quot;arg4&quot; get .
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5440/addtag/" class="addtag" id="addtag_5440">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5440/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5440/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5440"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5440"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5440"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5440/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5041"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/433/" target="_top">dpp</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5041/">#5041</a>(<script language="JavaScript">print_time(new Date("2007/12/28 15:47 GMT"));</script><noscript>2007/12/28 15:47 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/d/">
+	  D
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>C/C++と同じく、main関数の引数として取ることができます。
+ただし、Dの配列は自身の長さの情報を持っているためargc, argvに分けなくてもよくなっています。
+
+先頭要素にはプログラム自身の名前が入っています。
+コマンドライン引数のみを得たい場合はargs[1..length]のようにスライスするとよいです。
+
+% ./program a b c d
+./program a b c d </pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></td><td class="code"><div class="highlight"><pre><span class="k">import</span> <span class="n">std</span>.<span class="n">stdio</span>;
+
+<span class="kt">int</span> <span class="n">main</span>(<span class="n">string</span>[] <span class="n">args</span>){
+    <span class="k">foreach</span>(<span class="n">string</span> <span class="n">arg</span>; <span class="n">args</span>){
+        <span class="n">writef</span>(<span class="s">&quot;%s &quot;</span>, <span class="n">arg</span>);
+    }
+    <span class="n">writefln</span>();
+
+    <span class="k">return</span> <span class="mi">0</span>;
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5041/addtag/" class="addtag" id="addtag_5041">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/d/">
+		D
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5041/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5041/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5041"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5041"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5041"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5041/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment4993"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/41/" target="_top">shiro</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4993/">#4993</a>(<script language="JavaScript">print_time(new Date("2007/12/27 09:33 GMT"));</script><noscript>2007/12/27 09:33 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/scheme/">
+	  Scheme
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #dfffdf;">2/2=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  ナイスお題&nbsp;as&nbsp;cookbook.<br/><br/>Schemeでは、SRFI-22準拠の処理系の場合、mainという関数の引数としてコマンドライン引数のリストが渡されます。これはプログラム本体の名前&nbsp;(argv[0]に相当)&nbsp;も含んでいるので、引数だけを取り出すにはcdrをとります。<br/><br/>&nbsp;$&nbsp;./program&nbsp;a&nbsp;b&nbsp;c&nbsp;d<br/>&nbsp;(a&nbsp;b&nbsp;c&nbsp;d)<br/><br/>SRFI-22は主要な処理系でサポートされています。(参考リンク参照)<br/><br/>なお、R6RSにはSRFI-22相当の仕様は規定されていませんが、ライブラリ関数&nbsp;command-line&nbsp;を呼び出せば同じ情報が取れます。<br/><br/>
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20111027190926/http://practical-scheme.net/wiliki/schemexref.cgi?SRFI-22">SRFI-22</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3</pre></td><td class="code"><div class="highlight"><pre><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">main</span> <span class="nv">args</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">print</span> <span class="p">(</span><span class="nb">cdr </span><span class="nv">args</span><span class="p">))</span>
+  <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4993/addtag/" class="addtag" id="addtag_4993">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/scheme/">
+		Scheme
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/4993/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/4993/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #dfffdf;"
+  >2/2=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_4993"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_4993"
+  >0</span><span 
+  class="button green"
+  id="rating_p_4993"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/4993/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5974"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/242/" target="_top">lufia</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5974/">#5974</a>(<script language="JavaScript">print_time(new Date("2008/03/06 17:14 GMT"));</script><noscript>2008/03/06 17:14 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>Limboでは、initの引数として文字列リストを得ます。
+習慣的に、名前はargvまたはargs。
+
+先頭がコマンド名、続いてa, b, c, d...
+
+リストは、hd(先頭の値を取得)、tl(先頭を除いたリストを取得)を使って操作します。</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17</pre></td><td class="code"><div class="highlight"><pre>implement Argv;
+
+include &quot;sys.m&quot;;
+    sys: Sys;
+include &quot;draw.m&quot;;
+
+Argv: module
+{
+    init: fn(nil: ref Draw-&gt;Context, argv: list of string);
+};
+
+init(nil: ref Draw-&gt;Context, argv: list of string)
+{
+    sys = load Sys Sys-&gt;PATH;
+    for(p := tl argv; p != nil; p = tl p)
+        sys-&gt;print(&quot;%s\n&quot;, hd p);
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5974/addtag/" class="addtag" id="addtag_5974">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5974/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5974/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5974"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5974"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5974"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5974/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment6672"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/837/" target="_top">nemo_kaz</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/6672/">#6672</a>(<script language="JavaScript">print_time(new Date("2008/07/05 23:10 GMT"));</script><noscript>2008/07/05 23:10 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/groovy/">
+	  Groovy
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>println args とやると結果がList化して</p>
+<p>{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;,&quot;d&quot;}</p>
+<p>とかになってしまう。
+あくまでも
+a b c d
+と印刷したい場合。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3</pre></td><td class="code"><div class="highlight"><pre>args.each(){
+    print it+&quot; &quot;
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/6672/addtag/" class="addtag" id="addtag_6672">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/groovy/">
+		Groovy
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/6672/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/6672/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6672"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6672"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6672"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/6672/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5194"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/499/" target="_top">eller</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5194/">#5194</a>(<script language="JavaScript">print_time(new Date("2008/01/05 12:37 GMT"));</script><noscript>2008/01/05 12:37 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/hsp/">
+	  HSP
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>dirinfo関数で取得できます。専用のマクロdir_cmdlineも用意されています。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1</pre></td><td class="code"><div class="highlight"><pre>mes dir_cmdline // = mes dirinfo(4)
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5194/addtag/" class="addtag" id="addtag_5194">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/hsp/">
+		HSP
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5194/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5194/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5194"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5194"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5194"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5194/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5241"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5241/">#5241</a>(<script language="JavaScript">print_time(new Date("2008/01/08 19:30 GMT"));</script><noscript>2008/01/08 19:30 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/c/">
+	  C
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;stdio.h&gt;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">argc</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">argv</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5241/addtag/" class="addtag" id="addtag_5241">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/c/">
+		C
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5241/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5241/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5241"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5241"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5241"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5241/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment6593"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/793/" target="_top">genzou</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/6593/">#6593</a>(<script language="JavaScript">print_time(new Date("2008/06/26 13:32 GMT"));</script><noscript>2008/06/26 13:32 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/groovy/">
+	  Groovy
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'></pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7</pre></td><td class="code"><div class="highlight"><pre>ワーカースレッドは残してみました。
+
+・mainThreadが仕事を配る
+・customerが仕事を供給する
+・workerThreadが仕事を行う
+
+というつくりです。
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/6593/addtag/" class="addtag" id="addtag_6593">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/groovy/">
+		Groovy
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/6593/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/6593/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6593"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6593"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6593"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  <a href="/web/20111027190926/http://ja.doukaku.org/comment/6593/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/6593/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+    <div class="indent compact" style="position: relative;">
+      <img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/1x1dark_green.png" width=10 style="position: absolute;top:-10px;margin-left:8px;">
+      
+
+
+
+
+<div class="comment" id="comment6594"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/793/" target="_top">genzou</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/6594/">#6594</a>(<script language="JavaScript">print_time(new Date("2008/06/26 08:33 GMT"));</script><noscript>2008/06/26 08:33 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/groovy/">
+	  Groovy
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>なんか変なのがこぴぺされてしまったので、
+再度アップです。</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1</pre></td><td class="code"><div class="highlight"><pre>print args
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/6594/addtag/" class="addtag" id="addtag_6594">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/groovy/">
+		Groovy
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/6594/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/6594/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6594"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6594"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6594"
+  >+</span></span></span>
+  
+<p>
+
+  
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/6593/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/6594/root/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/6594/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+    </div>
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5038"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/241/" target="_top">？せんたくいた</a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5038/">#5038</a>(<script language="JavaScript">print_time(new Date("2007/12/28 12:08 GMT"));</script><noscript>2007/12/28 12:08 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/bash/">
+	  Bash
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>bash では $1,$2,$3,... に収納されます。
+引数の数は $# で。
+shift が効くのも batchfile に近いかな。
+</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5</pre></td><td class="code"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
+<span class="k">until</span> <span class="o">[</span> <span class="s2">&quot;$#&quot;</span> -eq <span class="m">0</span> <span class="o">]</span>; <span class="k">do</span>
+<span class="k">    </span><span class="nb">echo</span> <span class="s2">&quot;$1&quot;</span>
+    <span class="nb">shift</span>
+<span class="k">done</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5038/addtag/" class="addtag" id="addtag_5038">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/bash/">
+		Bash
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5038/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5038/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5038"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5038"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5038"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5038/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5021"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/606/" target="_top">pooq</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5021/">#5021</a>(<script language="JavaScript">print_time(new Date("2007/12/28 00:33 GMT"));</script><noscript>2007/12/28 00:33 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/j/">
+	  J
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>j言語では、ARGVにコマンドライン全体のboxのリストがはいるようです。
+引数だけほしい場合は、3行目のように切り出す必要があります。
+先頭行は、コマンドラインの処理には、関係ありません。コンソール版の
+box表示がグラフ文字を使うためか、カタカナに化けて見にくいので。
+
+&gt;jconsole argvtest.ijs a b c d
++--------+------------+-+-+-+-+
+|jconsole|argvtest.ijs|a|b|c|d|
++--------+------------+-+-+-+-+
++-+-+-+-+
+|a|b|c|d|
++-+-+-+-+
+</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4</pre></td><td class="code"><div class="highlight"><pre>(9!:7)&#39;+++++++++|-&#39;
+echo ARGV
+echo 2}.ARGV
+exit &#39;&#39;
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5021/addtag/" class="addtag" id="addtag_5021">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/j/">
+		J
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5021/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5021/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5021"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5021"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5021"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5021/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5048"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/607/" target="_top">しらたま</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5048/">#5048</a>(<script language="JavaScript">print_time(new Date("2007/12/29 15:04 GMT"));</script><noscript>2007/12/29 15:04 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/nadesico/">
+	  なでしこ
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>なでしこでは、変数「コマンドライン」にコマンドライン引数が配列形式で格納されます。
+0番目には自分自身のファイル名が入ります。
+
+&gt;vnako program.nako a b c d
+
+とすると、ウィンドウに「a, b, c, d」が表示されます。</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2</pre></td><td class="code"><div class="highlight"><pre>コマンドラインの0を配列削除
+コマンドラインを「, 」で配列結合して表示
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5048/addtag/" class="addtag" id="addtag_5048">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/nadesico/">
+		なでしこ
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5048/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5048/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5048"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5048"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5048"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5048/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment4997"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/433/" target="_top">dpp</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4997/">#4997</a>(<script language="JavaScript">print_time(new Date("2007/12/27 09:52 GMT"));</script><noscript>2007/12/27 09:52 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/python/">
+	  Python
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #dfffdf;">2/2=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>sys.argvでコマンドライン引数をリストの形で取得できます。
+sys.argv[0]は直接Pythonに渡した、トップレベルファイル名です。
+
+なんで引数見るだけなのにインポートが必要なんだろうという気もしますが、現状ではこのようになっています。
+
+% python program.py a b c d
+['a', 'b', 'c', 'd']</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3</pre></td><td class="code"><div class="highlight"><pre><span class="k">import</span> <span class="nn">sys</span>
+
+<span class="k">print</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4997/addtag/" class="addtag" id="addtag_4997">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/python/">
+		Python
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/4997/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/4997/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #dfffdf;"
+  >2/2=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_4997"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_4997"
+  >0</span><span 
+  class="button green"
+  id="rating_p_4997"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/4997/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5206"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/650/" target="_top">GEOJ</a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5206/">#5206</a>(<script language="JavaScript">print_time(new Date("2008/01/06 07:12 GMT"));</script><noscript>2008/01/06 07:12 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/sed/">
+	  sed
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>最初の直感でsedでは絶対無理だと思ったのですが、卑怯な技を思いついたので書いて見ました。
+GNU拡張とシェル、procファイルシステムの力で無理やり実現しています（互換性の保証無し）。
+自己参照するので、ファイル名を固定する必要があります。
+このソースではカレントディレクトリにshowargs.sedという名前で保存して
+./showargs.sed a b c d
+などと実行します。
+カレントディレクトリ以外から実行できるようにするためには--file=の部分を絶対パスに直してください。
+</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7</pre></td><td class="code"><div class="highlight"><pre>#!/bin/sed --file=showargs.sed
+
+s%^.*$%sed -e &#39;s/[[:cntrl:]]/ /g&#39; /proc/$PPID/cmdline%
+e
+s/^.*sed --file=showargs\.sed .*showargs\.sed *//
+s/ *$//
+q
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5206/addtag/" class="addtag" id="addtag_5206">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/sed/">
+		sed
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5206/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5206/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5206"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5206"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5206"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5206/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5024"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/164/" target="_top">kozima</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5024/">#5024</a>(<script language="JavaScript">print_time(new Date("2007/12/28 02:20 GMT"));</script><noscript>2007/12/28 02:20 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/commonlisp/">
+	  Common Lisp
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>CLISP の場合は未処理の引数が文字列のリストとして *args* に入っています。</p>
+<p>処理済の引数も含めて欲しい場合は関数 argv を使うようです。こちらは文字列のベクタを新しく作って返します。</p>
+
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20111027190926/http://clisp.cons.org/impnotes/environment-dict.html#argv">Implementation notes for GNU CLISP 25.2.15</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1</pre></td><td class="code"><div class="highlight"><pre>(format t &quot;*ARGS* = ~S~%(argv) = ~S&quot; *args* (argv))
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5024/addtag/" class="addtag" id="addtag_5024">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/commonlisp/">
+		Common Lisp
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5024/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5024/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5024"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5024"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5024"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5024/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5011"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/82/" target="_top">yuin</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5011/">#5011</a>(<script language="JavaScript">print_time(new Date("2007/12/27 11:42 GMT"));</script><noscript>2007/12/27 11:42 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/scala/">
+	  Scala
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #dfffdf;">2/2=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Scalaではインタプリタとコンパイル済みでは取得方法が違います。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td><td class="code"><div class="highlight"><pre>//インタプリタ
+println(args.toList) //argsはArray[String]
+
+//コンパイルする場合
+object Test {
+  def main(args:Array[String]) = {
+    println(args.toList)
+  }
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5011/addtag/" class="addtag" id="addtag_5011">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/scala/">
+		Scala
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5011/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5011/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #dfffdf;"
+  >2/2=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5011"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5011"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5011"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5011/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5045"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/374/" target="_top">omoikani</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5045/">#5045</a>(<script language="JavaScript">print_time(new Date("2007/12/29 05:02 GMT"));</script><noscript>2007/12/29 05:02 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/standardml/">
+	  StandardML
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Standard MLでは、CommandLineストラクチャのarguments関数を使います。
+自分自身の名前を除く引数がリストで返ります。
+自分自身の名前を得るには同ストラクチャのname関数を使います。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4</pre></td><td class="code"><div class="highlight"><pre>val name = CommandLine.name ()
+val _ = print name
+val args = CommandLine.arguments ()
+val _ = app print args
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5045/addtag/" class="addtag" id="addtag_5045">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/standardml/">
+		StandardML
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5045/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5045/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5045"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5045"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5045"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5045/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5000"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/579/" target="_top">cho45</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5000/">#5000</a>(<script language="JavaScript">print_time(new Date("2007/12/27 10:24 GMT"));</script><noscript>2007/12/27 10:24 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/javascript/">
+	  JavaScript
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Rhino ではトップレベルの arguments という変数に入っています。</p>
+<p>ちなみにこれはちゃんとした Array みたいです。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2</pre></td><td class="code"><div class="highlight"><pre><span class="nx">print</span><span class="p">(</span><span class="nx">arguments</span> <span class="k">instanceof</span> <span class="nb">Array</span><span class="p">);</span> <span class="c">//=&gt; true</span>
+<span class="nx">print</span><span class="p">(</span><span class="nx">arguments</span><span class="p">);</span> <span class="c">//=&gt; a,b,c,d</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5000/addtag/" class="addtag" id="addtag_5000">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/javascript/">
+		JavaScript
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5000/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5000/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5000"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5000"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5000"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  <a href="/web/20111027190926/http://ja.doukaku.org/comment/5000/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5000/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+    <div class="indent compact" style="position: relative;">
+      <img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/1x1dark_green.png" width=10 style="position: absolute;top:-10px;margin-left:8px;">
+      
+
+
+
+
+<div class="comment" id="comment5022"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/343/" target="_top">shimakuma</a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5022/">#5022</a>(<script language="JavaScript">print_time(new Date("2007/12/28 00:39 GMT"));</script><noscript>2007/12/28 00:39 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/javascript/">
+	  JavaScript
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>WSHだとこんな感じ。詳しくは →
+<a class="reference" href="/web/20111027190926/http://msdn.microsoft.com/library/ja/script56/html/wsobjWshArguments.asp">こちら</a>
+。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></td><td class="code"><div class="highlight"><pre><span class="nx">a</span> <span class="o">=</span> <span class="nx">WSH</span><span class="p">.</span><span class="nx">arguments</span><span class="o">;</span>
+<span class="nx">WSH</span><span class="p">.</span><span class="nx">echo</span><span class="p">(</span><span class="nx">a</span> <span class="k">instanceof</span> <span class="nb">Array</span><span class="p">);</span>
+<span class="c">// =&gt; 0</span>
+<span class="nx">WSH</span><span class="p">.</span><span class="nx">echo</span><span class="p">(</span><span class="nx">l</span> <span class="o">=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">length</span><span class="p">);</span>
+<span class="c">// =&gt; 4</span>
+<span class="k">for</span><span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">,</span> <span class="nx">o</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">l</span><span class="o">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="nx">o</span> <span class="o">+=</span> <span class="nx">a</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span> <span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">;</span>
+<span class="nx">WSH</span><span class="p">.</span><span class="nx">echo</span><span class="p">(</span><span class="nx">o</span><span class="p">)</span>
+<span class="c">// =&gt; a b c d</span>
+<span class="nx">WSH</span><span class="p">.</span><span class="nx">echo</span><span class="p">(</span><span class="nx">a</span><span class="p">);</span>
+<span class="c">// =&gt; Microsoft JScript 実行時エラー: 型が一致しません。</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5022/addtag/" class="addtag" id="addtag_5022">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/javascript/">
+		JavaScript
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5022/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5022/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5022"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5022"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5022"
+  >+</span></span></span>
+  
+<p>
+
+  
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5000/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5022/root/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5022/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+    </div>
+  
+
+
+  
+
+  
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5014"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/154/" target="_top">xsd</a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5014/">#5014</a>(<script language="JavaScript">print_time(new Date("2007/12/27 14:55 GMT"));</script><noscript>2007/12/27 14:55 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/bat/">
+	  Batchfile
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #cfffcf;">3/3=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>バッチファイルではプログラム名が%0に、引数が%1～に入ります。</p>
+<p>shiftコマンドを実行すると、%2が%1に、%3が%2に、...というように順にシフトしていきます。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></td><td class="code"><div class="highlight"><pre>@echo off
+
+:LOOP
+  if &quot;%1&quot;==&quot;&quot; goto END
+  echo %1
+  shift
+  goto LOOP
+:END
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5014/addtag/" class="addtag" id="addtag_5014">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/bat/">
+		Batchfile
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5014/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5014/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #cfffcf;"
+  >3/3=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5014"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5014"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5014"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5014/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment10350"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10350/">#10350</a>(<script language="JavaScript">print_time(new Date("2010/03/24 16:01 GMT"));</script><noscript>2010/03/24 16:01 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffefef;">-1/1=-1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>I guess that the large storage of the thesis topics just about this post is at &lt;a href=&quot;<a class="reference" href="/web/20111027190926/http://www.primedissertations.com/">http://www.primedissertations.com</a>&quot;&gt;thesis&lt;/a&gt; writing services. So, there’re no difficulties to go to &lt;a href=&quot;<a class="reference" href="/web/20111027190926/http://www.primedissertations.com/">http://www.primedissertations.com</a>&quot;&gt;dissertation&lt;/a&gt; writing service and buy dissertation online.</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10350/addtag/" class="addtag" id="addtag_10350">タグ</a>:
+	なし&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffefef;"
+  >-1/1=-1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10350"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10350"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10350"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/10350/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment10875"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10875/">#10875</a>(<script language="JavaScript">print_time(new Date("2010/06/29 03:59 GMT"));</script><noscript>2010/06/29 03:59 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>ICON で書くとこんな感じ。
+! は要素の全て、という意味です。</p>
+
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20111027190926/http://www.cs.arizona.edu/icon/">The Icon Programming Language</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3</pre></td><td class="code"><div class="highlight"><pre>procedure main(argv)
+    every write(!argv)
+end
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10875/addtag/" class="addtag" id="addtag_10875">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/10875/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/10875/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10875"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10875"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10875"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/10875/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5027"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/468/" target="_top">だいら</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5027/">#5027</a>(<script language="JavaScript">print_time(new Date("2007/12/28 02:32 GMT"));</script><noscript>2007/12/28 02:32 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/php/">
+	  PHP
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>phpだとこんな感じですかね。
+コマンドラインから実行することはあまりありませんが。</p>
+<p>実行は以下のようにします。
+$ php program.php a b c d</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4</pre></td><td class="code"><div class="highlight"><pre><span class="cp">&lt;?php</span>
+<span class="k">for</span> <span class="p">(</span><span class="nv">$i</span> <span class="o">=</span> <span class="m">1</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="nf">count</span><span class="p">(</span><span class="nv">$argv</span><span class="p">);</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s2">&quot;</span><span class="si">{</span><span class="nv">$argv</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+<span class="cp">?&gt;</span><span class="x"></span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5027/addtag/" class="addtag" id="addtag_5027">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/php/">
+		PHP
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5027/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5027/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5027"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5027"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5027"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  <a href="/web/20111027190926/http://ja.doukaku.org/comment/5027/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5027/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+    <div class="indent compact" style="position: relative;">
+      <img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/1x1dark_green.png" width=10 style="position: absolute;top:-10px;margin-left:8px;">
+      
+
+
+
+
+<div class="comment" id="comment5847"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/725/" target="_top">takuya_1st</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5847/">#5847</a>(<script language="JavaScript">print_time(new Date("2008/02/26 02:12 GMT"));</script><noscript>2008/02/26 02:12 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/php/">
+	  PHP
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>$argv[0] には実行中のファイル名が登録されるので、お題の回答としては先頭をはずすべきかも</p>
+
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20111027190926/http://jp.php.net/manual/ja/features.commandline.php">PHP をコマンドラインから使用する</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4</pre></td><td class="code"><div class="highlight"><pre><span class="cp">&lt;?php</span>
+
+<span class="nf">array_shift</span><span class="p">(</span><span class="nv">$argv</span><span class="p">);</span>
+<span class="nf">print_r</span><span class="p">(</span><span class="nv">$argv</span><span class="p">);</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5847/addtag/" class="addtag" id="addtag_5847">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/php/">
+		PHP
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5847/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5847/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5847"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5847"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5847"
+  >+</span></span></span>
+  
+<p>
+
+  
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5027/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5847/root/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5847/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+    </div>
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5002"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/405/" target="_top">mc</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5002/">#5002</a>(<script language="JavaScript">print_time(new Date("2007/12/27 10:32 GMT"));</script><noscript>2007/12/27 10:32 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/commonlisp/">
+	  Common Lisp
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>Common Lispでは処理系依存になっていて処理系
+ごとにそれぞれといった感じです。
+処理系の差を吸収しようという試みのパッケージは
+幾つかあると思いますが、現在AllegroとSBCLに
+対応している、KMRCLを紹介してみます。
+
+;; Lispマシンだったら関数の引数の取得で
+;; OKってことになるんでしょうけど…。</pre>
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20111027190926/http://www.cliki.net/kmrcl">Cliki:KMRCL</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5</pre></td><td class="code"><div class="highlight"><pre>;; $ sbcl &quot;1&quot; &quot;2&quot; &quot;3&quot; で処理系を起動したとする。
+(require :kmrcl)
+
+(kmrcl:command-line-arguments)
+;; =&gt;(&quot;sbcl&quot; &quot;1&quot; &quot;2&quot; &quot;3&quot;)
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5002/addtag/" class="addtag" id="addtag_5002">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/commonlisp/">
+		Common Lisp
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5002/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5002/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5002"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5002"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5002"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5002/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5003"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5003/">#5003</a>(<script language="JavaScript">print_time(new Date("2007/12/27 10:36 GMT"));</script><noscript>2007/12/27 10:36 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/perl/">
+	  Perl
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>Perl の場合@ARGVに入っています。
+$ARGV,ARGV もあって、全然違うので注意が必要です。
+shift は、引数指名しない場合（メインでは)@ARGVが指定されたとみなされます。</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1</pre></td><td class="code"><div class="highlight"><pre><span class="k">print</span> <span class="nb">shift</span>  <span class="k">while</span><span class="p">(</span><span class="nv">@ARGV</span><span class="p">);</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5003/addtag/" class="addtag" id="addtag_5003">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/perl/">
+		Perl
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5003/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5003/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5003"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5003"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5003"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  <a href="/web/20111027190926/http://ja.doukaku.org/comment/5003/">
+    2
+    reply
+  </a>
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5003/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+    <div class="indent compact" style="position: relative;">
+      <img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/1x1dark_green.png" width=10 style="position: absolute;top:-10px;margin-left:8px;">
+      
+
+
+
+
+<div class="comment" id="comment5017"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/26/" target="_top">dankogai</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5017/">#5017</a>(<script language="JavaScript">print_time(new Date("2007/12/27 16:27 GMT"));</script><noscript>2007/12/27 16:27 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/perl/">
+	  Perl
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>ちなみに<code>ARGV</code>は、<code>@ARGV</code>をすべてファイル名と見なしてオープンした際のファイルハンドル。<code>&lt;&gt;</code>は<code>&lt;ARGV&gt;</code>を略記したものです。
+</p>
+<p><code>$ARGV</code>は、<code>ARGV</code>をイテレートしている際の実際のファイル名。<code>$.</code>で現在の行数も取れます。
+</p>
+<p>以下、サンプルプログラムはこの点をデモります。
+</p>
+<p>詳しくは
+</p>
+<p><a href="/web/20111027190926/http://search.cpan.org/perldoc?perlvar">perldoc perlvar</a>
+</p>
+<p>で。
+</p>
+<p>Dan the Perl Monger
+</p>
+
+
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td><td class="code"><div class="highlight"><pre><span class="c1">#!/usr/local/bin/perl</span>
+<span class="k">use</span> <span class="n">strict</span><span class="p">;</span>
+<span class="k">use</span> <span class="n">warnings</span><span class="p">;</span>
+
+<span class="k">while</span><span class="p">(</span><span class="k">my</span> <span class="nv">$line</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">ARGV</span><span class="o">&gt;</span><span class="p">){</span>
+    <span class="nb">printf</span> <span class="s">&quot;%12s%4d:%s&quot;</span><span class="p">,</span> <span class="nv">$ARGV</span><span class="p">,</span> <span class="vg">$.</span><span class="p">,</span> <span class="nv">$line</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="c1"># 以下のようにして一行にできちゃう!</span>
+<span class="n">perl</span> <span class="o">-</span><span class="n">ple</span> <span class="s">&#39;$_=sprintf &quot;%12s%4d:%s&quot;, $ARGV, $., $_&#39;</span> <span class="n">argv</span><span class="o">.</span><span class="n">pl</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5017/addtag/" class="addtag" id="addtag_5017">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/perl/">
+		Perl
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5017/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5017/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5017"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5017"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5017"
+  >+</span></span></span>
+  
+<p>
+
+  
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5003/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5017/root/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5017/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+    </div>
+  
+    <div class="indent compact" style="position: relative;">
+      <img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/1x1dark_green.png" width=10 style="position: absolute;top:-10px;margin-left:8px;">
+      
+
+
+
+
+<div class="comment" id="comment5018"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5018/">#5018</a>(<script language="JavaScript">print_time(new Date("2007/12/27 18:11 GMT"));</script><noscript>2007/12/27 18:11 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>既出よりもう少し丁寧なの</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3</pre></td><td class="code"><div class="highlight"><pre>foreach my $arg (@ARGV){
+    print &quot;$arg\n&quot;;
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5018/addtag/" class="addtag" id="addtag_5018">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5018/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5018/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5018"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5018"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5018"
+  >+</span></span></span>
+  
+<p>
+
+  
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5003/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5018/root/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  <a href="/web/20111027190926/http://ja.doukaku.org/comment/5018/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5018/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+    <div class="indent compact" style="position: relative;">
+      <img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/1x1dark_green.png" width=10 style="position: absolute;top:-10px;margin-left:8px;">
+      
+
+
+
+
+<div class="comment" id="comment5019"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5019/">#5019</a>(<script language="JavaScript">print_time(new Date("2007/12/27 18:53 GMT"));</script><noscript>2007/12/27 18:53 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/perl/">
+	  Perl
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>既出よりもう少し丁寧なの
+(間違えてOtherに挙げてしまいました、あちらは削除して下さい)</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3</pre></td><td class="code"><div class="highlight"><pre><span class="k">foreach</span> <span class="k">my</span> <span class="nv">$arg</span> <span class="p">(</span><span class="nv">@ARGV</span><span class="p">){</span>
+    <span class="k">print</span> <span class="s">&quot;$arg\n&quot;</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5019/addtag/" class="addtag" id="addtag_5019">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/perl/">
+		Perl
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5019/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5019/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5019"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5019"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5019"
+  >+</span></span></span>
+  
+<p>
+
+  
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5018/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5019/root/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5019/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+    </div>
+  
+
+
+    </div>
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5155"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/648/" target="_top">carver</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5155/">#5155</a>(<script language="JavaScript">print_time(new Date("2008/01/04 04:33 GMT"));</script><noscript>2008/01/04 04:33 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #cfffcf;">3/3=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Mac OS X (PowerPC 32bit) アセンブリで。Mac OS X (PowerPC) のアセンブリでは、関数の引数はレジスタ r3-r10 に入ります。あとはmain関数の引数を操作するだけです。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89</pre></td><td class="code"><div class="highlight"><pre>        ;; Mac OS X (PowerPC 32bit)
+        ;; % as -o cmdline.o cmdline.s &amp;&amp; gcc cmdline.o -o cmdline
+        .machine ppc
+        .globl _main
+
+_main:
+        ;; r3 = int argc
+        ;; r4 = char *argv[]
+        ;; それぞれ r6, r7 にコピーしておく
+        mr      r6, r3
+        mr      r7, r4
+
+_print_arg:
+        ;; まず、文字列の長さをカウントする
+        lwz     r4, 0(r7)       ; カウント用文字列
+        li      r5, 0           ; 長さの初期化
+
+_count_strlen:
+        lbz     r0, 0(r4)       ; 1文字レジスタに移す
+        cmpli   cr7, r0, 0
+        beq     cr7, _print_arg_write
+        addi    r4, r4, 1
+        addi    r5, r5, 1
+        b       _count_strlen
+
+_print_arg_write:
+        ;; 引数文字列の表示
+
+        ;; 引数の残数をスタックに退避
+        ;; sys_write() を呼ぶたびに実行
+        subi    r1, r1, 4
+        stw     r6, 0(r1)
+
+        ;; sys_write()
+        ;; r5 は _count_strlen で既に代入済み
+        li      r3, 1           ; 標準出力
+        lwz     r4, 0(r7)       ; 出力する文字列
+        li      r0, 4           ; sys_write
+        sc                      ; 呼び出し
+
+        ;; スタックから引数の残数を復帰
+        lwz     r6, 0(r1)
+        addi    r1, r1, 4
+
+        ;; 引数の残数をスタックに退避
+        subi    r1, r1, 4
+        stw     r6, 0(r1)
+
+        ;; スペースを出力
+        li      r3, 1           ; 標準出力
+        li      r4, hi16(space)
+        addi    r4, r4, lo16(space)
+        li      r5, 1           ; 出力する文字列の長さ
+        li      r0, 4           ; sys_write
+        sc                      ; 呼び出し
+
+        ;; スタックから引数の残数を復帰
+        lwz     r6, 0(r1)
+        addi    r1, r1, 4
+
+        ;; 繰り返しの終了条件判断
+        subi    r6, r6, 1       ; カウント減
+        cmpi    cr7, r6, 0
+        beq     cr7, _end
+        addi    r7, r7, 4       ; 引数文字列のポインタを一つ進める
+        b       _print_arg      ; 次の引数へ
+
+_end:
+        ;; 改行を出力
+        li      r3, 1           ; 標準出力
+        li      r4, hi16(lf)
+        addi    r4, r4, lo16(lf)
+        li      r5, 1
+        li      r0, 4           ; sys_write
+        sc                      ; 呼び出し
+
+        ;; sys_exit()                                                             
+        li      r3, 0
+        li      r0, 1
+        sc
+
+        .data
+        .align  2
+
+space:
+        .asciz  &quot; &quot;
+
+lf:
+        .asciz  &quot;\n&quot;
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5155/addtag/" class="addtag" id="addtag_5155">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5155/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5155/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #cfffcf;"
+  >3/3=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5155"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5155"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5155"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5155/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5009"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/218/" target="_top">susu</a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5009/">#5009</a>(<script language="JavaScript">print_time(new Date("2007/12/27 11:28 GMT"));</script><noscript>2007/12/27 11:28 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/ocaml/">
+	  OCaml
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #dfffdf;">2/2=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>引数はSys.argv
+引数の長さはArray.length Sys.argvで出します。
+詳細なパーズはArgモジュールを使うと良いです。</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></td><td class="code"><div class="highlight"><pre><span class="c">(*引数を見る*)</span>
+  <span class="n">Array</span><span class="k">.</span><span class="n">iter</span> <span class="k">(</span><span class="n">Printf</span><span class="k">.</span><span class="n">printf</span> <span class="s2">&quot; %s &quot;</span><span class="k">)</span> <span class="n">Sys</span><span class="k">.</span><span class="n">argv</span><span class="k">;</span>
+  <span class="n">print_newline</span><span class="k">();;</span>
+
+<span class="c">(*プログラム名以外の引数*)</span>
+  <span class="kr">let</span> <span class="n">array_rest</span> <span class="n">arr</span> <span class="n">n</span> <span class="k">=</span>
+    <span class="n">Array</span><span class="k">.</span><span class="n">sub</span> <span class="n">arr</span> <span class="n">n</span> <span class="k">(</span><span class="n">Array</span><span class="k">.</span><span class="n">length</span> <span class="n">arr</span> <span class="k">-</span> <span class="n">n</span><span class="k">);;</span> 
+  <span class="n">array_left</span> <span class="n">Sys</span><span class="k">.</span><span class="n">argv</span> <span class="mi">1</span><span class="k">;;</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5009/addtag/" class="addtag" id="addtag_5009">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/ocaml/">
+		OCaml
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5009/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5009/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #dfffdf;"
+  >2/2=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5009"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5009"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5009"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5009/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment4999"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/579/" target="_top">cho45</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4999/">#4999</a>(<script language="JavaScript">print_time(new Date("2007/12/27 10:20 GMT"));</script><noscript>2007/12/27 10:20 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/io/">
+	  Io
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <div class="section">
+<p>args に入ってるみたいです。(0 はスクリプト自身)</p>
+<p></p>
+<p>Lobby はトップレベルのオブジェクト自身です。</p>
+</div>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2</pre></td><td class="code"><div class="highlight"><pre>args slice(1) println #=&gt; list(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;)
+Lobby args slice(1) println #=&gt; same
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4999/addtag/" class="addtag" id="addtag_4999">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/io/">
+		Io
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/4999/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/4999/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_4999"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_4999"
+  >0</span><span 
+  class="button green"
+  id="rating_p_4999"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/4999/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5025"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/504/" target="_top">あにす</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5025/">#5025</a>(<script language="JavaScript">print_time(new Date("2007/12/28 02:21 GMT"));</script><noscript>2007/12/28 02:21 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/vbnet/">
+	  VB.net
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>VB.NETならMyがお手軽♪</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></td><td class="code"><div class="highlight"><pre><span class="k">Module</span> <span class="n">Module1</span>
+    <span class="k">Sub</span> <span class="n">Main</span><span class="p">(</span> <span class="p">)</span>
+        <span class="k">For</span> <span class="k">Each</span> <span class="n">cmd</span> <span class="ow">As</span> <span class="kt">String</span> <span class="ow">In</span> <span class="n">My</span><span class="p">.</span><span class="n">Application</span><span class="p">.</span><span class="n">CommandLineArgs</span>
+            <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="k">Next</span>
+        <span class="n">Console</span><span class="p">.</span><span class="n">ReadLine</span><span class="p">()</span>
+    <span class="k">End</span> <span class="k">Sub</span>
+<span class="k">End</span> <span class="k">Module</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5025/addtag/" class="addtag" id="addtag_5025">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/vbnet/">
+		VB.net
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5025/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5025/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5025"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5025"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5025"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5025/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5396"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/565/" target="_top">RC3</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5396/">#5396</a>(<script language="JavaScript">print_time(new Date("2008/01/19 10:12 GMT"));</script><noscript>2008/01/19 10:12 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>argc - コマンドラインパラメータ数を返す関数
+argv - コマンドラインパラメータを返す関数
+　※argv(str, 0) =&gt; (空っぽ)
+
+C:/&gt;ge2exe para.g
+C:/&gt;para.exe a b c d
+1 = a
+2 = b
+3 = c
+4 = d
+C:/&gt;</pre>
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20111027190926/http://gentee.com/phpbb/viewtopic.php?t=553&highlight=parameter">gentee.com :: View topic - Pass Parameters on Command Line</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></td><td class="code"><div class="highlight"><pre>func main&lt;main&gt;
+{
+    uint i
+    str stemp
+
+    fornum i = 1, argc() + 1 
+    { 
+        print( &quot;\(i) = \(argv( stemp, i ))\n&quot;) 
+    } 
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5396/addtag/" class="addtag" id="addtag_5396">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5396/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5396/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5396"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5396"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5396"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5396/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment4994"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/479/" target="_top">tsuwabuki</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4994/">#4994</a>(<script language="JavaScript">print_time(new Date("2007/12/27 09:42 GMT"));</script><noscript>2007/12/27 09:42 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/haskell/">
+	  Haskell
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #dfffdf;">2/2=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>引数を取得するgetArgsアクションを使います。
+getArgs :: IO [String]</p>
+<p>Stringのリストが返ってくるので、リストをそのままprintで表示します。</p>
+<p>$ runhaskell program.hs a b c d
+[&quot;a&quot;,&quot;b&quot;,&quot;c&quot;,&quot;d&quot;]</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3</pre></td><td class="code"><div class="highlight"><pre><span class="kr">import</span> <span class="n">System</span>
+
+<span class="nv">main</span> <span class="o">=</span> <span class="nv">getArgs</span> <span class="o">&gt;&gt;=</span> <span class="nv">print</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4994/addtag/" class="addtag" id="addtag_4994">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/haskell/">
+		Haskell
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/4994/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/4994/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #dfffdf;"
+  >2/2=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_4994"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_4994"
+  >0</span><span 
+  class="button green"
+  id="rating_p_4994"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/4994/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5013"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/88/" target="_top">sumim</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5013/">#5013</a>(<script language="JavaScript">print_time(new Date("2007/12/27 14:36 GMT"));</script><noscript>2007/12/27 14:36 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/smalltalk/">
+	  Smalltalk
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #dfffdf;">2/2=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Smalltalk では処理系依存です。Squeak Smalltalk では、 起動時に</p>
+<p>Squeak my.image program.st a b c d</p>
+<p>のように記述し、スクリプト中では SmalltalkImage&gt;&gt;#getSystemAttribute: の引数 3 以降で取り出せます。</p>
+
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20111027190926/http://wiki.squeak.org/squeak/425">Squeak Swiki - Writing scripts</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6</pre></td><td class="code"><div class="highlight"><pre>| args |
+World findATranscript: nil.
+args := (3 to: 6) collect: [:idx | SmalltalkImage current getSystemAttribute: idx].
+Transcript cr; show: args
+
+&quot;=&gt; #(&#39;a&#39; &#39;b&#39; &#39;c&#39; &#39;d&#39;) &quot;
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5013/addtag/" class="addtag" id="addtag_5013">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/smalltalk/">
+		Smalltalk
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5013/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5013/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #dfffdf;"
+  >2/2=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5013"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5013"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5013"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  <a href="/web/20111027190926/http://ja.doukaku.org/comment/5013/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5013/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+    <div class="indent compact" style="position: relative;">
+      <img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/1x1dark_green.png" width=10 style="position: absolute;top:-10px;margin-left:8px;">
+      
+
+
+
+
+<div class="comment" id="comment5023"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/343/" target="_top">shimakuma</a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5023/">#5023</a>(<script language="JavaScript">print_time(new Date("2007/12/28 01:17 GMT"));</script><noscript>2007/12/28 01:17 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/smalltalk/">
+	  Smalltalk
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>GNU Smalltalk。Cのgetoptっぽい機能が付いてます。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6</pre></td><td class="code"><div class="highlight"><pre>Smalltalk arguments print.
+Smalltalk arguments: &#39;-c -d:&#39; do: [:o :n| {o. n} print ]!
+&quot;
+$ gst 114.st -a a b -c -dFuga
+=&gt; (&#39;a&#39; &#39;b&#39; &#39;-c&#39; &#39;-dFuga&#39; )(nil &#39;a&#39; )(nil &#39;b&#39; )($c nil )($d &#39;Fuga&#39; )
+&quot;
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5023/addtag/" class="addtag" id="addtag_5023">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/smalltalk/">
+		Smalltalk
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5023/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5023/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5023"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5023"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5023"
+  >+</span></span></span>
+  
+<p>
+
+  
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5013/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5023/root/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5023/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+    </div>
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5044"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5044/">#5044</a>(<script language="JavaScript">print_time(new Date("2007/12/29 02:50 GMT"));</script><noscript>2007/12/29 02:50 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/postscript/">
+	  PostScript
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Ghostscript の場合</p>
+<p>$ gs [options] -- filename arg1 ...</p>
+<p>のように起動すると、文字列 arg1 ... が入った配列が ARGUMENTS という名前で定義されます</p>
+
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20111027190926/http://pages.cs.wisc.edu/~ghost/doc/AFPL/8.00/Use.htm#Input_control">How to use Ghostscript</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></td><td class="code"><div class="highlight"><pre>%!PS
+gsave
+/Times-Roman findfont 16 scalefont setfont
+200 200 moveto
+
+userdict /ARGUMENTS known{
+  ARGUMENTS{
+    show
+  }forall
+}{
+  (no arguments)show
+}ifelse
+
+showpage
+grestore
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5044/addtag/" class="addtag" id="addtag_5044">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/postscript/">
+		PostScript
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5044/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5044/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5044"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5044"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5044"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5044/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5029"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/252/" target="_top">tokibito(nullpobug)</a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5029/">#5029</a>(<script language="JavaScript">print_time(new Date("2007/12/28 06:47 GMT"));</script><noscript>2007/12/28 06:47 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/delphi/">
+	  Delphi
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>ParamCount関数でパラメータの個数を得られます。
+ParamStr関数でパラメータ文字列を取得できます。
+ParamStr(0)には起動したプログラムのパスが入ります。</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></td><td class="code"><div class="highlight"><pre><span class="k">program</span> <span class="n">arguments</span><span class="o">;</span>
+
+<span class="cm">{$APPTYPE CONSOLE}</span>
+
+<span class="k">var</span>
+  <span class="n">i</span><span class="o">:</span> <span class="kt">Integer</span><span class="o">;</span>
+<span class="k">begin</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="mi">1</span> <span class="k">to</span> <span class="nb">ParamCount</span> <span class="k">do</span>
+  <span class="k">begin</span>
+    <span class="nb">Write</span><span class="p">(</span><span class="nb">ParamStr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39; &#39;</span><span class="p">)</span><span class="o">;</span>
+  <span class="k">end</span><span class="o">;</span>
+  <span class="c1">// =&gt; a b c d</span>
+<span class="k">end</span><span class="o">.</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5029/addtag/" class="addtag" id="addtag_5029">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/delphi/">
+		Delphi
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5029/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5029/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5029"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5029"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5029"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5029/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5150"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/380/" target="_top">vtwntmtn</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5150/">#5150</a>(<script language="JavaScript">print_time(new Date("2008/01/03 14:52 GMT"));</script><noscript>2008/01/03 14:52 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/erlang/">
+	  Erlang
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Erlangでは実行時にコマンドラインから実行する関数を指定できます。
+ここではprogramモジュールのmain関数を実行し、引数a b c dを渡しています。</p>
+<pre class="literal-block">
+erl -noshell -s program main a b c d -s init  stop
+</pre>
+<p>関数側はこれらの引数を文字列のリストとして受け取ります。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4</pre></td><td class="code"><div class="highlight"><pre>-module(program).
+-export([main/1]).
+
+main(Arg) -&gt; io:format(&quot;~s ~s ~s ~s ~n&quot;, Arg).
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5150/addtag/" class="addtag" id="addtag_5150">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/erlang/">
+		Erlang
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5150/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5150/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5150"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5150"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5150"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  <a href="/web/20111027190926/http://ja.doukaku.org/comment/5150/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5150/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+    <div class="indent compact" style="position: relative;">
+      <img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/1x1dark_green.png" width=10 style="position: absolute;top:-10px;margin-left:8px;">
+      
+
+
+
+
+<div class="comment" id="comment6020"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/761/" target="_top">reiro</a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/6020/">#6020</a>(<script language="JavaScript">print_time(new Date("2008/03/18 14:32 GMT"));</script><noscript>2008/03/18 14:32 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>正確には文字列のリストではなくてアトムのリストですな。</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/6020/addtag/" class="addtag" id="addtag_6020">タグ</a>:
+	なし&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6020"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6020"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6020"
+  >+</span></span></span>
+  
+<p>
+
+  
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5150/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/6020/root/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/6020/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+    </div>
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5006"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/504/" target="_top">あにす</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5006/">#5006</a>(<script language="JavaScript">print_time(new Date("2007/12/27 10:56 GMT"));</script><noscript>2007/12/27 10:56 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/csharp/">
+	  C#
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>方法1はcと同じ方法です。自身のパスを含まない引数の配列を取得します。エントリポイントでのみ使えます。
+方法2は自身のパスを含んだ全ての引数を含む文字列を取得します。自分で分割しないとそれぞれの引数を得られません。
+方法3は自身のパスを含んだ引数の配列を取得します。プログラム中どこでも使えます。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></td><td class="code"><div class="highlight"><pre><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">class</span> <span class="nc">Program</span> <span class="k">{</span>
+    <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span> <span class="k">{</span>
+        <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">&quot;方法1&quot;</span><span class="p">);</span>
+        <span class="k">foreach</span><span class="p">(</span><span class="kt">string</span> <span class="n">cmd</span> <span class="k">in</span> <span class="n">args</span><span class="p">)</span> <span class="k">{</span>
+            <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="n">cmd</span><span class="p">);</span>
+        <span class="k">}</span>
+
+        <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">&quot;\n方法2&quot;</span><span class="p">);</span>
+        <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Environment</span><span class="p">.</span><span class="n">CommandLine</span><span class="p">);</span>
+
+        <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">&quot;\n方法3&quot;</span><span class="p">);</span>
+        <span class="k">foreach</span><span class="p">(</span><span class="kt">string</span> <span class="n">cmd</span> <span class="k">in</span> <span class="n">System</span><span class="p">.</span><span class="n">Environment</span><span class="p">.</span><span class="n">GetCommandLineArgs</span><span class="p">())</span> <span class="k">{</span>
+            <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="n">cmd</span><span class="p">);</span>
+        <span class="k">}</span>
+        <span class="n">Console</span><span class="p">.</span><span class="n">ReadLine</span><span class="p">();</span>
+    <span class="k">}</span>
+<span class="k">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5006/addtag/" class="addtag" id="addtag_5006">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/csharp/">
+		C#
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5006/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5006/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5006"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5006"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5006"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  <a href="/web/20111027190926/http://ja.doukaku.org/comment/5006/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5006/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+    <div class="indent compact" style="position: relative;">
+      <img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/1x1dark_green.png" width=10 style="position: absolute;top:-10px;margin-left:8px;">
+      
+
+
+
+
+<div class="comment" id="comment5008"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/504/" target="_top">あにす</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5008/">#5008</a>(<script language="JavaScript">print_time(new Date("2007/12/27 11:20 GMT"));</script><noscript>2007/12/27 11:20 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/csharp/">
+	  C#
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>方法2、方法3が題意に反するので訂正します。方法2から引数のみを得るのは難しいです。方法3を修正したコードを投稿します。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></td><td class="code"><div class="highlight"><pre><span class="c">//http://ja.doukaku.org/118/ 投稿用</span>
+<span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">class</span> <span class="nc">Program</span> <span class="k">{</span>
+    <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span> <span class="k">{</span>
+        <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="p">=</span> <span class="m">1</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="n">System</span><span class="p">.</span><span class="n">Environment</span><span class="p">.</span><span class="n">GetCommandLineArgs</span><span class="p">().</span><span class="n">Length</span><span class="p">;</span> <span class="n">i</span><span class="p">++)</span> <span class="k">{</span>
+            <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Environment</span><span class="p">.</span><span class="n">GetCommandLineArgs</span><span class="p">()[</span><span class="n">i</span><span class="p">]);</span>
+        <span class="k">}</span>
+        <span class="n">Console</span><span class="p">.</span><span class="n">ReadLine</span><span class="p">();</span>
+    <span class="k">}</span>
+<span class="k">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5008/addtag/" class="addtag" id="addtag_5008">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/csharp/">
+		C#
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5008/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5008/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5008"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5008"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5008"
+  >+</span></span></span>
+  
+<p>
+
+  
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5006/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5008/root/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5008/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+    </div>
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5020"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/322/" target="_top">sawat</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5020/">#5020</a>(<script language="JavaScript">print_time(new Date("2007/12/28 00:30 GMT"));</script><noscript>2007/12/28 00:30 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/javascript/">
+	  JavaScript
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  思いっきり実装依存。<br/>Rhinoの場合、トップレベルのargumentsにコマンドライン引数が入ってます。<br/><br/>&gt;&nbsp;java&nbsp;-jar&nbsp;js.jar&nbsp;program.js&nbsp;a&nbsp;b&nbsp;c&nbsp;d<br/>a<br/>b<br/>c<br/>d
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1</pre></td><td class="code"><div class="highlight"><pre><span class="k">for</span><span class="p">(</span><span class="k">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="nx">i</span><span class="o">&lt;</span><span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span><span class="o">;</span><span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="nx">print</span><span class="p">(</span><span class="nx">arguments</span><span class="p">[</span><span class="nx">i</span><span class="p">]);</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5020/addtag/" class="addtag" id="addtag_5020">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/javascript/">
+		JavaScript
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5020/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5020/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5020"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5020"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5020"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5020/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment8946"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/759/" target="_top">egtra</a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/8946/">#8946</a>(<script language="JavaScript">print_time(new Date("2009/05/18 08:58 GMT"));</script><noscript>2009/05/18 08:58 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/csharp/">
+	  C#
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  
+<p>WPFはApplicationクラスのStartupでコマンドライン引数を取り扱うことが可能です。というわけでそれを使ってみました。プログラムは<a href="/web/20111027190926/http://ja.doukaku.org/comment/8944/">#8944</a>の流用です。
+</p>
+
+
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21</pre></td><td class="code"><div class="highlight"><pre><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Windows</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Windows.Controls</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">Progam</span>
+<span class="k">{</span>
+<span class="na">    [STAThread]</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="kt">int</span> <span class="nf">Main</span><span class="p">()</span>
+    <span class="k">{</span>
+        <span class="n">var</span> <span class="n">w</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Window</span><span class="p">();</span>
+        <span class="n">w</span><span class="p">.</span><span class="n">Width</span> <span class="p">=</span> <span class="n">w</span><span class="p">.</span><span class="n">Height</span> <span class="p">=</span> <span class="m">300</span><span class="p">;</span>
+        <span class="n">var</span> <span class="n">app</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Application</span><span class="p">();</span>
+        <span class="n">app</span><span class="p">.</span><span class="n">Startup</span> <span class="p">+=</span> <span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="k">{</span>
+            <span class="n">var</span> <span class="n">lb</span> <span class="p">=</span> <span class="k">new</span> <span class="n">ListBox</span><span class="p">();</span>
+            <span class="n">lb</span><span class="p">.</span><span class="n">ItemsSource</span> <span class="p">=</span> <span class="n">e</span><span class="p">.</span><span class="n">Args</span><span class="p">;</span>
+            <span class="n">w</span><span class="p">.</span><span class="n">Content</span> <span class="p">=</span> <span class="n">lb</span><span class="p">;</span>
+        <span class="k">}</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">app</span><span class="p">.</span><span class="n">Run</span><span class="p">(</span><span class="n">w</span><span class="p">);</span>
+    <span class="k">}</span>
+<span class="k">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/8946/addtag/" class="addtag" id="addtag_8946">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/csharp/">
+		C#
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/8946/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/8946/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_8946"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_8946"
+  >0</span><span 
+  class="button green"
+  id="rating_p_8946"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/8946/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment9088"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/1064/" target="_top">yamamoto</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/9088/">#9088</a>(<script language="JavaScript">print_time(new Date("2009/06/10 08:49 GMT"));</script><noscript>2009/06/10 08:49 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/scala/">
+	  Scala
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffefef;">-1/1=-1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Swingアプリで。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></td><td class="code"><div class="highlight"><pre>import swing._
+object CmdParam extends SimpleGUIApplication {
+  var args = Array[String]()
+  override def main(args:Array[String]):Unit = {
+    this.args = args
+    super.main(args)
+  }
+  
+  def top=new MainFrame{
+    title = &quot;CmdParam&quot;
+    object label extends Label{
+      text= args.toList.toString
+    }
+    contents = new FlowPanel{
+      for {arg&lt;-args
+           label=new Label{ text=arg } } contents += label
+    }
+  }
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/9088/addtag/" class="addtag" id="addtag_9088">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/scala/">
+		Scala
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/9088/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/9088/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffefef;"
+  >-1/1=-1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_9088"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_9088"
+  >0</span><span 
+  class="button green"
+  id="rating_p_9088"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/9088/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment9365"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/1024/" target="_top">rennos</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/9365/">#9365</a>(<script language="JavaScript">print_time(new Date("2009/07/14 07:33 GMT"));</script><noscript>2009/07/14 07:33 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/hsp/">
+	  HSP
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <div class="section">
+<p>コマンドライン文字列は dir_cmdline で得られるので、配列変数に格納・羅列する所まで。</p>
+</div>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106</pre></td><td class="code"><div class="highlight"><pre>// No.118 : コマンドライン文字列を取得する
+
+#module mod_lexCmdline
+
+#define true  1
+#define false 0
+
+#define success 1
+#define failure 0
+
+//------------------------------------------------
+// コマンドライン文字列を解析し、分解する
+//------------------------------------------------
+#define global LexCmdline(%1=cmdopt@,%2=-1,%3=dir_cmdline) \
+    _LexCmdline %1,%2,%3
+#deffunc _LexCmdline array cmdopt, int cntMax, str _cmdline,  \
+    local cmdline, local index,  local c,\
+    local bInQuote, local cQuote,  local cntOpt, \
+    local lenOpt, local iOptBegin
+    
+    if ( cntMax &lt; 0 ) {
+        sdim cmdopt, 320, 10
+    } else {
+        sdim cmdopt, 320, cntMax
+    }
+    
+    if ( cntMax == 0 ) { return }
+    
+    cmdline   = _cmdline
+    index     = 0
+    bInQuote  = false
+    cQuote    = 0
+    cntOpt    = 0
+    lenOpt    = 0
+    iOptBegin = -1
+    
+    // 分解処理
+    repeat
+        c = peek(cmdline, index)
+        
+        // 終端文字
+        if ( c == 0 ) {
+            if ( lenOpt &gt; 0 ) { gosub *LGetOption }
+            break
+            
+        // 引用符発見 ( 引用符は cmdopt に含めない )
+        } else : if ( c == &#39;\&#39;&#39; || c == &#39;&quot;&#39; ) {
+            // 引用符の開始
+            if ( bInQuote == false ) {
+            
+                if ( iOptBegin &lt; 0 ) { iOptBegin = index + 1 }
+                bInQuote = true
+                cQuote   = c
+                
+            // 引用符の終了
+            } else : if ( cQuote == c ) {
+                
+                bInQuote = false
+                cQuote   = 0
+                
+                gosub *LGetOption
+                if ( stat == failure ) { break }
+                
+            // 関係ない文字
+            } else {
+                lenOpt ++
+            }
+            
+        // 引用符外の空白発見
+        } else : if ( c == &#39; &#39; &amp;&amp; bInQuote == false ) {
+            
+            if ( lenOpt ) {
+                gosub *LGetOption
+                if ( stat == failure ) { break }
+            } else {
+                /* ignore */
+            }
+            
+        // その他の文字
+        } else {
+            if ( iOptBegin &lt; 0 ) { iOptBegin = index }
+            lenOpt ++
+        }
+        index ++
+    loop
+    
+    return cntOpt
+    
+*LGetOption
+    cmdopt( cntOpt ) = strmid( cmdline, iOptBegin, lenOpt )
+    cntOpt ++
+    lenOpt    = 0
+    iOptBegin = -1
+    
+    if ( cntMax &gt; 0 &amp;&amp; cntOpt == cntMax ) {
+        return failure
+    }
+    return success
+    
+#global
+
+    LexCmdline //,, &quot;a b c d&quot;
+    repeat stat
+        mes strf(&quot;(%2d) &quot;, cnt) + cmdopt(cnt)
+    loop
+    stop
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/9365/addtag/" class="addtag" id="addtag_9365">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/hsp/">
+		HSP
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/9365/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/9365/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_9365"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_9365"
+  >0</span><span 
+  class="button green"
+  id="rating_p_9365"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/9365/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment4995"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/550/" target="_top">todogzm</a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4995/">#4995</a>(<script language="JavaScript">print_time(new Date("2007/12/27 09:44 GMT"));</script><noscript>2007/12/27 09:44 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/java/">
+	  Java
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Program.class がカレントフォルダにある前提です。
+コマンドラインの呼び出し方はこんな感じ。</p>
+<p>java Program a b c d</p>
+<p>結果はこんな感じ。</p>
+<p>print arguments:
+a
+b
+c
+d</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></td><td class="code"><div class="highlight"><pre><span class="k">public</span> <span class="k">class</span> <span class="nc">Program</span> <span class="o">{</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="kt">void</span> <span class="n">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;print arguments:&quot;</span><span class="o">);</span>
+        <span class="k">for</span> <span class="o">(</span><span class="n">String</span> <span class="n">arg</span> <span class="o">:</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">arg</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4995/addtag/" class="addtag" id="addtag_4995">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/java/">
+		Java
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/4995/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/4995/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_4995"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_4995"
+  >0</span><span 
+  class="button green"
+  id="rating_p_4995"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  <a href="/web/20111027190926/http://ja.doukaku.org/comment/4995/">
+    2
+    reply
+  </a>
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/4995/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+    <div class="indent compact" style="position: relative;">
+      <img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/1x1dark_green.png" width=10 style="position: absolute;top:-10px;margin-left:8px;">
+      
+
+
+
+
+<div class="comment" id="comment5007"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/370/" target="_top">ヨシオリ</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5007/">#5007</a>(<script language="JavaScript">print_time(new Date("2007/12/27 11:08 GMT"));</script><noscript>2007/12/27 11:08 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffefcf;">-1/3=-0.33</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>重箱の隅をつついて申し訳ないですが
+println だと改行されてしまうので
+print の方が良いかと思います。</pre>
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5007/addtag/" class="addtag" id="addtag_5007">タグ</a>:
+	なし&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffefcf;"
+  >-1/3=-0.33</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5007"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5007"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5007"
+  >+</span></span></span>
+  
+<p>
+
+  
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/4995/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/5007/root/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5007/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+    </div>
+  
+    <div class="indent compact" style="position: relative;">
+      <img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/1x1dark_green.png" width=10 style="position: absolute;top:-10px;margin-left:8px;">
+      
+
+
+
+
+<div class="comment" id="comment4996"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/550/" target="_top">todogzm</a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4996/">#4996</a>(<script language="JavaScript">print_time(new Date("2007/12/27 09:49 GMT"));</script><noscript>2007/12/27 09:49 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>ちなみによく言われるtipsですが、main()の引数argsは
+常に非nullです。
+コマンドライン引数が与えられない場合は、長さ0の配列が引数として与えられます。</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/4996/addtag/" class="addtag" id="addtag_4996">タグ</a>:
+	なし&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_4996"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_4996"
+  >0</span><span 
+  class="button green"
+  id="rating_p_4996"
+  >+</span></span></span>
+  
+<p>
+
+  
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/4995/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20111027190926/http://ja.doukaku.org/comment/4996/root/"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/4996/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+    </div>
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5001"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/134/" target="_top">こう。</a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5001/">#5001</a>(<script language="JavaScript">print_time(new Date("2007/12/27 10:27 GMT"));</script><noscript>2007/12/27 10:27 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/c/">
+	  C
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>argcに引数の個数、argv[n]にn番目の引数が入っています。</p>
+<p>ただし、n=0は実行プログラムです。
+なので、argc-1個の引数が正しいのかな？</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3</pre></td><td class="code"><div class="highlight"><pre><span class="kt">int</span> <span class="n">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span> <span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">argv</span><span class="p">){</span>
+<span class="err">･･･</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5001/addtag/" class="addtag" id="addtag_5001">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/c/">
+		C
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5001/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5001/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5001"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5001"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5001"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5001/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment5397"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/565/" target="_top">RC3</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5397/">#5397</a>(<script language="JavaScript">print_time(new Date("2008/01/19 10:56 GMT"));</script><noscript>2008/01/19 10:56 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/lua/">
+	  Lua
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>-コマンドライン引数はargという名前のグローバルなテーブルに格納される。
+-スクリプト名がインデックス0に格納される。
+-最初の引数がスクリプト名の後のインデックス1に格納され、以下同様。
+-フィールドnはスクリプト名の後の引数の数を持つ。
+-スクリプト名の前のすべての引数(インタプリタ名やオプション)は負のインデックスに割り当てられる。
+
+C:\&gt;lua para.lua a b c d
+[-1] = lua
+[0] = para.lua
+[1] = a
+[2] = b
+[3] = c
+[4] = d
+C:\&gt;</pre>
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20111027190926/http://uri.sakura.ne.jp/~cosmic/yuno/lab/lua5_manual_ja.html#6">Lua: 5.0 リファレンスマニュアル／6 - スタンドアロンのLua</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3</pre></td><td class="code"><div class="highlight"><pre><span class="k">for</span> <span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">arg</span><span class="p">.</span><span class="n">n</span> <span class="k">do</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="s">[&quot;</span> <span class="p">..</span> <span class="n">i</span> <span class="p">..</span> <span class="s2">&quot;</span><span class="s">] = &quot;</span> <span class="p">..</span> <span class="n">arg</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+<span class="k">end</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/5397/addtag/" class="addtag" id="addtag_5397">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/lua/">
+		Lua
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5397/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/5397/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5397"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5397"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5397"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/5397/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment10340"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10340/">#10340</a>(<script language="JavaScript">print_time(new Date("2010/03/17 00:17 GMT"));</script><noscript>2010/03/17 00:17 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffefef;">-1/1=-1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Different people in the world take the &lt;a href=&quot;<a class="reference" href="/web/20111027190926/http://lowest-rate-loans.com/topics/business-loans">http://lowest-rate-loans.com/topics/business-loans</a>&quot;&gt;business loans&lt;/a&gt; in various creditors, because this is simple and comfortable.</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10340/addtag/" class="addtag" id="addtag_10340">タグ</a>:
+	なし&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffefef;"
+  >-1/1=-1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10340"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10340"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10340"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/10340/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment10379"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10379/">#10379</a>(<script language="JavaScript">print_time(new Date("2010/04/05 11:31 GMT"));</script><noscript>2010/04/05 11:31 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffefef;">-1/1=-1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Lots people give the duty to qualified resume writers because they miss the ability to compose a respectable resume that is the cause why people
+need  to &lt;a href=&quot;<a class="reference" href="/web/20111027190926/http://www.prime-resume.com/">http://www.prime-resume.com</a>&quot;&gt;resume writing services&lt;/a&gt;, but such people like creator don't do that. Thank you for the information. Very interesting information about this topic.</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10379/addtag/" class="addtag" id="addtag_10379">タグ</a>:
+	なし&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffefef;"
+  >-1/1=-1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10379"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10379"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10379"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/10379/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment10341"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10341/">#10341</a>(<script language="JavaScript">print_time(new Date("2010/03/18 17:29 GMT"));</script><noscript>2010/03/18 17:29 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffefef;">-1/1=-1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <blockquote>
+This is my first visit and I like very much what I am seeing. Your material  is indeed very smart to get over, enormously  engaging as well as clever. I’ll clearly recommend it to the friends of mine. They have luck of support as well as &lt;a href=&quot;<a class="reference" href="/web/20111027190926/http://www.exclusivepapers.com/">http://www.exclusivepapers.com</a>&quot;&gt;paper services&lt;/a&gt; requirement.</blockquote>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10341/addtag/" class="addtag" id="addtag_10341">タグ</a>:
+	なし&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffefef;"
+  >-1/1=-1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10341"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10341"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10341"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/10341/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment10352"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10352/">#10352</a>(<script language="JavaScript">print_time(new Date("2010/03/25 22:25 GMT"));</script><noscript>2010/03/25 22:25 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffefef;">-1/1=-1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Commonly, all the students seem to be loaded with writing assignments, however some of them do not have time and have to purchase the critical essays from the &lt;a href=&quot;<a class="reference" href="/web/20111027190926/http://www.qualityessay.com/">http://www.qualityessay.com</a>&quot;&gt;buy research paper&lt;/a&gt; service and they are satisfied with outcomes.</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10352/addtag/" class="addtag" id="addtag_10352">タグ</a>:
+	なし&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffefef;"
+  >-1/1=-1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10352"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10352"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10352"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/10352/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment10343"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10343/">#10343</a>(<script language="JavaScript">print_time(new Date("2010/03/19 22:51 GMT"));</script><noscript>2010/03/19 22:51 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffefef;">-1/1=-1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Colossal subject just about life! Really effective to be honest! If you're concerned, feel free to contact our &lt;a href=&quot;<a class="reference" href="/web/20111027190926/http://essaysexperts.com/">http://essaysexperts.com/</a>&quot;&gt;essay papers&lt;/a&gt; writing company that can help you with first-class essay papers. Regards!</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10343/addtag/" class="addtag" id="addtag_10343">タグ</a>:
+	なし&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffefef;"
+  >-1/1=-1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10343"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10343"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10343"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/10343/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment10344"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10344/">#10344</a>(<script language="JavaScript">print_time(new Date("2010/03/19 17:51 GMT"));</script><noscript>2010/03/19 17:51 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffefef;">-1/1=-1.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>People should get a fresh interesting information about this post, if &lt;a href=&quot;<a class="reference" href="/web/20111027190926/http://www.supremeessays.com/">http://www.supremeessays.com</a>&quot;&gt;buy essays&lt;/a&gt; or buy term papers at the essay writing service!</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/10344/addtag/" class="addtag" id="addtag_10344">タグ</a>:
+	なし&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffefef;"
+  >-1/1=-1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10344"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10344"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10344"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/10344/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+<div class="comment" id="comment7690"><!--dj-->
+  <p class="banner"><a href="/web/20111027190926/http://ja.doukaku.org/user/648/" target="_top">carver</a><a href="/web/20111027190926/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/7690/">#7690</a>(<script language="JavaScript">print_time(new Date("2008/09/20 12:58 GMT"));</script><noscript>2008/09/20 12:58 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20111027190926/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>LLVMアセンブリでは、main関数のパラメータでコマンドライン引数を受け取れます。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28</pre></td><td class="code"><div class="highlight"><pre>declare i32 @puts(i8 *)
+
+; コマンド名を除き、すべての引数を表示する
+define i32 @main(i32 %argc, i8** %argv) {
+    %i = alloca i32
+    store i32 1, i32* %i 
+    br label %loop
+
+loop:
+    %i_val = load i32* %i
+    %cont = icmp slt i32 %i_val, %argc
+    br i1 %cont, label %body, label %return
+
+body:
+    %argv_addr = ptrtoint i8** %argv to i32
+    %count = mul i32 4, %i_val
+    %arg_addr = add i32 %argv_addr, %count
+    %args = inttoptr i32 %arg_addr to i8**
+    %arg = load i8** %args
+    call i32 @puts(i8* %arg)
+
+    %next_i = add i32 %i_val, 1
+    store i32 %next_i, i32* %i
+    br label %loop
+
+return:
+    ret i32 0
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20111027190926/http://ja.doukaku.org/comment/7690/addtag/" class="addtag" id="addtag_7690">タグ</a>:
+	なし&nbsp;
+
+	
+      [<a href="/web/20111027190926/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20111027190926/http://ja.doukaku.org/comment/7690/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20111027190926/http://ja.doukaku.org/comment/7690/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_7690"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_7690"
+  >0</span><span 
+  class="button green"
+  id="rating_p_7690"
+  >+</span></span></span>
+  
+<p>
+
+  
+
+  
+
+  [<a href="/web/20111027190926/http://ja.doukaku.org/118/reply_to/7690/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+</div>
+
+<div id="side_menu" class="compact">
+
+<iframe src="/web/20111027190926if_/http://ja.doukaku.org/login_info/" frameborder=0 width=100% id="login_info">
+iframe required
+</iframe>
+
+<h4 class="semi_compact">一覧</h4>
+
+<ul>
+<li><a href="/web/20111027190926/http://ja.doukaku.org/lang/">言語</a>
+<li><a href="/web/20111027190926/http://ja.doukaku.org/challenge/">お題</a>
+<li><a href="/web/20111027190926/http://ja.doukaku.org/topic/">トピック</a>
+<li><a href="/web/20111027190926/http://ja.doukaku.org/comment/">投稿</a>
+<li><a href="/web/20111027190926/http://ja.doukaku.org/good_comments/">評価の高い投稿</a>
+<li><a href="/web/20111027190926/http://ja.doukaku.org/tag/">タグ</a>
+</ul>
+
+<h4 class="compact">フィード</h4>
+<ul>
+<li><a href="/web/20111027190926/http://ja.doukaku.org/feeds/topics/">最新のトピック</a><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/feed_icon.png">
+<li><a href="/web/20111027190926/http://ja.doukaku.org/feeds/comments/">新着投稿</a><img src="/web/20111027190926im_/http://ja.doukaku.org/static/image/feed_icon.png">
+</ul>
+
+<h4 class="compact">その他</h4>
+<ul>
+<li><a href="/web/20111027190926/http://ja.doukaku.org/qa/">Q&amp;A</a>
+<li><a href="/web/20111027190926/http://ja.doukaku.org/feedback/">フィードバック</a>
+<!--<li><a href="/terms">用語集</a>-->
+</ul>
+
+
+<h4 class="compact">リンク</h4>
+<ul>
+<li><a href="/web/20111027190926/http://labs.cybozu.co.jp/">サイボウズ・ラボ</a>
+<li><a href="/web/20111027190926/http://www.djangoproject.com/">Django</a>
+</ul>
+
+
+</div>
+</div>
+
+
+<div id="page_foot" class="bordered">
+<a rel="license" href="/web/20111027190926/http://creativecommons.org/licenses/by/2.1/jp/">
+<img alt="Creative Commons License" style="border-width:0" src="/web/20111027190926im_/http://i.creativecommons.org/l/by/2.1/jp/88x31.png" /></a>
+このサイトの内容は、
+<a rel="license" href="/web/20111027190926/http://creativecommons.org/licenses/by/2.1/jp/">クリエイティブ・コモンズ・ライセンス</a>の下でライセンスされています。
+<a href="/web/20111027190926/http://ja.doukaku.org/qa/#licence">[詳細]</a>
+</div>
+
+</body>
+
+
+
+<script type="text/javascript">
+$(document).ready(function(){$("#doukaku_org").after("<script src='/web/20111027190926/http://api.pathtraq.com/pages?url=http%3A%2F%2Fja.doukaku.org%2Fcomment%2F*%2F%20desc%3A%E3%81%A9%E3%81%86%E6%9B%B8%E3%81%8Forg&api=json&callback=addPathtraq'><" + "/script>")});
+</script>
+
+<script src="/web/20111027190926js_/http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-2136157-1";
+urchinTracker();
+</script>
+
+
+
+</html>
+
+
+
+
+
+<!--
+     FILE ARCHIVED ON 19:09:26 Oct 27, 2011 AND RETRIEVED FROM THE
+     INTERNET ARCHIVE ON 14:59:19 Nov 16, 2013.
+     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+     SECTION 108(a)(3)).
+-->

@@ -1,0 +1,889 @@
+---
+:id: '102'
+:title: フォルダパス一覧のツリー構造への変換
+:comments:
+- :id: '4458'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/4458
+  :user_name: todogzm
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/550/
+  :language: 
+  :time: 2007/11/28 08:23 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  (相対)フォルダのパスの一覧が与えられ、そのフォルダパスの一覧をツリー構造に変換してください。\r<br>フォルダパスの区切り文字は'\\'文字を使用しています。\r<br><br>以下のような1行1パスのフォルダのパスがあった場合、\r<br> abc\\def\r<br> abc\\def\\gh\r<br> abc\\def\\ij\r<br> abc\\jk\\lm\r<br> de\r<br><br>イメージとして、以下のようなツリー構造を構築できればOKです。\r<br> ROOT\r<br> ┗abc\r<br> 　┗def\r<br> 　　┗gh\r<br> 　　┗ij\r<br> 　┗jk\r<br> 　　┗lm\r<br> ┗de\r<br><br>ツリーですのでルートがあります。上記のフォルダ一覧はルート以下にぶら下げてください。また、同じフォルダにぶら下がっているサブフォルダの名前は重複させてはいけません。\r<br><br>上記のような出力は結果の分かりやすさとしてあった方がいいですが、なければないで構いません。また、ASやJavaFXでグラフィカルな結果を表示するプログラムでも構いませんが、データ構造はちゃんと作ってください。\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4461'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/4461
+  :user_name: horiuchi
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/570/
+  :language: C
+  :time: 2007/11/28 10:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>C#で素直に実装してみました。</p>\n\n\t"
+  :code: |
+    using System;
+    using System.Collections;
+    using System.Text;
+
+    class Sample102
+    {
+        private readonly IDictionary dirTree_ = new SortedList();
+
+        public Sample102(string[] pathList) {
+            createTree(pathList);
+        }
+        private void createTree(string[] pathList) {
+            foreach (string path in pathList) {
+                string[] dirs = path.Split('\\');
+                addTree(dirs);
+            }
+        }
+        private void addTree(string[] dirs) {
+            IDictionary prevDict = dirTree_;
+            for (int index = 0; index &lt; dirs.Length; index++) {
+                IDictionary dict = prevDict[dirs[index]] as IDictionary;
+                if (dict == null) {
+                    dict = new SortedList();
+                    prevDict[dirs[index]] = dict;
+                }
+                prevDict = dict;
+            }
+        }
+
+        public void printTree() {
+            Console.WriteLine(printTree(0, "", dirTree_));
+        }
+        private string printTree(int depth, string name, IDictionary innerDir) {
+            StringBuilder builder = new StringBuilder();
+            for (int index = 0; index &lt; depth; index++) builder.Append("  ");
+            builder.Append('/');
+            builder.Append(name);
+            builder.Append('\n');
+
+            foreach (string dir in innerDir.Keys) {
+                builder.Append(printTree(depth + 1, dir, innerDir[dir] as IDictionary));
+            }
+            return builder.ToString();
+        }
+
+
+        [STAThread]
+        static void Main(string[] args) {
+            string[] pathList = new string[] {
+                     @"abc\def",
+                     @"abc\def\gh",
+                     @"abc\def\ij",
+                     @"abc\jk\lm",
+                     @"de",
+                };
+
+            Sample102 pathTree = new Sample102(pathList);
+            pathTree.printTree();
+            Console.ReadLine();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4464'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/4464
+  :user_name: ところてん
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2007/11/28 13:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">擬似lsの実装は実はデータ構造の話を次にもってこようかなぁと思ってたりしていた。\r\n\r\n一応10分くらいで実装してみた。\r\n辞書型を使って処理してみる。\r\n\r\n以下実行結果\r\n-----------\r\n
+    abc\r\n  def\r\n   gh\r\n   ij\r\n  jk\r\n   lm\r\n azc\r\n  def\r\n de</pre>\n\t"
+  :code: "#-*- coding: utf-8 -*-\n\npathList = [\n\"azc\\\\def\",\n\"abc\\\\def\",\n\"abc\\\\def\\\\gh\",\n\"abc\\\\def\\\\ij\",\n\"abc\\\\jk\\\\lm\",\n\"de\"]\n\ntree
+    = {}\nfor path in pathList:\n    temp = tree\n    for dir in path.split(\"\\\\\"):\n
+    \       if not temp.has_key(dir):\n            temp[dir] = {}\n        temp =
+    temp[dir]\ndef printTree(tree, nest):\n    keyList = tree.keys()\n    keyList.sort()\n
+    \   for key in keyList:\n        print \" \"*nest,key\n        if len(tree[key].keys()):\n
+    \           printTree(tree[key], nest+1)\n            \nprintTree(tree,0)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4466'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/4466
+  :user_name: nobsun
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/11/28 13:47 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">ファイルパスの分解には，System.FilePath.Windows モジュールの
+    splitPath\r\nを用いる．Unix系ファイルシステム流の'/'の場合は System.FilePath.Unixを\r\n用いればよい．\r\n\r\nツリーの構築と表示には
+    Data.Tree モジュール unfoldTree および drawTree\r\nをそれぞれ用いる．\r\n\r\n実行例：\r\n*Main&gt;
+    putStrLn $ drawTree $ buildFS pathList\r\nROOT\r\n|\r\n+- abc\r\n|  |\r\n|  +-
+    def\r\n|  |  |\r\n|  |  +- gh\r\n|  |  |\r\n|  |  `- ij\r\n|  |\r\n|  `- jk\r\n|
+    \    |\r\n|     `- lm\r\n|\r\n`- de\r\n</pre>\n\t"
+  :code: |
+    import Data.List
+    import Data.Tree
+    import System.FilePath.Windows
+
+    binapp o f x y = f x `o` f y
+
+    type FS = Tree FilePath
+
+    buildFS :: [String] -&gt; FS
+    buildFS = Node "ROOT" . map buildDir . groupPath . map splitPath . sort
+
+    buildDir :: (FilePath,[[FilePath]]) -&gt; FS
+    buildDir = unfoldTree phi
+     where phi (n,ps) = (delete pathSeparator n, groupPath $ filter (not . null) ps)
+
+    groupPath :: [[FilePath]] -&gt; [(FilePath,[[FilePath]])]
+    groupPath = map grouping . groupBy (binapp eqpath head)
+      where grouping ss = (head . head $ ss, map tail ss)
+            eqpath      = binapp (==) (fst . break (pathSeparator==))
+
+    pathList = ["abc\\def","abc\\def\\gh","abc\\def\\ij","abc\\jk\\lm","de"]
+  :tags:
+  - ghc-6.8.1
+  :references:
+    :url: 
+    :title: 
+- :id: '4467'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/4467
+  :user_name: ところてん
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/11/28 13:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">dirが色が付いてると思ったら、組み込み関数なのかこれ。\r\n知らなかった・・・。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4473'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/4473
+  :user_name: mamamoto
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2007/11/29 01:31 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <p>作成はちょっと変則的なinjectと破壊的作用の組み合わせでハッシュでツリーを。</p>\n<p>表示は素直な再帰で。</p>\n\n\t"
+  :code: |
+    path_list = %w(
+    abc\\def
+    abc\\def\\gh
+    abc\\def\\ij
+    abc\\jk\\lm
+    de
+    )
+
+    def dump_tree(h, pad="")
+      h.sort_by{|k,v| k}.each{|k,v|
+        print(pad, "┗", k, "\n")
+        dump_tree(v, pad+"  ")
+      }
+    end
+
+    h = {}
+    path_list.each{|path|
+      path.split(/\\/).inject(h){|k,v|
+        k[v] ||= {}
+      }
+    }
+
+    dump_tree(h)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4474'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/4474
+  :user_name: sumim
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/11/29 05:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk で。\r<br><br>mamamoto さんの #4473 に感じ入ったあとでは、#groupBy:having: を便利に使っているつもりが使われてしまっているみたいでダメダメですね(^_^;)。\n\t"
+  :code: |
+    | genTree printTree pathList tree |
+    genTree := [:paths |
+        | leaf |
+        leaf := paths groupBy: [:path | path first] having: [:g | true].
+        leaf associationsDo: [:assoc |
+            | newValue |
+            newValue := assoc value
+                collect: [:val | val allButFirst] thenSelect: [:val | val notEmpty].
+            assoc value: (newValue isEmpty
+                ifTrue: [newValue]
+                ifFalse: [genTree copy fixTemps value: newValue])]].
+
+    printTree := [:dic :lev |
+        dic keys asSortedCollection do: [:key |
+            Transcript crtab: lev; show: key.
+            (dic at: key) ifNotEmptyDo: [:child |
+                printTree copy fixTemps value: child value: lev + 1]]].
+
+    pathList := #('abc\def' 'abc\def\gh' 'abc\def\ij' 'abc\jk\lm' 'de').
+    pathList := pathList collect: [:each | each subStrings: {$\}].
+
+    World findATranscript: nil.
+    tree := genTree copy fixTemps value: pathList.
+    printTree copy fixTemps value: tree value: 0
+
+    "=&gt;
+    abc
+        def
+            gh
+            ij
+        jk
+            lm
+    de
+    "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '4475'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/4475
+  :user_name: sumim
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/11/29 05:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  これはすばらしい！\r<br><br>感動したので、Squeak Smalltalk に意訳させていただきました。\n\t"
+  :code: |
+    | pathList tree dumpTree |
+    pathList := #('abc\def' 'abc\def\gh' 'abc\def\ij' 'abc\jk\lm' 'de').
+
+    tree := Dictionary new.
+    pathList do: [:path |
+        (path subStrings: #($\)) inject: tree into: [:tr :dir |
+            tr at: dir ifAbsentPut: [Dictionary new]]].
+
+    dumpTree := [:tr :lev |
+        tr keys asSortedCollection do: [:key |
+            Transcript crtab: lev; show: key.
+            (tr at: key) ifNotEmptyDo: [:child |
+                dumpTree copy fixTemps value: child value: lev + 1]]].
+
+    World findATranscript: nil.
+    dumpTree copy fixTemps value: tree value: 0
+
+    "=&gt;
+    abc
+        def
+            gh
+            ij
+        jk
+            lm
+    de
+    "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '4478'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/4478
+  :user_name: greentea
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/573/
+  :language: Python
+  :time: 2007/11/29 09:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>素直に再帰関数で実装しました。</p>\n\n\t"
+  :code: |
+    # encoding: utf-8
+    list = [ "abc\\def", "abc\\def\\gh", "abc\\def\\ij", "abc\\jk\\lm", "de" ]
+
+    def pathtree(lst):
+      def maketree(l):
+        s = [x for x in set([v[0] for v in l])]
+        s.sort()
+        return [[v, maketree([x[1:] for x in l if x[0]==v and len(x)&gt;1])] for v in s]
+      return ["ROOT", maketree([s.split("\\") for s in list])]
+
+    def printtree(tree):
+      def printchild(tree, nest):
+        for c in tree:
+          if c==[]: continue
+          print " "*nest*2 + "┗" + c[0]
+          printchild(c[1], nest+1)
+      print tree[0]
+      printchild(tree[1], 0)
+
+    printtree(pathtree(list))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4482'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/4482
+  :user_name: あにす
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2007/11/29 14:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>System.Windows.FormsのTreeViewに表示させてみました。</p>\n\n\t"
+  :code: "//http://ja.doukaku.org/\n//http://ja.doukaku.org/102/投稿用\nusing System;\nusing
+    System.Windows.Forms;\n\nnamespace どう書く_orgフォルダパス一覧のツリー構造への変換 {\n    class Program
+    {\n        [STAThread]\n        static void Main(string[] args) {\n            Application.Run(new
+    Form1());\n        }\n    }\n\n    class Form1:Form {\n        //treeView1\n        TreeView
+    treeView1 = new TreeView();\n\n        //起動時引数でパス一覧のファイルを指定\n        string pathListFilePath
+    = System.Environment.GetCommandLineArgs()[1];\n\n        public Form1() {\n            //Form1\n
+    \           this.Load += new EventHandler(Form1_Load);\n            //treeView1\n
+    \           treeView1.Parent = this;\n            treeView1.Dock = DockStyle.Fill;\n
+    \       }\n\n        void Form1_Load(object sender, EventArgs e) {\n            //ROOTNode\n
+    \           TreeNode rootNode = new TreeNode(\"ROOT\");\n            treeView1.Nodes.Add(rootNode);\n\n
+    \           foreach(string fullPath in System.IO.File.ReadAllLines(pathListFilePath))
+    {\n                TreeNode addNode = rootNode;\n                foreach(string
+    path in fullPath.Split(new char[] { '\\\\' })) {\n                    bool flag
+    = true;\n                    foreach(TreeNode node in addNode.Nodes) {\n                        if(node.Text
+    == path) {\n                            addNode = node;\n                            flag
+    = false;\n                        }\n                        \n                    }\n
+    \                   if(flag) {\n                        TreeNode newnode = new
+    TreeNode(path);\n                        addNode.Nodes.Add(newnode);\n                        addNode
+    = newnode;\n                    }\n                }\n            }\n            rootNode.ExpandAll();\n
+    \       }\n    }\n}\n"
+  :tags:
+  - .NET2.0
+  - System.Windows.Forms
+  :references:
+    :url: /web/20090917194550/http://blogs.dion.ne.jp/anis7742/#6517703
+    :title: 貧脚レーサーのサボり日記
+- :id: '4483'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/4483
+  :user_name: あにす
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/504/
+  :language: VB
+  :time: 2007/11/29 14:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>VB.NETに書き換え。</p>\n\n\t"
+  :code: |
+    'http://ja.doukaku.org/
+    'http://ja.doukaku.org/102/投稿用
+    Imports System
+    Imports System.Windows.Forms
+
+    NameSpace どう書く_orgフォルダパス一覧のツリー構造への変換
+        Class Program
+            &lt;STAThread&gt; _
+            Shared Sub Main(byval args() As String)
+                Application.Run(new Form1())
+            End Sub
+        End Class
+
+        class Form1:Inherits Form
+            'treeView1
+            Dim treeView1 As TreeView = New TreeView()
+
+            '起動時引数でパス一覧のファイルを指定
+            Dim pathListFilePath As String = System.Environment.GetCommandLineArgs()(1)
+
+            Public Sub New()
+                'treeView1
+                treeView1.Parent = Me
+                treeView1.Dock = DockStyle.Fill
+            End Sub
+
+            Private Sub Form1_Load(byval sender As object, byval e As EventArgs)handles Me.Load
+                'ROOTNode
+                Dim rootNode As TreeNode = New TreeNode("ROOT")
+                treeView1.Nodes.Add(rootNode)
+
+                For Each fullPath As String In System.IO.File.ReadAllLines(pathListFilePath)
+                    Dim addNode As TreeNode = rootNode
+                    For Each path As String In fullPath.Split(New char(){"\"c})
+                        Dim flag As Boolean = True
+                        For Each node As TreeNode in addNode.Nodes
+                            If node.Text = path Then
+                                addNode = node
+                                flag = False
+                            End If
+                        Next
+                        if flag Then
+                            Dim newnode As TreeNode = New TreeNode(path)
+                            addNode.Nodes.Add(newnode)
+                            addNode = newnode
+                        End If
+                    Next
+                Next
+                rootNode.ExpandAll()
+            End Sub
+        End Class
+    End NameSpace
+  :tags:
+  - .NET2.0
+  - System.Windows.Forms
+  :references:
+    :url: /web/20090917194550/http://blogs.dion.ne.jp/anis7742/#6517967
+    :title: 貧脚レーサーのサボり日記
+- :id: '4491'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/4491
+  :user_name: matyr
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/11/29 18:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    function doukaku102(lst, sep){ sep || (sep = '/');
+      for(var out = [sep], root = {}, rgx = RegExp(sep), mktree = function(tree, path){
+        path &amp;&amp; rgx.test(path)
+          ? mktree(tree[RegExp.leftContext] || (tree[RegExp.leftContext] = {}), RegExp.rightContext)
+          : tree[path] = null;
+      }, i = 0, l = lst.sort().length; i &lt; l; i++) mktree(root, lst[i]);
+      (function ptree(tree, tab){
+        for(var dir in tree) out[out.length] = tab +'┗'+ dir, tree[dir] &amp;&amp; ptree(tree[dir], tab +'　');
+      })(root, '');
+      return out.join('\n');
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5083'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/5083
+  :user_name: ocean
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/177/
+  :language: Java
+  :time: 2008/01/01 08:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>「データ構造を作成する」という条件に合うか微妙ですが、DefaultMutableTreeNodeを自分で操作してるので、いいよね。（なお、ノードはソートされません）</p>\n\n\t"
+  :code: |
+    import java.io.*;
+    import java.util.*;
+    import javax.swing.*;
+    import javax.swing.tree.*;
+
+    class MeApp {
+        public static void main(String[] args) throws Exception {
+            final DefaultMutableTreeNode root = new DefaultMutableTreeNode("ROOT");
+            final BufferedReader r = new BufferedReader(new FileReader(args[0]));
+            try {
+                String path;
+                while ((path = r.readLine()) != null) {
+                    DefaultMutableTreeNode node = root;
+                    for (String name : path.split("\\\\")) {
+                        node = getChild(node, name);
+                    }
+                }
+            } finally {
+                r.close();
+            }
+            SwingUtilities.invokeLater(new Runnable(){
+                public void run() {
+                    final MeFrame frame = new MeFrame(root);
+                    frame.setDefaultCloseOperation(MeFrame.EXIT_ON_CLOSE);
+                    frame.pack();
+                    frame.setVisible(true);
+                }
+            });
+        }
+
+        private static DefaultMutableTreeNode getChild(DefaultMutableTreeNode parent, String name) {
+            final Enumeration e = parent.children();
+            while (e.hasMoreElements()) {
+                final DefaultMutableTreeNode child = (DefaultMutableTreeNode)e.nextElement();
+                if (child.getUserObject().equals(name)) {
+                    return child;
+                }
+            }
+            final DefaultMutableTreeNode child = new DefaultMutableTreeNode(name);
+            parent.add(child);
+            return child;
+        }
+    }
+
+    class MeFrame extends JFrame {
+        public MeFrame(TreeNode root) {
+            final JTree tree = new JTree(root);
+            for (int i = 0; i &lt; tree.getRowCount(); ++i) { // expand all
+                tree.expandRow(i);
+            }
+            setContentPane(new JScrollPane(tree));
+        }
+    }
+  :tags:
+  - Swing
+  :references:
+    :url: 
+    :title: 
+- :id: '5087'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/5087
+  :user_name: ocean
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/177/
+  :language: JavaScript
+  :time: 2008/01/01 12:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>とりあえずIE6とFirefox2(Win)で動作を確認。</p>\n\n\t"
+  :code: |
+    &lt;html&gt;
+    &lt;head&gt;
+    &lt;script type="text/javascript"&gt;
+    &lt;!--
+
+    function traverse(parentDict, parentNode, text)
+    {
+        parentNode.appendChild(document.createTextNode(text));
+
+        var ul = parentNode.appendChild(document.createElement("ul"));
+
+        for (var name in parentDict)
+        {
+            var li = ul.appendChild(document.createElement("li"));
+
+            traverse(parentDict[name], li, name);
+        }
+    }
+
+    function create()
+    {
+        var text = document.getElementById("textarea").value.replace("\r", "");
+
+        var dict = [];
+
+        var pathes = text.split("\n");
+
+        for (var i = 0; i &lt; pathes.length; ++i)
+        {
+            var node = dict;
+
+            var names = pathes[i].split("\\");
+
+            for (var j = 0; j &lt; names.length; ++j)
+            {
+                var name = names[j];
+
+                if (name in node)
+                {
+                    node = node[name];
+                }
+                else
+                {
+                    node = node[name] = [];
+                }
+            }
+        }
+
+        var div = document.getElementById("div");
+
+        if (div.firstChild)
+        {
+            div.removeChild(div.firstChild);
+        }
+
+        var ul = div.appendChild(document.createElement("ul"));
+
+        var li = ul.appendChild(document.createElement("li"));
+
+        traverse(dict, li, "ROOT");
+    }
+
+    --&gt;
+    &lt;/script&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+    &lt;div&gt;&lt;textarea id="textarea" rows="10" cols="50"&gt;&lt;/textarea&gt;&lt;/div&gt;
+    &lt;div&gt;&lt;input type="button" value="Create tree" onclick="create()"&gt;&lt;/input&gt;&lt;/div&gt;
+    &lt;div id="div"&gt;&lt;/div&gt;
+    &lt;/body&gt;
+    &lt;/html&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5557'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/5557
+  :user_name: fujidig
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/507/
+  :language: HSP
+  :time: 2008/01/29 14:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  モジュール変数をツリー構造に使用しています。\n\t"
+  :code: |
+    #module m_tree children, content
+
+    #modinit str _content
+    #define global new_tree( %1, %2 = "" ) newmod %1, m_tree, %2
+        content = _content
+        dimtype children, 5, 1
+        return
+
+    #defcfunc get_tree_content modvar m_tree@
+        return content
+
+    #modfunc get_tree_child str _content, var result
+        f = -1
+        foreach children
+            if get_tree_content( children.cnt ) != _content : continue
+            f = cnt
+            break
+        loop
+        if f &gt;= 0 : result = children.f : return
+        new_tree children, _content
+        result = children( length(children) - 1 )
+        return
+
+    #modfunc _show_tree str indent
+    #define global show_tree( %1, %2 = "" ) _show_tree %1, %2
+        if indent == "" {
+            mes content
+        } else {
+            mes indent + "┗" + content
+        }
+        foreach children
+            show_tree children.cnt, indent + "  "
+        loop
+        return
+
+    #global
+
+    paths = {"
+        abc\\def
+        abc\\def\\gh
+        abc\\def\\ij
+        abc\\jk\\lm
+        de"}
+
+    new_tree tree, "ROOT"
+    paths_index = 0
+    repeat
+        getstr path, paths, paths_index
+        if strsize == 0 : break
+        paths_index += strsize
+        t = tree
+        path_index = 0
+        repeat
+            getstr v, path, path_index, '\\'
+            if strsize == 0 : break
+            path_index += strsize
+            get_tree_child t, v, t
+        loop
+    loop
+
+    show_tree tree
+  :tags: []
+  :references:
+    :url: /web/20090917194550/http://www.fujidig.com/2007/12/modvar-tree.html
+    :title: モジュール変数でツリー ( Fuji Diablog )
+- :id: '5562'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/5562
+  :user_name: fujidig
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/507/
+  :language: C
+  :time: 2008/01/30 10:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;string.h&gt;
+
+    struct Node {
+        char *content;
+        int content_size;
+        struct Node **children;
+        int children_size;
+        int num_children;
+    };
+
+    struct Node *new_node( char *content );
+    struct Node *add_node_child( struct Node *node, char *content );
+    struct Node *search_node_child( struct Node *node, char *content );
+    void dump_node( struct Node *node );
+    void delete_node( struct Node *node );
+
+    int main() {
+        int size = 32;
+        char *dirname;
+        int index = 0;
+        int c;
+        struct Node *tree;
+        struct Node *t;
+        tree = new_node( "ROOT" );
+        dirname = malloc( size );
+        if( tree == 0 || dirname == 0 ) {
+            goto error;
+        }
+        t = tree;
+        while( ( c = getchar() ) != -1 ) {
+            struct Node *new_t;
+            switch( c ) {
+            case '\\':
+            case '\n':
+                dirname[index] = 0;
+                index = 0;
+                new_t = search_node_child( t, dirname );
+                if( new_t == 0 ) {
+                    new_t = add_node_child( t, dirname );
+                }
+                if( new_t == 0 ) {
+                    goto error;
+                }
+                t = new_t;
+                if( c == '\n' ) {
+                    t = tree;
+                }
+                break;
+            default:
+                if( size &lt;= index + 1 ) {
+                    int new_size = size + 32;
+                    char *new_dirname = realloc( dirname, size );
+                    if( new_dirname == 0 ) {
+                        goto error;
+                    }
+                    size = new_size;
+                    dirname = new_dirname;
+                }
+                dirname[index] = c;
+                index++;
+            }
+        }
+        free( dirname );
+        dump_node( tree );
+        delete_node( tree );
+        return EXIT_SUCCESS;
+    error:
+        fprintf( stderr, "No Memory\n" );
+        exit( EXIT_FAILURE );
+    }
+
+    struct Node *new_node( char *content ) {
+        struct Node *node = malloc( sizeof( struct Node ) );
+        if( node == 0 ) {
+            return 0;
+        }
+        node-&gt;content_size = strlen( content ) + 1;
+        node-&gt;content = malloc( node-&gt;content_size );
+        if( node-&gt;content == 0 ) {
+            free( node );
+            return 0;
+        }
+        strcpy( node-&gt;content, content );
+        node-&gt;children_size = 1;
+        node-&gt;num_children = 0;
+        node-&gt;children = calloc( node-&gt;children_size, sizeof( struct Node ) );
+        if( node-&gt;children == 0 ) {
+            free( node );
+            return 0;
+        }
+        return node;
+    }
+
+    struct Node *add_node_child( struct Node *node, char *content ) {
+        struct Node *child_node = 0;
+        int new_num_children = node-&gt;num_children + 1;
+        if( node-&gt;children_size &lt; new_num_children ) {
+            struct Node **new_children;
+            new_children = realloc( node-&gt;children, new_num_children * sizeof( struct Node ) );
+            if( new_children == 0 ) {
+                return 0;
+            } else {
+                node-&gt;children = new_children;
+                node-&gt;children_size = new_num_children;
+            }
+        }
+        child_node = new_node( content );
+        if( child_node == 0 ) {
+            return 0;
+        }
+        node-&gt;children[node-&gt;num_children] = child_node;
+        node-&gt;num_children = new_num_children;
+        return child_node;
+    }
+
+    struct Node *search_node_child( struct Node *node, char *content ) {
+        int i;
+        for( i = 0; i &lt; node-&gt;num_children; i++ ) {
+            struct Node *child = node-&gt;children[i];
+            if( strcmp( child-&gt;content, content ) == 0 ) {
+                return child;
+            }
+        }
+        return 0;
+    }
+
+    void dump_node_iter( struct Node *node, int level ) {
+        int i;
+        if( level != 0 ) {
+            for( i = 0; i &lt; level; i++ ) {
+                printf( "  " );
+            }
+            printf( "┗" );
+        }
+        printf( "%s\n", node-&gt;content );
+        for( i = 0; i &lt; node-&gt;num_children; i++ ) {
+            dump_node_iter( node-&gt;children[i], level + 1 );
+        }
+    }
+
+    void dump_node( struct Node *node ) {
+        dump_node_iter( node, 0 );
+    }
+
+    void delete_node( struct Node *node ) {
+        int i = 0;
+        for( i = 0; i &lt; node-&gt;num_children; i++ ) {
+            delete_node( node-&gt;children[i] );
+        }
+        free( node-&gt;children );
+        free( node-&gt;content );
+        free( node );
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5563'
+  :parent_id: '102'
+  :url: http://ja.doukaku.org/comment/5563
+  :user_name: fujidig
+  :user_url: /web/20090917194550/http://ja.doukaku.org/user/507/
+  :language: diff
+  :time: 2008/01/30 11:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>訂正。</p>\n\n\t"
+  :code: |
+    54c54
+    &lt;                 char *new_dirname = realloc( dirname, size );
+    ---
+    &gt;                 char *new_dirname = realloc( dirname, new_size );
+  :tags: []
+  :references:
+    :url: 
+    :title: 

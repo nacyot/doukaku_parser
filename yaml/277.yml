@@ -1,0 +1,1923 @@
+---
+:id: '277'
+:title: いちばん長いしりとり
+:comments:
+- :id: '9391'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9391
+  :user_name: greentea
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/573/
+  :language: 
+  :time: 2009/07/18 15:02 GMT
+  :vote_count: '7'
+  :vote_score: '5'
+  :body: "\r\n\t  単語のリストを読み込んで、そのリストにある単語で「しりとり」をします。\r<br>一番長くしりとりを続けるためのプログラムを書いてください。\r<br>また、単語数に対して、計算量がどのように増えていくかも考えて下さい。\r<br><br>なお、単語リストの一例として\r<br>http://www.ais.riec.tohoku.ac.jp/lab/wordlist/index-j.htmlで公開されている\r<br>http://www.ais.riec.tohoku.ac.jp/lab/wordlist/fam55_40.txtがあります。\r<br><br>ただし、\r<br>・一度使った単語は使わないこと(リストに重複がある可能性は考えなくてよい)\r<br>・「ん」で終わる単語を使用するか、リスト内にしりとりを続けられる単語がなくなったときに、しりとりは終了する\r<br>・一番最初は、好きな単語から初めてもよい\r<br>・「一番長くしりとりを続ける」とは、しりとりが終了するまでに使用する単語数が最大になるよう、しりとりの単語を選ぶことをいう\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100712021426/http://www.ais.riec.tohoku.ac.jp/lab/wordlist/index-j.html
+    :title: 難聴者のための単語了解度試験用単語リスト
+- :id: '9407'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9407
+  :user_name: lufia
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/242/
+  :language: Other
+  :time: 2009/07/22 21:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>非常に単純な実装。\nおよそO(N!)のため、Nは100前後が限界です。</p>\n<pre class=\"literal-block\">\n%
+    longtail &lt;longtail.data\n</pre>\n\n\t"
+  :code: |
+    implement Longtail;
+
+    include "sys.m";
+        sys: Sys;
+    include "draw.m";
+    include "bufio.m";
+        bufio: Bufio;
+        Iobuf: import bufio;
+    include "string.m";
+        str: String;
+
+    Longtail: module
+    {
+        init: fn(ctxt: ref Draw-&gt;Context, argv: list of string);
+    };
+
+    Word: adt
+    {
+        s: string;
+        used: int;
+    };
+
+    MAXRUNE: con 16rffff;
+
+    tab := array[MAXRUNE] of list of ref Word;
+
+    init(nil: ref Draw-&gt;Context, nil: list of string)
+    {
+        sys = load Sys Sys-&gt;PATH;
+        bufio = load Bufio Bufio-&gt;PATH;
+        str = load String String-&gt;PATH;
+
+        install(sys-&gt;fildes(0));
+
+        wstart := ref Word("シリトリ", 0);
+        result := chain(wstart);
+        for(p := result; p != nil; p = tl p)
+            sys-&gt;print("%s\n-&gt; ", (hd p).s);
+        sys-&gt;print("END\n");
+    }
+
+    install(fd: ref Sys-&gt;FD)
+    {
+        fin := bufio-&gt;fopen(fd, bufio-&gt;OREAD);
+        while((t := fin.gett(" \t\n")) != nil){
+            (t, nil) = str-&gt;splitl(t, " \t\n");
+            if(t == "")
+                continue;
+            tab[t[0]] = ref Word(t, 0) :: tab[t[0]];
+        }
+    }
+
+    chain(w: ref Word): list of ref Word
+    {
+        longest: list of ref Word;
+
+        w.used = 1;
+        lastc := w.s[len w.s - 1];
+        for(p := tab[lastc]; p != nil; p = tl p){
+            w1 := hd p;
+            if(w1.used)
+                continue;
+            t := chain(w1);
+            if(len t &gt; len longest)
+                longest = t;
+        }
+        w.used = 0;
+        return w :: longest;
+    }
+  :tags:
+  - Limbo
+  :references:
+    :url: 
+    :title: 
+- :id: '9408'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9408
+  :user_name: turugina
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/760/
+  :language: Perl
+  :time: 2009/07/22 23:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  とりあえず。検証もしてないのですが、お題の単語リストの先頭「アイアイ」から始めて350個繋がりました。\n\t"
+  :code: "use strict;\nuse warnings;\nuse utf8;\n\nuse Encode;\n\nmy $input_enc =
+    shift || 'utf-8';\nmy $output_enc = shift || 'cp932';\n\nmy $words = readwords();\nmy
+    $table = maketable($words);\n\nmy $total = @$words;\nmy $count = 0;\n#my $next
+    = $words-&gt;[int rand $total];\nmy $next = $words-&gt;[0];\nerase($next, $table);\nprint
+    encode($output_enc, \"begin from [$next]\\n\");\nwhile ( 1 ) {\n  ++$count;\n
+    \ last if is_stop($next);\n  my $prev = $next;\n\n  $next = draw_next($prev, $table);\n
+    \ last if !defined $next;\n\n  print encode($output_enc, \"next -&gt; [$next]\\n\");\n}
+    \   \nprint encode($output_enc, \"END ($count/$total)\\n\");\n\nsub readwords\n{\n
+    \ [ map { tr/ア-ン/あ-ん/; $_ }\n    map { decode($input_enc, $_) }\n    map { chomp;
+    split /\\s+/ } &lt;STDIN&gt; ];\n}    \n\nsub maketable\n{\n  my $words = shift;\n\n
+    \ my %table;\n  for my $w ( @$words ) {\n    my $first = substr $w, 0, 1;\n\n
+    \   $table{$first} = [0,0,[]] if !exists $table{$first};\n\n    ++$table{$first}[0];\n
+    \   if ( is_stop($w) ) {\n      ++$table{$first}[1];\n    }\n    push @{$table{$first}[2]},
+    $w;\n  }\n  \\%table;\n}\n\nsub erase\n{\n  my ($word, $table) = @_;\n\n  my $first
+    = substr $word, 0, 1;\n\n  --$table-&gt;{$first}[0];\n  if ( is_stop($word) )
+    {\n    --$table-&gt;{$first}[1];\n  }\n\n  @{$table-&gt;{$first}[2]} = grep {
+    $_ ne $word } @{$table-&gt;{$first}[2]};\n}\n\nsub draw_next\n{\n  my ($word,
+    $table) = @_;\n  my $next = get_candidate($word, $table)-&gt;[0];\n  erase($next,
+    $table) if defined $next;\n  $next;\n}\n\nsub is_stop\n{\n  my $word = shift;\n
+    \ (length($word)&gt;1 ? substr $word, -1, 1 : $word) eq 'ん';\n}\n\nsub get_candidate\n{\n
+    \ my ($word, $table) = @_;\n\n  my $last = substr $word, -1, 1;\n\n  my $candidate
+    = [undef, -1];\n  for my $next ( @{$table-&gt;{$last}[2]} ) {\n    my $next_last
+    = substr $next, -1, 1;\n\n    my $point = exists $table-&gt;{$next_last}\n    ?
+    $table-&gt;{$next_last}[0] - $table-&gt;{$next_last}[1]\n    : 0;\n    if ( $point
+    &gt; $candidate-&gt;[1] ) {\n      $candidate = [$next, $point];\n    }\n  }\n
+    \ $candidate;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9409'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9409
+  :user_name: nattou_curry
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/913/
+  :language: Java
+  :time: 2009/07/23 02:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Javaで単純に。\n単純すぎるため、短時間で結果を出せるのは100単語ぐらいまでのようです。</p>\n\n\t"
+  :code: "import java.io.*;\nimport java.util.*;\n\n/**\n * いちばん長いしりとり\n */\npublic
+    class TheLongestSiritori {\n    \n    // 単語\n    private static class Word {\n
+    \       String text;    // 単語の文字列\n        boolean used;    // 使用中フラグ\n    }\n\n
+    \   // 頭文字をキーとする単語の索引。\n    private static Map&lt;String, List&lt;Word&gt;&gt;
+    index = new HashMap&lt;String, List&lt;Word&gt;&gt;();\n    \n    /**\n     *
+    メインルーチン\n     * @param args 最初の引数は単語ファイルの名前\n     */\n    public static void main(
+    String[] args ) {\n    \n        ////////////////////////////////////////////////////////////\n
+    \       // 引数から単語ファイルの名前を取得する。\n        ////////////////////////////////////////////////////////////\n
+    \       \n        // 引数に単語ファイルの名前が指定されていることを確認する。\n        if ( args.length &lt;
+    1 ) {\n            // 指定されていない\n            System.err.println( \"引数に単語ファイルの名前を指定してください。\"
+    \ );\n            return;\n        }\n        \n        // 引数からファイル名を取得する。\n        String
+    fileName = args[0];\n        \n        ////////////////////////////////////////////////////////////\n
+    \       // 単語ファイルを読み込み、単語の一覧を作成する。\n        ////////////////////////////////////////////////////////////\n
+    \       \n        List&lt;Word&gt; wordList = new ArrayList&lt;Word&gt;();\n        BufferedReader
+    reader = null;\n        try {\n            // 単語ファイルを開く。\n            reader =
+    new BufferedReader( new FileReader( fileName ) );\n            \n            //
+    単語ファイルの行ごとに以下を繰り返す。\n            String line;\n            while ( ( line = reader.readLine()
+    ) != null ) {\n                // 行が空でないことを確認する。\n                if ( line.length()
+    &gt; 0 ) {\n                    // 行の内容を単語の一覧に追加する。\n                    Word
+    word = new Word();\n                    word.text = line;\n                    word.used
+    = false;\n                    wordList.add( word );\n                }\n            }\n
+    \           \n        } catch ( IOException e ) {\n            // 入力エラー:\n            System.err.println(
+    \"単語ファイルを正常に読み込めませんでした。ファイル名前=[\" + fileName + \"]\"  );\n            return;\n
+    \           \n        } finally {\n            if ( reader != null ) {\n                try
+    {\n                    // 単語ファイルを閉じる。\n                    reader.close();\n                }
+    catch ( IOException e ) {\n                    /* 無視 */\n                }\n            }\n
+    \       }\n        \n        ////////////////////////////////////////////////////////////\n
+    \       // 頭文字をキーとした単語の索引を作成する。\n        ////////////////////////////////////////////////////////////\n
+    \       \n        index = new HashMap&lt;String, List&lt;Word&gt;&gt;();\n\n        //
+    単語の一覧中のすべての単語について、以下を繰り返す。\n        for ( int i = 0; i &lt; wordList.size(); ++i
+    ) {\n            Word word = wordList.get( i );\n            // 単語の頭文字を取得する。\n
+    \           String first = word.text.substring( 0, 1 );\n            \n            List&lt;Word&gt;
+    container;\n            // 同一の頭文字の単語が、索引に格納済みであることを確認する。\n            if ( ! index.containsKey(
+    first ) ) {\n                // 同一の頭文字の単語が、まだ格納されていない:\n                \n                //
+    頭文字に対応する単語格納リストを作成する。\n                container = new ArrayList&lt;Word&gt;();\n
+    \               index.put( first, container );\n            } else {\n                //
+    頭文字に対応する単語格納リストを作成する。\n                container = index.get( first );\n            }\n\n
+    \           // 単語格納リストに単語を追加する。\n            container.add( word );\n        }\n
+    \       \n        ////////////////////////////////////////////////////////////\n
+    \       // しりとりをする。\n        ////////////////////////////////////////////////////////////\n
+    \       \n        // 最初の単語をランダムに決める。\n        int rnd = new Random().nextInt(
+    wordList.size() );\n        Word start = wordList.get( rnd );\n        \n        //
+    最長のしりとり結果(逆順)を取得する。\n        List&lt;String&gt; longest = getLongest( start );\n
+    \       \n        // しりとり結果を反転する。\n        Collections.reverse( longest );\n        \n
+    \       ////////////////////////////////////////////////////////////\n        //
+    結果を表示する。\n        ////////////////////////////////////////////////////////////\n
+    \       \n        for ( int i = 0; i &lt; longest.size(); ++i ) {\n            System.out.println(
+    ( i + 1 ) + \": \" + longest.get( i ) );\n        }\n    }\n    \n    /*\n     *
+    最長のしりとり結果(逆順)を取得する。\n     * @param 単語\n     * @return 最長のしりとり結果(逆順)\n     */\n
+    \   public static List&lt;String&gt; getLongest( Word word ) {\n        // 単語使用中フラグをオンにする。\n
+    \       word.used = true;\n        \n        // 単語の末尾の文字を取得する。\n        String
+    text = word.text;\n        int length = text.length();\n        String last =
+    text.substring( length - 1, length );\n        \n        List&lt;String&gt; longest
+    = new ArrayList&lt;String&gt;();\n        \n        // 索引に末尾の文字が含まれていることを確認する。\n
+    \       if ( index.containsKey( last ) ) {\n\n            ////////////////////////////////////////////////////////////\n
+    \           // 末尾の文字の後に続く、最長のしりとり結果を見つける。\n            ////////////////////////////////////////////////////////////\n\n
+    \           // 末尾の文字から始まるすべての単語について、以下を繰り返す。\n            List&lt;Word&gt; container
+    = index.get( last );\n            for ( int i = 0; i &lt; container.size(); ++i
+    ) {\n                Word nextWord = container.get( i );\n                // 単語使用中フラグがオフであることを確認する。\n
+    \               if ( ! nextWord.used ) {\n                    // しりとり結果を取得する。\n
+    \                   List&lt;String&gt; temp = getLongest( nextWord );\n                    //
+    最長のしりとり結果を見つける。\n                    if ( temp.size() &gt; longest.size() ) {\n
+    \                       longest = temp;\n                    }\n                }\n
+    \           }\n        }\n        \n        // 単語をしりとり結果に追加する。\n        longest.add(
+    text );\n        \n        // 単語使用中フラグをオフにする。\n        word.used = false;\n\n
+    \       return longest;\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9410'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9410
+  :user_name: horiuchi
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2009/07/23 02:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>促音・拗音は、前の単語と合わせてキーとするようにしたり、ひらがな→カタカナに変換して同一視したりしてみました。\r</p>\n<p>ただ、全単語を単純に探索しているので計算量が爆発してました。160単語程度なら、すぐに結果が返ってくる程度です。</p>\n</div>\n\t"
+  :code: "import java.io.*;\nimport java.util.*;\n\npublic class Sample277 {\n    static
+    class Word {\n        /// キーは全てカタカナに正規化\n        public static String convertHiraganaToKatakana(String
+    s) {\n            StringBuilder builder = new StringBuilder(s);\n            for
+    (int index = 0; index &lt; builder.length(); index++) {\n                char
+    c = builder.charAt(index);\n                if ('ぁ' &lt;= c &amp;&amp; c &lt;=
+    'ん') {\n                    builder.setCharAt(index, (char)(c - 'ぁ' + 'ァ'));\n
+    \               }\n            }\n            return builder.toString();\n        }\n\n
+    \       /// 拗音・促音・濁点などのリスト\n        private static final Set&lt;Character&gt;
+    anomalyLetters_ = new HashSet&lt;Character&gt;();\n        {\n            anomalyLetters_.add('ぁ');\n
+    \           anomalyLetters_.add('ぃ');\n            anomalyLetters_.add('ぅ');\n
+    \           anomalyLetters_.add('ぇ');\n            anomalyLetters_.add('ぉ');\n
+    \           anomalyLetters_.add('っ');\n            anomalyLetters_.add('ゃ');\n
+    \           anomalyLetters_.add('ゅ');\n            anomalyLetters_.add('ょ');\n
+    \           anomalyLetters_.add('ァ');\n            anomalyLetters_.add('ィ');\n
+    \           anomalyLetters_.add('ゥ');\n            anomalyLetters_.add('ェ');\n
+    \           anomalyLetters_.add('ォ');\n            anomalyLetters_.add('ッ');\n
+    \           anomalyLetters_.add('ャ');\n            anomalyLetters_.add('ュ');\n
+    \           anomalyLetters_.add('ョ');\n            anomalyLetters_.add('゛');\n
+    \           anomalyLetters_.add('゜');\n        }\n\n        public final String
+    s;\n        public final String first;\n        public final String last;\n        private
+    boolean used_ = false;\n\n        public Word(String s) {\n            this.s
+    = s;\n            first = convertHiraganaToKatakana(getFirstLetter(s));\n            last
+    = convertHiraganaToKatakana(getLastLetter(s));\n        }\n        // しりとりのキーとしての最初の音\n
+    \       private String getFirstLetter(String s) {\n            if (anomalyLetters_.contains(s.charAt(1)))
+    {\n                return s.substring(0, 2);\n            }\n            return
+    s.substring(0, 1);\n        }\n        // しりとりのキーとしての最後の音\n        private String
+    getLastLetter(String s) {\n            int lastStartIndex = s.length() - 1;\n
+    \           int lastEndIndex = s.length();\n            char c = s.charAt(lastStartIndex);\n
+    \           if (c == 'ー' || c == 'ー') {\n                lastStartIndex--;\n                lastEndIndex--;\n
+    \               c = s.charAt(lastStartIndex);\n            }\n            if (anomalyLetters_.contains(c))
+    {\n                lastStartIndex--;\n            }\n            return s.substring(lastStartIndex,
+    lastEndIndex);\n        }\n\n        public boolean isUsed() {\n            return
+    used_;\n        }\n        public void setUsed(boolean used) {\n            used_
+    = used;\n        }\n\n\n        @Override\n        public boolean equals(Object
+    obj) {\n            if (!this.getClass().equals(obj.getClass())) {\n                return
+    false;\n            }\n            Word other = (Word) obj;\n            return
+    this.s.equals(other.s);\n        }\n        @Override\n        public int hashCode()
+    {\n            return s.hashCode();\n        }\n    }\n\n\n    private final Map&lt;String,
+    Set&lt;Word&gt;&gt; wordMap_ = new HashMap&lt;String, Set&lt;Word&gt;&gt;();\n\n
+    \   public Sample277() {\n    }\n\n    public void addWord(String s) {\n        Word
+    word = new Word(s);\n        Set&lt;Word&gt; set = wordMap_.get(word.first);\n
+    \       if (set == null) {\n            set = new HashSet&lt;Word&gt;();\n            wordMap_.put(word.first,
+    set);\n        }\n        set.add(word);\n    }\n\n\n    public List&lt;String&gt;
+    getLongest(String start) {\n        Word w = new Word(start);\n        return
+    getLongestR(w);\n    }\n    public List&lt;String&gt; getLongestR(Word w) {\n
+    \       List&lt;String&gt; result = new LinkedList&lt;String&gt;();\n        w.used_
+    = true;\n        Set&lt;Word&gt; set = wordMap_.get(w.last);\n        Set&lt;String&gt;
+    firstLetter = new HashSet&lt;String&gt;();\n        if (set != null) {\n            for
+    (Word word: set) {\n                if (word.isUsed()) {\n                    continue;\n
+    \               }\n                if (firstLetter.contains(word.last)) {\n                    continue;\n
+    \               }\n                firstLetter.add(word.last);\n                \n
+    \               List&lt;String&gt; list = getLongestR(word);\n                if
+    (result.size() &lt; list.size()) {\n                    result = list;\n                }\n
+    \           }\n        }\n        w.used_ = false;\n        result.add(0, w.s);\n
+    \       return result;\n    }\n\n\n    public static List&lt;String&gt; loadFile(String
+    path) throws FileNotFoundException {\n        List&lt;String&gt; result = new
+    ArrayList&lt;String&gt;();\n        Scanner scanner = new Scanner(new File(path),
+    \"MS932\");\n        while (scanner.hasNext()) {\n            result.add(scanner.next());\n
+    \       }\n        scanner.close();\n        return result;\n    }\n\n    public
+    static void main(String[] args) throws IOException {\n        List&lt;String&gt;
+    strings = loadFile(\"fam55_10.txt\");\n        System.out.println(\"input count:
+    \" + strings.size());\n\n        Sample277 sample = new Sample277();\n        for
+    (String s: strings) {\n            sample.addWord(s);\n        }\n\n        long
+    start = System.currentTimeMillis();\n        List&lt;String&gt; result = sample.getLongest(\"しりとり\");\n
+    \       long elapse = System.currentTimeMillis() - start;\n        System.out.println(\"elapse:
+    \" + elapse + \"(ms)\");\n\n        System.out.println(\"max length: \" + result.size());\n
+    \       for (String s: result) {\n            System.out.println(s);\n        }\n
+    \   }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9411'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9411
+  :user_name: 匿名
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/4/
+  :language: Haskell
+  :time: 2009/07/23 06:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ひたすら全部求めて、デカいのを選ぶと云う愚直な実装です。130文字くらいで爆発します。\nオーダーはどのくらいなんだろう。見積り方があやふやな上に遅延評価が絡んでくるとわけがわからないですね。\nたぶんO(n!)くらいかなぁ……</p>\n<p>あと、題意には関係ないですが、リストモナド以外のモナドでも動く様にしてみました。</p>\n<p>要・UTF8-String</p>\n\n\t"
+  :code: |
+    module Main where
+    import System.Environment (getArgs)
+    import Prelude hiding (putStrLn, putStr, print, readFile)
+    import System.IO.UTF8 (putStrLn, putStr, print, readFile)
+    import Codec.Binary.UTF8.String (encodeString)
+    import Data.List (delete, find, maximumBy)
+    import Control.Monad (msum, MonadPlus(..), filterM)
+
+    dic :: IO [String]
+    dic = do  src &lt;- readFile "words.dat"
+              return $ words src
+
+    f # g = \a b -&gt; g (f a) (f b)
+
+    main = do wds &lt;- dic
+              args &lt;- getArgs
+              let mb = "-a" `elem` args
+                  sh :: (Functor m, MonadPlus m, Eq (m [String])) =&gt; m [String]
+                  sh = shiritori (head wds) wds
+              if mb
+                then pr sh
+                else printStrList $ maximumBy (length#compare) sh
+
+    pr :: Maybe [String] -&gt; IO ()
+    pr = maybe (return ()) printStrList
+    showStrList xs = "[" ++ concatMap (++",") xs ++ "]"
+    printStrList = putStrLn . showStrList
+
+    shiritori :: (Functor m, MonadPlus m, Eq (m [String])) =&gt; String -&gt; [String] -&gt; m [String]
+    shiritori w ws = (do  let wd' = w `delete` ws
+                          ns &lt;- nextWords w wd'
+                          shiritori ns wd') `hoge` w
+
+    a `hoge` t = if a == mzero then return [t] else fmap (t:) a
+
+    nextWords :: (MonadPlus m) =&gt; String -&gt; [String] -&gt; m String
+    nextWords wd list = do
+      xs &lt;- filterM (\a -&gt; return (last wd == head a)) list
+      msum $ map return xs
+  :tags:
+  - 要・UTF8-String
+  :references:
+    :url: 
+    :title: 
+- :id: '9413'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9413
+  :user_name: ぴょん
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/490/
+  :language: Python
+  :time: 2009/07/24 14:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>% time shiritori.py &lt; data.txt</p>\n\n\t"
+  :code: |
+    #!/usr/bin/python
+    # -*- coding: utf-8 -*-
+    # http://ja.doukaku.org/277/
+
+    import sys
+
+    ENCODING = 'utf8'
+
+
+    class Word:
+
+        def __init__(self, word):
+            self._word = word
+            self._trailwords = []
+
+        def word(self):
+            return self._word
+
+        def head_char(self):
+            return self.word()[0]
+
+        def tail_char(self):
+            return self.word()[-1]
+
+        def is_trailword(self, trailword):
+            return self.tail_char() == trailword.head_char()
+
+        def is_last_word(self):
+            return self.tail_char() in (u'ん', u'ン')
+
+        def append_trailword_list(self, trailword):
+            if not self.is_last_word() and self.is_trailword(trailword):
+                self.trailwords().append(trailword)
+
+        def trailwords(self):
+            return self._trailwords
+
+        def num_trailwords(self):
+            return len(self.trailwords())
+
+
+    class WordQueue:
+
+        def __init__(self, words=[]):
+            self._words = words
+            self._queue = []
+            self._walk_step = 0
+
+        def words(self):
+            return self._words
+
+        def num_words(self):
+            return len(self.words())
+
+        def append(self, word):
+            self._words.append(word)
+
+        def queue(self):
+            return self._queue
+
+        def queue_len(self):
+            return len(self.queue())
+
+        def walk(self):
+            return self._walk(self.words(), [])
+
+        def _walk(self, words, queue):
+            self._walk_step += 1
+            if self.walk_step() % 1000 == 0:
+                print '(%d, %d, %d)' % (self.walk_step(), self.num_words(),
+                                        self.queue_len())
+            for word in words:
+                if word in queue or word in self.queue():
+                    continue
+                queue.append(word)
+                self._walk(word.trailwords(), queue)
+            else:
+                if len(queue) &gt; self.queue_len():
+                    self._queue = map(None, queue)
+                if len(queue) &gt; 0:
+                    queue.pop()
+
+        def walk_step(self):
+            return self._walk_step
+
+
+    if __name__ == '__main__':
+        q = WordQueue()
+        for line in sys.stdin:
+            for item in line.decode(ENCODING).strip().split('\t'):
+                if item is None or item == '':
+                    continue
+                new_word = Word(item)
+                for word in q.words():
+                    word.append_trailword_list(new_word)
+                    new_word.append_trailword_list(word)
+                q.append(new_word)
+        q.walk()
+
+        for (i, w) in enumerate(q.queue()):
+            print '%s %s %d' % (id(w), w.word(), w.num_trailwords())
+
+        print 'number of words : %d' % q.num_words()
+        print 'queue length    : %d' % q.queue_len()
+        print 'number of step  : %d' % q.walk_step()
+
+    # vim : fileencoding=utf8
+  :tags:
+  - gbSHvwKeGMSfW
+  :references:
+    :url: 
+    :title: 
+- :id: '9414'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9414
+  :user_name: ぴょん
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/490/
+  :language: Python
+  :time: 2009/07/25 03:15 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">探索の無駄を省いた。\r\n\r\n1000語の探索はT2300 (1.66GHz)で14分半くらい。\r\n\r\n最長しりとり長は408語（多分）。「ヘルニア」で始まり「ツウブン」で終はる。</pre>\n\t"
+  :code: |
+    #!/usr/bin/python
+    # -*- coding: utf-8 -*-
+    # http://ja.doukaku.org/277/
+
+    import sys
+
+    ENCODING = 'utf8'
+
+
+    class Word:
+
+        def __init__(self, word):
+            self._word = word
+            self._prewords = []
+            self._trailwords = []
+
+        def word(self):
+            return self._word
+
+        def head_char(self):
+            return self.word()[0]
+
+        def tail_char(self):
+            return self.word()[-1]
+
+        def is_trailword(self, trailword):
+            return self.tail_char() == trailword.head_char()
+
+        def is_last_word(self):
+            return self.tail_char() in (u'ん', u'ン')
+
+        def append_trailword_list(self, trailword):
+            if not self.is_last_word() and self.is_trailword(trailword):
+                self.trailwords().append(trailword)
+                trailword.prewords().append(self)
+
+        def prewords(self):
+            return self._prewords
+
+        def trailwords(self):
+            return self._trailwords
+
+        def num_prewords(self):
+            return len(self.prewords())
+
+        def num_trailwords(self):
+            return len(self.trailwords())
+
+
+    class WordQueue:
+
+        def __init__(self, words=[]):
+            self._words = words
+            self._queue = []
+            self._walk_step = 0
+
+        def words(self):
+            return self._words
+
+        def num_words(self):
+            return len(self.words())
+
+        def append(self, word):
+            for w in self.words():
+                w.append_trailword_list(word)
+                word.append_trailword_list(w)
+            self.words().append(word)
+
+        def queue(self):
+            return self._queue
+
+        def queue_len(self):
+            return len(self.queue())
+
+        def walk(self):
+            self._walk(self.words(), [])
+            self._is_valid_queue()
+            self._view()
+
+        def _walk(self, words, queue):
+            self._walk_step += 1
+            if self.walk_step() % 1000 == 0:
+                print '(%d, %d, %d)' % (self.walk_step(), self.num_words(),
+                                        self.queue_len())
+
+            for word in words:
+                if word in queue:
+                    continue
+                elif word in self.queue():
+                    i = self.queue().index(word)
+                    if len(queue) &gt; i:
+                        self._queue[0:i] = queue
+                    continue
+                else:
+                    queue.append(word)
+                    self._walk(word.trailwords(), queue)
+            else:
+                if len(queue) &gt; self.queue_len():
+                    self._queue = map(None, queue)
+
+                if len(queue) &gt; 0:
+                    queue.pop()
+
+        def _is_valid_queue(self):
+            for word in self.queue():
+                if self.queue().count(word) &gt; 1:
+                    sys.stderr.write('%s %s is duplicated.\n' % (id(word),
+                                     word.word()))
+                    sys.exit(1)
+
+            for i in range(0, len(self.queue()) - 1):
+                w = self.queue()[i]
+                n = self.queue()[i + 1]
+                if not w.is_trailword(n):
+                    sys.stderr.write('%s %s, %s %s are not shiritori.\n'
+                                      % (id(w), w.word(), id(n), n.word()))
+                    sys.exit(1)
+
+        def _view(self):
+            for w in self.queue():
+                print '%s\t%s\t%d\t%d' % (id(w), w.word().encode(ENCODING),
+                        w.num_prewords(), w.num_trailwords())
+
+        def walk_step(self):
+            return self._walk_step
+
+
+    if __name__ == '__main__':
+        q = WordQueue()
+
+        for line in sys.stdin:
+            for item in line.decode(ENCODING).strip().split('\t'):
+                if item is not None and item != '':
+                    q.append(Word(item))
+
+        q.walk()
+
+        print 'number of words : %d' % q.num_words()
+        print 'queue length    : %d' % q.queue_len()
+        print 'number of step  : %d' % q.walk_step()
+
+    # vim : fileencoding=utf8
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9415'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9415
+  :user_name: sekia
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/588/
+  :language: Perl
+  :time: 2009/07/25 09:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">map万歳！\r\n\r\n最悪計算量はO(N!)のはず。\r\nお題に挙げられている単語リストだと110語あたりが限界です。\r\n\r\n$
+    time perl doukaku227.pl fam55_40.txt 100\r\nセイギハ -&gt; ハゲヤマ -&gt; マヤカシ -&gt; ショウワル
+    -&gt; ルイベツ -&gt; ツジツマ -&gt; マタシタ -&gt; タチノミ -&gt; ミズヒキ -&gt; キャクアシ -&gt; シャクナゲ
+    -&gt; ゲレツサ -&gt; サンバシ -&gt; シールド -&gt; ドウナガ -&gt; ガイユウ -&gt; ウワバリ -&gt; リンセツ -&gt;
+    ツユザム -&gt; ムスビメ -&gt; メイフク\r\n\r\nreal\t0m0.585s\r\nuser\t0m0.561s\r\nsys\t0m0.012s\r\n</pre>\n\t"
+  :code: |
+    #!/usr/bin/env perl
+
+    use strict;
+    use warnings;
+    use utf8;
+    use List::Util qw/reduce/;
+
+    my @katakanas = split //, 'アイウエオカキクケコガキグゲゴサシスセソ'
+                            . 'ザジズゼゾタチツテトダヂヅデドナニヌネノ'
+                            . 'ハヒフヘホバビブベボパピプペポマミムメモ'
+                            . 'ヤユオワヲン';
+
+    sub head_and_tail($) {
+      my $word = shift;
+      $word =~ tr/ァィゥェォッャュョヮ/アイウエオツヤユヨワ/;
+      $word =~ s/ー$//;
+      (substr($word, 0, 1), substr($word, -1, 1));
+    }
+
+    sub longest_chain(\%;$);
+    sub longest_chain(\%;$) {
+      no warnings qw/recursion/;
+      my ($dict, $word) = @_;
+      my @words = defined $word
+                  ? ($word)
+                  : map { map { $_-&gt;[0] } values %$_ } values %$dict;
+      reduce {
+        @$a &gt; @$b ? $a : $b;
+      } ([],
+         map {
+           my $word = $_;
+           my (undef, $next_head) = head_and_tail $word;
+           map {
+             my $available_words = $dict-&gt;{$next_head}{$_};
+             my $next_word = pop @$available_words;
+             my $chain = longest_chain(%$dict, $next_word);
+             push @$available_words, $next_word;
+             unshift @$chain, $word;
+             $chain;
+           } grep { @{ $dict-&gt;{$next_head}{$_} } } keys %{ $dict-&gt;{$next_head} };
+         } @words);
+    }
+
+    binmode STDOUT, ':utf8';
+    open my $words_file, '&lt;:encoding(shiftjis)', shift or die $!;
+    my @words = (map { chomp; split /\s+/ } &lt;$words_file&gt;);
+    $#words = shift() - 1 if @ARGV;
+    my %dict;
+    for my $word (@words) {
+      my ($head, $tail) = head_and_tail $word;
+      $dict{$head}{$tail} = [] unless exists $dict{$head}{$tail};
+      push @{ $dict{$head}{$tail} }, $word;
+    }
+    local ($,, $\) = (' -&gt; ', "\n");
+    print @{ longest_chain(%dict) };
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9416'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9416
+  :user_name: sumim
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/07/25 17:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。1000 語程度にも対応できるアルゴリズムにも挑戦したいところですが、とりあえずは愚直に。</p>\n\n\t"
+  :code: |
+    | url allWords intermediates dict results words |
+    url := 'http://www.ais.riec.tohoku.ac.jp/lab/wordlist/fam55_40.txt' asUrl.
+    allWords := (url retrieveContents contents convertFromEncoding: #sjis) subStrings.
+    results := (Array new: 10 withAll: #()) asSortedCollection: [:a :b | a size &gt; b size].
+    intermediates := (words := allWords shuffled first: 100) collect: [:each | OrderedCollection with: each].
+    dict := words groupBy: [:each | each first] having: [:group | true].
+    [intermediates notEmpty] whileTrue: [
+        | nextGen |
+        nextGen := OrderedCollection new.
+        (intermediates groupBy: [:each | each last last] having: [:group | true]) associationsDo: [:assoc |
+            | nexts |
+            nexts := dict at: assoc key ifAbsent: [#()].
+            assoc value do: [:each |
+                (nexts difference: each) ifEmpty: [results add: each; removeLast] ifNotEmptyDo: [:cands |
+                    cands do: [:next | nextGen add: (each copyWith: next)]]]].
+        (intermediates := nextGen) size printString, ' ' displayAt: 0 asPoint].
+    ^results first asArray
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '9420'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9420
+  :user_name: kozima
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2009/07/26 10:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>普通の深さ優先探索。全パターン生成してるだけなのですが、正確な計算量はどれくらいになるのでしょうね。</p>\n<p>ノード数
+    n のグラフのパスの数は、完全グラフの場合で Σ_k P(n, k) = n! * Σ_k 1/k! &lt; n! * e なので、O(N!) で上から評価できるのだとは思いますが。</p>\n\n\t"
+  :code: |
+    (defun first-char (s) (char s 0))
+    (defun last-char (s) (char s (1- (length s))))
+
+    (defun longer (list1 list2)
+      (loop for x = list1 then (cdr x) and y = list2 then (cdr y)
+         if (null x) return list2
+         if (null y) return list1))
+
+    (defparameter *word-table* nil)
+
+    (defun get-next-words (c) (gethash c *word-table*))
+
+    (defun make-table (word-list key)
+      (let ((h (make-hash-table)))
+        (loop for w in word-list do (push w (gethash (funcall key w) h)))
+        h))
+
+    (defun longest (word-list)
+      (let ((*word-table* (make-table word-list #'first-char)))
+        (reverse (reduce #'longer word-list :key #'longest-path-from))))
+
+    (defun longest-path-from (word)
+      (search-path (list word)))
+
+    (defun search-path (path)
+      (let* ((w (car path))
+             (c (last-char w))
+             (words (set-difference (get-next-words c) path)))
+        (if words
+            (reduce #'longer words
+                    :key (lambda (next) (search-path (cons next path))))
+            path)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9422'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9422
+  :user_name: sawat
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/322/
+  :language: Java
+  :time: 2009/07/26 23:58 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  厳密解ではなく、ヒューリスティックな解法ですが、お題の単語リストに対して1秒程度で580語前後のしりとりを抽出できます。\r<br>見つけた最長のしりとりは624語 (ホロバシャ, ヤスヤド, ドクダミ, … 略 … , ツノブエ, エスプリ, リンカン) でした。\r<br><br>しりとりは、文字と文字をつなぐ有向グラフと考えられるので、グラフ理論を応用すればもっと良い解法が得られるのではないかと思います。\n\t"
+  :code: |
+    import java.io.InputStreamReader;
+    import java.util.*;
+
+    public class Shiritori3 {
+        public static void main(String[] args) throws Exception {
+            long startTime = System.nanoTime();
+            final Scanner scanner = new Scanner(new InputStreamReader(
+                    Shiritori.class.getResourceAsStream("Words_jp.txt"), "UTF-8"));
+            new Shiritori3(scanner).analyze();
+            System.out.printf("%f [sec]%n", ((double)System.nanoTime() - startTime) / 100000000);
+        }
+
+        Map&lt;Character, Node&gt; nodes;
+
+        public Shiritori3(Scanner scanner) {
+            nodes = new HashMap&lt;Character, Node&gt;();
+            init(scanner);
+        }
+
+        private void init(Scanner scanner) {
+            while (scanner.hasNext()) {
+                String edge = scanner.next();
+                char head = headChar(edge);
+                char tail = tailChar(edge);
+                if (!nodes.containsKey(head)) nodes.put(head, new Node(head));
+                if (!nodes.containsKey(tail)) nodes.put(tail, new Node(tail));
+                nodes.get(head).addGoOutEdge(edge);
+                nodes.get(tail).addCominEdge(edge);
+            }
+            scanner.close();
+        }
+
+        public void analyze() {
+            Set&lt;Node&gt; noflows = new HashSet&lt;Node&gt;();
+            Set&lt;Node&gt; flows = new HashSet&lt;Node&gt;();
+            for (Node node : nodes.values())
+                if (node.hasCapacity()) flows.add(node);
+
+            List&lt;LinkedList&lt;String&gt;&gt; pathList = new ArrayList&lt;LinkedList&lt;String&gt;&gt;();
+
+            while (!flows.isEmpty()) {
+
+                // 初期ノードの選択により、結果が変化する
+                Node head = flows.toArray(new Node[0])[new java.util.Random().nextInt(flows.size())];
+                Node tail = head;
+
+                LinkedList&lt;String&gt; path = new LinkedList&lt;String&gt;();
+                pathList.add(path);
+
+                while (head.hasCapacity() || tail.hasCapacity()) {
+                    if (!head.inEdges.isEmpty()) {
+                        String newHead = popInEdge(head);
+                        path.addFirst(newHead);
+                        if (!head.hasCapacity()) flows.remove(head);
+                        head = nodes.get(headChar(newHead));
+                    }
+
+                    if (!tail.outEdges.isEmpty()) {
+                        String newTail = popOutEdge(tail);
+                        path.addLast(newTail);
+                        if (!tail.hasCapacity()) flows.remove(tail);
+                        tail = nodes.get(tailChar(newTail));
+                    }
+                }
+            }
+
+            for (int i = 0, n = pathList.size(); i &lt; n; i++) {
+                LinkedList&lt;String&gt; pathA = pathList.get(i);
+                if (pathA.size() &lt;= 2) break;
+                for (int j = i + 1; j &lt; n; j++) {
+                    LinkedList&lt;String&gt; pathB = pathList.get(j);
+                    if (pathB.size() &lt;= 2) break;
+                    cross(pathA, pathB);
+                }
+            }
+
+            Collections.sort(pathList, new Comparator&lt;List&lt;?&gt;&gt;() {
+                public int compare(List&lt;?&gt; o1, List&lt;?&gt; o2) {
+                    return o1.size() - o2.size(); }});
+
+            for (LinkedList&lt;String&gt; path : pathList) {
+                System.out.printf("%d, %s%n", path.size(), path);
+            }
+        }
+
+        void cross(LinkedList&lt;String&gt; pathA, LinkedList&lt;String&gt; pathB) {
+            int ma = -1, mb = -1;
+            int ac = pathA.size(), bc = pathB.size();
+            int max = Math.max(ac, bc);
+            int a = 0;
+            for (String aw : pathA) {
+                int b = 0;
+                for (String bw : pathB) {
+                    if (tailChar(aw) == headChar(bw)) {
+                        int nmax = Math.max(a + (bc - b) + 1, (ac - a) + b - 1);
+                        if (max &lt; nmax) {
+                            ma = a;
+                            mb = b;
+                            max = nmax;
+                        }
+                    }
+                    b++;
+                }
+                a++;
+            }
+
+            if (ma != -1) {
+                LinkedList&lt;String&gt; old1 = new LinkedList&lt;String&gt;(pathA);
+                LinkedList&lt;String&gt; old2 = new LinkedList&lt;String&gt;(pathB);
+                pathA.clear();
+                pathB.clear();
+                pathA.addAll(old1.subList(0, ma + 1));
+                pathA.addAll(old2.subList(mb, bc));
+                pathB.addAll(old2.subList(0, mb));
+                pathB.addAll(old1.subList(ma + 1, ac));
+                cross(pathA, pathB);
+            }
+        }
+
+        String popInEdge(Node node) {
+            int max = -1;
+            String next = null;
+            for (String s : node.inEdges) {
+                Node nextHead = nodes.get(headChar(s));
+                if (max &lt; nextHead.flowCapacity()) {
+                    max = nextHead.flowCapacity();
+                    next = s;
+                }
+            }
+            node.inEdges.remove(next);
+            return next;
+        }
+
+        String popOutEdge(Node node) {
+            int max = -1;
+            String next = null;
+            for (String s : node.outEdges) {
+                Node nextTail = nodes.get(tailChar(s));
+                if (max &lt; nextTail.flowCapacity()) {
+                    max = nextTail.flowCapacity();
+                    next = s;
+                }
+            }
+            node.outEdges.remove(next);
+            return next;
+        }
+
+        static char tailChar(String edge) {
+            return toShiritoriChar(edge.charAt(edge.length() - 1));
+        }
+
+        static char headChar(String edge) {
+            return toShiritoriChar(edge.charAt(0));
+        }
+
+        static final String YOUON = "ァィゥェォヵヶッャュョヮ";
+        static final String SEION = "アイウエオカケツヤユヨワ";
+        static char toShiritoriChar(final char c) {
+            if (YOUON.indexOf(c) == -1)
+                return c;
+            else
+                return SEION.charAt(YOUON.indexOf(c));
+        }
+
+        static class Node {
+            final LinkedList&lt;String&gt; inEdges = new LinkedList&lt;String&gt;();
+            final LinkedList&lt;String&gt; outEdges = new LinkedList&lt;String&gt;();
+            final Character c;
+            int lilmit;
+
+            public Node(Character c) {
+                this.c = c;
+            }
+
+            void addCominEdge(String e) {
+                inEdges.add(e);
+            }
+
+            void addGoOutEdge(String e) {
+                outEdges.add(e);
+            }
+
+            int flowCapacity() {
+                return Math.min(inEdges.size(), outEdges.size());
+            }
+
+            boolean hasCapacity() {
+                return flowCapacity() &gt; 0;
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9423'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9423
+  :user_name: sawat
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/322/
+  :language: diff
+  :time: 2009/07/27 06:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>バグってました orz.\n正しくは1秒以内で350語前後でした。</p>\n<p>なお、グラフ理論でいうと、任意のグラフから最大の準オイラーグラフとなる部分グラフを抽出するという問題になると思います。</p>\n\n\t"
+  :code: |
+    --- Shiritori_old.java  2009-07-27 14:44:42.167161400 +0900
+    +++ Shiritori_new.java  2009-07-27 14:59:44.602959300 +0900
+    @@ -46,2 +46,7 @@
+
+    +            if(!head.hasCapacity()) {
+    +                flows.remove(head);
+    +                break;
+    +            }
+    +
+                 LinkedList&lt;String&gt; path = new LinkedList&lt;String&gt;();
+    @@ -50,3 +55,3 @@
+                 while (head.hasCapacity() || tail.hasCapacity()) {
+    -                if (!head.inEdges.isEmpty()) {
+    +                if (head.hasCapacity()) {
+                         String newHead = popInEdge(head);
+    @@ -55,5 +60,6 @@
+                         head = nodes.get(headChar(newHead));
+    +                    head.outEdges.remove(newHead);
+                     }
+
+    -                if (!tail.outEdges.isEmpty()) {
+    +                if (tail.hasCapacity()) {
+                         String newTail = popOutEdge(tail);
+    @@ -62,2 +68,3 @@
+                         tail = nodes.get(tailChar(newTail));
+    +                    tail.inEdges.remove(newTail);
+                     }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9426'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9426
+  :user_name: tkturbo
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/1056/
+  :language: JavaScript
+  :time: 2009/07/28 02:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>総当り法を取ると重くて動かないので、残集団の中で最大数を締める文字で終わるような単語を選択するようにしてみました。</p>\n<p>しりとり開始の単語をランダムで選ぶ形式ですが、350前後までつながるのを確認。</p>\n<p>選択対照の単語リストはテキストエリアに貼り付けて使用します。</p>\n<p>リストの文字区切りはtab,改行,半角スペースで指定。</p>\n\n\t"
+  :code: |
+    &lt;html&gt;
+      &lt;head&gt;
+        &lt;meta http-equiv="content-type" content="text/html;charset=shift_jis"&gt;
+        &lt;script type="text/javascript"&gt;&lt;!-- //
+
+    ls0={};
+
+    ls0.wordmap=null;
+    ls0.counter=null;
+
+    ls0.getWordList = function(){
+      var str = document.getElementById("ls0_ta").value;
+      str = str.replace(/(\t|\r|\n)/g, " ");
+      str = str.replace(/ +/g, " ");
+      str = str.replace(/ +$/g, "");
+      return str.split(" ");
+    };
+
+    ls0.lastChar = function(word){ return word.charAt(word.length-1); };
+
+    ls0.chainSort = function(a,b){
+      if(!a || !b){ return (!a) ? ( (!b) ? 0 : 1 ) : -1; }
+      var a0 = ls0.lastChar(a);
+      var b0 = ls0.lastChar(b);
+      if(!ls0.counter[a0] || !ls0.counter[b0]){
+        return (!ls0.counter[a0]) ? ((!ls0.counter[b0])?0:1) : -1;
+      }
+      return ls0.counter[b0]-ls0.counter[a0];
+    };
+
+    ls0.execute = function(){
+      var result=document.getElementById("ls0_result");
+      result.innerHTML="";
+      ls0.counter=[];
+      ls0.wordmap=[];
+      var indexes=[];
+      var arr = ls0.getWordList();
+      for(var i = 0; i &lt; arr.length; i++){
+        var c = arr[i].charAt(0);
+        if(!ls0.counter[c]){
+          ls0.counter[c]=0;
+          ls0.wordmap[c]=[];
+          indexes.push(c);
+        }
+        ls0.counter[c]++;
+        ls0.wordmap[c].push(arr[i]);
+      }
+      for(var i=0;i&lt;indexes.length; i++){
+        var c = indexes[i];
+        ls0.wordmap[c] = ls0.wordmap[c].sort(ls0.chainSort);
+      }
+      var pos = Math.floor(Math.random()*arr.length);
+      var word = arr[pos];
+      arr=null;
+      var longest = ls0.getLongest(word);
+      for(var i = 0; i &lt; longest.length; i++){
+        var div = document.createElement("div");
+        div.innerHTML=i+":"+longest[i];
+        result.appendChild(div);
+      }
+    };
+
+    ls0.getLongest = function(word){
+      var longest=[];
+      var c0 = word.charAt(0);
+      var cz = ls0.lastChar(word);
+      ls0.counter[c0]--;
+      for(var i = 0;i &lt; ls0.wordmap[c0].length;i++){
+        if(!ls0.wordmap[c0][i]){ continue; }
+        if(ls0.wordmap[c0][i]!=word){ continue; }
+        ls0.wordmap[c0][i]=null;
+        break;
+      }
+      //
+      if(ls0.counter[cz]&amp;&amp;ls0.counter[cz]&gt;0){
+        ls0.wordmap[cz]=ls0.wordmap[cz].sort(ls0.chainSort);
+        for(var i = 0; i &lt; ls0.wordmap[cz].length; i++){
+          if(!ls0.wordmap[cz][i]) continue;
+          longest = ls0.getLongest(ls0.wordmap[cz][i]);
+          break;
+        }
+      }
+      longest.unshift(word);
+      return longest;
+    };
+
+        // --&gt;&lt;/script&gt;
+      &lt;/head&gt;
+      &lt;body&gt;
+        &lt;div&gt;
+          &lt;input type="button"
+                 onclick="javascript:ls0.execute()"
+                 value="start" /&gt;
+        &lt;/div&gt;
+        &lt;div&gt;
+          &lt;textarea id="ls0_ta" cols="50" rows="10"&gt;&lt;/textarea&gt;
+        &lt;/div&gt;
+        &lt;div id="ls0_result"&gt;&lt;/div&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9428'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9428
+  :user_name: egtra
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2009/07/29 07:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>これもまた全探索です。「ン」やその他リスト内でこれ以上続けられない単語をstopWordSetとして別扱いにしたり、少々の枝刈りもどきをやったり、OpenMPで並列処理したりしていますが焼け石に水ですね。110単語程度で数秒かかります。それ以上は面倒なので試していません。</p>\n<p>ラムダ式を使ったりPStade.Ovenを使ったり節操ないことになっていますがご容赦を。VC++
+    2010でコンパイルしています。</p>\n<p>コピーを避けるため、しりとりの並びの表現においてconst std::wstring*で文字列を扱っていますが、それらが指す文字列はwordSetとstopWordSetの要素であり、ポインタの有効期限はその2つに変更があるまでです。このプログラムでは、その点問題ないようになっています。</p>\n\n\t"
+  :code: |
+    #define WINVER 0x0400
+    #define _WIN32_WINDOWS 0
+    #define _WIN32_WINNT 0
+    #define _WIN32_IE 0
+
+    #define _SECURE_SCL 0
+    #define _CRT_SECURE_NO_WARNINGS
+    #define _SCL_SECURE_NO_WARNINGS
+    #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
+
+    #define WIN32_LEAN_AND_MEAN
+
+    #pragma warning(disable: 4512 4819)
+
+    #include &lt;iostream&gt;
+    #include &lt;fstream&gt;
+    #include &lt;locale&gt;
+    #include &lt;vector&gt;
+    #include &lt;deque&gt;
+    #include &lt;map&gt;
+    #include &lt;string&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;numeric&gt;
+    #include &lt;iterator&gt;
+    #include &lt;functional&gt;
+    #include &lt;memory&gt;
+    #include &lt;utility&gt;
+    #include &lt;climits&gt;
+
+    #include &lt;omp.h&gt;
+
+    #include &lt;boost/timer.hpp&gt;
+    #include &lt;boost/range.hpp&gt;
+    #include &lt;boost/iterator_adaptors.hpp&gt;
+    #include &lt;boost/cast.hpp&gt;
+
+    #include &lt;pstade/oven/filtered.hpp&gt;
+    #include &lt;pstade/oven/algorithm.hpp&gt;
+    #include &lt;pstade/oven/numeric.hpp&gt;
+    #include &lt;pstade/oven/indirected.hpp&gt;
+
+    #include &lt;windows.h&gt;
+
+    using boost::numeric_cast;
+    namespace ov = pstade::oven;
+
+    HANDLE hProcessHeap;
+    void* operator new(std::size_t size)
+    {
+        if (hProcessHeap == 0)
+        {
+            hProcessHeap = GetProcessHeap();
+        }
+        if (void* p = HeapAlloc(hProcessHeap, 0, size))
+        {
+            return p;
+        }
+        else
+        {
+            throw new std::bad_alloc();
+        }
+    }
+    void* operator new[](std::size_t size)
+    {
+        return operator new(size);
+    }
+    void operator delete(void* p)
+    {
+        HeapFree(hProcessHeap, 0, p);
+    }
+    void operator delete[](void* p)
+    {
+        operator delete(p);
+    }
+
+    struct WordInfo
+    {
+        std::wstring Word;
+        unsigned MaximumLength; //このWordから始めた場合に最も長く続た場合に得られる可能性のある長さ
+
+        explicit WordInfo(const std::wstring&amp; word) : Word(word), MaximumLength(UINT_MAX) {}
+        explicit WordInfo(std::wstring&amp;&amp; word) : Word(std::move(word)), MaximumLength(UINT_MAX) {}
+        WordInfo(const WordInfo&amp; wi) : Word(wi.Word), MaximumLength(wi.MaximumLength) {}
+        WordInfo(WordInfo&amp;&amp; wi) : Word(std::move(wi.Word)), MaximumLength(wi.MaximumLength) {}
+        WordInfo&amp; operator =(const WordInfo&amp; wi)
+        {
+            return *this = WordInfo(wi);
+        }
+        WordInfo&amp; operator =(WordInfo&amp;&amp; wi)
+        {
+            Word = std::move(wi.Word);
+            MaximumLength = wi.MaximumLength;
+            wi.MaximumLength = 0;
+            return *this;
+        }
+    };
+
+    struct StringFirstComparer : std::binary_function&lt;const WordInfo&amp;, const WordInfo&amp;, bool&gt;
+    {
+        result_type operator ()(first_argument_type lhs, second_argument_type rhs) const
+        {
+            return (int)lhs.Word[0] &lt; (int)rhs.Word[0];
+        }
+    };
+
+    typedef std::vector&lt;WordInfo&gt; wordset_t;
+
+    class WordResultList;
+    typedef std::shared_ptr&lt;WordResultList&gt; wordresult_t;
+    class WordResultList
+    {
+    public:
+        static wordresult_t Create(const std::wstring* word, wordresult_t next);
+        struct iterator : boost::iterator_adaptor&lt;
+            iterator,
+            WordResultList*,
+            const std::wstring*,
+            boost::forward_traversal_tag&gt;
+        {
+            iterator(WordResultList* p) : iterator_adaptor_(p) {}
+            void increment() { base_reference() = base()-&gt;next.get(); }
+            const std::wstring*&amp; dereference() const { return base_reference()-&gt;word; }
+        };
+        iterator begin(){ return iterator(this); }
+        iterator end() { return iterator(NULL); }
+        unsigned size() {return listSize;}
+    private:
+        WordResultList(const std::wstring* word, wordresult_t nextWord)
+            : word(word), next(std::move(nextWord)), listSize(next.get() ? next-&gt;listSize + 1 : 1) {
+        }
+    private: //初めは定義していたが、使わないので削除した。
+        WordResultList(const WordResultList&amp; y);
+        WordResultList(WordResultList&amp;&amp; y);
+        WordResultList&amp; operator =(const WordResultList&amp; y);
+        WordResultList&amp; operator =(WordResultList&amp;&amp; y);
+    private:
+        wordresult_t next;
+        unsigned listSize;
+        const std::wstring* word;
+    };
+
+    wordresult_t WordResultList::Create(const std::wstring* word, wordresult_t next)
+    {
+        __declspec(thread) static HANDLE hHeap; // スレッドごとに異なるヒープを用意
+        if (hHeap == 0)
+        {
+            ULONG flags = 2;
+            hHeap = HeapCreate(0, 8192, 0); //HeapDestroyしていません。ごめんなさい。
+            HeapSetInformation(hHeap, HeapCompatibilityInformation, &amp;flags, sizeof flags);
+        }
+        void* raw = HeapAlloc(hHeap, 0, sizeof WordResultList);
+        wordresult_t p(new(raw) WordResultList(word, std::move(next)), [](WordResultList* p) {p-&gt;~WordResultList();HeapFree(hHeap, 0, p);});
+        //wordresult_t p(new WordResultList(word, std::move(next)));
+        return p;
+    }
+
+    // 最も長いしりとりの列を返す。
+    // ただし、これまでの経過をresultList、次に使う言葉をnextWordとする。
+    wordresult_t GetLongestShifitoriListImpl(
+        wordresult_t const&amp; resultList,
+        const std::wstring* nextWord,
+        const wordset_t&amp; wordSet,
+        const wordset_t&amp; stopWordSet)
+    {
+        using namespace std::placeholders;
+        wordresult_t result = WordResultList::Create(nextWord, resultList);
+        if (resultList &amp;&amp; **resultList-&gt;begin() == L"セイキハ" &amp;&amp; *nextWord == L"ハケヤマ")
+        {
+            Sleep(0);
+        }
+        WordInfo lastChar(std::wstring(1, nextWord-&gt;back()));
+        //nextWordの終わりの文字で始まる言葉を抽出。
+        auto r = ov::equal_range(wordSet, lastChar, StringFirstComparer())
+            | ov::filtered([&amp;result](WordInfo const&amp; e) -&gt; bool {
+                auto it = std::find_if(result-&gt;begin(), result-&gt;end(), [&amp;e](std::wstring const* p) -&gt; bool {return *p == e.Word;});
+                return it == result-&gt;end(); // 使用済みの単語を除外
+            });
+        if (!boost::empty(r))
+        {
+            // 見つかれば再帰コースへ行く。
+            typedef std::pair&lt;wordresult_t, unsigned&gt; result_info_t;
+            return std::accumulate(boost::begin(r), boost::end(r), result_info_t(),
+                [&amp;](result_info_t &amp;&amp; lhs, WordInfo const&amp; e) -&gt; result_info_t
+                {
+                    if (lhs.second &gt;= e.MaximumLength)
+                    {
+                        return lhs; // e.Wordでしりとりを続けても絶対にlhs.firstより長くならない。
+                    }
+                    auto rhs = GetLongestShifitoriListImpl(result, &amp;e.Word, wordSet, stopWordSet);
+                    return (lhs.first ? lhs.first-&gt;size() : 0) &gt; rhs-&gt;size()
+                        ? lhs
+                        : result_info_t(std::move(rhs), rhs-&gt;size());
+                }).first;
+        }
+        else
+        {
+            // wordSetから追加できなかった場合、stopWordSetからの追加を試みて終了する。
+            auto it = ov::lower_bound(stopWordSet, lastChar, StringFirstComparer());
+            if (it != stopWordSet.end() &amp;&amp; it-&gt;Word[0] == lastChar.Word[0])
+            {
+                return WordResultList::Create(&amp;it-&gt;Word, result);
+            }
+            else
+            {
+                return result;
+            }
+        }
+    }
+
+    std::deque&lt;const std::wstring*&gt; GetLongestShifitoriList(wordset_t&amp; wordSet, const wordset_t&amp; stopWordSet)
+    {
+        std::deque&lt;const std::wstring*&gt; result;
+        if (wordSet.empty())
+        {
+            if (!stopWordSet.empty())
+            {
+                result.push_back(&amp;stopWordSet.begin()-&gt;Word);
+            }
+            return result;
+        }
+        else
+        {
+            // スレッド別に最も長かった結果を保持
+            std::vector&lt;std::deque&lt;const std::wstring*&gt;&gt; allResult(omp_get_max_threads());
+            const int wordSetSize = numeric_cast&lt;int&gt;(wordSet.size());
+
+    #pragma omp parallel for schedule(static)
+            for (int i = 0; i &lt; wordSetSize; ++i)
+            {
+                // 全単語について、その単語から始まるしりとりの列を生成してみる。
+                auto r = GetLongestShifitoriListImpl(wordresult_t(), &amp;wordSet[i].Word, wordSet, stopWordSet);
+                std::deque&lt;const std::wstring*&gt; t;
+                std::copy(r-&gt;begin(), r-&gt;end(), std::front_inserter(t));
+                // wordSet[i].Wordから始めた場合に最も長い(= wordSetとstopWordSetの全単語を使えるとき)列の長さを記憶
+                wordSet[i].MaximumLength = numeric_cast&lt;unsigned&gt;(t.size()); //この代入、特にマルチスレッド対策していないけど許して。
+                std::deque&lt;const std::wstring*&gt;&amp; cur = allResult[omp_get_thread_num()];
+                if (cur.empty() || cur.size() &lt; t.size())
+                {
+                    cur = std::move(t);
+                }
+            }
+            // allResultから最も長いものを選び出して、それを返す。
+            return *std::accumulate(allResult.begin(), allResult.end(), static_cast&lt;const std::deque&lt;const std::wstring*&gt;*&gt;(&amp;result),
+            [](std::deque&lt;const std::wstring*&gt; const* lhs, std::deque&lt;const std::wstring*&gt; const&amp; rhs) -&gt; const std::deque&lt;const std::wstring*&gt;*
+            {
+                return lhs-&gt;size() &gt; rhs.size() ? lhs : &amp;rhs;
+            });
+        }
+    }
+
+    namespace
+    {
+        typedef std::pair&lt;wchar_t, wchar_t&gt; dakuon_t;
+
+        const dakuon_t dakuonReplaceList[] =
+        {
+            dakuon_t(L'ガ', L'カ'), dakuon_t(L'ギ', L'キ'), dakuon_t(L'グ', L'ク'), dakuon_t(L'ゲ', L'ケ'), dakuon_t(L'ゴ', L'コ'),
+            dakuon_t(L'ザ', L'サ'), dakuon_t(L'ジ', L'シ'), dakuon_t(L'ズ', L'ス'), dakuon_t(L'ゼ', L'セ'), dakuon_t(L'ゾ', L'ソ'),
+            dakuon_t(L'ダ', L'タ'), dakuon_t(L'ヂ', L'チ'), dakuon_t(L'ヅ', L'ツ'), dakuon_t(L'デ', L'テ'), dakuon_t(L'ド', L'ト'),
+            dakuon_t(L'バ', L'ハ'), dakuon_t(L'ビ', L'ヒ'), dakuon_t(L'ブ', L'フ'), dakuon_t(L'ベ', L'ヘ'), dakuon_t(L'ボ', L'ホ'),
+            dakuon_t(L'パ', L'ハ'), dakuon_t(L'ピ', L'ヒ'), dakuon_t(L'プ', L'フ'), dakuon_t(L'ペ', L'ヘ'), dakuon_t(L'ポ', L'ホ'),
+            dakuon_t(L'ァ', L'ア'), dakuon_t(L'ィ', L'イ'), dakuon_t(L'ゥ', L'ウ'), dakuon_t(L'ェ', L'エ'), dakuon_t(L'ォ', L'オ'),
+            dakuon_t(L'ャ', L'ヤ'), dakuon_t(L'ュ', L'ユ'), dakuon_t(L'ョ', L'ヨ'), dakuon_t(L'ッ', L'ツ'),
+        };
+        const std::map&lt;wchar_t, wchar_t&gt; dakuonRepalceMap(boost::begin(dakuonReplaceList), boost::end(dakuonReplaceList));
+    }
+    // 濁音・半濁音・拗音を清音に修正
+    void dakuonReplace(std::wstring&amp; word)
+    {
+        std::for_each(word.begin(), word.end(), [](wchar_t&amp; c)
+        {
+            auto it = dakuonRepalceMap.find(c);
+            if (it != dakuonRepalceMap.end())
+            {
+                c = it-&gt;second;
+            }
+        });
+    }
+
+    // wordSetのうち、後に続く言葉が全くないものを「ん」で終わる言葉と同様にstopWordSetへ移動させる。
+    void AdjustStopWord(wordset_t&amp; wordSet, wordset_t&amp; stopWordSet)
+    {
+        auto it = std::remove_if(wordSet.begin(), wordSet.end(),
+            [&amp;wordSet, &amp;stopWordSet](const WordInfo&amp; e) -&gt; bool
+        {
+            //WordInfo lastChar(std::wstring(1, e.Word.back()));
+            const wchar_t l = e.Word.back();
+            auto pr = [l](WordInfo const&amp; e) -&gt; bool {return e.Word[0] == l;};
+            return ov::find_if(wordSet, pr) == wordSet.end()
+                &amp;&amp; ov::find_if(stopWordSet, pr) == stopWordSet.end();
+        });
+        wordSet.erase(it, wordSet.end());
+        ov::sort(stopWordSet, StringFirstComparer());
+    }
+
+    int main()
+    {
+        std::locale l("");
+        std::wcout.imbue(l);
+        std::wstring s;
+        wordset_t wordSet;
+        wordset_t stopWordSet;
+        {
+            std::wifstream is("h:\\t.txt");
+            is.imbue(l);
+            while (is &gt;&gt; s)
+            {
+                dakuonReplace(s);
+                if (s[s.length() - 1] == L'ン')
+                {
+                    stopWordSet.push_back(WordInfo(std::move(s)));
+                }
+                else
+                {
+                    wordSet.push_back(WordInfo(std::move(s)));
+                }
+            }
+        }
+        ov::sort(wordSet, StringFirstComparer());
+        ov::sort(stopWordSet, StringFirstComparer());
+        boost::timer t;
+        AdjustStopWord(wordSet, stopWordSet);
+        std::wcout &lt;&lt; L"start time: " &lt;&lt; t.elapsed() &lt;&lt; L'\n';
+        auto result = GetLongestShifitoriList(wordSet, stopWordSet);
+        std::wcout &lt;&lt; L"end time: " &lt;&lt; t.elapsed() &lt;&lt; L'\n';
+        std::wcout &lt;&lt; L"size: " &lt;&lt; result.size() &lt;&lt; L'\n';
+        ov::copy(result | ov::indirected
+            , std::ostream_iterator&lt;std::wstring, wchar_t&gt;(std::wcout, L" "));
+        std::wcout &lt;&lt; std::endl;
+    }
+  :tags:
+  - Boost1.39
+  - C++0x
+  - PStade.Oven
+  :references:
+    :url: 
+    :title: 
+- :id: '9429'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9429
+  :user_name: kozima
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/164/
+  :language: 
+  :time: 2009/07/30 13:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>どうやって枝を刈ったのか興味があってしばらくにらめっこしてました。</p>\n<p>それで気がついたんですが、これって入力が
+    \"cb bc ab bd\" のとき \"cb bc\" が返って来ませんか？(もっと長い \"ab bc cb bd\" があります)</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9439'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9439
+  :user_name: 匿名
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/4/
+  :language: Ruby
+  :time: 2009/08/02 15:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>リチャード・ドーキンスの「 遺伝子の川」を読んでヒントを得たロジックです。\n各単語をDNA切片と見なし、接続可能な全相手との新切片をリストに追加していきます。\n100語程度以上では計算量が多くなります。</p>\n\n\t"
+  :code: |
+    # -*- coding: utf-8 -*-
+
+    word_list = []
+    max_word_list = []
+    max_word_list_lth = 0
+
+    while w = gets
+      w.chomp.split().each{|i|
+        ii = i.split(//)
+        word_list &lt;&lt; [[i], ii[0], ii[-1]]
+      }
+    end
+
+    while w = word_list.shift
+      if w[0].size &gt; max_word_list_lth
+        max_word_list = w
+        max_word_list_lth = w[0].size
+      end
+      word_list.each{|i|
+        word_list &lt;&lt; [w[0] + i[0], w[1], i[2]] if (w[2] == i[1]) &amp;&amp; (w[0] == (w[0] - i[0]))
+        word_list &lt;&lt; [i[0] + w[0], i[1], w[2]] if (w[1] == i[2]) &amp;&amp; (i[0] == (i[0] - w[0]))
+      }
+    end
+
+    printf("max= %d words , %s\n",max_word_list_lth, max_word_list[0])
+  :tags:
+  - ruby1.9.0
+  :references:
+    :url: 
+    :title: 
+- :id: '9467'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9467
+  :user_name: eo-oe-aaaa
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/498/
+  :language: C
+  :time: 2009/08/10 06:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>とりあえずの愚直実装。\n３５０語くらいなら一瞬ででるんですが、\nその先はぜんぜん終わる気配がないです。</p>\n\n\t"
+  :code: |
+    class Word
+    {
+        public string Tango{get;set;}
+        public bool Used{get;set;}
+
+        public Word(string t)
+        {
+            Tango = t;
+            Used = false;
+        }
+
+        public char First()
+        {
+            return Tango.First();
+        }
+
+        public char Last()
+        {
+            return Tango.Last();
+        }
+    }
+
+    class Program
+    {
+        static Dictionary&lt;char, List&lt;Word&gt;&gt; wordDic = new Dictionary&lt;char, List&lt;Word&gt;&gt;();
+        static List&lt;Word&gt; wordList = new List&lt;Word&gt;();
+        static int count = 0;
+        static int maxcount = 0;
+
+        static void Add(Word word)
+        {
+            List&lt;Word&gt; list;
+
+            if (wordDic.ContainsKey(word.First()))
+            {
+                list = wordDic[word.First()];
+            }
+            else
+            {
+                list = new List&lt;Word&gt;();
+                wordDic[word.First()] = list;
+            }
+
+            list.Add(word);
+        }
+
+        static void Main(string[] args)
+        {
+            using (StreamReader sr = new StreamReader("D:\\tango.txt"))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    Word w = new Word(line);
+                    Add(w);
+                    wordList.Add(w);
+                }
+            }
+
+            foreach (Word word in wordList)
+            {
+                Shiritori(word);
+            }
+
+            Console.WriteLine("Finish");
+            Console.Read();
+        }
+
+        private static void Shiritori(Word word)
+        {
+            word.Used = true;
+            ++count;
+
+            if (wordDic.ContainsKey(word.Last()))
+            {
+                foreach (Word t2 in wordDic[word.Last()])
+                {
+                    if (t2.Used == false)
+                    {
+                        Shiritori(t2);
+                    }
+                }
+            }
+
+            SetCount(count);
+            --count;
+            word.Used = false;
+        }
+
+        private static void SetCount(int count)
+        {
+            if (maxcount &lt; count)
+            {
+                maxcount = count;
+                Console.WriteLine(maxcount);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9483'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9483
+  :user_name: lunlumo
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/813/
+  :language: Scala
+  :time: 2009/08/14 20:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>　素直に書いてみました。</p>\n\n\t"
+  :code: "import    java.io.{BufferedReader, FileInputStream, InputStreamReader}\nimport
+    \   scala.collection.immutable.HashMap\n\nclass WordchainGame(var p:String) {\n
+    \   var    d:List[String] = null\n    def initialize:WordchainGame = {\n        def
+    loop(r:BufferedReader):List[String] = r.readLine match {\n                case
+    null =&gt; List[String]()\n                case l:String =&gt; l.split(\"\\t\").toList
+    ++ loop(r)\n            }\n        d = loop(new BufferedReader(new InputStreamReader(new
+    FileInputStream(p),\"Shift_JIS\"))).map(_.takeWhile(_ != '*').mkString).filter(_.length
+    &gt; 0)\n        this\n    }\n    def play:List[List[String]] = {\n        val
+    \   r:Map[Char,Char] = HashMap(('ァ','ア'),('ィ','イ'),('ゥ','ウ'),('ェ','エ'),('ォ','オ'),('ッ','ツ'),('ャ','ヤ'),('ュ','ユ'),('ョ','ヨ'))\n
+    \       def loop(g:List[String], l:List[String]):List[List[String]] = l match
+    {\n                case List() =&gt; List(g)\n                case _ =&gt;(\n
+    \                       g match {\n                                case List()
+    =&gt; l\n                                case _ =&gt; {\n                                    val
+    \   t:Char = if (r.contains(g.first.last)) r(g.first.last) else g.first.last\n
+    \                                   l.filter(_.first == t)\n                                }\n
+    \                           }\n                    ).flatMap((w) =&gt; w.last
+    match {\n                                case 'ン' =&gt; List(w::g)\n                                case
+    _ =&gt; loop(w::g, l.filter(_ != w))\n                            }\n                        )\n
+    \           }\n        loop(List[String](), d)\n    }\n}\n\nobject WordchainCombination
+    {\n    def main(args:Array[String]):Unit =\n        if (args.length != 1)\n            println(\"usage:
+    WordchainCombination WORDLIST_FILE\")\n        else\n            try {\n                println(new
+    WordchainGame(args.first).initialize.play.sort(_.length &gt; _.length).first.reverse.mkString(\"-&gt;\"))\n
+    \           } catch {\n                case ex =&gt; ex.printStackTrace \n            }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9523'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9523
+  :user_name: Wiles
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/1094/
+  :language: C
+  :time: 2009/08/27 07:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>単純に比較しているだけなので、160単語くらいが限界のようです。</p>\n<p>お題のサンプルでは、(アイアイ、イチブン、…、ソノミチ、タテガミ）の161単語で(シールド、ドウナガ、…、ムササビ、ビンラン)の8連続が見つかりました。</p>\n\n\t"
+  :code: "#include&lt;stdio.h&gt;\n#include&lt;string.h&gt;\n#define WORDMAX 500\n#define
+    MAXLEN 50\n\nchar word[WORDMAX][MAXLEN];\nint check[WORDMAX], temp[WORDMAX], words[WORDMAX],
+    cnt = 0, cntmax = 0, maxmax = 0;\n\nvoid siritori(char *word, char *base, int
+    *check, int wordnum, int n)\n{\n    int i, j;\n    \n    temp[cnt++] = wordnum;
+    \                                   //tmp[]に現在までの語順を保存\n    for(i = 0; i &lt;
+    n; i++)                                    //word[0]からword[n-1]までについて、繋がるか調べる\n
+    \   {\n        if(!strcmp(word, base + i * MAXLEN))    continue;    //自分自身が比較対象になった場合\n
+    \       if((*(word + strlen(word) - 1) == *(base + (i * MAXLEN) + 1)) \n            &amp;&amp;
+    (*(word + strlen(word) - 2) == *(base + (i * MAXLEN)))\n            &amp;&amp;
+    *(check + i))\n        {\n            *(check + i) = 0;\n            siritori(base
+    + i * MAXLEN, base, check, i, n);\n            if(cnt &gt; cntmax)\n            {\n
+    \               cntmax = cnt;\n            }\n            if(cntmax &gt; maxmax)\n
+    \           {\n                maxmax = cntmax;\n                for(j = 0; j
+    &lt; cntmax; j++)                    //最も長続きする場合の語順をコピー\n                {\n                    words[j]
+    = temp[j];\n                }\n            }\n            cnt = 0;\n            *(check
+    + i) = 1;\n        }\n    }\n}\n    \nint main(void)\n{\n    int i = 0, n = 0;\n
+    \   char check[1000], buf[100][1000];\n    FILE *in;\n    \n    if((in = fopen(\"wordlist.txt\",
+    \"r\")) == NULL)\n    {\n        puts(\"wordlist.txtが読み込めませんでした\");\n        exit(1);\n
+    \   }\n    while(!feof(in))\n    {\n        fscanf(in, \"%s\", word[i++]);\n        n++;\n
+    \   }\n    fclose(in);\n    \n    for(i = 0; i &lt; n; i++)\n    {\n        check[i]
+    = 1;\n    }\n    for(i = 0; i &lt; n; i++)                                //word[i]を始点とする\n
+    \   {\n        check[i] = 0;                                    //word[i]を使用済みとする\n
+    \       cnt = 0;                                        //cntをリセット\n        siritori(word[i],
+    word, check, i, n);\n        check[i] = 1;                                    //調べ終わったら、word[i]を未使用とする\n
+    \   }\n    puts(\"result:\");\n    for(i = 0; i &lt; cntmax; i++)\n    {\n        printf(\"%s\\n\",
+    word[words[i]]);\n    }\n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9524'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9524
+  :user_name: Wiles
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/1094/
+  :language: C
+  :time: 2009/08/27 08:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>すみません、コード＆サンプルデータに欠陥があったので修正しました。</p>\n<p>(アイアイ、イチブン、…、ヌリムラ、ハヤブサ)の180単語で、(ミズヒキ、キャクアシ、…、ガイユウ、ウラガネ)の13連続が見つかりました。</p>\n\n\t"
+  :code: "#include&lt;stdio.h&gt;\n#include&lt;string.h&gt;\n#define WORDMAX 500\n#define
+    MAXLEN 50\n\nchar word[WORDMAX][MAXLEN];\nint temp[WORDMAX], words[WORDMAX], cnt
+    = 0, cntmax = 0, maxmax = 0;\n\nvoid siritori(char *word, char *base, int *check,
+    int wordnum, int n)\n{\n    int i, j;\n    \n    temp[cnt++] = wordnum;                                    //tmp[]に現在までの語順を保存\n
+    \   for(i = 0; i &lt; n; i++)                                    //word[0]からword[n-1]までについて、繋がるか調べる\n
+    \   {\n        if(!strcmp(word, base + i * MAXLEN))    continue;    //自分自身が比較対象になった場合\n
+    \       if((*(word + strlen(word) - 1) == *(base + (i * MAXLEN) + 1)) \n            &amp;&amp;
+    (*(word + strlen(word) - 2) == *(base + (i * MAXLEN)))\n            &amp;&amp;
+    *(check + i))\n        {\n            *(check + i) = 0;\n            siritori(base
+    + i * MAXLEN, base, check, i, n);\n            if(cnt &gt; cntmax)\n            {\n
+    \               cntmax = cnt;\n            }\n            if(cntmax &gt; maxmax)\n
+    \           {\n                maxmax = cntmax;\n                for(j = 0; j
+    &lt; cntmax; j++)                    //最も長続きする場合の語順をコピー\n                {\n                    words[j]
+    = temp[j];\n                }\n            }\n            cnt = 0;\n        }\n
+    \   }\n}\n    \nint main(void)\n{\n    int i = 0, n = 0, j;\n    char check[WORDMAX];\n
+    \   FILE *in;\n    \n    if((in = fopen(\"wordlist.txt\", \"r\")) == NULL)\n    {\n
+    \       puts(\"wordlist.txtが読み込めませんでした\");\n        exit(1);\n    }\n    while(!feof(in))\n
+    \   {\n        fscanf(in, \"%s\", word[i++]);\n        n++;\n    }\n    fclose(in);\n
+    \   \n    for(i = 0; i &lt; n; i++)\n    {\n        check[i] = 1;\n    }\n    for(i
+    = 0; i &lt; n; i++)                                //word[i]を始点とする\n    {\n        check[i]
+    = 0;                                    //word[i]を使用済みとする\n        cnt = 0;                                        //cntをリセット\n
+    \       siritori(word[i], word, check, i, n);\n        for(j = 0; j &lt; n; i++)\n
+    \       {\n            check[i] = 1;\n        }\n    }\n    puts(\"result:\");\n
+    \   for(i = 0; i &lt; cntmax; i++)\n    {\n        printf(\"%s\\n\", word[words[i]]);\n
+    \   }\n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9525'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9525
+  :user_name: Wiles
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/1094/
+  :language: Other
+  :time: 2009/08/27 05:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>何度もすみません、また誤りがあったので訂正します。</p>\n<p>よく確認してから投稿します。お目汚し失礼致しました。</p>\n\n\t"
+  :code: |
+    67:        for(j = 0; j &lt; n; i++)
+    68:        {
+    69:            check[i] = 1;
+    70:        }
+    ↓
+    67:        for(j = 0; j &lt; n; j++)
+    68:        {
+    69:            check[j] = 1;
+    70:        }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9621'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9621
+  :user_name: T_GYOUTEN
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/1107/
+  :language: Other
+  :time: 2009/10/03 02:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Ｆ＃で書いてみました。\n単語の最初と最後の文字の組み合わせで、２次元配列を作り、それをもとにして、全探索しています。計算量はO(N!)だと思います。\n100までで、２２個\nカザアナ-&gt;
+    ナニゴト-&gt; トリモノ-&gt; ノリニゲ-&gt; ゲレツサ-&gt; サンバシ-&gt; シールド-&gt; ドウナガ-&gt; ガイユウ-&gt;
+    ウラガネ-&gt; ネンブツ-&gt; ツジツマ-&gt; マヤカシ-&gt; シタヅミ-&gt; ミズヒキ-&gt; キヤクアシ-&gt; シヨウワル-&gt;
+    ルイベツ-&gt; ツユザム-&gt; ムスビメ-&gt; メイフク-&gt; クタビレ\nが最大のもののひとつです。\n130で３２個ですが、これで１分かかりますので限界です。</p>\n\n\t"
+  :code: "open System.IO\n\n//小文字を大文字に変換\nlet ConvH (str:string) =\n    str.Replace(\"ァ\",\"ア\").Replace(\"ィ\",\"イ\").Replace(\"ゥ\",\"ウ\").Replace(\"ェ\",\"エ\").Replace(\"ォ\",\"オ\")\n
+    \       .Replace(\"ヵ\",\"カ\").Replace(\"ヶ\",\"ケ\").Replace(\"ッ\",\"ツ\").Replace(\"ャ\",\"ヤ\").Replace(\"ュ\",\"ユ\")\n
+    \       .Replace(\"ョ\",\"ヨ\").Replace(\"ヮ\",\"ワ\")\n             \n//ファイルの文字列を大文字化してリストに収める\nlet
+    wordList = [\n                    use fileReader = new StreamReader(\"s:\\word2.text\")
+    \n                    while not fileReader.EndOfStream do\n                        let
+    line = fileReader.ReadLine()\n                        let strs = line.Split( [|
+    '\\t' |])\n                        for st in strs do\n                            if
+    st &lt;&gt; \"\" then\n                                yield ConvH (st)\n                 ]\n\nlet
+    IcharSet = List.fold (fun (chset:char Set) (str:string) -&gt; Set.add str.[0]
+    chset) (Set.Empty)  wordList    \nlet ITcharSet = List.fold (fun (chset:char Set)
+    (str:string) -&gt; Set.add (str.[str.Length - 1]) chset) IcharSet  wordList    \nlet
+    UsedCharList = Set.to_list ITcharSet //先頭か末尾で使われている文字のリスト\n\nlet KanaLen = List.length
+    \ UsedCharList\n\n//カナのindexを返す\nlet posOfKana (ch : char) =\n    List.findIndex
+    (fun x -&gt; x = ch) UsedCharList\n   \n//対応表用の配列　サイズ KanaLen * KanaLen\nlet respT
+    = [| for i in 0 .. (KanaLen - 1) do\n                    yield (Array.create KanaLen
+    0) |]\n\nfor s in wordList do\n    let topStr = s.[0]\n    let endStr = s.[s.Length
+    - 1]\n    let topStrIndex = posOfKana topStr\n    let endStrIndex = posOfKana
+    endStr\n    respT.[topStrIndex].[endStrIndex] &lt;- respT.[topStrIndex].[endStrIndex]
+    + 1  \n\nlet tempWordIndexArr = Array.create wordList.Length 0\nlet deepestWordIndexArr
+    = Array.create wordList.Length 0                \n\n// topIndex..何で始まるのから調べるか
+    \nlet rec search depth deepest topIndex  (arr :int [] []) (indexArr :int []) =\n
+    \   for i in  0 ..(KanaLen - 1) do\n        if arr.[topIndex].[i] &gt; 0 then\n
+    \           \n            indexArr.[depth] &lt;- topIndex\n            indexArr.[depth+1]
+    &lt;- i\n            arr.[topIndex].[i] &lt;- arr.[topIndex].[i] - 1\n            \n
+    \           if depth + 1 &gt; !deepest then\n               deepest := depth +
+    1\n               for i in 0 .. !deepest do\n                    deepestWordIndexArr.[i]
+    &lt;- indexArr.[i]\n          \n            search (depth + 1) deepest i arr indexArr\n
+    \           \n            arr.[topIndex].[i] &lt;- arr.[topIndex].[i] + 1\n\nlet
+    maxDepth = ref 0\n\nfor i in 0 .. (KanaLen - 1) do\n    if Array.sum respT.[i]
+    &gt; 0 then\n        search 0 maxDepth i respT tempWordIndexArr\n\nprintfn \"最大連結個数:
+    %A\" !maxDepth   \n\n//結果表示用の補助関数\n//index iで始まりjで終わる単語をリストから抜き出して、その単語とその単語を除いたリストを返す\nlet
+    findAndPop (i,j) lst =\n    let rec sub (passedLst : string list)  (yetLst : string
+    list) =\n       match yetLst with\n       | [] -&gt; failwith \"dont find\"\n
+    \      | h :: tl when posOfKana h.[0] = i &amp;&amp; posOfKana h.[h.Length - 1]
+    = j \n                -&gt; (h,passedLst @ tl)\n       | h :: tl -&gt; sub (passedLst
+    @ [h]) tl\n    sub [] lst            \n\n//結果表示用\nlet rec dispResult lst i =\n
+    \   if i = !maxDepth then\n        ()\n    else \n        let (word,remLst) =
+    findAndPop ( deepestWordIndexArr.[i],deepestWordIndexArr.[i+1]) lst\n        printf
+    \"-&gt; %s\" word\n        dispResult remLst (i + 1)\n\ndispResult wordList 0\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9731'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9731
+  :user_name: Lost_dog
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/1129/
+  :language: Haskell
+  :time: 2009/12/21 17:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Lost_dogです。初投稿です。よろしくです。</p>\n<p>お題の単語ファイルをUTF8で保存して実行します。結果をプロンプトに吐くと文字化けするので、ファイルに出力してます。</p>\n<p>実装は愚直に全部数えてるだけです。130単語くらいの入力が限界でした。もっと長いしりとりは、また今度挑戦してみます。</p>\n<p>つーか関係ないけど、コードの配色がカラフルだな…</p>\n\n\t"
+  :code: |
+    module Main where
+
+    import Prelude hiding (putStrLn, readFile, writeFile)
+    import System.IO.UTF8
+    import Data.List
+    import Data.Tree
+    import Data.Maybe
+    import Data.Function
+
+    main = readFile "words.txt" &gt;&gt;= writeFile "out.txt".unlines.longest.makeTree.words
+
+    makeTree = unfoldTree f where
+      f (w:ws) = let c = map (\x -&gt; x:(ws\\[x])) $ filter (((last w)==).head) ws
+                 in (w, c)
+
+    longest (Node w []) = [w]
+    longest (Node w ws) = let xs = maximumBy (compare`on`length) $ map longest ws
+                          in w : xs
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9732'
+  :parent_id: '277'
+  :url: http://ja.doukaku.org/comment/9732
+  :user_name: Lost_dog
+  :user_url: /web/20100712021426/http://ja.doukaku.org/user/1129/
+  :language: 
+  :time: 2009/12/21 17:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>import Data.Maybeはいらんな。。\nあとputStrLnも使ってないな。。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 

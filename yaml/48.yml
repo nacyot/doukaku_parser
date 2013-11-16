@@ -1,0 +1,968 @@
+---
+:id: '48'
+:title: PageRankの計算
+:comments:
+- :id: '3404'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/3404
+  :user_name: ところてん
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/08/19 13:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <a href=\"/web/20090707234733/http://ja.wikipedia.org/wiki/%E3%83%9A%E3%83%BC%E3%82%B8%E3%83%A9%E3%83%B3%E3%82%AF\">ページランク
+    - Wikipedia</a>を求めるプログラムを作ってください。(PageRankはGoogleの商標です)\r\n<p>\r\n詳しい導出方法は<a href=\"/web/20090707234733/http://www.kusastro.kyoto-u.ac.jp/~baba/wais/pagerank.html\">Google
+    の秘密 - PageRank 徹底解説</a>の3章に載っていますが、\r\n簡単に説明すると\r\n</p>\n<ol>\n<li>ページがn枚ある場合、n×nの2次元配列を用意する。\r\n</li>\n<li>ページiからページjにリンクがある場合、mat[j][i]
+    = 1 / num_link[i]とする。ただしnum_link[i]はi番目のページから出ているリンクの総数。\r\n</li>\n<li>行列計算ライブラリを使ってできあがった2次元配列の固有値、固有ベクトルを求める。\r\n</li>\n<li>出力された固有ベクトルから合計が1になるようなPageRankを算出する\r\n</li>\n</ol>\n<p>\r\nという流れになります。\r\n\r\n</p>\n<p>\r\nPythonで表現すると下のようになります。\r\n?????の部分は空行を入れて10行でしたので\r\n何百行ものコードになってしまった場合は\r\nきっとお題の趣旨から外れていると思います。\r\nこのお題の趣旨は「行列計算ライブラリを使って」PageRankを計算することなので、\r\n自力で固有値の計算を実装することは求められていません。\r\n\r\n</p>\n<pre
+    class=\"box\">\r\ndata = {\r\n    1: [2, 3, 4, 5, 7],\r\n    2: [1],\r\n    3:
+    [1, 2],\r\n    4: [2, 3, 5],\r\n    5: [1, 3, 4, 6],\r\n    6: [1, 5],\r\n    7:
+    [5],\r\n}\r\n\r\n?????\r\n\r\nprint pagerank\r\n# [0.303514376997, 0.166134185304,
+    0.140575079872,\r\n#  0.105431309904, 0.178913738019, 0.0447284345048,\r\n#  0.0607028753994]\r\n</pre>\r\n\r\nこのお題はところてんさんの「行列演算系のお題が欲しい」という要望を元に考えたものです。ありがとうございました。\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2333'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2333
+  :user_name: yuin
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/08/19 17:59 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">一番乗り？\r\n\r\n出力は\r\n\r\n{\r\n0.3035143769968051,\r\n0.16613418530351443,\r\n0.1405750798722045,\r\n0.10543130990415332,\r\n0.17891373801916935,\r\n0.04472843450479228,\r\n0.06070287539936102\r\n}\r\n\r\nという感じです。\r\n\r\nJAMAを使いました。</pre>\n\t"
+  :code: |
+    import Jama._
+
+    def pagerank(data:Map[int, List[int]]):Array[double] = {
+      val m = (1 to data.size).map(x=&gt;Array.make(data.size, 0d)).toArray
+      for(val i &lt;- data) {
+        for(val j &lt;- i._2) {
+          m(j-1)(i._1-1) = 1.toDouble / i._2.size
+        }
+      }
+
+      val m2 = new Matrix((new Matrix(m)).eig.getV.getArray.map(x=&gt;x(0)), data.size)
+      val norm1 = m2.norm1
+      m2.getArray.map(x =&gt; x(0) / norm1)
+    }
+    println(pagerank(Map(
+      1 -&gt; List(2,3,4,5,7),
+      2 -&gt; List(1),
+      3 -&gt; List(1,2),
+      4 -&gt; List(2,3,5),
+      5 -&gt; List(1,3,4,6),
+      6 -&gt; List(1,5),
+      7 -&gt; List(5)
+    )).mkString("{\n",",\n","\n}"))
+  :tags:
+  - JAMA
+  :references:
+    :url: /web/20090707234733/http://math.nist.gov/javanumerics/jama/
+    :title: JAMA
+- :id: '2334'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2334
+  :user_name: shiro
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/08/19 23:51 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">c-wrapper経由でGSLを呼んでみました。\r\nCのAPIそのままなので冗長になってしまう感じですね。\r\n実用的にはこの上に高レベルAPIをかぶせたGauche-gslみたいなのがあると良さそうです。\r\n\r\n実行例
+    (横にはみ出ないように出力は整形してあります):\r\ngosh&gt; (pagerank '((1 . (2 3 4 5 7))\r\n                  (2
+    . (1))\r\n                  (3 . (1 2))\r\n                  (4 . (2 3 5))\r\n
+    \                 (5 . (1 3 4 6))\r\n                  (6 . (1 5))\r\n                  (7
+    . (5))))\r\n#f64(0.30351437699680506 0.16613418530351437 0.14057507987220447\r\n
+    \    0.10543130990415332 0.17891373801916935 0.04472843450479234\r\n     0.06070287539936102)\r\n\r\n要Gauche-0.8.11,
+    GSL-1.9です。</pre>\n\t"
+  :code: |
+    (use srfi-1)
+    (use srfi-42)
+    (use gauche.uvector)
+    (use gauche.sequence)
+    (use c-wrapper)
+
+    (c-load '("gsl/gsl_eigen.h" "gsl/gsl_complex_math.h") :libs "-lgslcblas -lgsl")
+
+    (define (pagerank data)
+      (let* ([dim (apply max (map car data))]
+             [dvec (make-f64vector (* dim dim))])
+        (do-ec (: r data) (: j (cdr r))
+               (set! (ref dvec (+ (* (- j 1) dim) (- (car r) 1))) (/. (length (cdr r)))))
+        (let ([eval (gsl_vector_complex_alloc dim)]
+              [evec (gsl_matrix_complex_alloc dim dim)]
+              [ws   (gsl_eigen_nonsymmv_alloc dim)]
+              [mat  (gsl_matrix_view_array dvec dim dim)])
+          (gsl_eigen_nonsymmv (ptr (ref mat 'matrix)) eval evec ws)
+          (gsl_eigen_nonsymmv_free ws)
+          (let* ([maxevi (find-max (iota dim)
+                                   :key (lambda (k)
+                                          (gsl_complex_abs
+                                           (gsl_vector_complex_get eval k))))]
+                 [ev (map-to &lt;f64vector&gt;
+                             (lambda (k)
+                               (gsl_complex_abs
+                                (gsl_vector_complex_get
+                                 (ptr (ref (gsl_matrix_complex_column evec maxevi) 'vector))
+                                 k)))
+                             (iota dim))])
+            (gsl_vector_complex_free eval)
+            (gsl_matrix_complex_free evec)
+            (f64vector-div ev (f64vector-dot ev (make-f64vector dim 1.0)))))))
+  :tags:
+  - gauche
+  - gsl1.9
+  :references:
+    :url: 
+    :title: 
+- :id: '2335'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2335
+  :user_name: cats
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/08/20 01:04 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">標準では、固有値も行列演算もサポートされていないので、自分で計算しています。結果は、合っていると思います。\r\n\r\n0.30351438\r\n0.16613419\r\n0.14057508\r\n0.10543131\r\n0.17891374\r\n0.04472843\r\n0.06070287</pre>\n\t"
+  :code: |
+    using System;
+    class Program
+    {
+      static void Main()
+      {
+        string data = "2 3 4 5 7,1,1 2,2 3 5,1 3 4 6,1 5,5";
+        double[] pageRank = Calc(data);
+        foreach (double d in pageRank) Console.WriteLine("{0:F8}", d);
+      }
+      static double[] Calc(string data)
+      {
+        string[] ss = data.Split(',');
+        double[,] m = new double[ss.Length, ss.Length];
+        for (int i = 0; i &lt; ss.Length; ++i)
+        {
+          string[] tt = ss[i].Split();
+          for (int j = 0; j &lt; tt.Length; ++j)
+            m[int.Parse(tt[j]) - 1, i] = 1.0 / tt.Length;
+        }
+        double[] pageRank = new double[ss.Length];
+        for (int i = 0; i &lt; pageRank.Length; ++i) pageRank[i] = 1.0 / pageRank.Length;
+        double df = 1;
+        while (df &gt; 1e-8)
+        {
+          double[] nxt = new double[ss.Length];
+          for (int i = 0; i &lt; ss.Length; ++i)
+            for (int j = 0; j &lt; ss.Length; ++j)
+              nxt[i] += m[i, j] * pageRank[j];
+          df = 0;
+          for (int i = 0; i &lt; ss.Length; ++i)
+            df = Math.Max(df, Math.Abs(nxt[i] - pageRank[i]));
+          pageRank = nxt;
+        }
+        return pageRank;
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2339'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2339
+  :user_name: tell
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/228/
+  :language: Ruby
+  :time: 2007/08/20 06:19 GMT
+  :vote_count: '3'
+  :vote_score: '-3'
+  :body: "\n\t  <pre class=\"compact\">rb-gslやnarrayのインストールを試みましたが，\r\nエラーが出て面倒になってきた\r\n(ちなみに使っている環境はCygwin)ので\r\nPageRankを求めるアルゴリズムを自分で\r\n実装しました．\r\n\r\n一応行列演算のために標準添付されている\r\nMatrixクラスを使っていますが，\r\n論旨に反してごめんなさい．\r\n</pre>\n\t"
+  :code: "require \"matrix\"\nrequire \"pp\"\n\ndef map_to_mat( map )\n  size = map.keys.length\n
+    \ \n  con_mat = Array.new( size ) {\n    Array.new( size ) { 0.0 }\n  }\n  \n
+    \ map.each {| key, val |\n    length = val.length\n    \n    val.each {| i |\n
+    \     con_mat[ key - 1 ][ i - 1 ] = 1.0 / length\n    }\n  }\n  \n  Matrix[*con_mat]\nend\n\ndef
+    eigen_values( mat, time = 100 )\n  time.times {| i |\n    mat *= mat\n    \n    mat_ary
+    = mat.to_a\n    mat_ary.map! {| row |\n      sum = row.inject( 0.0 ) {| e, t |
+    e + t }\n      row.map! {| val | val / sum }\n    }\n    mat = Matrix[*mat_ary]\n
+    \ }\n  \n  mat.to_a[0]\nend\n\n## 以下テスト\n\ndata = {\n  1 =&gt; [2, 3, 4, 5, 7],\n
+    \ 2 =&gt; [1],\n  3 =&gt; [1, 2],\n  4 =&gt; [2, 3, 5],\n  5 =&gt; [1, 3, 4, 6],\n
+    \ 6 =&gt; [1, 5],\n  7 =&gt; [5],\n}\n\nmatrix = map_to_mat( data )\npp matrix.to_a\n\npp
+    eigen_values( matrix )\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2340'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2340
+  :user_name: tell
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/228/
+  :language: 
+  :time: 2007/08/20 06:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">間違えた…\r\n\r\n×論旨\r\n○趣旨</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2341'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2341
+  :user_name: tell
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/228/
+  :language: Ruby
+  :time: 2007/08/20 07:10 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <pre class=\"compact\">存在する確率の初期ベクトルを等確率と置いて\r\n収束させる方法の方が，#2339より効率的で正攻法ですね．\r\n\r\nなんで行列をそのまま回そうと思ったんだろう…\r\n\r\nということで直してみました↓</pre>\n\t"
+  :code: "require \"matrix\"\nrequire \"pp\"\n\ndef map_to_mat( map )\n  size = map.keys.length\n
+    \ \n  con_mat = Array.new( size ) {\n    Array.new( size ) { 0.0 }\n  }\n  \n
+    \ map.each {| key, val |\n    length = val.length\n    \n    val.each {| i |\n
+    \     con_mat[ key - 1 ][ i - 1 ] = 1.0 / length\n    }\n  }\n  \n  Matrix[*con_mat]\nend\n\ndef
+    eigen_values( mat, time = 100 )\n  size = mat.row_size\n  vec = Vector[ *Array.new(
+    size ) { 1.0 / size } ].covector\n  \n  time.times {| i |\n    vec = vec * mat\n
+    \ }\n  \n  vec.to_a[0]\nend\n\n## 以下テスト\n\ndata = {\n  1 =&gt; [2, 3, 4, 5, 7],\n
+    \ 2 =&gt; [1],\n  3 =&gt; [1, 2],\n  4 =&gt; [2, 3, 5],\n  5 =&gt; [1, 3, 4, 6],\n
+    \ 6 =&gt; [1, 5],\n  7 =&gt; [5],\n}\n\nmatrix = map_to_mat( data )\npp matrix.to_a\n\npp
+    eigen_values( matrix )\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2342'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2342
+  :user_name: sumim
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/20 09:28 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  Squeak Smalltalk で。あいにく組み込みの Matrix が貧弱で、固有値や固有ベクトルを求めるメソッドが見あたらなかったので、tell
+    さんの #2339 同様に累乗法で絶対値最大の固有値に対応する固有ベクトルを求めました。あしからず。\n\t"
+  :code: |
+    | data matrix pageRanks |
+    data := #((2 3 4 5 7) (1) (1 2) (2 3 5) (1 3 4 6) (1 5) (5)).
+    matrix := Matrix new: data size element: 0.
+
+    data keysAndValuesDo: [:page :refs |
+        refs do: [:ref | matrix at: page at: ref put: 1 / refs size]].
+
+    pageRanks := [:mat |
+        | prev delta |
+        prev := mat.
+        [   mat := (mat := mat +* mat) / mat sum asFloat.
+            ((delta := prev - (prev := mat)) * delta) sum &gt; 1e-12] whileTrue.
+        (mat atRow: 1) / (mat atRow: 1) sum].
+
+    ^pageRanks value: matrix
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '2347'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2347
+  :user_name: sawat
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/322/
+  :language: Java
+  :time: 2007/08/20 12:34 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  Javaも標準では行列計算がサポートされていないので、冪乗法で。\r<br>固有ベクトルの計算はページランク計算を前提としない、汎用のもののつもり。（ライブラリの代わりなので）\r<br>収束しない場合にArithmeticExceptionを投げてるけど、これは手抜き。ホントは（呼び出し元は収束するか事前に判断できないので）チェック例外を投げるべき。\n\t"
+  :code: "public class PageRank {\n    private static final int MAX_REPEAT = 1000;\n\n
+    \   public static void main(String[] argv) {\n        int[][] data = {{ 2, 3,
+    4, 5, 7 }, \n                        { 1 }, \n                        { 1, 2 },
+    \n                        { 2, 3, 5 },\n                        { 1, 3, 4, 6 },
+    \n                        { 1, 5 }, \n                        { 5 }};\n\n        double[][]
+    a = new double[data.length][];\n        for (int i = 0; i &lt; a.length; i++)
+    {\n            for (int j = 0; j &lt; data[i].length; j++) {\n            a[data[i][j]
+    - 1][i] = 1.0 / data[i].length;\n            }\n        }\n        double[] eigVec
+    = calcEigenVector(a);\n\n        double sum = 0.0;\n        for (int i = 0; i
+    &lt; eigVec.length; i++) sum += eigVec[i];\n        for (int i = 0; i &lt; eigVec.length;
+    i++) System.out.println(eigVec[i] / sum);\n    }\n\n    /** べき乗法により、行列の固有ベクトルを求める。
+    */\n    private static double[] calcEigenVector(double[][] mat) {\n        final
+    int n = mat.length;\n        if(n != mat[0].length) throw new IllegalArgumentException(\"正方行列じゃないとダメだよ。\");\n
+    \       double eigVec[] = new double[n];\n        eigVec[0] = 1.0;\n\n        double
+    eigVal = 1.0;\n        \n        for(int count=0; count &lt; MAX_REPEAT; count++)
+    {\n            double[] newVec = new double[n];\n            double df = 0;\n
+    \           for (int i = 0; i &lt; n; ++i) {\n            for (int j = 0; j &lt;
+    n; ++j) newVec[i] += mat[i][j] * eigVec[j];\n            df = Math.max(df, Math.abs(newVec[i]
+    - eigVal * eigVec[i]));\n            }\n            if(df &lt; 1.0e-8) return
+    eigVec;\n            \n            double norm = 0;\n            for (int i =
+    0; i &lt; n; ++i) norm += newVec[i] * newVec[i];\n            eigVal = Math.sqrt(norm);\n
+    \           for (int i = 0; i &lt; newVec.length; i++) eigVec[i] = newVec[i] /
+    eigVal;\n        }\n        throw new ArithmeticException(MAX_REPEAT+\"回やっても収束しませんでした。\");\n
+    \   }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2349'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2349
+  :user_name: 匿名
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/08/20 15:35 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">正直、行列というか数学自体の素養がないので、\r\nお題からリンクされているサイトのコードを、\r\nSciPyを使って内容を理解せずに移植しました。\r\n\r\n特に7行めあたりが怪しい。</pre>\n\t"
+  :code: |
+    from scipy import absolute
+    from scipy.linalg import eig, norm
+
+    def pagerank(data):
+      n = len(data)
+      l, v = eig([[1.0 / len(data[i]) if j in data[i] else 0 for i in range(1, n+1)] for j in range(1, n+1)])
+      ev = v[:, (l == absolute(l).max()).nonzero()[0][0]]
+      return ev / norm(ev, 1)
+
+    data = {
+      1: [2, 3, 4, 5, 7],
+      2: [1],
+      3: [1, 2],
+      4: [2, 3, 5],
+      5: [1, 3, 4, 6],
+      6: [1, 5],
+      7: [5],
+    }
+
+    for x in pagerank(data): print float(x)
+  :tags:
+  - SciPy
+  :references:
+    :url: 
+    :title: 
+- :id: '2351'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2351
+  :user_name: にしお
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2007/08/21 02:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#2349の7行目は何をやっているのかよくわかりません…\r\n__getslice__がオーバーライドされてるんでしょうか…。\r\n\r\nとりあえず僕のコードを貼ってみます。\r\n数学的にはさほど難しいことはしていなくて、\r\n単に固有値を求めて絶対値を取ってから\r\n合計でそれぞれを割って合計が1になるように正規化しています。</pre>\n\t"
+  :code: "data = {\n    1: [2, 3, 4, 5, 7],\n    2: [1],\n    3: [1, 2],\n    4: [2,
+    3, 5],\n    5: [1, 3, 4, 6],\n    6: [1, 5],\n    7: [5],\n}\n\nm = [[1.0 / len(data[j])
+    if i in data[j] else 0\n      for j in range(1, 8)]\n      for i in range(1, 8)]\n\nfrom
+    numpy import array\nfrom numpy.linalg import eig\n\n(v, d) = eig(array(m))\n\npagerank
+    = [abs(row[0]) for row in d]\nk = sum(pagerank)\npagerank = [x / k for x in pagerank]\n\nprint
+    pagerank\n# [0.303514376997, 0.166134185304, 0.140575079872,\n#  0.105431309904,
+    0.178913738019, 0.0447284345048,\n#  0.0607028753994] \n"
+  :tags:
+  - LAPACK
+  - Python2.5
+  - numpy
+  :references:
+    :url: 
+    :title: 
+- :id: '2352'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2352
+  :user_name: にしお
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/21 02:50 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">ScalaがJAMA(Java Matrix Package)を使っていて\r\nJavaが自前で行列演算を実装しているというのも\r\nなんだか奇妙な現象ですね…笑</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2353'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2353
+  :user_name: matyr
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/08/21 03:53 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t   ライブラリを使えということなので、dojo(0.4.3)を。やってることは#2335とほぼ同じです。\n\t"
+  :code: |
+    (function(data){ with(dojo.math.matrix){
+      var size = 0, i, j, l;
+      for(i in data) size++;
+      var m = zeros(size, size), pr = create(1, size, 1 / size);
+      for(i in data) for(j = l = data[i].length; j--;)
+        m[data[i][j] - 1][i - 1] = 1 / l;
+      for(var diff = 1, nx; diff &gt; ALMOST_ZERO; pr = nx){
+        nx = multiply(m, pr);
+        for(diff = 0, j = size; j--;) diff += Math.abs(nx[j][0] - pr[j][0]);
+      }
+      (typeof WSH != 'undefined' ? function($){WSH.echo($)} : confirm)(format(pr));
+    }})({
+     1: [2, 3, 4, 5, 7],
+     2: [1],
+     3: [1, 2],
+     4: [2, 3, 5],
+     5: [1, 3, 4, 6],
+     6: [1, 5],
+     7: [5]
+    });
+  :tags: []
+  :references:
+    :url: /web/20090707234733/http://dojotoolkit.org/
+    :title: dojo
+- :id: '2356'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2356
+  :user_name: r0c
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/396/
+  :language: Ruby
+  :time: 2007/08/21 04:34 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Ruby/GSL版(&gt; GSL-1.9)\r\nCygwin版Rubyで確認．\r\n</pre>\n\t"
+  :code: |
+    require 'gsl'
+
+    data = {
+      1 =&gt; [2, 3, 4, 5, 7],
+      2 =&gt; [1],
+      3 =&gt; [1, 2],
+      4 =&gt; [2, 3, 5],
+      5 =&gt; [1, 3, 4, 6],
+      6 =&gt; [1, 5],
+      7 =&gt; [5],
+    }
+
+    mat = GSL::Matrix.zeros(data.size)
+    data.each do |k, v|
+      v.each do |j|
+        mat[j-1, k-1] = 1.0 / v.size
+      end
+    end
+
+    # 非対称行列の固有値計算はGSL-1.9以上が必要らしい
+    eigvals, eigvecs = mat.eigen_nonsymmv
+    eigvec = eigvecs.abs.get_col(eigvals.abs.max_index)
+
+    pagerank = (eigvec / eigvec.sum).to_a
+    puts pagerank
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2357'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2357
+  :user_name: sawat
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/322/
+  :language: Java
+  :time: 2007/08/21 04:52 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  JAMA使用版を書きました。\r<br><br>不勉強にてJAMAのことも、そもそもScalaがJVM上の言語であることも知りませんでした…orz\r<br><br>最初 jakarta-commons Mathを覗いてみたんですけど、Matrixはあっても固有ベクトル計算はサポートされてなくて、奥村先生のアルゴリズム辞典のヤコビ法のやつを使ったんですが、うまくお題の答えにならなくて(なにが間違っていたかは以下のコードを書いてわかりました。)、結局あのコードになったんですけどね。\n\t"
+  :code: "package doukaku;\nimport Jama.Matrix;\n\npublic class PageRank {\n\n\tpublic
+    static void main(String[] argv) {\n\t\tint[][] data = {{ 2, 3, 4, 5, 7 }, \n\t\t\t\t
+    \        { 1 }, \n\t\t\t\t         { 1, 2 }, \n\t\t\t\t         { 2, 3, 5 },\n\t\t\t\t
+    \        { 1, 3, 4, 6 }, \n\t\t\t\t         { 1, 5 }, \n\t\t\t\t         { 5 }};\n\n\t\tdouble[][]
+    a = new double[data.length][data.length];\n\t\tfor (int i = 0; i &lt; data.length;
+    i++) {\n\t\t\tfor (int j = 0; j &lt; data[i].length; j++) {\n\t\t\t\ta[data[i][j]
+    - 1][i] = 1.0 / data[i].length;\n\t\t\t}\n\t\t}\n\t\tdouble[] eigVec = new Matrix(a).eig().getV().transpose().getArray()[0];\n\t\tdouble
+    norm1 = new Matrix(eigVec, eigVec.length).norm1();\n\t\tfor (int i = 0; i &lt;
+    eigVec.length; i++) System.out.println(eigVec[i] / norm1);\n\t}\n}\n"
+  :tags:
+  - JAMA
+  :references:
+    :url: 
+    :title: 
+- :id: '2364'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2364
+  :user_name: 匿名
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/08/21 11:41 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">v[:, i] でi列目のスライスを得られるようですけど、このあたりは\r\nにしおさんのコードでは20行目でrow[0]と、0で決め打ちになってますが、\r\nオリジナルのOctaveのコードではfind(abs(diag(D))
+    == max(abs(diag(D))))と、\r\n計算でだしてますよね。\r\nこの部分を推測をまじえ、固有値の絶対値の最大値が存在する位置をインデックス値として\r\n一列分取り出す、と解釈したものがあの7行目です。\r\n\r\n原理が理解できてないんで、ここが0でいいのか、きちんと計算すべきなのか、\r\nわかりません。\r\n\r\nついでに、Numeric付属のMLabを使ったバージョンも投稿します。\r\n\r\nMLabのeig関数とSciPyのeig関数では戻り値の行と列が逆になっているような気が。\r\n</pre>\n\t"
+  :code: |
+    import MLab
+
+    def pagerank(data):
+      a = [[1.0 / len(data[i]) if j in data[i] else 0 for i in range(1, len(data)+1)] for j in range(1, len(data)+1)]
+      d, v = MLab.eig(MLab.array(a))
+      ev = v[MLab.nonzero(d == MLab.max(MLab.absolute(d)))[0], :]
+      return (ev / MLab.sum(ev)).real
+
+    data = {
+      1: [2, 3, 4, 5, 7],
+      2: [1],
+      3: [1, 2],
+      4: [2, 3, 5],
+      5: [1, 3, 4, 6],
+      6: [1, 5],
+      7: [5],
+    }
+
+    for x in pagerank(data): print x
+  :tags:
+  - Numeric
+  :references:
+    :url: 
+    :title: 
+- :id: '2365'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2365
+  :user_name: 匿名
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/08/21 14:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  参考のサイト「Googleの秘密 - PageRank徹底解説」での求め方では「絶対値が最大の固有値に対応する固有ベクトル」を取り出すようになっています。しかし、当サイト自身にもありますが、現実には該当する固有ベクトルは必ず第一列目に来るようです。そんなものなのでしょうか。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2367'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2367
+  :user_name: yuin
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/82/
+  :language: 
+  :time: 2007/08/22 02:38 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n<p>私も詳しくないのですが。\n</p>\n<p>詳しくは参考URLに書いてありますが、このお題のようなリンク構造のグラフは強連結ですので、対応する遷移行列は常に絶対値が最大1の固有値の固有ベクトルを持ちます。\n</p>\n<p>ですのでそんなものだ、と理解しています。\n</p>\n\n\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20090707234733/http://isaac.csce.kyushu-u.ac.jp/~sada/lectures/AlgoEng0412.ppt
+    :title: アルゴリズム工学特論
+- :id: '2368'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2368
+  :user_name: nobsun
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/22 03:23 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <pre class=\"compact\">GSLHaskellというライブラリを使った\r\n</pre>\n\t"
+  :code: "import Data.Complex\nimport Data.List\n\nimport GSL.LinearAlgebra.Algorithms
+    (eigR)\nimport GSL.LinearAlgebra.Matrix (fromLists, toColumns)\nimport GSL.LinearAlgebra.Vector
+    (toList)\n\ntestdata = [[2,3,4,5,7],[1],[1,2],[2,3,5],[1,3,4,6],[1,5],[5]]\n\npageRank
+    = normalize      -- 確率ベクトルへの正規化\n         . map realPart   -- 実数部分の取り出し\n         .
+    toList         -- GSLモジュールのベクトルデータからリストに変換\n         . head           -- 最大固有値に対応する固有ベクトルの取り出し\n
+    \        . toColumns      -- 固有ベクトルのリストに変換\n         . snd            -- 固有ベクトル(行列データ形式)\n
+    \        . eigR           -- 固有値計算\n         . fromLists      -- GSLモジュールの行列データに変換\n
+    \        . transMat       -- 遷移確率行列へ変換\n         . list2mat       -- 隣接リストから隣接行列へ変換\n\nlist2mat
+    xs = map (fillup [1..genericLength xs]) xs \n  where fillup xs [] = map (const
+    0) xs\n        fillup (x:xs) yys@(y:ys) | x &lt; y     = 0 : fillup xs yys\n                                 |
+    otherwise = 1 : fillup xs ys\n\ntransMat = transpose . map (normalize . map fromInteger)\n\nnormalize
+    xs = map (/s) xs where s = sum xs\n\n{-\n*Main&gt; pageRank testdata\n[0.3035143769968052,0.16613418530351437,0.14057507987220447\n,0.10543130990415339,0.17891373801916938,4.4728434504792317e-2\n,6.070287539936104e-2]\n-}\n"
+  :tags: []
+  :references:
+    :url: /web/20090707234733/http://dis.um.es/~alberto/GSLHaskell/
+    :title: GSLHaskell
+- :id: '2371'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2371
+  :user_name: にしお
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/22 04:10 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  \n<p>僕も詳しくはないですが、\n   数学的に「固有値を求める」と表現したときには、どういう手順で求めるのかまでは言及しておらず、\n
+    \  結果がどういう順番で並んでいるかは定義されていません。\n</p>\n<p>一方、数値計算ライブラリはなんらかのアルゴリズムで実装されているわけで、アルゴリズムによっては結果が必ずソートされた状態で出てくるものもあるかとは思います。現状は「どうも固有ベクトルが固有値でソートされた状態で出てくるライブラリが多そうだ」ということでしょう。\n</p>\n<p>つまり最大固有値の固有ベクトルが1行目にあるかどうかは、固有値の性質ではなくライブラリの性質なので、ライブラリによっては1行目にないかもしれません。\n</p>\n\n\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2372'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2372
+  :user_name: にしお
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2007/08/22 04:33 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">&gt;固有値の絶対値の最大値が存在する位置をインデックス値として\r\n&gt;一列分取り出す、と解釈したものがあの7行目です。\r\n\r\nなるほどなるほど。\r\n「最大固有値は(少なくともNumPyを使って固有値を求めた場合は)0番目にある」\r\nと解釈したのが僕のコードです。\r\n\r\n最大固有値が何番目にあるのかをチェックするバージョンも作ってみました。\r\n\r\n#
+    あと余談ですがnumpyはLAPACKを使っているということがわかったのでタグを付けときます</pre>\n\t"
+  :code: |
+    data = {
+        1: [2, 3, 4, 5, 7],
+        2: [1],
+        3: [1, 2],
+        4: [2, 3, 5],
+        5: [1, 3, 4, 6],
+        6: [1, 5],
+        7: [5],
+    }
+
+    m = [[1.0 / len(data[j]) if i in data[j] else 0
+          for j in range(1, 8)]
+          for i in range(1, 8)]
+
+    from numpy import array
+    from numpy.linalg import eig
+
+    (v, d) = eig(array(m))
+
+    max_v = list(v).index(max(v))
+    pagerank = [abs(row[max_v]) for row in d]
+    k = sum(pagerank)
+    pagerank = [x / k for x in pagerank]
+
+    print pagerank
+  :tags:
+  - LAPACK
+  - Python2.5
+  - numpy
+  :references:
+    :url: /web/20090707234733/http://ja.wikipedia.org/wiki/LAPACK
+    :title: LAPACK
+- :id: '2375'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2375
+  :user_name: 匿名
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/08/22 08:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">なるほど、やはりライブラリの実装依存なのですね。よく解りました。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2385'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2385
+  :user_name: 匿名
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/08/22 13:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">知識がある人には0でOKという、目算がつくようですね。\r\nこれは知識の差がコードの違いに現れるという、よくある\r\n状況のわかりやすい一例かもしれませんね。\r\n\r\nついでにarrayのスライスについて、ちょっと書いておきますと\r\n「a[:,
+    i]」という構文はちょっと見、ありえなさそうに思えますが、\r\nこれが「a[i1:i2:i3, j1:j2:j3]」の省略形と分かれば納得できるでしょう。\r\n大体予想できるでしょうが、これは行方向のスライスと列方向のスライスを\r\nコンマで区切った表記方法です。\r\n\r\nざっと試したところ、MLab.array、numpy.array、scipy.arrayの３つ共に\r\n使えるようです。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2541'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/2541
+  :user_name: mz
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/403/
+  :language: R
+  :time: 2007/08/26 13:09 GMT
+  :vote_count: '4'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">殆どそのまんまです。\r\ncalcpr(matrix(c(0,1,1,1,1,0,1\r\n
+    \            ,1,0,0,0,0,0,0\r\n             ,1,1,0,0,0,0,0\r\n             ,0,1,1,0,1,0,0\r\n
+    \            ,1,0,1,1,0,1,0\r\n             ,1,0,0,0,1,0,0\r\n             ,0,0,0,0,1,0,0),7,7,byrow=1));\r\n</pre>\n\t"
+  :code: |
+    calcpr=function(mat) {
+      nx &lt;- t(x/ apply(mat, 1,sum));
+      ex &lt;- eigen(nx);
+      eva&lt;- abs(ex$value);
+      ev &lt;- t(ex$vector)[eva== max(eva)];
+      abs(ev/sum(ev));
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3249'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/3249
+  :user_name: naranja
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/448/
+  :language: D
+  :time: 2007/10/04 14:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">固有ベクトルはべき乗法を使って自前で計算しています。\r\n行列演算についてはかなり手を抜いています。</pre>\n\t"
+  :code: |
+    import std.stdio;
+    import std.math;
+
+    //  行列演算用の手抜き関数 ここから
+    real[][] zeroMatrix(uint rowSize, uint colSize){
+        real[][] zeroMatrix;
+        for(uint i; i &lt; rowSize; i++){
+            real[] row;
+            for(uint j; j &lt; colSize; j++){
+                row ~= 0.0;
+            }
+            zeroMatrix ~= row;
+        }
+        return zeroMatrix;
+    }
+
+    real dotProduct(real[] rowVector, real[] colVector){
+        real dotProduct = 0.0;
+        foreach(i, e; rowVector){
+            dotProduct += e * colVector[i];
+        }
+        return dotProduct;
+    }
+
+    real norm(real[] vector){
+        return sqrt(dotProduct(vector, vector));
+    }
+
+    real[] normalize(real[] vector){
+        return divide(vector, norm(vector));
+    }
+
+    real[] multiply(real[][] matrix, real[] colVector){
+        real[] retColVector;
+        foreach(row; matrix){
+            retColVector ~= dotProduct(row, colVector);
+        }
+        return retColVector;
+    }
+
+    real[] divide(real[] vector, real divisor){
+        real[] retVector;
+        foreach(e; vector){
+            retVector ~= e / divisor;
+        }
+        return retVector;
+    }
+
+    real[] eigenVector(real[][] matrix){
+        real[] ev0;
+        for(uint i; i &lt; matrix.length; i++){
+            ev0 ~= i == 0;
+        }
+        for(uint t; t &lt; 1000; t++){
+            real[] ev1 = normalize(multiply(matrix, ev0));
+            for(uint i; i &lt; ev0.length; i++){
+                if(abs(ev0[i] - ev1[i]) &gt; 1e-16){
+                    ev0 = ev1.dup;
+                    break;
+                }
+                if(i == ev0.length - 1){
+                    return ev1;
+                }
+            }
+        }
+        return [];
+    }
+    //  行列演算用の手抜き関数 ここまで
+
+
+    real[] pageRank(uint[][] data){
+        real[][] mat = zeroMatrix(data.length, data.length);
+        foreach(i, row; data){
+            foreach(j; row){
+                mat[j - 1][i] = 1.0 / row.length;
+            }
+        }
+        real[] eigenVector = eigenVector(mat);
+        real[] pageRank;
+        real sum = 0.0;
+        foreach(e; eigenVector){
+            sum += e;
+        }
+        foreach(e; eigenVector){
+            pageRank ~= e / sum;
+        }
+        return pageRank;
+    }
+
+    void main(){
+        uint[][] data = [
+                         [2, 3, 4, 5, 7],
+                         [1],
+                         [1, 2],
+                         [2, 3, 5],
+                         [1, 3, 4, 6],
+                         [1, 5],
+                         [5]
+                        ];
+        writefln(pageRank(data));
+          //=&gt; [0.303514,0.166134,0.140575,0.105431,0.178914,0.0447284,0.0607028]
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3614'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/3614
+  :user_name: 匿名
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/10/31 03:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">関数の2行目は\r\nnx &lt;- t(mat/ apply(mat, 1,sum))\r\nでしょう。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3615'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/3615
+  :user_name: 匿名
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/4/
+  :language: R
+  :time: 2007/10/31 04:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">以下でよいと思います</pre>\n\t"
+  :code: |
+    calcpr=function(mat) {
+      ev &lt;- eigen(t(mat/ rowSums(mat)))$vector[,1]
+      abs(ev/sum(ev))
+    }
+    calcpr(mat)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3828'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/3828
+  :user_name: dankogai
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/11 00:30 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  \n<p><a href=\"/web/20090707234733/http://pdl.perl.org/\">PDL</a>で楽勝と思いきや、<code>PDL::eigens()</code>がasymmetric
+    matricesをサポートしていないというショボーンな結果に。他にもいろいろ探して、自前<code>eigen()</code>を実装しようかと思いきや。<code>Inline::Octave</code>なんちゅう超ど真ん中ストライクなものが！\n
+    \  おかげで超楽勝。なにせPageRank計算部分は<a href=\"/web/20090707234733/http://www.kusastro.kyoto-u.ac.jp/~baba/wais/pagerank.html\">Google
+    の秘密 - PageRank 徹底解説</a>モロままだけど、<code>Inline::Octave</code>見つけるまでに遠回りし過ぎ。\n</p>\n<p>Dan
+    the Inline::Hacker\n</p>\n\n\n\n\t"
+  :code: |
+    #!/usr/local/bin/perl
+    use strict;
+    use warnings;
+    use Inline Octave =&gt; 'DATA';
+
+    sub links2matrix{
+        my $table = shift;
+        my $dim = @$table;
+        my $mat = [];
+        $mat-&gt;[$_] = [(0) x $dim] for (0..$dim-1);
+        for my $i (0..@$table-1){
+            my $nlinks = scalar @{$table-&gt;[$i]};
+            $mat-&gt;[$_-1][$i] = 1/$nlinks for (@{$table-&gt;[$i]});
+        }
+        $mat;
+    }
+
+    my $m = Inline::Octave-&gt;new(
+        links2matrix(
+            [
+                [ 2, 3, 4, 5, 7 ],
+                [ 1],
+                [ 1, 2 ],
+                [ 2, 3, 5 ],
+                [ 1, 3, 4, 6 ],
+                [ 1, 5 ], [5],
+            ]
+        )
+    );
+    local $\ = "\n";
+    print "Matrix:";
+    print $m-&gt;disp();
+    print "Pagerank:";
+    print pagerank($m)-&gt;disp();
+    __DATA__
+    __Octave__
+    function p=pagerank(m);
+    [v,d] = eig(m);
+    ev = v(:, find(abs(diag(d)) == max(abs(diag(d)))));
+    p = ev ./ norm(ev, 1);
+    endfunction
+  :tags:
+  - CPAN
+  - Octave
+  :references:
+    :url: /web/20090707234733/http://search.cpan.org/perldoc?Inline::Octave
+    :title: Inline::Octave
+- :id: '3866'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/3866
+  :user_name: Y
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/428/
+  :language: Mathematica
+  :time: 2007/11/11 16:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">行列やグラフの基本的な操作が用意されているので、\r\nそれらを使って実装しました。\r\n\r\n隣接リストからそのまま計算してもいいのですが、\r\nグラフを引数にする関数にしておいたほうが、\r\n汎用性は高いでしょう。\r\n\r\naList
+    = {{2, 3, 4, 5, 7}, {1}, {1, 2}, {2, 3, 5}, {1, 3, 4, 6}, {1, 5}, {5}};\r\ngraph
+    = FromAdjacencyLists[aList, Type -&gt; Directed];\r\n\r\nこのようにグラフを作ってから、\r\n\r\npageRank@graph\r\n\r\nとして計算します。結果は\r\n\r\n{0.303514,
+    0.166134, 0.140575, 0.105431, 0.178914, 0.0447284, 0.0607029}\r\n\r\n（主記憶で処理できないようなものには対応していません。）</pre>\n\t"
+  :code: |
+    Needs@"DiscreteMath`Combinatorica`";
+
+    pageRank[graph_Graph] := Module[{
+      aMatrix = ToAdjacencyMatrix@graph,
+      eigenVector
+      },
+      aMatrix = Transpose[(#/Total@#)&amp;/@aMatrix];
+      eigenVector = First@Eigenvectors@N@aMatrix;
+      eigenVector/Total@eigenVector
+    ]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3915'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/3915
+  :user_name: Y
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/428/
+  :language: Mathematica
+  :time: 2007/11/12 16:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">グラフが疎な場合はSparseArrayを使うと劇的に速くなります。\r\n\r\n変更点は2点です。\r\n・行列をSparseArrayにする\r\n・固有ベクトルを一つだけ求める\r\n（絶対値最大固有値の固有ベクトルが返る）\r\n\r\n使い方は変わりません。\r\n\r\nノード数1000、エッジ数10000のグラフで試したところ、\r\n2桁ほど速くなりました。\r\n（私のMathematica
+    5.2で30秒から0.38秒に）</pre>\n\t"
+  :code: |
+    pageRank2[graph_Graph] := Module[{
+      aMatrix = SparseArray@ToAdjacencyMatrix@graph,
+      eigenVector
+    },
+      aMatrix = SparseArray@Transpose[(#/Total@#) &amp; /@ aMatrix];
+      eigenVector = First@Eigenvectors[N@aMatrix, 1];
+      eigenVector/Total@eigenVector
+    ]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8583'
+  :parent_id: '48'
+  :url: http://ja.doukaku.org/comment/8583
+  :user_name: 匿名
+  :user_url: /web/20090707234733/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/03/06 02:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ページランクへの誤解\n<a class=\"reference\" href=\"/web/20090707234733/http://www.geocities.jp/existenzueda/pagerank_theory.htm\">http://www.geocities.jp/existenzueda/pagerank_theory.htm</a></p>\n<p>このページ読まれた感想は？</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20090707234733/http://www.geocities.jp/existenzueda/pagerank_theory.htm
+    :title: ページランクへの誤解

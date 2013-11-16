@@ -1,0 +1,2854 @@
+---
+:id: '126'
+:title: ライフゲーム
+:comments:
+- :id: '5330'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5330
+  :user_name: saws
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/642/
+  :language: 
+  :time: 2008/01/15 12:34 GMT
+  :vote_count: '12'
+  :vote_score: '6'
+  :body: "\r\n\t  <pre class=\"compact\">セルオートマトンに関するお題です. \r\n2次元タイプの'ライフゲーム'を実装して下さい.
+    \r\n初期値としては10行10列程度の格子上の平面に0.3程度の人口(?)密度を考え, \r\n末端はループするようにして下さい. (例: 座標[-1,
+    -1] = [10, 10])\r\n\r\nそれだけだと簡単すぎると思われる方は, \r\n過密状態で間引きが発生するような機能を組み込んで下さい. \r\n間引きは,
+    少なくともその後の1時間ステップにおける死亡率が, \r\nそれをしなかった場合よりも小さくなれば結構です. \r\n(死亡率の最小化は複雑性が高すぎる感がありますし.
+    )\r\nサンプル:\r\nt = 0\r\n[ ][*][ ][ ][ ][ ][*][*][*][ ]\r\n[ ][ ][ ][ ][*][ ][ ][*][*][
+    ]\r\n[ ][ ][ ][*][ ][ ][*][ ][*][ ]\r\n[*][ ][*][*][ ][ ][*][ ][ ][ ]\r\n[ ][*][
+    ][ ][ ][ ][ ][ ][*][ ]\r\n[*][ ][ ][ ][*][ ][*][*][ ][*]\r\n[ ][*][ ][ ][ ][ ][*][
+    ][ ][ ]\r\n[ ][ ][ ][ ][ ][ ][ ][ ][ ][*]\r\n[*][ ][ ][ ][ ][ ][*][ ][ ][*]\r\n[
+    ][ ][ ][ ][*][*][ ][ ][*][ ]\r\nt = 1\r\n[ ][ ][ ][ ][*][ ][ ][ ][ ][*]\r\n[ ][
+    ][ ][ ][ ][*][ ][ ][ ][*]\r\n[ ][ ][*][ ][*][*][*][ ][*][*]\r\n[ ][*][ ][*][ ][
+    ][ ][ ][ ][*]\r\n[ ][ ][*][*][ ][*][*][ ][*][ ]\r\n[ ][*][ ][ ][ ][*][*][ ][*][*]\r\n[
+    ][ ][ ][ ][ ][*][*][*][*][*]\r\n[ ][ ][ ][ ][ ][ ][ ][ ][ ][*]\r\n[*][ ][ ][ ][
+    ][*][ ][ ][*][ ]\r\n[*][ ][ ][ ][ ][ ][ ][ ][ ][ ]</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20080325151021/http://ja.wikipedia.org/wiki/%E3%83%A9%E3%82%A4%E3%83%95%E3%82%B2%E3%83%BC%E3%83%A0
+    :title: Wikipedia:ライフゲーム
+- :id: '5379'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5379
+  :user_name: horiuchi
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/570/
+  :language: C
+  :time: 2008/01/18 09:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>C#で書いてみました。特に「間引き」の処理は入れていません。</p>\n\n\t"
+  :code: |
+    using System;
+
+    public class LifeGame {
+        private int time_ = 0;
+        private readonly bool[][] matrix_;
+
+        public LifeGame(int rows, int cols) {
+            Random random = new Random();
+            matrix_ = new bool[rows][];
+            for (int rowIndex = 0; rowIndex &lt; rows; rowIndex++) {
+                matrix_[rowIndex] = new bool[cols];
+                for (int index = 0; index &lt; cols; index++) {
+                    if (random.NextDouble() &lt; 0.3) {
+                        matrix_[rowIndex][index] = true;
+                    }
+                }
+            }
+        }
+
+        public int Time {
+            get {
+                return time_;
+            }
+        }
+        public String GetDisplayMatrix() {
+            System.Text.StringBuilder builder = new System.Text.StringBuilder();
+            foreach (bool[] row in matrix_) {
+                foreach (bool cell in row) {
+                    builder.AppendFormat("[{0}]", cell? "*": " ");
+                }
+                builder.Append('\n');
+            }
+            return builder.ToString();
+        }
+
+
+        public void NextStep() {
+            bool[][] oldMatrix = CopyMatrix(matrix_);
+            for (int rowIndex = 0; rowIndex &lt; matrix_.Length; rowIndex++) {
+                for (int colIndex = 0; colIndex &lt; matrix_[rowIndex].Length; colIndex++) {
+                    matrix_[rowIndex][colIndex] = Next(rowIndex, colIndex, oldMatrix);
+                }
+            }
+            time_++;
+        }
+        private bool[][] CopyMatrix(bool[][] matrix) {
+            bool[][] result = new bool[matrix.Length][];
+            for (int index = 0; index &lt; matrix.Length; index++) {
+                result[index] = new bool[matrix[index].Length];
+                matrix[index].CopyTo(result[index], 0);
+            }
+            return result;
+        }
+        private bool Next(int row, int col, bool[][] matrix) {
+            bool now = matrix[row][col];
+            int count = GetCell(matrix, row - 1, col - 1)
+                    + GetCell(matrix, row - 1, col)
+                    + GetCell(matrix, row - 1, col + 1)
+                    + GetCell(matrix, row, col - 1)
+                    + GetCell(matrix, row, col + 1)
+                    + GetCell(matrix, row + 1, col - 1)
+                    + GetCell(matrix, row + 1, col)
+                    + GetCell(matrix, row + 1, col + 1);
+            if (now) {
+                return (count == 2 || count == 3);
+            } else {
+                return (count == 3);
+            }
+        }
+        private int GetCell(bool[][] matrix, int rowIndex, int colIndex) {
+            int y = rowIndex;
+            while (y &lt; 0) y += matrix.Length;
+            while (y &gt;= matrix.Length) y -= matrix.Length;
+
+            bool[] row = matrix[y];
+            int x = colIndex;
+            while (x &lt; 0) x += row.Length;
+            while (x &gt;= row.Length) x -= row.Length;
+
+            return row[x]? 1: 0;
+        }
+
+
+        [STAThread]
+        static void Main(string[] args) {
+            LifeGame game = new LifeGame(10, 10);
+
+            Console.WriteLine("t={0}", game.Time);
+            Console.WriteLine(game.GetDisplayMatrix());
+            game.NextStep();
+            Console.WriteLine("t={0}", game.Time);
+            Console.WriteLine(game.GetDisplayMatrix());
+
+            Console.ReadLine();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5380'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5380
+  :user_name: こう。
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2008/01/18 09:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">LifeGame書いたことなかったから、間引きなしで。\r\nグライダーが動いたので多分合ってる？</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;conio.h&gt;\n\n#define WIDTH  10\n#define
+    HIGHT 10\n\nvoid next_gen(int a[HIGHT][WIDTH]){\n    int life;\n    int x,y;\n
+    \   int x_l,x_r,y_u,y_d;\n    for(y=0;y&lt;HIGHT;y++){\n        y_u=(y+ 9)%HIGHT;\n
+    \       y_d=(y+11)%HIGHT;\n        for(x=0;x&lt;WIDTH;x++){\n            x_l=(x+
+    9)%WIDTH;\n            x_r=(x+11)%WIDTH;\n            \n            life= (a[y_u][x_l]&amp;1)+(a[y_u][x]&amp;1)+(a[y_u][x_r]&amp;1)\n
+    \                +(a[ y ][x_l]&amp;1)              +(a[ y ][x_r]&amp;1)\n                 +(a[y_d][x_l]&amp;1)+(a[y_d][x]&amp;1)+(a[y_d][x_r]&amp;1);\n\n
+    \           if((life|(a[y][x]&amp;1))==3) a[y][x]|=2;\n        }\n    }\n    for(y=0;y&lt;HIGHT;y++){\n
+    \       for(x=0;x&lt;WIDTH;x++){\n            a[x][y]&gt;&gt;=1;\n        }\n
+    \   }\n}\n\nvoid put_gen(int a[HIGHT][WIDTH]){\n    int x,y;\n    for(y=0;y&lt;HIGHT;y++){\n
+    \       for(x=0;x&lt;WIDTH;x++){\n            putchar('[');\n            putchar(a[y][x]==1?'*':'
+    ');\n            putchar(']');\n        }\n            putchar('\\n');\n    }\n}\n\nvoid
+    lifegame(int a[HIGHT][WIDTH]){\n    int gen=0;\n    do{\n        printf(\"T=%d\\n\",gen);\n
+    \       put_gen(a);\n        next_gen(a);\n        gen++;\n    }while(getch()==0x20);\n}\n\nint
+    main(){\n    int a[HIGHT][WIDTH]={\n/* 出題\n        {0,1,0,0,0,0,1,1,1,0},\n        {0,0,0,0,1,0,0,1,1,0},\n
+    \       {0,0,0,1,0,0,1,0,1,0},\n        {1,0,1,1,0,0,1,0,0,0},\n        {0,1,0,0,0,0,0,0,1,0},\n
+    \       {1,0,0,0,1,0,1,1,0,1},\n        {0,1,0,0,0,0,1,0,0,0},\n        {0,0,0,0,0,0,0,0,0,1},\n
+    \       {1,0,0,0,0,0,1,0,0,1},\n        {0,0,0,0,1,1,0,0,1,0}\n/*/\n//グライダー\n
+    \       {0,0,0,0,0,0,0,0,0,0},\n        {0,0,0,0,0,0,0,0,0,0},\n        {0,0,0,0,0,0,0,0,0,0},\n
+    \       {0,0,0,0,0,0,0,0,0,0},\n        {0,0,0,1,0,0,0,0,0,0},\n        {0,0,1,0,0,0,0,0,0,0},\n
+    \       {0,0,1,1,1,0,0,0,0,0},\n        {0,0,0,0,0,0,0,0,0,0},\n        {0,0,0,0,0,0,0,0,0,0},\n
+    \       {0,0,0,0,0,0,0,0,0,0},\n//*/\n    };\n    lifegame(a);\n    \n    return
+    0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5381'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5381
+  :user_name: anekos
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/170/
+  :language: Ruby
+  :time: 2008/01/18 09:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ライフゲームとは関係ないところで妙な小細工</p>\n\n\t"
+  :code: "require 'curses'\nrequire 'enumerator'\n\nclass Object\n  def make_instance_variables
+    (_binding)\n    eval(&lt;&lt;'EOC', _binding)\n      local_variables.each do\n
+    \       |lv_name|\n        instance_variable_set(\"@#{lv_name}\", eval(lv_name))\n
+    \     end\nEOC\n  end\nend\n\nclass World\n    attr_reader :height, :width, :rate\n\n
+    \   def initialize (height, width, rate)\n        make_instance_variables(binding)\n
+    \       @cells = Array.new(height * width) { rand &lt; rate }\n    end\n\n    def
+    [] (x, y)\n        @cells[fix_position(x, y)]\n    end\n\n    def []= (x, y, v)\n
+    \       @cells[fix_position(x, y)] = v\n    end\n\n    def livings (x, y)\n        result
+    = 0\n        (-1..1).each {|dy| (-1..1).each {|dx| result += 1 if self[x + dx,
+    y + dy] unless dx == 0 and dy == 0 }}\n        result\n    end\n\n    def update\n
+    \       @cells = @cells.dup.enum_for(:each_with_index).map do\n            |l,
+    idx|\n            x, y = idx % width, idx / width\n            ls = livings(x,
+    y)\n            if l  \n                (2..3) === ls\n            else\n                ls
+    == 3\n            end\n        end\n    end\n\n    def inspect\n        @cells.map
+    {|it| \"[#{it ? '*' : ' '}]\" }.join.gsub(/.{#{3*width}}/){|it| \"#{it}\\n\" }\n
+    \   end\n\n    private\n\n    def fix_position (x, y)\n        y % width * width
+    + x % height\n    end\nend\n\nclass OptionParser\n    def self.parse (args)\n
+    \       require 'ostruct'\n        require 'optparse'\n\n        options = OpenStruct.new\n
+    \       options.population = 0.3\n        options.interval = 0.5\n        options.height
+    = options.width = 10\n\n        parser = OptionParser.new do\n            |parser|\n
+    \           parser.banner = \"Usage: #{File.basename($0)} [options] \"\n            parser.on('-p',
+    '--population-rate [RATE]') { |it| options.population = it.to_f }\n            parser.on('-i',
+    '--interval [SEC]') { |it| options.interval = it.to_f }\n            parser.on('-w',
+    '--width [WIDTH]') { |it| options.interval = it.to_f }\n            parser.on('-h',
+    '--height [HEIGHT]') { |it| options.interval = it.to_f }\n        end\n\n        parser.parse!(args)\n
+    \       options\n    rescue\n        puts parser.help\n        exit\n    end\nend\n\noptions
+    = OptionParser.parse(ARGV)\n\nw = World.new(options.width, options.height, options.population)
+    \n\nCurses.init_screen\nloop do\n    Curses.clear\n    Curses.addstr(w.inspect)\n
+    \   Curses.refresh\n    sleep(options.interval)\n    w.update\nend\nCurses.close_screen\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5382'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5382
+  :user_name: 99yen
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2008/01/18 10:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ぴこぴこ動くので、多分間違ってないかと(^ ^;\n\t"
+  :code: |
+    !変数宣言が必要
+    /*初期マップとは配列=,
+    "0,1,0,0,0,0,1,1,1,0
+    0,0,0,0,1,0,0,1,1,0
+    0,0,0,1,0,0,1,0,1,0
+    1,0,1,1,0,0,1,0,0,0
+    0,1,0,0,0,0,0,0,1,0
+    1,0,0,0,1,0,1,1,0,1
+    0,1,0,0,0,0,1,0,0,0
+    0,0,0,0,0,0,0,0,0,1
+    1,0,0,0,0,0,1,0,0,1
+    0,0,0,0,1,1,0,0,1,0"
+    wとは整数=9
+    hとは整数=9*/
+
+    初期マップとは配列=,
+    "0,0,0,0,0,0
+    0,0,0,1,1,0
+    0,0,0,1,1,0
+    0,1,1,0,0,0
+    0,1,1,0,0,0
+    0,0,0,0,0,0"
+
+    wとは整数=5
+    hとは整数=5
+    現マップとは配列=初期マップ
+    次マップとは配列
+    iとは整数
+    jとは整数
+    セル数とは整数
+    マップラベルとはラベル
+
+    マップラベル=現マップをマップ整形
+    1の間
+        iで0からhまで繰り返す
+            jで0からwまで繰り返す
+                セル数=周囲セル数取得(現マップ,i,j,h,w)
+                もし(現マップ[i,j]=0)ならば
+                    もし(セル数=3)ならば
+                        次マップ[i,j]=1 #誕生
+                    違えば
+                        次マップ[i,j]=0 #死亡
+                違えば
+                    もし(セル数=2||セル数=3)ならば
+                        次マップ[i,j]=1 #維持
+                    違えば
+                        次マップ[i,j]=0 #死亡
+        現マップ=次マップ
+        マップラベル=現マップをマップ整形
+        0.2秒待つ
+
+    ●マップ整形(mapを)
+        tmpとは文字列
+        tmplineとは文字列
+        mapを反復
+            tmpline=対象の改行を""に置換
+            tmpline=tmplineの0を"　"に置換
+            tmpline=tmplineの1を"■"に置換
+            tmp=tmp&amp;tmpline&amp;改行
+        tmpで戻る
+
+    ●周囲セル数取得(map,y,x,h,w)
+        nxとは整数
+        nyとは整数
+        countとは整数
+        "{y-1},{x-1}
+    {y-1},{x}
+    {y-1},{x+1}
+    {y},{x-1}
+    {y},{x+1}
+    {y+1},{x-1}
+    {y+1},{x}
+    {y+1},{x+1}"を反復
+            もし(対象[0,0]=-1)ならば
+                ny=h
+            違えば
+                ny=対象[0,0]
+            もし(対象[0,1]=-1)ならば
+                nx=w
+            違えば
+                nx=対象[0,1]
+            もし(map[ny,nx]=1)ならば
+                count=count+1
+        countで戻る
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5383'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5383
+  :user_name: こう。
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2008/01/18 10:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">題意を間違えたみたいなんで追加修正</pre>\n\t"
+  :code: "void init_life(int a[HEIGHT][WIDTH]){\n    int x,y;\n    int count=0;\n
+    \   \n    for(y=0;y&lt;HEIGHT;y++){\n        for(x=0;x&lt;WIDTH;x++){\n            a[y][x]=0;\n
+    \       }\n    }\n\n    srand(time(NULL));\n    do{\n        x=rand()/(RAND_MAX/WIDTH);\n
+    \       y=rand()/(RAND_MAX/HEIGHT);\n        if(calc_life(a,x,y)&lt;=(2+(rand()/(RAND_MAX/2)))){\n
+    \           a[y][x]=1;\n            count++;\n        }\n    }while(count&lt;((HEIGHT*WIDTH)*(2+(rand()/(RAND_MAX/2)))/10));\n}\n\nint
+    main(){\n    int a[HEIGHT][WIDTH];\n    init_life(a);\n    lifegame(a);\n    \n
+    \   return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5384'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5384
+  :user_name: こう。
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2008/01/18 10:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">失敗しました。\r\n全部貼らなきゃだった･･･\r\n\r\n題意を取り違えてたっぽいので追加修正。</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;conio.h&gt;\n#include
+    &lt;time.h&gt;\n\n#define WIDTH  10\n#define HEIGHT 10\n\n\nint calc_life(int
+    a[HEIGHT][WIDTH],int x,int y){\n    int life;\n    int x_l,x_r,y_u,y_d;\n    y_u=(y+HEIGHT-1)%HEIGHT;\n
+    \   y_d=(y+1)%HEIGHT;\n    x_l=(x+WIDTH-1)%WIDTH;\n    x_r=(x+1)%WIDTH;\n            \n
+    \   life= (a[y_u][x_l]&amp;1)+(a[y_u][x]&amp;1)+(a[y_u][x_r]&amp;1)\n         +(a[
+    y ][x_l]&amp;1)              +(a[ y ][x_r]&amp;1)\n         +(a[y_d][x_l]&amp;1)+(a[y_d][x]&amp;1)+(a[y_d][x_r]&amp;1);\n
+    \   return life;\n}\nvoid next_gen(int a[HEIGHT][WIDTH]){\n    int life;\n    int
+    x,y;\n    for(y=0;y&lt;HEIGHT;y++){\n        for(x=0;x&lt;WIDTH;x++){\n            life=calc_life(a,x,y);\n\n
+    \           if((life|(a[y][x]&amp;1))==3) a[y][x]|=2;\n        }\n    }\n    for(y=0;y&lt;HEIGHT;y++){\n
+    \       for(x=0;x&lt;WIDTH;x++){\n            a[x][y]&gt;&gt;=1;\n        }\n
+    \   }\n}\n\nvoid put_gen(int a[HEIGHT][WIDTH]){\n    int x,y;\n    for(y=0;y&lt;HEIGHT;y++){\n
+    \       for(x=0;x&lt;WIDTH;x++){\n            putchar('[');\n            putchar(a[y][x]==1?'*':'
+    ');\n            putchar(']');\n        }\n            putchar('\\n');\n    }\n}\n\nvoid
+    lifegame(int a[HEIGHT][WIDTH]){\n    int gen=0;\n    do{\n        printf(\"T=%d\\n\",gen);\n
+    \       put_gen(a);\n        next_gen(a);\n        gen++;\n    }while(getch()==0x20);\n}\n\nvoid
+    init_life(int a[HEIGHT][WIDTH]){\n    int x,y;\n    int count=0;\n    \n    for(y=0;y&lt;HEIGHT;y++){\n
+    \       for(x=0;x&lt;WIDTH;x++){\n            a[y][x]=0;\n        }\n    }\n\n
+    \   srand(time(NULL));\n    do{\n        x=rand()/(RAND_MAX/WIDTH);\n        y=rand()/(RAND_MAX/HEIGHT);\n
+    \       if(calc_life(a,x,y)&lt;=(2+(rand()/(RAND_MAX/2)))){\n            a[y][x]=1;\n
+    \           count++;\n        }\n    }while(count&lt;((HEIGHT*WIDTH)*(2+(rand()/(RAND_MAX/2)))/10));\n}\n\nint
+    main(){\n    int a[HEIGHT][WIDTH];\n    init_life(a);\n    lifegame(a);\n    \n
+    \   return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5385'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5385
+  :user_name: sawat
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/322/
+  :language: Java
+  :time: 2008/01/18 10:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Swingで。特に工夫はなし。</p>\n\n\t"
+  :code: "import java.awt.*;\nimport java.util.Random;\nimport java.util.concurrent.*;\nimport
+    javax.swing.*;\n\npublic class Life extends JFrame {\n    private boolean[] cells;\n
+    \   private final int pitch, w, h;\n\n    public static void main(String[] args)
+    {\n        Life f = new Life(20, 20, 0.3);\n        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);\n
+    \       f.pack();\n        f.setLocationRelativeTo(null);\n        f.setVisible(true);\n
+    \   }\n\n    public Life(final int w, final int h, final double rate) {\n        super(\"Life\");\n
+    \       \n        this.w = w;\n        this.h = h;\n        \n        pitch =
+    5;\n        cells = new boolean[h*w];\n        \n        initialize(rate);\n        \n
+    \       getContentPane().add(new JLabel(new Icon() {\n            public int getIconHeight()
+    { return h * pitch + pitch; }\n            public int getIconWidth() { return
+    w * pitch + pitch; }\n            public void paintIcon(Component c, Graphics
+    g, int x, int y) {\n                g.setColor(Color.BLUE);\n                for
+    (int i = 0; i &lt; h; i++) \n                    for (int j = 0; j &lt; w; j++)
+    \n                        if(cells[at(i, j)]) g.fillRect(j*pitch, i*pitch, pitch,
+    pitch);\n            }\n        }));\n        \n        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new
+    Runnable() {\n            public void run() {\n                update();\n                repaint();\n
+    \           }\n        }, 1000L, 200L, TimeUnit.MILLISECONDS);\n    }\n    \n
+    \   private void initialize(double rate) {\n        final Random random = new
+    Random(System.currentTimeMillis());\n        for (int i = 0; i &lt; h; i++) \n
+    \           for (int j = 0; j &lt; w; j++) \n                cells[at(i, j)] =
+    random.nextDouble() &lt; rate;\n                                              \n
+    \   }\n    private int at(int i, int j) {\n        return i*w + j;\n    }\n    \n
+    \   protected void update() {\n        boolean[] newG = cells.clone();\n        for
+    (int i = 0; i &lt; h; i++) \n            for (int j = 0; j &lt; w; j++) \n                newG[at(i,j)]
+    = next(i, j);\n        cells = newG;\n    }\n\n    private boolean next(int i,
+    int j) {\n        final int u = (i+h-1)%h, d = (i+1)%h, l = (j+w-1)%w, r = (j+1)%w;\n
+    \       int count = 0;\n        if(cells[at(u, j)]) count++;\n        if(cells[at(u,
+    r)]) count++;\n        if(cells[at(i, r)]) count++;\n        if(cells[at(d, r)])
+    count++;\n        if(cells[at(d, j)]) count++;\n        if(cells[at(d, l)]) count++;\n
+    \       if(cells[at(i, l)]) count++;\n        if(cells[at(u, l)]) count++;\n        \n
+    \       return ((cells[at(i, j)] &amp;&amp; (count == 2 || count == 3))  ||\n
+    \               (!cells[at(i, j)] &amp;&amp; count == 3));\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5386'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5386
+  :user_name: 99yen
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2008/01/18 11:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>すいません、配列が範囲を超える場合の処理を書いてませんでしたorz</p>\n\n\t"
+  :code: |
+    ●周囲セル数取得(map,y,x,h,w)
+        nxとは整数
+        nyとは整数
+        countとは整数
+        "{y-1},{x-1}
+    {y-1},{x}
+    {y-1},{x+1}
+    {y},{x-1}
+    {y},{x+1}
+    {y+1},{x-1}
+    {y+1},{x}
+    {y+1},{x+1}"を反復
+            もし(対象[0,0]=-1)ならば,ny=h
+            違えば,もし(対象[0,0]=h+1)ならば,ny=0
+            違えば,ny=対象[0,0]
+            もし(対象[0,1]=-1)ならば,nx=w
+            違えば,もし(対象[0,1]=w+1)ならば,nx=0
+            違えば,nx=対象[0,1]
+            もし(map[ny,nx]=1)ならば
+                count=count+1
+        countで戻る
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5387'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5387
+  :user_name: squld
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/643/
+  :language: Java
+  :time: 2008/01/18 11:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">そのままだとつまらないので、再帰で書いてみました。\r\n\r\n実行結果(3世代抜粋)\r\n------------------------------------\r\n□□□□□□□□□□\r\n□□□□□□□□□□\r\n□□□□□□□□□□\r\n□□□□□□□□□□\r\n□□□□□□■□□□\r\n□□□□□■□□□□\r\n□□□□□■■■□□\r\n□□□□□□□□□□\r\n□□□□□□□□□□\r\n□□□□□□□□□□\r\n\r\n□□□□□□□□□□\r\n□□□□□□□□□□\r\n□□□□□□□□□□\r\n□□□□□□□□□□\r\n□□□□□□□□□□\r\n□□□□□■□■□□\r\n□□□□□■■□□□\r\n□□□□□□■□□□\r\n□□□□□□□□□□\r\n□□□□□□□□□□\r\n\r\n□□□□□□□□□□\r\n□□□□□□□□□□\r\n□□□□□□□□□□\r\n□□□□□□□□□□\r\n□□□□□□□□□□\r\n□□□□□■□□□□\r\n□□□□□■□■□□\r\n□□□□□■■□□□\r\n□□□□□□□□□□\r\n□□□□□□□□□□\r\n------------------------------------\r\n</pre>\n\t"
+  :code: |
+    public class LifeGame {
+        private static class World {
+            private static class Cell {
+                private final Cell[] mAdjoiningCells = new Cell[8];
+                private int mGeneration = 0;
+                private boolean mIsOddLive = false;
+                private boolean mIsEvenLive = false;
+
+                public boolean next(int aGeneration) {
+                    boolean tIsLive = (aGeneration &amp; 1) == 0 ? mIsEvenLive : mIsOddLive;
+
+                    if (aGeneration == mGeneration) {
+                        return tIsLive;
+                    }
+
+                    mGeneration++;
+                    int tLiveCells = 0;
+                    for (int i = 0; i &lt; 8; i++) {
+                        tLiveCells += mAdjoiningCells[i].next(aGeneration) ? 1 : 0;
+                    }
+
+                    boolean tNext = tLiveCells == 3 ? true : tLiveCells == 2 ? tIsLive : false;
+                    if ((aGeneration &amp; 1) == 0) {
+                        mIsOddLive = tNext;
+                    } else {
+                        mIsEvenLive = tNext;
+                    }
+                    return tIsLive;
+                }
+            }
+
+            private final Cell[][] mMap;
+            private final int mWidth;
+            private final int mHeight;
+            private int mGeneration;
+
+            public World(boolean[][] aInitialValues) {
+                int tHeight = aInitialValues.length;
+                int tWidth = aInitialValues[0].length;
+                mMap = new Cell[tWidth][tHeight];
+                mWidth = tWidth;
+                mHeight = tHeight;
+                mGeneration = 0;
+                createCell(0, 0);
+                for (int x = 0; x &lt; tWidth; x++) {
+                    for (int y = 0; y &lt; tHeight; y++) {
+                        mMap[x][y].mIsOddLive = aInitialValues[y][x];
+                    }
+                }
+            }
+
+            private Cell createCell(int aX, int aY) {
+                aX = (aX &lt; 0 ? aX + mWidth : aX) % mWidth;
+                aY = (aY &lt; 0 ? aY + mHeight : aY) % mHeight;
+
+                if (mMap[aX][aY] != null) {
+                    return mMap[aX][aY];
+                }
+
+                Cell tCell = new Cell();
+                mMap[aX][aY] = tCell;
+                tCell.mAdjoiningCells[0] = createCell(aX - 1, aY - 1);
+                tCell.mAdjoiningCells[1] = createCell(aX + 0, aY - 1);
+                tCell.mAdjoiningCells[2] = createCell(aX + 1, aY - 1);
+                tCell.mAdjoiningCells[3] = createCell(aX + 1, aY + 0);
+                tCell.mAdjoiningCells[4] = createCell(aX + 1, aY + 1);
+                tCell.mAdjoiningCells[5] = createCell(aX + 0, aY + 1);
+                tCell.mAdjoiningCells[6] = createCell(aX - 1, aY + 1);
+                tCell.mAdjoiningCells[7] = createCell(aX - 1, aY + 0);
+                return tCell;
+            }
+
+            public void next() {
+                mMap[0][0].next(++mGeneration);
+            }
+
+            @Override
+            public String toString() {
+                final boolean tIsEven = (mGeneration &amp; 1) == 0;
+                StringBuilder tBuilder = new StringBuilder(mHeight * (mWidth + 1));
+                for (int y = 0; y &lt; mHeight; y++) {
+                    for (int x = 0; x &lt; mWidth; x++) {
+                        tBuilder.append((tIsEven ? mMap[x][y].mIsEvenLive : mMap[x][y].mIsOddLive) ? '■' : '□');
+                    }
+                    tBuilder.append('\n');
+                }
+                return new String(tBuilder);
+            }
+        }
+
+        public static void main(String[] args) {
+            boolean o = true;
+            boolean _ = false;
+            World tWorld = new World(new boolean[][] { // とりあえずグライダー
+                    {_,_,_,_,_,_,_,_,_,_},
+                    {_,_,_,_,_,_,_,_,_,_},
+                    {_,_,_,_,_,_,_,_,_,_},
+                    {_,_,_,_,_,_,_,_,_,_},
+                    {_,_,_,_,_,_,o,_,_,_},
+                    {_,_,_,_,_,o,_,_,_,_},
+                    {_,_,_,_,_,o,o,o,_,_},
+                    {_,_,_,_,_,_,_,_,_,_},
+                    {_,_,_,_,_,_,_,_,_,_},
+                    {_,_,_,_,_,_,_,_,_,_},
+            });
+
+            for (int i = 0; i &lt; 100; i++) { // 100世代実行
+                tWorld.next();
+                System.out.println(tWorld);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5389'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5389
+  :user_name: '186'
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/352/
+  :language: Scheme
+  :time: 2008/01/18 16:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<ul>\n<li>\n(life-game board upper-time)で実行\r\n<ul>\n<li>\nboardは100要素の0,
+    1のリストとする\r\n</li>\n</ul>\n</li>\n<li>\ne以外を入力すると1ステップ進みステップ数と盤面を出力\r\n</li>\n<li>\neを入力すると打ち切り\r\n</li>\n<li>ステップ数がupper-timeに到達したら終了\r</li>\n</ul>\n<p>\r</p>\n<p>ところでt=1で(x,y)=(10,9)のセルは生きてるんじゃないでしょうか?\r</p>\n<p>t=0で隣接する(10,8),
+    (9, 10), (1,9)が生きているので.\r</p>\n</div>\n\t"
+  :code: |
+    (use util.list)
+    (use srfi-1)
+
+    (define (life-next-board board) ;盤面の更新
+      (define (life-neighbours n) ;隣接セルのインデックス
+        (define (ln-in x y)
+          (+ (* (modulo x 10) 10) (modulo y 10)))
+        (receive
+         (x y)
+         (quotient&amp;remainder n 10)
+         (list (ln-in (- x 1) (- y 1))
+               (ln-in (- x 1) y)
+               (ln-in (- x 1) (+ y 1))
+               (ln-in x (- y 1))
+               (ln-in x (+ y 1))
+               (ln-in (+ x 1) (- y 1))
+               (ln-in (+ x 1) y)
+               (ln-in (+ x 1) (+ y 1)))))
+      (define (life-live? n board) ;セルが生きているかどうか
+        (= (list-ref board n) 1))
+      (define (life-next-cell n board) ;セルの更新
+        (let [(count
+               (apply +
+                      (map (lambda (x) (list-ref board x))
+                           (life-neighbours n))))]
+          (cond [(life-live? n board)
+                (if (or (= count 2) (= count 3)) 1 0)]
+                [else
+                (if (= count 3) 1 0)])))
+      (map (lambda (n) (life-next-cell n board))
+           (iota 100)))
+
+    (define (life-print b t) ;出力用
+      (begin
+        (newline)
+        (format #t "Time = ~d" t)
+        (newline)
+        (map print (slices b 10))))
+
+    (define (life-game b u-t) ;本体
+      (define (lg-in b t)
+        (let ((c (read-char)))
+          (if (not (char=? #\e c))
+              (unless (&gt; t u-t)
+                (begin
+                  (life-print b t)
+                  (lg-in (life-next-board b) (+ t 1)))))))
+      (lg-in b 0))
+
+    (define b1 (list
+                0 1 0 0 0 0 1 1 1 0
+                0 0 0 0 1 0 0 1 1 0
+                0 0 0 1 0 0 1 0 1 0
+                1 0 1 1 0 0 1 0 0 0
+                0 1 0 0 0 0 0 0 1 0
+                1 0 0 0 1 0 1 1 0 1
+                0 1 0 0 0 0 1 0 0 0
+                0 0 0 0 0 0 0 0 0 1
+                1 0 0 0 0 0 1 0 0 1
+                0 0 0 0 1 1 0 0 1 0))
+
+    (life-game b1 10)
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '5390'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5390
+  :user_name: kgoto
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/457/
+  :language: Python
+  :time: 2008/01/18 19:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">枠のセルの判定を簡単にするためにwidth+2, height+2の配列を用意して一番外側に0を入れています．\r\n無限ループにしてますが#
+    \   if t &gt; 20:returnの部分を変更してやれば任意のステップで停止します.\r\nグライダーの実行結果\r\nt=0\r\n[ ] [
+    ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]\r\n[
+    ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [
+    ]\r\n[ ] [ ] [ ] [*] [ ] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [*] [ ] [ ] [ ] [ ] [
+    ] [ ] [ ]\r\n[ ] [ ] [*] [*] [*] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [ ] [ ] [ ] [
+    ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [ ] [
+    ] [ ] [ ] [ ] [ ] [ ] [ ]\r\nt=1\r\n[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]\r\n[
+    ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [
+    ]\r\n[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [ ] [ ] [ ] [ ] [ ] [
+    ] [ ] [ ]\r\n[ ] [ ] [*] [ ] [*] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [*] [*] [ ] [
+    ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [ ] [*] [ ] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [ ] [
+    ] [ ] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]\r\nt=2\r\n[
+    ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [
+    ]\r\n[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [ ] [ ] [ ] [ ] [ ] [
+    ] [ ] [ ]\r\n[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [*] [ ] [ ] [
+    ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [*] [ ] [*] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [*] [*]
+    [ ] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]\r\n[ ] [ ]
+    [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]</pre>\n\t"
+  :code: |
+    #! -*- coding: utf-8 -*-
+    from random import random
+    width=10
+    height=10
+    def main(L1,L2,t):
+        print 't=%d'%t
+        for y in range(1,height+1):
+            for x in range(1,width+1):
+                s='[%s]'
+                if L1[y][x]==1:
+                    s=s%'*'
+                else:
+                    s=s%' '
+                print s,
+            print
+        for y in range(1,height+1):
+            for x in range(1,width+1):
+                cnt=0
+                for i in range(-1,2):
+                    for j in range(-1,2):
+                        if i==0 and j==0:continue
+                        if L1[y+i][x+j]==1:cnt+=1
+                if L1[y][x]==0 and cnt==3:L2[y][x]=1
+                elif L1[y][x]==1 and 2 &lt;= cnt &lt;=3: L2[y][x]=1
+                else: L2[y][x]=0
+    #    if t &gt; 20:return
+        main(L2,L1,t+1)
+
+    if __name__=='__main__':
+        L1=[[0 for i in range(width+2)] for j in range(height+2)]
+        for i in range(1,height+1):
+            for j in range(1,width+1):
+                if random()&lt;=0.3:
+                    L1[i][j]=1
+        L2=[[0 for i in range(width+2)] for j in range(height+2)]
+    #    確認用 グライダー
+    #     L1=[[0,0,0,0,0,0,0,0,0,0,0,0],
+    #         [0,0,0,0,0,0,0,0,0,0,0,0],
+    #         [0,0,0,0,0,0,0,0,0,0,0,0],
+    #         [0,0,0,0,0,0,0,0,0,0,0,0],
+    #         [0,0,0,0,0,0,0,0,0,0,0,0],
+    #         [0,0,0,0,1,0,0,0,0,0,0,0],
+    #         [0,0,0,1,0,0,0,0,0,0,0,0],
+    #         [0,0,0,1,1,1,0,0,0,0,0,0],
+    #         [0,0,0,0,0,0,0,0,0,0,0,0],
+    #         [0,0,0,0,0,0,0,0,0,0,0,0],
+    #         [0,0,0,0,0,0,0,0,0,0,0,0],
+    #         [0,0,0,0,0,0,0,0,0,0,0,0]]
+        main(L1,L2,0)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5391'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5391
+  :user_name: あにす
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/01/19 03:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">こんなんでどうでしょう？\r\n位置ごとに生死の情報を持たせるのではなく、\r\n各セルに注目して、各セルに位置と生死の情報を持たせたらどんなコードになるかな？と思い書いてみました。\r\nでも、周囲のセルをカウントするときに位置からセルの生死を判断してるので中途半端ですね。\r\n間引きは題意がよくわからなかったので実装せず。</pre>\n\t"
+  :code: "//http://ja.doukaku.org/126/ 投稿用\n\n//Wikipediaライフゲーム\n//http://ja.wikipedia.org/wiki/%E3%83%A9%E3%82%A4%E3%83%95%E3%82%B2%E3%83%BC%E3%83%A0\n\nusing
+    System;\nusing System.Collections.Generic;\nclass LifeGame {\n    const int SIZE
+    = 10;//変更したらCellクラスのSIZEも要変更\n    static void Main(string[] args) {\n        string
+    start =\n@\"\n□■□□□□■□□□\n■□□□□■□□□□\n■■■□□■■■□□\n□□□□□□□□□□\n□□□□□□□□□□\n□□□□□□□□□□\n□□□□□□□□□□\n□□□□□□□□□□\n□□□□□□□□□□\n□□□□□□□□□□\";//SIZE
+    * SIZEの文字列\n        start = start.TrimStart(new char[] { '\\n', '\\r' });//最初の改行を取り除く\n
+    \       char[][] field = new char[SIZE][];//ライフゲームテーブル\n        List&lt;Cell&gt;
+    cells = new List&lt;Cell&gt;();//セル\n\n        //startをfieldにセットする\n        for(int
+    y = 0; y &lt; SIZE; y++) {//行でループ\n            field[y] = start.Split(new char[]
+    { '\\n' })[y].ToCharArray();//改行で分割して文字配列にしてセット\n        }\n\n        //fieldからCellを生成\n
+    \       for(int y = 0; y &lt; SIZE; y++) {//field縦ループ\n            for(int x =
+    0; x &lt; SIZE; x++) {//field横ループ\n                cells.Add(new Cell(field, x,
+    y, field[y][x] == '■'));//Cellに座標をセットしてcellsに追加\n            }\n        }\n\n
+    \       //メインループ\n        while(true) {\n            //出力\n            Console.Clear();\n
+    \           foreach(char[] str in field) {\n                Console.WriteLine(str);\n
+    \           }\n\n            System.Threading.Thread.Sleep(300);//ウェイト            \n\n
+    \           //次回の生死を判定、セット\n            foreach(Cell cell in cells) {\n                cell.SetNextLife();\n
+    \           }\n\n            //判定した生死をfieldに反映\n            foreach(Cell cell
+    in cells) {\n                cell.SetField();\n            }\n        }\n    }\n}\n\n//各セルのデータ\nclass
+    Cell {\n    const int SIZE = 10;//変更したらLifeGameクラスのSIZEも要変更\n    char[][] Field;\n\n
+    \   //位置\n    int X;\n    int Y;\n\n    bool Life;//状態\n    bool NextLife;//次回の状態(一時保存用)\n\n
+    \   public Cell(char[][] field, int x, int y, bool life) {\n        Field = field;\n
+    \       X = x;\n        Y = y;\n        Life = life;\n    }\n\n    //次回の生死を判定\n
+    \   public void SetNextLife() {\n        switch(GetCount()) {\n        case 3://誕生、維持\n
+    \           NextLife = true;\n            break;\n        case 2://維持\n            NextLife
+    = Life;\n            break;\n        default://死亡\n            NextLife = false;\n
+    \           break;\n        }\n    }\n\n    //判定した生死をfieldに反映\n    public void
+    SetField() {\n        Field[Y][X] = NextLife ? '■' : '□';\n        Life = NextLife;\n
+    \   }\n\n    //セル周囲の生きているセルをカウント\n    private int GetCount() {\n        int count
+    = 0;\n        for(int y_ = -1; y_ &lt;= 1; y_++) {\n            for(int x_ = -1;
+    x_ &lt;= 1; x_++) {\n                if(!(x_ == 0 &amp;&amp; y_ == 0)) {\n                    int
+    locationX = GetRoopLocation(X, x_);\n                    int locationY = GetRoopLocation(Y,
+    y_);\n                    if(Field[locationY][locationX] == '■') count++;\n                }\n
+    \           }\n        }\n        return count;\n    }\n\n    //fieldの端と端を繋ぐ\n
+    \   private int GetRoopLocation(int location, int direction) {\n        switch(location
+    + direction) {\n        case -1:\n            return SIZE - 1;\n        case SIZE:\n
+    \           return 0;\n        default:\n            return location + direction;\n
+    \       }\n    }\n}\n"
+  :tags:
+  - C#2.0
+  :references:
+    :url: 
+    :title: 
+- :id: '5392'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5392
+  :user_name: あにす
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/01/19 03:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">がっつりと勘違いしてました。\r\nこっそりと修正。</pre>\n\t"
+  :code: "//http://ja.doukaku.org/126/ 投稿用\n\n//Wikipediaライフゲーム\n//http://ja.wikipedia.org/wiki/%E3%83%A9%E3%82%A4%E3%83%95%E3%82%B2%E3%83%BC%E3%83%A0\n\nusing
+    System;\nusing System.Collections.Generic;\nclass LifeGame {\n    const int SIZE
+    = 10;//変更したらCellクラスのSIZEも要変更\n    static void Main(string[] args) {\n        string
+    start =\n@\"\n□■□□□□■□□□\n■□□□□■□□□□\n■■■□□■■■□□\n□□□□□□□□□□\n□□□□□□□□□□\n□□□□□□□□□□\n□□□□□□□□□□\n□□□□□□□□□□\n□□□□□□□□□□\n□□□□□□□□□□\";//SIZE
+    * SIZEの文字列\n        start = start.TrimStart(new char[] { '\\n', '\\r' });//最初の改行を取り除く\n
+    \       char[][] field = new char[SIZE][];//ライフゲームテーブル\n        List&lt;Cell&gt;
+    cells = new List&lt;Cell&gt;();//セル\n\n        //startをfieldにセットする\n        //for(int
+    y = 0; y &lt; SIZE; y++) {//行でループ\n        //    field[y] = start.Split(new char[]
+    { '\\n' })[y].ToCharArray();//改行で分割して文字配列にしてセット\n        //}\n\n        //ランダムにfieldを生成\n
+    \       Random rnd = new Random();\n        for(int j = 0 ;j&lt;SIZE;j++) {\n
+    \           field[j] = new char[SIZE];\n            for(int i = 0; i &lt; SIZE;i++
+    ) {\n                field[j][i] = rnd.Next(0, 100) &lt;= 30 ? '■' : '□';\n            }\n
+    \       }\n\n        //fieldからCellを生成\n        for(int y = 0; y &lt; SIZE; y++)
+    {//field縦ループ\n            for(int x = 0; x &lt; SIZE; x++) {//field横ループ\n                cells.Add(new
+    Cell(field, x, y, field[y][x] == '■'));//Cellに座標をセットしてcellsに追加\n            }\n
+    \       }\n\n        //メインループ\n        while(true) {\n            //出力\n            Console.Clear();\n
+    \           foreach(char[] str in field) {\n                Console.WriteLine(str);\n
+    \           }\n\n            System.Threading.Thread.Sleep(300);//ウェイト            \n\n
+    \           //次回の生死を判定、セット\n            foreach(Cell cell in cells) {\n                cell.SetNextLife();\n
+    \           }\n\n            //判定した生死をfieldに反映\n            foreach(Cell cell
+    in cells) {\n                cell.SetField();\n            }\n        }\n    }\n}\n\n//各セルのデータ\nclass
+    Cell {\n    const int SIZE = 10;//変更したらLifeGameクラスのSIZEも要変更\n    char[][] Field;\n\n
+    \   //位置\n    int X;\n    int Y;\n\n    bool Life;//状態\n    bool NextLife;//次回の状態(一時保存用)\n\n
+    \   public Cell(char[][] field, int x, int y, bool life) {\n        Field = field;\n
+    \       X = x;\n        Y = y;\n        Life = life;\n    }\n\n    //次回の生死を判定\n
+    \   public void SetNextLife() {\n        switch(GetCount()) {\n        case 3://誕生、維持\n
+    \           NextLife = true;\n            break;\n        case 2://維持\n            NextLife
+    = Life;\n            break;\n        default://死亡\n            NextLife = false;\n
+    \           break;\n        }\n    }\n\n    //判定した生死をfieldに反映\n    public void
+    SetField() {\n        Field[Y][X] = NextLife ? '■' : '□';\n        Life = NextLife;\n
+    \   }\n\n    //セル周囲の生きているセルをカウント\n    private int GetCount() {\n        int count
+    = 0;\n        for(int y_ = -1; y_ &lt;= 1; y_++) {\n            for(int x_ = -1;
+    x_ &lt;= 1; x_++) {\n                if(!(x_ == 0 &amp;&amp; y_ == 0)) {\n                    int
+    locationX = GetRoopLocation(X, x_);\n                    int locationY = GetRoopLocation(Y,
+    y_);\n                    if(Field[locationY][locationX] == '■') count++;\n                }\n
+    \           }\n        }\n        return count;\n    }\n\n    //fieldの端と端を繋ぐ\n
+    \   private int GetRoopLocation(int location, int direction) {\n        switch(location
+    + direction) {\n        case -1:\n            return SIZE - 1;\n        case SIZE:\n
+    \           return 0;\n        default:\n            return location + direction;\n
+    \       }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5395'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5395
+  :user_name: 匿名
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/4/
+  :language: Common
+  :time: 2008/01/19 09:40 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <div class=\"section\">\n<p>Common Lisp です。あえて CLOS(Common Lisp Object
+    System)で。\r</p>\n<p>print-object で印字形式を設定していること、setf で更新している位であとは普通です。\r</p>\n<p>こんな感じで試します。\r</p>\n<p>\r</p>\n<p>cl-user(27):
+    (setq b (make-glider))\r</p>\n<p>#&lt;board\r</p>\n<p>.X........\r</p>\n<p>X.........\r</p>\n<p>XXX.......\r</p>\n<p>..........\r</p>\n<p>..........\r</p>\n<p>..........\r</p>\n<p>..........\r</p>\n<p>..........\r</p>\n<p>..........\r</p>\n<p>..........\r</p>\n<p>&gt;\r</p>\n<p>cl-user(28):
+    (update b)\r</p>\n<p>#&lt;board\r</p>\n<p>..........\r</p>\n<p>X.X.......\r</p>\n<p>XX........\r</p>\n<p>.X........\r</p>\n<p>..........\r</p>\n<p>..........\r</p>\n<p>..........\r</p>\n<p>..........\r</p>\n<p>..........\r</p>\n<p>..........\r</p>\n<p>&gt;\r</p>\n<p>\r</p>\n<p>\r</p>\n<p>初めてライフゲームを実装して、とても楽しかったです。\r</p>\n</div>\n\t"
+  :code: ";;;\n;; dokaku 126\n;;\n\n(defclass board ()\n  ((width :accessor board-width
+    :initarg :w)\n   (height :accessor board-height :initarg :h)\n   (cells :accessor
+    board-cells :initarg :cells)))\n\n(defmethod print-object ((board board) stream)\n
+    \ (print-unreadable-object (board stream)\n    (format stream \"board~%\")\n    (loop
+    for y from 0 below (board-height board)\n    do\n      (loop for x from 0 below
+    (board-width board)\n          do\n        (format stream \"~a\" (if (cell board
+    x y) \"X\" \".\")))\n      (format stream \"~%\"))))\n\n(defun make-board (w h)\n
+    \ \"constructor\"\n  (make-instance 'board :w w :h h :cells (make-array (list
+    w h) :initial-element nil)))\n\n(defun make-random-board (w h)\n  (let ((board
+    (make-board w h)))\n    (loop for y from 0 below (board-height board)\n    do\n
+    \     (loop for x from 0 below (board-width board)\n          do\n        (setf
+    (cell board x y) (&lt; (random 10) 3))))\n    board))\n\n(defmethod cell ((board
+    board) x y)\n  \"accessor\"\n  (aref (board-cells board) (mod x (board-width board))
+    (mod y (board-height board))))\n\n;; (setf (cell board x y) value) \n(defsetf
+    cell (board x y) (value)\n  `(setf (aref (board-cells ,board) (mod ,x (board-width
+    ,board))\n           (mod ,y (board-height ,board))) ,value))\n\n(defmethod cell-neighbours
+    ((board board) x y)\n  (list (cell board (1- x) (1- y))\n    (cell board x (1-
+    y))\n    (cell board (1+ x) (1- y))\n    (cell board (1- x) y)\n    (cell board
+    (1+ x) y)\n    (cell board (1- x) (1+ y))\n    (cell board x (1+ y))\n    (cell
+    board (1+ x) (1+ y))))\n\n(defmethod cell-survivep ((board board) x y)\n  (let
+    ((c (cell board x y))\n    (n (count-if #'identity (cell-neighbours board x y))))\n
+    \   (cond\n     ((and (not c) (= n 3)) t) ;; born\n     ((and c (or (= n 3) (=
+    n 2))) t) ;; keep\n     (t nil)))) ;; die\n\n(defmethod update ((board board))\n
+    \ (let ((next\n     (loop for y from 0 below (board-height board)\n         append\n
+    \          (loop for x from 0 below (board-width board)\n           collect (list
+    x y (cell-survivep board x y))))))\n    (loop for elt in next\n    do\n      (destructuring-bind
+    (x y v) elt\n        (setf (cell board x y) v))))\n  board)\n\n(defun make-blinker
+    ()\n  (let ((b (make-board 10 10)))\n    (setf (cell b 1 0) t\n      (cell b 1
+    1) t\n      (cell b 1 2) t)\n    b))\n\n(defun make-glider ()\n  (let ((b (make-board
+    10 10)))\n    (setf (cell b 1 0) t\n      (cell b 0 1) t\n      (cell b 0 2) t\n
+    \     (cell b 1 2) t\n      (cell b 2 2) t)\n    b))\n"
+  :tags:
+  - CLOS
+  :references:
+    :url: 
+    :title: 
+- :id: '5398'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5398
+  :user_name: saws
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/642/
+  :language: 
+  :time: 2008/01/19 13:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>確かにt=1で(x,y)=(10,9)のセルは生き残ってないとおかしいですね. (^ ^);\nすいません, こちらのコーディングにバグがありました.</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5399'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5399
+  :user_name: sumim
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/01/19 13:27 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Squeak Smalltalk で、二次元配列オブジェクト（a Matrix）を使って書いてみました。</p>\n\n\t"
+  :code: |
+    | 行数 世代 現状 次面 八方 |
+
+    行数 := 10. 世代 := 50.
+    現状 := Matrix new: 行数 tabulate: [:行＃ :列＃ | #(1 0 0) atRandom].
+    次面 := Matrix new: 行数.
+    八方 := OrderedCollection new.
+    (-1 to: 1) asDigitsToPower: 2 do: [:組 | 八方 add: 組 first @ 組 second].
+    八方 remove: 0@0.
+
+    World findATranscript: nil.
+    世代 timesRepeat: [
+        Transcript cr; show: (String streamContents: [:ss |
+            (1 to: 行数) do: [:行＃ |
+                (現状 atRow: 行＃) do: [:idx | ss nextPut: ('□■' at: idx + 1)].
+                ss cr]]).
+
+        次面 atAllPut: 0.
+        現状 indicesDo: [:行＃ :列＃ |
+            | 総数 |
+            総数 := 八方 inject: 0 into: [:和 :Δ |
+                | 位置 |
+                位置 := 行＃@列＃ + Δ - 1 \\ 行数 + 1.
+                和 + (現状 at: 位置 x at: 位置 y)].
+            次面 at: 行＃ at: 列＃ put: (総数 caseOf: {
+                [2] -&gt; [現状 at: 行＃ at: 列＃].
+                [3] -&gt; [1]} otherwise: [0])].
+
+        現状 := 次面 flag: (次面 := 現状)]
+  :tags:
+  - Squeak_Smalltalk
+  - コンパクト
+  :references:
+    :url: 
+    :title: 
+- :id: '5401'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5401
+  :user_name: saws
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/01/19 15:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">死ぬことが予想されるセルを殺して, 周囲のセルを活かました. \r\n生存率は2-3倍ほどに上昇.
+    \r\n行を減らすために`and'を利用してやたら文を連結してますが, \r\n結合度については考慮しているので, セミコロンに置き替えて読んで下さっても\r\n同じことです.
+    \r\n</pre>\n\t"
+  :code: |
+    require 'Matrix'
+    require 'kconv'
+    N, M = 10, 10
+    Density = 0.7
+    class CellMatrix
+      Lived, Died = '[*]', '[ ]'
+      Threshold = 4 and ModerateDensity = 0.5
+      def initialize(n, m, &amp;block)
+        @cell_matrix = Array.new(n){|i| Array.new(m){|j| block_given? ? (yield [i, j]) : 0}}
+        @time, @victim = 0, 0
+      end
+      def gen_seed(n)
+        i, j = rand(r_size), rand(c_size)
+        live(i,j) &amp;&amp; n -= 1 if at(i,j) == 0
+        gen_seed(n) if n &gt; 0
+      end
+      def step
+        env_mat = get_env and each{|i,j|
+          case at(i,j)
+          when 0: live(i,j) if env_mat.at(i,j) == 3
+          when 1: die(i,j)  if env_mat.at(i,j) != 2..3
+          end
+        } and @time += 1
+      end
+      def thin_out #間引き
+        env_mat = get_env and each{|i,j|
+          max = {:pos =&gt; [], :value =&gt; 0} and env_mat.scan_env(i,j){|k,l|
+            max[:pos] = [k,l] and max[:value] = env_mat.at(k,l) if env_mat.at(k,l) &gt; max[:value]
+          }
+          kill(*max[:pos]) and @victim += 1 if max[:value] &gt;= Threshold and at(*max[:pos]) == 1
+        } and remain &lt;= r_size * c_size * ModerateDensity ? true : thin_out
+      end
+      def dup; CellMatrix.new(r_size, c_size){|i,j| at(i,j)} end
+      def remain; count = 0 and each{|i,j| count += at(i,j)} and count end
+      def output(comment="")
+        puts "t = #{@time} Remain: #{remain}, Victim: #{@victim} ##{comment}\n#{out}\n".tosjis
+      end
+      protected
+      def at(i,j) @cell_matrix[i][j] end
+      def each(&amp;block) r_size.times{|i| c_size.times{|j| yield [i,j]}} end
+      def scan_env(i, j, &amp;block)
+        a = [i == 0 ? r_size - 1 : i-1, i, i == r_size - 1 ? 0 : i+1]
+        b = [j == 0 ? c_size - 1 : j-1, j, j == c_size - 1 ? 0 : j+1]
+        a.each{|k| b.each{|l| yield [k,l] unless k == i &amp;&amp; l == j}}
+      end
+      private
+      def out; @cell_matrix.map{|line| "#{line.map{|x| x == 0 ? Died : Lived}.join}\n"}.join end
+      def r_size;   @cell_matrix.size end
+      def c_size;   @cell_matrix.first.size end
+      def live(i,j) @cell_matrix[i][j] = 1 end
+      def die(i,j)  @cell_matrix[i][j] = 0 end
+      alias :kill :die
+      def get_env #周囲のセルの状態
+        CellMatrix.new(r_size, c_size){|i,j|
+          count = 0 and scan_env(i,j){|k,l| count += at(k,l)} and count
+        }
+      end
+    end
+    real = CellMatrix.new(N, M)
+    initial = (N*M*Density).to_i
+    real.gen_seed(initial)
+    real.output('過密状態')
+    virtual = real.dup and virtual.step
+    virtual.output('間引きなし')
+    real.thin_out and real.step
+    real.output('間引きあり')
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5402'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5402
+  :user_name: tenka
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/664/
+  :language: C
+  :time: 2008/01/19 20:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>初投稿です\n間引きに関しては・・・これでいいのかよくわかりません。</p>\n\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            LifeGame lg = new LifeGame(10, 10, 0.3, true);
+            short i = 1;
+            while (i != 0)
+            {
+                Console.Clear();
+                Console.WriteLine("t = {0}", i++);
+                lg.outputConsole();
+                lg.scanField();
+
+                System.Threading.Thread.Sleep(100);
+            }
+        }
+    }
+
+    class LifeGame
+    {
+        public const int DEAD = 0;
+        public const int ALIVE = 1;
+        //横の長さ
+        private int width_;
+        public int Width{get{return width_;}}
+        //縦の長さ
+        private int height_;
+        public int Height{get{return height_;}}
+        //フィールド
+        private int[,] field;
+        //間引きのON(true)、OFF(false)
+        private bool skipPixelFlag;
+
+        public LifeGame(int w, int h, double rate, bool flag)
+        {
+            width_ = w;
+            height_ = h;
+            skipPixelFlag = flag;
+            field = new int[w, h];
+            createField(rate);
+            //デバッグ用
+            //width_ = 10;
+            //height_ = 10;
+            //field = new int[10, 10]
+            //{
+            //    {0,1,0,0,0,0,0,0,0,0},
+            //    {0,0,1,0,0,0,0,0,0,0},
+            //    {1,1,1,0,0,0,0,0,0,0},
+            //    {0,0,0,0,0,0,0,0,0,0},
+            //    {0,0,0,0,0,0,0,0,0,0},
+            //    {0,0,0,0,0,0,0,0,0,0},
+            //    {0,0,0,0,0,0,0,0,0,0},
+            //    {0,0,0,0,0,0,0,0,0,0},
+            //    {0,0,0,0,0,0,0,0,0,0},
+            //    {0,0,0,0,0,0,0,0,0,0}
+            //};
+        }
+
+        //ランダム生成
+        private void createField(double rate)
+        {
+            int count = (int) (Width * Height * rate);
+            Random random = new Random();
+            do
+            {
+                int w = random.Next(Width), h = random.Next(Height);
+                if (field[w, h] == DEAD) field[w, h] = ALIVE; else continue;
+                count--;
+            } while (count &gt; 0);
+        }
+
+        //次の世代作成
+        public void scanField()
+        {
+            int[,] temp = new int[Width, Height];
+            for (int i = 0; i &lt; Width; i++)
+                for (int j = 0; j &lt; Height; j++)
+                {
+                    int value = aroundField(i, j);
+
+                    if (value == 3) temp[i, j] = ALIVE;
+                    else if (value == 2) temp[i, j] = field[i, j];
+                    else temp[i, j] = DEAD;
+                }
+
+            field = (int[,]) (temp.Clone());
+            if (skipPixelFlag) skipPixelField();//間引き
+        }
+
+        //間引き
+        //といっても、これでいいのか不明。
+        //周りに4個以上ALIVEがあったらその枡をDEADにする
+        private void skipPixelField()
+        {
+            for (int i = 0; i &lt; Width; i++)
+                for (int j = 0; j &lt; Height; j++)
+                {
+                    int value = aroundField(i, j);
+                    if (value &gt; 4) field[i, j] = DEAD;
+                }
+
+        }
+
+        //周りの生きてる枡の数
+        private int aroundField(int w, int h)
+        {
+            int sum = 0;
+            for (int i = w - 1; i &lt;= w + 1; i++)
+                for (int j = h - 1; j &lt;= h + 1; j++)
+                    if (i != w || j != h)
+                        sum += field[getIndex(i, Width), getIndex(j, Height)];
+            return sum;
+        }
+
+        //ループインデックス作成
+        private int getIndex(int n, int max)
+        {
+            return (n + max) % max;
+        }
+
+        //出力
+        public void outputConsole()
+        {
+            for (int i = 0; i &lt; Width; i++)
+            {
+                for (int j = 0; j &lt; Height; j++)
+                {
+                    Console.Write((field[i, j] == ALIVE) ? "■" : "□");
+                }
+                Console.WriteLine();
+            }
+            Console.WriteLine();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5407'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5407
+  :user_name: ika
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2008/01/20 13:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  普通に。\n\t"
+  :code: "import std.string, std.conv, std.contracts,\n       std.random, std.stdio,
+    std.c.time;\n\nclass Field {\n    private uint width_, height_;\n    private bool[]
+    data_;\n    \n    this(uint width, uint height) {\n        this.width_ = width;\n
+    \       this.height_ = height;\n        this.data_ = new bool[width * height];\n
+    \   }\n    \n    const uint width() { return this.width_; }\n    const uint height()
+    { return this.height_; }\n    \n    const bool opIndex(uint x, uint y)\n        in
+    {\n            assert(x &lt; this.width);\n            assert(y &lt; this.height);\n
+    \       }\n        body {\n            return this.data_[this.width * y + x];\n
+    \       }\n        \n    bool opIndexAssign(bool value, uint x, uint y)\n        in
+    {\n            assert(x &lt; this.width);\n            assert(y &lt; this.height);\n
+    \       }\n        body {\n            return this.data_[this.width * y + x] =
+    value;\n        }\n    \n    const string toString() {\n        const len = (3
+    * this.width) * this.height + newline.length * (this.height - 1);\n        auto
+    s = new char[len], idx = 0;\n        foreach(y; 0 .. this.height) {\n            foreach(x;
+    0 .. this.width) {\n                s[idx .. idx + 3] = this[x, y] ? \"[*]\" :
+    \"[ ]\";\n                idx += 3;\n            }\n            if(idx != len)
+    {\n                s[idx .. idx + newline.length] = newline;\n                idx
+    += newline.length;\n            }\n        }\n        return assumeUnique(s);\n
+    \   }\n    \n    const Field nextGeneration() {\n        const w = this.width,
+    h = this.height;\n        Field f = new Field(w, h);\n        foreach(y; 0 ..
+    h) {\n            foreach(x; 0 .. w) {\n                int c;\n                int
+    l = (x + w - 1) % w, r = (x + 1) % w,\n                    u = (y + h - 1) % h,
+    d = (y + 1) % h;\n               \n                if(this[l, u]) c++; if(this[x,
+    u]) c++; if(this[r, u]) c++;\n                if(this[l, y]) c++;                     if(this[r,
+    y]) c++;\n                if(this[l, d]) c++; if(this[x, d]) c++; if(this[r, d])
+    c++;\n                \n                if(c == 3 || this[x, y] &amp;&amp; c ==
+    2)\n                    f[x, y] = true;\n            }\n        }\n        return
+    f;\n    }\n}\n\nvoid main(string[] args) {\n    if(args.length &lt; 3) return;\n
+    \   auto width = to!(uint)(args[1]), height = to!(uint)(args[2]);\n    \n    auto
+    f = new Field(width, height);\n    auto rgen = Random(unpredictableSeed);\n    foreach(y;
+    0 .. height) {\n        foreach(x; 0 .. width) {\n            f[x, y] = uniform!(int)(rgen,
+    0, 10) &lt; 3;\n        }\n    }\n    uint gen = 0;\n    while(true) {\n        writeln(\"Generation
+    \", ++gen);\n        writeln(f);\n        writeln(\"\");\n        f = f.nextGeneration;\n
+    \       msleep(100);\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5408'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5408
+  :user_name: katsu
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/117/
+  :language: 
+  :time: 2008/01/20 14:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">お題に対するコメントって良いんですよね。\r\n\r\n大概のお題は、計算時間を計ることが多いのですが、\r\n初期パターンを指定して、停止するまで（あるいは、\r\nループするまで）の時間を計ると、\r\n実装の効率が比べられて良いかも知れませんね。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5410'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5410
+  :user_name: silverwire
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/646/
+  :language: JavaScript
+  :time: 2008/01/20 16:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">JavaScriptで書きました。\r\n\r\n間引きは特に考慮していません。パターンはグライダーで、
+    0.5秒ごとに世代交代します。\r\n\r\nFirefox 2.0.0.8, Internet Explorer 6, Opera 9.23で動作を確認。\r\n\r\n
+    \ e.g.\r\n    .*........\r\n    ..*.......\r\n    ***.......\r\n    ..........\r\n
+    \   ..........\r\n    ..........\r\n    ..........\r\n    ..........\r\n    ..........\r\n
+    \   ..........</pre>\n\t"
+  :code: "&lt;?xml version=\"1.0\" encoding=\"UTF-8\"?&gt;\n&lt;!DOCTYPE html PUBLIC
+    \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"&gt;\n&lt;html
+    xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+    xml:lang=\"ja\" lang=\"ja\"&gt;\n    &lt;head&gt;\n        &lt;meta http-equiv=\"content-type\"
+    content=\"text/html; charset=utf-8\" /&gt;\n        &lt;title&gt;Conway's game
+    of life&lt;/title&gt;\n        &lt;script type=\"text/javascript\"&gt;\n            $
+    = function (i) { return document.getElementById(i); }\n\n            Function.prototype._setTimeout
+    = \n            function (t, o, v) {\n                var _ = this;\n                return
+    setTimeout(function () { _.apply(o, v); }, t);\n            };\n\n            var
+    CellularAutomaton = \n            function (p, w, h) {\n                this.p
+    \ = p;   // パターン\n                this.w  = w;   // フィールドの横幅\n                this.h
+    \ = h;   // フィールドの高さ\n                this.c  = [];  // セル\n                this._c
+    = [];\n                this.TI = 500; // 時間間隔\n            };\n            CellularAutomaton.prototype.generate
+    = \n            function () {\n                var i, j, n = 0, s = '', x, y;\n
+    \               // フィールドを初期化\n                for (y = 0; y &lt; this.h; y++)
+    {\n                    for (x = 0; x &lt; this.w; x++, n++) s += '&lt;tt id=\"cell_'
+    + n + '\"&gt;&lt;/tt&gt;';\n                    s += '&lt;br /&gt;';\n                }\n
+    \               document.body.innerHTML = s;\n                this.clear();\n
+    \               // パターンを描画\n                for (i = 0; i &lt; this.p.length;
+    i++) {\n                    for (j = 0; j &lt; this.p[i].length; j++) {\n                        if
+    (this.p[i].charAt(j) == '.') continue;\n                        n = this.h * i
+    + j;\n                        this.setCell(n, this.c[n] = 1);\n                    }\n
+    \               }\n            };\n            CellularAutomaton.prototype.clear
+    = \n            function () {\n                var n;\n                for (n
+    = this.w * this.h; n--; ) this.setCell(n, this.c[n] = 0);\n            };\n            CellularAutomaton.prototype.start
+    = \n            function () {\n                var n;\n                // 次世代へ移行\n
+    \               this.shift();\n                for (n = 0; n &lt; this.h * this.w;
+    n++) this.c[n] = this._c[n];\n                // 再帰\n                this.start._setTimeout(this.TI,
+    this, []);\n            };\n            CellularAutomaton.prototype.shift = \n
+    \           function () {\n                var n = 0, x, y;\n\n                for
+    (y = 0; y &lt; this.h; y++) {\n                    for (x = 0; x &lt; this.w;
+    x++, n++) {\n                        this._c[n] = this.judge(x, y, n);\n                        if
+    (this.c[n] != this._c[n]) this.setCell(n, this._c[n]);\n                    }\n
+    \               }\n            };\n            CellularAutomaton.prototype.judge
+    = \n            function (x, y, n) {\n                var i, j, l = 0, _x, _y;\n\n
+    \               if ((x &gt; 0 &amp;&amp; x &lt; this.w - 1) &amp;&amp; (y &gt;
+    0 &amp;&amp; y &lt; this.h - 1)) {\n                    l = this.c[n - this.w
+    - 1] + this.c[n - this.w] + this.c[n - this.w + 1]\n                      + this.c[n
+    \         - 1]                      + this.c[n          + 1]\n                      +
+    this.c[n + this.w - 1] + this.c[n + this.w] + this.c[n + this.w + 1]\n                      ;\n
+    \               } else { // トーラス\n                    for (i = -1; i &lt; 2; i++)
+    {\n                        for (j = -1; j &lt; 2; j++) {\n                            if
+    (i == 0 &amp;&amp; j == 0) continue;\n\n                            if (x + j
+    == -1) _x = this.w - 1;\n                            if (x + j == this.w) _x =
+    0;\n                            if (x + j != -1 &amp;&amp; x + j != this.w) _x
+    = x + j;\n                            if (y + i == -1) _y = this.h - 1;\n                            if
+    (y + i == this.h) _y = 0;\n                            if (y + i != -1 &amp;&amp;
+    y + i != this.h) _y = y + i;\n\n                            l += this.c[this.w
+    * _y + _x];\n                        }\n                    }\n                }\n\n
+    \               if (this.c[n] == 0 &amp;&amp; l == 3)             return 1; //
+    誕生\n                if (this.c[n] == 1 &amp;&amp; (l == 2 || l == 3)) return 1;
+    // 維持\n                return 0;                                           //
+    死亡\n            };\n            CellularAutomaton.prototype.setCell = \n            function
+    (n, p) {\n                $('cell_' + n).innerHTML = (p == 0) ? '.' : '*';\n            };\n\n
+    \           window.onload = \n            function () {\n                var c
+    = new CellularAutomaton([ '.*.' , '..*' , '***' ], 10, 10); c.generate(); c.start();\n
+    \           };\n        &lt;/script&gt;\n    &lt;/head&gt;\n    &lt;body&gt;\n
+    \   &lt;/body&gt;\n&lt;/html&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5412'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5412
+  :user_name: こう。
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2008/01/21 03:03 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">グダグダしてきましたが、Wikipediaによると\"23/3\"などというルール表記があるようなのでそれに対応。\r\n世代スキップも追加。</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;conio.h&gt;\n#include
+    &lt;time.h&gt;\n\n#define WIDTH  10\n#define HEIGHT 10\n\n/* セルの生死判定 */\nint calc_life(int
+    a[HEIGHT][WIDTH],int x,int y){\n    int life;\n    int x_l,x_r,y_u,y_d;\n    y_u=(y+HEIGHT-1)%HEIGHT;\n
+    \   y_d=(y+1)%HEIGHT;\n    x_l=(x+WIDTH-1)%WIDTH;\n    x_r=(x+1)%WIDTH;\n            \n
+    \   life= (a[y_u][x_l]&amp;1)+(a[y_u][x]&amp;1)+(a[y_u][x_r]&amp;1)\n         +(a[
+    y ][x_l]&amp;1) /*注目セル */+(a[ y ][x_r]&amp;1)\n         +(a[y_d][x_l]&amp;1)+(a[y_d][x]&amp;1)+(a[y_d][x_r]&amp;1);\n
+    \   return life;\n}\n\n/* 世代の進行 */\nvoid next_gen(int a[HEIGHT][WIDTH],char* rule){\n
+    \   int life;\n    int x,y;\n    char* birth;\n    char* ptr_rule;\n\n    /* 誕生ルール検出
+    */\n    birth=rule;\n    while(*birth++!='/');\n    \n    /*生存・誕生判定*/\n    for(y=0;y&lt;HEIGHT;y++){\n
+    \       for(x=0;x&lt;WIDTH;x++){\n            life=calc_life(a,x,y);\n            \n
+    \           if(a[y][x]&amp;1){\n                /*生存判定*/\n                ptr_rule=rule;\n
+    \               do{\n                    if(life==*ptr_rule-'0') a[y][x]|=2;\n
+    \               }while(*++ptr_rule!='/');\n            }else{\n                /*誕生判定*/\n
+    \               ptr_rule=birth;\n                do{\n                    if(life==*ptr_rule-'0')
+    a[y][x]|=2;\n                }while(*++ptr_rule);\n            }\n        }\n
+    \   }\n    \n    /* 次世代へ進行 */\n    for(y=0;y&lt;HEIGHT;y++){\n        for(x=0;x&lt;WIDTH;x++){\n
+    \           a[x][y]&gt;&gt;=1;\n        }\n    }\n}\n\n/* 現世代の表示 */\nvoid put_gen(int
+    a[HEIGHT][WIDTH]){\n    int x,y;\n    for(y=0;y&lt;HEIGHT;y++){\n        for(x=0;x&lt;WIDTH;x++){\n
+    \           printf(\"[%c]\",a[y][x]==1?'*':' ');\n        }\n        putchar('\\n');\n
+    \   }\n}\n\n/* ライフゲーム制御 */\nvoid lifegame(int a[HEIGHT][WIDTH],char* rule){\n
+    \   int gen=0;\n    char c;\n    int step;\n    \n    while(1){\n        printf(\"T=%d\\n\",gen);\n
+    \       put_gen(a);\n        step=0;\n\n        while(1){\n            c=getche();\n
+    \           if(c&lt;'0'||'9'&lt;c) break;\n            step*=10;\n            step+=c-'0';\n
+    \       }\n        if(c==0x1b) break;\n        if(step==0&amp;&amp;(c==0x20||c==0x0d))
+    step=1;\n        putchar('\\n');\n        while(step--){\n            next_gen(a,rule);\n
+    \           gen++;\n        }\n    }\n}\n\n/* ランダム初期値の設定 */\nvoid init_life(int
+    a[HEIGHT][WIDTH]){\n    int x,y;\n    int count=0;\n    \n    for(y=0;y&lt;HEIGHT;y++){\n
+    \       for(x=0;x&lt;WIDTH;x++){\n            a[y][x]=0;\n        }\n    }\n\n
+    \   srand(time(NULL));\n    do{\n        x=rand()/(RAND_MAX/WIDTH);\n        y=rand()/(RAND_MAX/HEIGHT);\n
+    \       if(calc_life(a,x,y)&lt;=(2+(rand()/(RAND_MAX/2)))){\n            a[y][x]=1;\n
+    \           count++;\n        }\n    }while(count&lt;((HEIGHT*WIDTH)*(2+(rand()/(RAND_MAX/2)))/10));\n}\n\nint
+    main(){\n    int a[HEIGHT][WIDTH]={\n/* 出題\n        {0,1,0,0,0,0,1,1,1,0},\n        {0,0,0,0,1,0,0,1,1,0},\n
+    \       {0,0,0,1,0,0,1,0,1,0},\n        {1,0,1,1,0,0,1,0,0,0},\n        {0,1,0,0,0,0,0,0,1,0},\n
+    \       {1,0,0,0,1,0,1,1,0,1},\n        {0,1,0,0,0,0,1,0,0,0},\n        {0,0,0,0,0,0,0,0,0,1},\n
+    \       {1,0,0,0,0,0,1,0,0,1},\n        {0,0,0,0,1,1,0,0,1,0}\n/*/\n//グライダー\n
+    \       {0,0,0,0,0,0,0,0,0,0},\n        {0,0,0,0,0,0,0,0,0,0},\n        {0,0,0,0,0,0,0,0,0,0},\n
+    \       {0,0,0,0,0,0,0,0,0,0},\n        {0,0,0,1,0,0,0,0,0,0},\n        {0,0,1,0,0,0,0,0,0,0},\n
+    \       {0,0,1,1,1,0,0,0,0,0},\n        {0,0,0,0,0,0,0,0,0,0},\n        {0,0,0,0,0,0,0,0,0,0},\n
+    \       {0,0,0,0,0,0,0,0,0,0},\n/*/\n        {0,0,0,0,0,0,0,0,0,0},\n        {0,0,0,0,0,0,0,0,0,0},\n
+    \       {0,0,0,1,0,0,0,0,0,0},\n        {0,0,1,1,0,1,0,0,0,0},\n        {0,0,0,1,0,1,0,0,0,0},\n
+    \       {0,0,0,0,0,1,0,0,0,0},\n        {0,0,0,0,0,0,1,0,0,0},\n        {0,0,0,0,0,0,1,0,1,0},\n
+    \       {0,0,0,0,0,0,0,0,0,0},\n        {0,0,0,0,0,0,0,0,0,0},\n//*/\n    };\n//
+    \   init_life(a);\n    lifegame(a,\"23/3\");\n//    lifegame(a,\"23/36\"); //HighLife?\n
+    \   \n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5425'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5425
+  :user_name: mc
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/01/22 09:20 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  大分色物な感じですが、超並列計算機 Connection Machine用のLisp処理系\r<br>である*LISP(スターリスプ)のCommon Lisp用のシミュレータパッケージを\r<br>使用して書いてみました。\r<br>本来、処理をプロセッサノードに割り振って並列に計算するので、今回位の計算\r<br>ならば、一度にどかんと計算させて、ループは全く使わないのが*LISPの流儀\r<br>だと思うのですが、構文がみつけられなかったため、全く普通に直列な\r<br>書き方になっており、あまり意味がないことになっています…。\r<br>表示は、グリッドの内容を綺麗に表示するプリティプリンタが付いてくるので、\r<br>それを使ってみました。\r<br>動作は、AllegroとCLISPで確認しています。\r<br>(SBCL等では、ソースを修正しないと*LISPがコンパイルできないようです。)\r<br>ソースは参考ページからダウンロード可能でチュートリアル付きです。\r<br><br>;; 実行結果 (グライダー)\r<br>     DIMENSION 0 (X)  -----&gt;\r<br><br>0 1 0 0 0 0 0 0 0 0 \r<br>1 0 0 0 0 0 0 0 0 0 \r<br>1 1 1 0 0 0 0 0 0 0 \r<br>0 0 0 0 0 0 0 0 0 0 \r<br>0 0 0 0 0 0 0 0 0 0 \r<br>0 0 0 0 0 0 0 0 0 0 \r<br>0 0 0 0 0 0 0 0 0 0 \r<br>0 0 0 0 0 0 0 0 0 0 \r<br>0 0 0 0 0 0 0 0 0 0 \r<br>0 0 0 0 0 0 0 0 0 0 \n\t"
+  :code: "(defpackage :doukaku-126 (:use :cl :*lisp))\n(in-package :doukaku-126)\n(*cold-boot
+    :initial-dimensions '(10 10))\n\n(defconstant +alive+ 1)\n(defconstant +dead+
+    0)\n\n(defun grid10 (x y)\n  (grid (mod x 10) (mod y 10)))\n\n(defun get-env (grid
+    x y)\n  (values (pref grid (grid x y))\n          (count +alive+\n                 (list
+    (pref grid (grid10 (1- x) (1- y)))\n                       (pref grid (grid10
+    x (1- y)))\n                       (pref grid (grid10 (1+ x) (1- y)))\n                       (pref
+    grid (grid10 (1- x) y))\n                       (pref grid (grid10 (1+ x) y))\n
+    \                      (pref grid (grid10 (1- x) (1+ y)))\n                       (pref
+    grid (grid10 x (1+ y)))\n                       (pref grid (grid10 (1+ x) (1+
+    y)))))))\n\n(defun gen-next (cur)\n  (*let ((next +dead+))\n    (loop :for x :from
+    0 :to 9 \n          :do (loop :for y :from 0 :to 9 \n                    :do (multiple-value-bind
+    (self env) (get-env cur x y)\n                          (cond ((and (eql +dead+
+    self) (= 3 env)) \n                                 (*setf (pref next (grid x
+    y)) +alive+))\n                                ((and (= +alive+ self) (&lt;= 2
+    env 3))\n                                 (*setf (pref next (grid x y)) +alive+))
+    \       \n                                ('T (*setf (pref next (grid x y)) +dead+))))))\n
+    \   next))\n\n;; グライダーを作る\n(defun make-glider ()\n  (*let ((g +dead+))\n    (*setf
+    (pref g (grid 1 0)) +alive+\n           (pref g (grid 0 1)) +alive+\n           (pref
+    g (grid 0 2)) +alive+\n           (pref g (grid 1 2)) +alive+\n           (pref
+    g (grid 2 2)) +alive+)\n    g))\n\n;; 初期値をグライダーにしてループ \n(loop :for gen = (make-glider)
+    then (gen-next gen)\n      :do (ppp gen :mode :grid)\n      :unless (y-or-n-p)
+    :do (return))\n"
+  :tags:
+  - '*LISP'
+  :references:
+    :url: /web/20080325151021/http://examples.franz.com/id/massar.html
+    :title: Simulator for *Lisp language for Connection Machine, circa 1989.
+- :id: '5426'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5426
+  :user_name: horiuchi
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/570/
+  :language: Perl
+  :time: 2008/01/22 10:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Perlがなかったので投稿。C＃のほぼそのままなので、あまりPerlらしいコードでない気がします。</p>\n\n\t"
+  :code: "#!/usr/bin/perl\nuse strict;\nuse warnings;\n\nsub print_matrix($$) {\n
+    \   my $turn = shift;\n    my $matrix = shift;\n\n    print \"t={$turn}\\n\";\n
+    \   foreach my $row(@$matrix) {\n        foreach my $cell(@$row) {\n            print
+    '[', print_cell($cell), ']';\n        }\n        print \"\\n\";\n    }\n    print
+    \"\\n\";\n}\nsub print_cell($) {\n    return ($_[0]?'*':' ');\n}\n\nsub next_step($$)
+    {\n    my $turn = shift;\n    my $matrix = shift;\n    my $result = [];\n\n    $turn++;\n
+    \   for (my $y=0; $y&lt;@$matrix; $y++) {\n        push(@$result, []);\n        for
+    (my $x=0; $x&lt;@{$matrix-&gt;[$y]}; $x++) {\n            my $count = count_alive_cell($matrix,
+    $y, $x);\n            #print \"($y,$x) = $count\\n\";\n            push(@{$result-&gt;[-1]},
+    \n                ($count == 3)? 1:\n                ($count == 2)? $matrix-&gt;[$y][$x]:\n
+    \               0\n            );\n        }\n    }\n    return $turn, $result;\n}\nsub
+    count_alive_cell($$$) {\n    my $matrix = shift;\n    my $y = shift;\n    my $x
+    = shift;\n    return cell_value($matrix, $y-1, $x-1) + cell_value($matrix, $y-1,
+    $x) + cell_value($matrix, $y-1, $x+1)\n         + cell_value($matrix, $y  , $x-1)
+    +                               + cell_value($matrix, $y  , $x+1)\n         +
+    cell_value($matrix, $y+1, $x-1) + cell_value($matrix, $y+1, $x) + cell_value($matrix,
+    $y+1, $x+1)\n}\nsub cell_value($$$) {\n    my $matrix = shift;\n    my $y = shift;\n
+    \   my $x = shift;\n    $y -= @$matrix if ($y &gt;= @$matrix);\n    $x -= @{$matrix-&gt;[$y]}
+    if ($x &gt;= @{$matrix-&gt;[$y]});\n    return $matrix-&gt;[$y][$x];\n}\n\n\nsub
+    main($) {\n    my $max_turn = shift;\n\n    my $turn = 1;\n#    my $matrix = [\n#
+    \           [qw/0 1 0 0 0 0 1 1 1 0/],\n#            [qw/0 0 0 0 1 0 0 1 1 0/],\n#
+    \           [qw/0 0 0 1 0 0 1 0 1 0/],\n#            [qw/1 0 1 1 0 0 1 0 0 0/],\n#
+    \           [qw/0 1 0 0 0 0 0 0 1 0/],\n#            [qw/1 0 0 0 1 0 1 1 0 1/],\n#
+    \           [qw/0 1 0 0 0 0 1 0 0 0/],\n#            [qw/0 0 0 0 0 0 0 0 0 1/],\n#
+    \           [qw/1 0 0 0 0 0 1 0 0 1/],\n#            [qw/0 0 0 0 1 1 0 0 1 0/],\n#
+    \       ];\n    my $matrix = [\n            [qw/0 0 0 0 0 0 0 1 0 0/],\n            [qw/0
+    0 0 0 0 0 1 0 0 0/],\n            [qw/0 0 0 0 0 0 1 1 1 0/],\n            [qw/0
+    0 0 0 0 0 0 0 0 0/],\n            [qw/0 0 0 0 0 0 0 0 0 0/],\n            [qw/0
+    0 0 0 0 0 0 0 0 0/],\n            [qw/0 0 0 0 0 0 0 0 0 0/],\n            [qw/0
+    0 0 0 0 0 0 0 0 0/],\n            [qw/0 0 0 0 0 0 0 0 0 0/],\n            [qw/0
+    0 0 0 0 0 0 0 0 0/],\n        ];\n\n    print_matrix($turn, $matrix);\n    for
+    (my $i=1; $i&lt;$max_turn; $i++) {\n        ($turn, $matrix) = next_step($turn,
+    $matrix);\n        print_matrix($turn, $matrix);\n    }\n}\n\nmain(41);\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5427'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5427
+  :user_name: yuji1982
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/677/
+  :language: C
+  :time: 2008/01/22 12:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>初投稿です。\n長いコードですが、自分はC#なら富豪的に書きます。</p>\n<p>間引きはわかりませんでした。\n実装してみましたが、うまく動いてないような気がします・・・</p>\n\n\t"
+  :code: "using System;\nusing System.Collections.Generic;\nusing System.Linq;\nusing
+    System.Data.Linq;\nusing System.Drawing;\nusing System.Diagnostics;\n\npublic
+    class LifeGame\n{\n    static void Main(string[] args)\n    {\nStart:\n        Setting.Size
+    = 10;      //格子サイズ\n        Setting.InitRandomRate = 0.3; //人口密度\n        Setting.Log
+    = LogType.All;\n\n        CellManager cm;\n\n        Console.Clear();\n        Console.WriteLine(\"seed
+    = ?\");\n        int seed=0, wait = 50;\n        int.TryParse(Console.ReadLine(),
+    out seed);\n\n        //---------------------------------------------------------------------\n
+    \       cm = new CellManager(seed);\n        int step = 0, step2 = 0;\n        string
+    last = string.Empty;//こうちゃくしたら止めるため\n        while (true)\n        {\n            Console.WriteLine(\"seed
+    = {0}---間引きなし:step={1}---間引きあり:step={2}\", seed, step, step2);\n            WriteSet(cm);\n
+    \           step++;\n            System.Threading.Thread.Sleep(wait);\n            cm.ToNext();\n
+    \           Console.Clear();\n            if (cm.AliveCount == 0 || last == cm.EqualFlag)\n
+    \               break;\n            last = cm.EqualFlag;\n        };\n\n        Console.WriteLine(\"間引きあり
+    : M/手動, M以外/自動\");\n        bool manual = Console.ReadKey().Key == ConsoleKey.M;\n
+    \       Console.Clear();\n\n        cm = new CellManager(seed);\n        while
+    (true)\n        {\n            Console.WriteLine(\"seed = {0}---間引きなし:step={1}---間引きあり:step={2}\",
+    seed, step, step2);\n            cm.Cull_2();//間引き\n            WriteSet(cm);\n
+    \           step2++;\n            if (manual)\n                Console.ReadKey();\n
+    \           else\n                System.Threading.Thread.Sleep(wait);\n            cm.ToNext();\n
+    \           Console.Clear();\n            if (cm.AliveCount == 0 || last == cm.EqualFlag)\n
+    \               break;\n            last = cm.EqualFlag;\n        };\n        Console.WriteLine(\"seed
+    = {0}---間引きなし:step={1}---間引きあり:step={2}\", seed, step, step2);\n\n        //-----間引きしたときの生存数up率のn回の平均値を出してみるテスト。-------\n
+    \       //int n = 100;\n        //Setting.InitRandomRate = 0.3; //人口密度\n        //Setting.Log
+    = LogType.All;\n\n        //Console.WriteLine(\"回数 = ?\");\n        //int.TryParse(Console.ReadLine(),
+    out n);\n\n        //var avg = Enumerable.Range(seed, n).Select(\n        //    (seedValue,
+    idx) =&gt;\n        //    {\n        //        WriteState(string.Format(\"seed={0}\",
+    seedValue));\n        //        WriteState(\"non cull\");\n        //        cm
+    = new CellManager(seedValue);\n        //        double nonCull = Test(cm);\n
+    \       //        WriteState(\"cull\");\n        //        cm = new CellManager(seedValue);\n
+    \       //        cm.Cull_2();\n        //        double cull = Test(cm);\n\n
+    \       //        var up = nonCull != 0 ? ((cull / nonCull) - 1.0d) * 100 : cull;\n
+    \       //        WriteSimple(string.Format(\"間引きすると生存数は{0}% up\", up));\n        //
+    \       WriteState(\"**************************************************\");\n
+    \       //        if (double.IsInfinity(up))\n        //            throw new
+    InvalidOperationException();\n        //        WriteNon(idx.ToString());\n        //
+    \       return up;\n        //    }\n        //).Average();\n        //WriteSimple(string.Format(\"平均
+    = {0}% up\", avg));\n        //---------------------------------------------------------------------\n\n
+    \       Console.WriteLine(\"もう一度? y/n\");\n        if (Console.ReadKey().Key ==
+    ConsoleKey.Y)\n            goto Start;\n    }\n    static int Test(CellManager
+    cm)\n    {\n        WriteSet(cm);\n\n        cm.ToNext();\n        WriteState(\"next\");\n
+    \       WriteSet(cm);\n        WriteState(\"-------------------\");\n        return
+    cm.AliveCount;\n    }\n    static void WriteSet(CellManager cm)\n    {\n        WriteFigure(cm.CellLines);\n
+    \       WriteState(string.Format(\"生存数={0} \", cm.AliveCount));\n    }\n\n    static
+    void WriteFigure(IEnumerable&lt;IGrouping&lt;int,Cell&gt;&gt; data)\n    {\n        if
+    ((Setting.Log &amp; LogType.All) != LogType.All)\n            return;\n        foreach
+    (var group in data)\n        {\n            var lineString = new string(group.Select(c
+    =&gt; c.IsAlive ? '■' : '□').ToArray());\n            Console.WriteLine(lineString);\n
+    \       }\n    }\n    static void WriteNon(string text)\n    {\n        if (Setting.Log
+    == LogType.Non) \n            Console.WriteLine(text);\n    }\n    static void
+    WriteState(string text)\n    {\n        if((Setting.Log &amp; LogType.State) ==
+    LogType.State)\n            Console.WriteLine(text);\n    }\n    static void WriteSimple(string
+    text)\n    {\n        if((Setting.Log &amp; LogType.Simple) == LogType.Simple)\n
+    \           Console.WriteLine(text);\n    }\n}\n\n[Flags]\npublic enum LogType\n{\n
+    \   Non     = 0x000 ,   //表示しない（進捗のみ）\n    Simple  = 0x001 ,   //最低限の数値\n    State
+    \  = 0x011 ,   //詳細な数値\n    All     = 0x111     //詳細な数値と図形\n}\nstatic public class
+    Setting\n{\n    static public int Size { get; set; }\n    static public int MatrixSize\n
+    \   {\n        get { return Size * Size; }\n    }\n    static public LogType Log
+    { get; set; }\n    static public double InitRandomRate { get; set; }\n}\nstatic
+    public class CorrectExtension\n{\n    static public int CorrectValue;\n    static
+    public int Correct(this int a)\n    {\n        while (a &lt; 0) a += Setting.Size;\n
+    \       return a % Setting.Size;\n    }\n}\npublic class CellManager\n{\n    Random
+    rand;\n    List&lt;Cell&gt; data;\n\n    public int AliveCount { get { return
+    data.Count(cell =&gt; cell.IsAlive); } }\n    public IEnumerable&lt;Cell&gt; Cells\n
+    \   {\n        get\n        {\n            return data.AsEnumerable();\n        }\n
+    \   }\n    public IEnumerable&lt;IGrouping&lt;int, Cell&gt;&gt; CellLines\n    {\n
+    \       get\n        {\n            return Cells.GroupBy(c =&gt; Get(c).Y).OrderBy(gp
+    =&gt; gp.Key);\n        }\n    }\n    public string EqualFlag\n    {\n        get\n
+    \       {\n            return new string(data.Select(c =&gt; c.IsAlive ? '1' :
+    '0').ToArray());\n        }\n    }\n\n    public Cell newCell(bool alive)\n    {\n
+    \       return new Cell { Manager = this,IsAlive = alive };\n    }\n\n    public
+    CellManager(int seed)\n    {\n        rand = new Random(seed);\n        data =
+    new List&lt;Cell&gt;();\n        for (int i = 0; i &lt; Setting.MatrixSize; i++)\n
+    \       {\n            data.Add(newCell(rand.NextDouble() &lt; Setting.InitRandomRate));\n
+    \       }\n    }\n    public CellManager(IEnumerable&lt;bool&gt; initData)\n    {\n
+    \       if (initData.Count() != Setting.MatrixSize)\n            throw new ArgumentException();\n
+    \       data = new List&lt;Cell&gt;(initData.Select(isAlive =&gt; newCell(isAlive
+    )));\n    }\n\n    public void ToNext()\n    {\n        var nextData = data.Select(d
+    =&gt; d.Next).ToArray();\n        for (int i = 0; i &lt; nextData.Length; i++)\n
+    \       {\n            data[i].IsAlive = nextData[i];\n        }\n    }\n\n    //
+    間引き\n    public void Cull_2()\n    {\n        //生きているやつをリストアップする。\n        var
+    aliveNoList = data.Where(cell =&gt; cell.IsAlive).Select(cell =&gt; data.IndexOf(cell)).ToArray();\n
+    \       foreach (var no in aliveNoList)\n        {\n            //自分は次回生きてるか。\n
+    \           var nextMe = data[no].Next;\n            //現在の自分の回りの生存数\n            var
+    nowAround = data[no].AroundAliveCount;\n            //次回の回りの生存数。\n            var
+    nowNext = data[no].Around.Count(c =&gt; c.Next);\n            //死んでみる\n            data[no].IsAlive
+    = false;\n            //自分が死んだ場合の次回の回りの生存数\n            var testNext = data[no].Around.Count(c
+    =&gt; c.Next);\n            //回りの生存するが増えるなら死ぬ\n            if (testNext &gt; (nowNext
+    + (nextMe ? 1 : 0)))\n                continue;\n            ////減らない（＝同じ）で、4つ以上いたらどうせ死ぬから先に死ぬ\n
+    \           // ※これやると、人口率0.3では下がりますが、人口率0.9ではこれがないと↑の間引きだけじゃうまくできない。\n            //if
+    (testNext == (nowNext + (nextMe ? 1 : 0)) &amp;&amp; !nextMe)\n            //
+    \   continue;\n            data[no].IsAlive = true;\n        }\n    }\n\n    //
+    間引き\n    // 全パターンを調べてみる。遅すぎて論外でした。そもそも動くのかわかりません。\n    public void Cull_1()\n
+    \   {\n        //生きているやつをリストアップする。\n        var aliveNoList = data.Where(cell
+    =&gt; cell.IsAlive).Select(cell =&gt; data.IndexOf(cell)).ToArray();\n        int
+    min = int.MaxValue;\n        UInt64 minPattern = 0;//64個より多いとダメだけど、とりあえず気にしない。\n\n
+    \       for (UInt64 patten = 0; patten &lt;= UInt64.MaxValue; patten++)\n        {\n
+    \           //パターン対象を殺してみる\n            for (int i = 0; i &lt; aliveNoList.Count();
+    i++)\n            {\n                if ((patten&amp;(((UInt64)1) &lt;&lt; i))
+    != 0)\n                {\n                    data[aliveNoList[i]].IsAlive = false;\n
+    \               }\n            }\n            //次回死んでいる数を調べ、最小ならパターン番号を覚える\n            var
+    a = data.Count(c =&gt; !c.Next);\n            if (data.Count(c =&gt; !c.Next)
+    &lt; min)\n            {\n                min = a;\n                minPattern
+    = patten;\n            }\n            //パターン対象を戻す。\n            for (int i = 0;
+    i &lt; aliveNoList.Count(); i++)\n            {\n                if ((patten &amp;
+    ((UInt64)1 &lt;&lt; i)) != 0)\n                {\n                    data[aliveNoList[i]].IsAlive
+    = true;\n                }\n            }\n            //人数分のパターンが終わったので辞める。\n
+    \           if ((patten &amp; (((UInt64)1) &lt;&lt; aliveNoList.Count())) != 0)\n
+    \               break;\n        }\n        //最小パターンで殺す。\n        for (int i =
+    0; i &lt; aliveNoList.Count(); i++)\n        {\n            if ((minPattern &amp;
+    (((UInt64)1) &lt;&lt; i)) != 0)\n            {\n                data[aliveNoList[i]].IsAlive
+    = false;\n            }\n        }\n    }\n\n    public Point Get(Cell target)\n
+    \   {\n        int idx = data.IndexOf(target);\n        if (idx &lt; 0)\n            throw
+    new ArgumentException();\n\n        return new Point(idx % Setting.Size, idx /
+    Setting.Size);\n    }\n    public Cell Get(int x, int y)\n    {\n        return
+    data[y.Correct() * Setting.Size + x.Correct()];\n    }\n\n    public Cell Get(Cell
+    target, int offsetX, int offsetY)\n    {\n        var pos = Get(target);\n        return
+    Get(pos.X + offsetX, pos.Y + offsetY);\n    }\n}\n\n\npublic class Cell\n{\n    public
+    CellManager Manager { get; set; }\n    public bool IsAlive { get; set; }\n    \n
+    \   public IEnumerable&lt;Cell&gt; Around\n    {\n        get\n        {\n            for
+    (int x = -1; x &lt;= 1; x++)\n            {\n                for (int y = -1;
+    y &lt;= 1; y++)\n                {\n                    if (x == 0 &amp;&amp;
+    y == 0)\n                        continue;\n                    yield return Manager.Get(this,
+    x, y);\n                }\n            }\n        }\n    }\n    public int AroundAliveCount\n
+    \   {\n        get\n        {\n            return Around.Count(cell =&gt; cell.IsAlive);\n
+    \       }\n    }\n    public bool Next\n    {\n        get\n        {\n            return
+    IsAlive ?\n                AroundAliveCount == 2 || AroundAliveCount == 3 :\n
+    \               AroundAliveCount == 3;\n        }\n    }\n}\n"
+  :tags:
+  - .NET3.5
+  - C#3.0
+  :references:
+    :url: 
+    :title: 
+- :id: '5430'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5430
+  :user_name: mc
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/01/23 08:03 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  Connection Machine用のLISP、*LISPのCL用シミュレータパッケージを\r<br>使用しています。\r<br>前回投稿したバージョンは、並列実行の構文を活用できていませんでしたが、\r<br>何となく構文が分かって来たので再挑戦してみました。\r<br><br>実行例(初期値をランダムに設定してループ表示):\r<br>;     DIMENSION 0 (X)  -----&gt;\r<br>;\r<br>;0 1 1 1 1 1 1 1 1 1 \r<br>;1 0 1 0 1 1 1 0 0 1 \r<br>;1 1 0 1 1 1 1 0 0 0 \r<br>;0 0 1 1 1 1 0 0 1 0 \r<br>;1 1 0 0 1 0 1 1 0 0 \r<br>;1 0 1 1 1 0 1 1 0 1 \r<br>;1 0 0 0 1 0 1 1 1 1 \r<br>;0 1 1 0 0 0 1 1 1 0 \r<br>;0 0 0 0 1 1 0 0 0 1 \r<br>;0 1 1 1 1 0 0 0 1 0 \r<br>;\r<br>;     DIMENSION 0 (X)  -----&gt;\r<br>;\r<br>;0 0 0 0 0 0 0 0 0 0 \r<br>;0 0 0 0 0 0 0 0 0 0 \r<br>;1 0 0 0 0 0 0 1 0 0 \r<br>;0 0 0 0 0 0 0 0 0 1 \r<br>;1 0 0 0 0 0 0 0 0 0 \r<br>;0 0 1 0 1 0 0 0 0 0 \r<br>;0 0 0 0 1 0 0 0 0 0 \r<br>;0 1 0 1 1 0 0 0 0 0 \r<br>;1 0 0 0 1 1 1 0 0 1 \r<br>;0 1 0 0 0 0 0 0 0 0 \r<br>"
+  :code: "(defpackage :doukaku-126 (:use :cl :*lisp))\n(in-package :doukaku-126)\n(*cold-boot
+    :initial-dimensions '(10 10))\n\n(defconstant +alive+ 1)\n(defconstant +dead+
+    0)\n\n(defun gen-next!! (pvar)\n  (let ((env (count!! +alive+\n              (vector!!\n
+    \              (news!! pvar -1 -1) (news!! pvar -1  0) (news!! pvar -1  1)\n               (news!!
+    pvar  0 -1) (news!! pvar  0  1) \n               (news!! pvar  1 -1) (news!! pvar
+    \ 1  0) (news!! pvar  1  1)))))\n    (cond!! ((and!! (eql!! +dead+ pvar) (=!!
+    env 3)) +alive+)\n            ((and!! (eql!! +alive+ pvar) (&lt;=!! 2 env 3))
+    +alive+)\n            (t!! +dead+))))\n\n;; 実行例(初期値をランダムに設定してループ表示):\n(loop :for
+    gen = (truncate!! (random!! 10) 5) :then (gen-next!! gen)\n      :do (ppp gen)
+    \n      :unless (y-or-n-p) :do (return))\n"
+  :tags:
+  - '*LISP'
+  :references:
+    :url: /web/20080325151021/http://examples.franz.com/id/massar.html
+    :title: Simulator for *Lisp language for Connection Machine, circa 1989.
+- :id: '5431'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5431
+  :user_name: Otter
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2008/01/23 10:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>とりあえずWikiPediaでルールを読んで23/3を組んでみました。末端のループもやっています。\nライフゲームは昔から動いてるところは見たことあっても、実際に書いてみたことはなかったので楽しめました...間引きはこれから勉強します。</p>\n\n\t"
+  :code: "module Main\n    where\n\nimport Data.Array\n\ntype Point = (Int, Int)\ntype
+    Size = (Int, Int)\ntype TwoDArray = (Size, Array Int Char)\n\nglider = \"..........\"
+    ++\n     \"..X.......\" ++ \n     \".X........\" ++ \n     \".XXX......\" ++ \n
+    \    \"..........\" ++\n     \"..........\" ++\n     \"..........\" ++\n     \"..........\"
+    ++\n     \"..........\" ++\n     \"..........\"\n\nmakeArray :: Size -&gt; [Char]
+    -&gt; TwoDArray\nmakeArray  sz@(cx, cy) str = (sz, listArray (0, cx * cy - 1)
+    str)\n\nptToIdx :: Size -&gt; Point -&gt; Int\nptToIdx (cx, cy) (x, y) = (y *
+    cx) + x\n\nfetch :: TwoDArray -&gt; Point -&gt; Char\nfetch (sz, rg) pt = rg!(ptToIdx
+    sz pt)\n\nsurrounding = [(x, y) | x &lt;- [-1..1], y &lt;-[-1..1], x /= 0 || y
+    /= 0]\n\naddPt :: Point -&gt; Size -&gt; Point -&gt; Point\naddPt (x1, y1) (cx,
+    cy) (x2, y2) = ((x1 + x2) `mod` cx, (y1 + y2) `mod` cy)\n\ngetSurroundingPts ::
+    Point -&gt; Size -&gt; [Point]\ngetSurroundingPts pt sz = map (addPt pt sz) surrounding\n\ncountSurroundingLife
+    :: TwoDArray -&gt; Point -&gt; Int\ncountSurroundingLife td@(sz, rg) pt  = \n
+    \   length $ filter (/='.') $ map (fetch td) $ getSurroundingPts pt sz\n\nallPoints
+    :: Size -&gt; [Point]\nallPoints (cx, cy) = [(x, y) | y &lt;- [0..(cx - 1)], x
+    &lt;- [0..(cy - 1)]]\n\nbirthDeath :: Char -&gt; Int -&gt; Char\nbirthDeath ch
+    c\n    | c == 3 &amp;&amp; ch == '.' = 'X'\n    | ch == 'X' &amp;&amp; (c == 2
+    || c == 3) = 'X'\n    | otherwise = '.'\n\ndoGen :: TwoDArray -&gt; Point -&gt;
+    Char\ndoGen rg pt = birthDeath (fetch rg pt) (countSurroundingLife rg pt)\n\nnextGen
+    :: TwoDArray -&gt; TwoDArray\nnextGen td@(sz, rg) = makeArray sz $ map (doGen
+    td) (allPoints sz)\n\nlifes :: TwoDArray -&gt; [TwoDArray]\nlifes td = [td] ++
+    (lifes (nextGen td))\n\ndumpRow :: TwoDArray -&gt; Int -&gt; IO()\ndumpRow ((cx,
+    cy), rg) iy = putStrLn $ map (rg!) $ [(iy * cx)..((iy * cx) + cx - 1)]\n\ndumpMap
+    :: TwoDArray -&gt; Int -&gt; IO()\ndumpMap td@(size@(cx, cy), rg) iGen = do\n
+    \   putStrLn $ \"Generation \" ++ (show iGen)\n    mapM (dumpRow td) [0..(cy-1)]\n
+    \   putStrLn \"\"\n\ndoLife :: [(Int, TwoDArray)] -&gt; IO()\ndoLife [] = return
+    ()\ndoLife (x@(iGen, rg):xs) = do\n    dumpMap rg iGen\n    doLife xs\n\nmain
+    :: IO()\nmain = do\n    doLife $ zip [1..20] (lifes start)\n    where\n        start
+    = makeArray sz glider\n        sz = (10, 10)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5436'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5436
+  :user_name: muscovyduck
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/679/
+  :language: Ruby
+  :time: 2008/01/23 14:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ライフゲームは初めて実装しましたが、面白いものですねえ。</p>\n<p>LifeGame::Board#drawメソッドが気持ち悪いのですが、とりあえず投稿します。本当はLifeGame::Board#to_sの結果を画面に描画するほうが良いのですが‥‥。</p>\n\n\t"
+  :code: |
+    #!/usr/bin/env ruby
+
+    require 'curses'
+
+    module LifeGame
+      class Board
+        def initialize(board)
+          @board = board
+        end
+
+        def width
+          @board.map {|i| i.size }.max
+        end
+
+        def height
+          @board.size
+        end
+
+        def check(x, y)
+          @board[y][x]
+        end
+
+        def set(x, y, cell)
+          @board[y][x] = cell
+        end
+
+        def draw(window)
+          (1..(height)).each do |i|
+            window.setpos(i, 1)
+            window.addstr(@board[i - 1].join)
+            window.refresh
+          end
+        end
+
+        def to_s
+          @board.map {|i| i.join }.join("\n")
+        end
+
+        def next
+          result = Board.new(Array.new(height).map { Array.new(width) })
+          (-1..(height - 2)).each do |j|
+            (-1..(width - 2)).each do |i|
+              result.set(i, j, next_life(check(i, j),
+                [check(i - 1, j - 1),
+                 check(i, j - 1),
+                 check(i + 1, j - 1),
+                 check(i - 1, j),
+                 check(i + 1, j),
+                 check(i - 1, j + 1),
+                 check(i, j +1 ),
+                 check(i + 1, j + 1)]))
+            end
+          end
+          result
+        end
+
+        private
+        def next_life(cell, arrownd = [])
+          case
+          when (cell == ' ') &amp;&amp; (arrownd.grep(/\*/).size == 3)
+            '*'
+          when (cell == '*') &amp;&amp; (arrownd.grep(/\*/).size.between?(2, 3))
+            '*'
+          else
+            ' '
+          end
+        end
+      end
+    end
+
+    if __FILE__ == $0
+      begin
+        board = LifeGame::Board.new([
+          [' ', '*', ' ', ' ', ' ', ' ', '*', '*', '*', ' '],
+          [' ', ' ', ' ', ' ', '*', ' ', ' ', '*', '*', ' '],
+          [' ', ' ', ' ', '*', ' ', ' ', '*', ' ', '*', ' '],
+          ['*', ' ', '*', '*', ' ', ' ', '*', ' ', ' ', ' '],
+          [' ', '*', ' ', ' ', ' ', ' ', ' ', ' ', '*', ' '],
+          ['*', ' ', ' ', ' ', '*', ' ', '*', '*', ' ', '*'],
+          [' ', '*', ' ', ' ', ' ', ' ', '*', ' ', ' ', ' '],
+          [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
+          ['*', ' ', ' ', ' ', ' ', ' ', '*', ' ', ' ', '*'],
+          [' ', ' ', ' ', ' ', '*', '*', ' ', ' ', '*', ' ']])
+        time = 0
+        window = Curses::Window.new(Curses.lines, Curses.cols, 0, 0)
+        sub_window = window.subwin(board.height + 2, board.width + 2, 2, 2)
+        sub_window.box(?|, ?-, ?+)
+        loop do
+          window.setpos(0, 0)
+          window.addstr("t = #{time}")
+          board.draw(sub_window)
+          window.getch
+          time += 1
+          board = board.next
+        end
+      ensure
+        window.close
+      end
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5438'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5438
+  :user_name: eller
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/499/
+  :language: Java
+  :time: 2008/01/23 23:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>計算結果をJTextAreaに表示します。\nsawatさんのコードとは異なり、格子状の平面を独自に定義したFieldクラスによって表現しています。</p>\n\n\t"
+  :code: "// Doukaku126.java\n\nimport java.awt.*;\nimport java.util.*;\nimport javax.swing.*;\n\npublic
+    class Doukaku126 extends JFrame implements Runnable {\n    Field field;\n    JTextArea
+    textArea;\n\n    public static void main(final String[] args) {\n        SwingUtilities.invokeLater(new
+    Runnable() {\n            public void run() {\n                createAndShowGui();\n
+    \           }\n        });\n    }\n\n    public Doukaku126() {\n        super(\"ライフゲーム（どう書く？org
+    #126）\");\n        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);\n        setLayout(new
+    BorderLayout());\n\n        field = new Field(10, 10);\n        field.makeLifes(0.3);\n\n
+    \       textArea = new JTextArea();\n        textArea.setFont(new Font(Font.MONOSPACED,
+    Font.PLAIN, 14));\n        add(textArea, BorderLayout.CENTER);\n\n        Thread
+    t = new Thread(this);\n        t.start();\n    }\n    /**\n     * mainスレッドからGUIを構築しないために利用するメソッド\n
+    \    * 参考-&gt;http://d.hatena.ne.jp/torutk/20060928#p2\n     */\n    private static
+    void createAndShowGui() {\n        Doukaku126 frame = new Doukaku126();\n        frame.setSize(240,
+    240);\n        frame.setVisible(true);\n    }\n    public void run() {\n        StringBuffer
+    sb = new StringBuffer();\n        try {\n            while (true) {\n                field.print(sb);\n
+    \               textArea.setText(sb.toString());\n                field.next();\n
+    \               Thread.sleep(200);\n            }\n        } catch (Exception
+    e) {\n\n        }\n\n    }\n    final class Field {\n        private boolean[][]
+    nowLife, nextLife, life;\n\n        private int width, height;\n\n        /**\n
+    \        * フィールドのコンストラクタ\n         * \n         * @param width\n         *            フィールドの幅\n
+    \        * @param height\n         *            フィールドの高さ\n         */\n        public
+    Field(final int width, final int height) {\n            nowLife = new boolean[width][height];\n
+    \           nextLife = new boolean[width][height];\n            this.width = width;\n
+    \           this.height = height;\n        }\n\n        /**\n         * フィールドに生命を生成する（ランダム）\n
+    \        * \n         * @param percent\n         *            1つのセルに生命が誕生する確率[0.0,1.0]\n
+    \        */\n        public void makeLifes(final double percent) {\n            Random
+    random = new Random();\n            for (int y = 0; y &lt; height; ++y) {\n                for
+    (int x = 0; x &lt; width; ++x) {\n                    nowLife[x][y] = random.nextDouble()
+    &lt; percent;\n                }\n            }\n        }\n\n        /**\n         *
+    時間を進め、生命の状態を変化させる\n         */\n        public void next() {\n            for
+    (int y = 0; y &lt; height; ++y) {\n                for (int x = 0; x &lt; width;
+    ++x) {\n                    nextLife[x][y] = nextLife(nowLife[x][y], aroundLifesNum(x,
+    y));\n                }\n            }\n            // 計算結果をコピー\n/*            for
+    (int x = 0; x &lt; width; ++x) {\n                System.arraycopy(nextLife[x],
+    0, nowLife[x], 0, height);\n            }\n/*/\n            tmpLife = nowLife;\n
+    \           nowLife = nextLife;\n            nextLife = tmpLife;\n//*/\n        }\n\n
+    \       /**\n         * 現在の生命の状態と周囲の生命数から、次の生命の状態を調べる\n         * \n         *
+    @param nowLife\n         *            現在の生命の状態\n         * @param numLifes\n         *
+    \           周囲の生命数\n         * @return 次の生命の状態\n         */\n        private boolean
+    nextLife(final boolean nowLife, final int numLifes) {\n            return (nowLife
+    &amp;&amp; (numLifes == 2 || numLifes == 3))\n                    || (!nowLife
+    &amp;&amp; numLifes == 3);\n        }\n\n        /**\n         * 周囲の生命の数を返す\n
+    \        */\n        private int aroundLifesNum(final int x, final int y) {\n
+    \           int num = 0;\n            for (int i = 0; i &lt; 8; ++i) {\n                if
+    (aroundLife(x, y, i)) {\n                    ++num;\n                }\n            }\n
+    \           return num;\n        }\n\n        // posと場所は次のように対応\n        // 0
+    1 2\n        // 7 * 3\n        // 6 5 4\n        private boolean aroundLife(int
+    x, int y, final int pos) {\n            if (pos &lt; 3) {\n                --y;\n
+    \           } else if (4 &lt;= pos &amp;&amp; pos &lt;= 6) {\n                ++y;\n
+    \           }\n            if (pos == 0 || pos == 6 || pos == 7) {\n                --x;\n
+    \           } else if (2 &lt;= pos &amp;&amp; pos &lt;= 4) {\n                ++x;\n
+    \           }\n            return nowLife[(x+width)%width][(y+height)%height];\n
+    \       }\n\n        /**\n         * 自分自身の文字表現をStringBufferへ代入\n         */\n
+    \       public void print(final StringBuffer sb) {\n            sb.delete(0, sb.length());\n
+    \           for (int y = 0; y &lt; height; ++y) {\n                for (int x
+    = 0; x &lt; width; ++x) {\n                    sb.append(nowLife[x][y] ? \"[*]\"
+    : \"[ ]\");\n                }\n                sb.append(\"\\n\");\n            }\n
+    \       }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: /web/20080325151021/http://d.hatena.ne.jp/torutk/20060928#p2
+    :title: mainメソッドでSwingを書かない訳（torutkの日記）
+- :id: '5446'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5446
+  :user_name: raynstard
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/127/
+  :language: C
+  :time: 2008/01/24 09:13 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">コンソール専用化と思っていたら\r\nエスケープシーケンスってVT100エミュレーション下では\r\nちゃんと機能するんですね。\r\n20へぇ～\r\n\r\nCっぽくポインタを活用してみました。</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n#include
+    &lt;time.h&gt;\n#include &lt;assert.h&gt;\n\ntypedef struct tagCell\n{\n    int
+    alive; // 今の状態\n    int life;  // 次の状態\n    struct tagCell *around[9]; // 自分の周囲(自分含む)\n}
+    CELL;\n\nstatic const char *CELL_CHAR[] = { \"□\", \"■\" };\n\n#define HEIGHT
+    (10)\n#define WIDTH  (10)\nstatic CELL cells[ HEIGHT ][ WIDTH ];\n\n/* 初期パターン
+    (0:死 /1:生) */\n// お題サンプル(池になって終わり)\nstatic const int graph_paturn1[ HEIGHT * WIDTH
+    ] =\n{\n//         1   2   3   4   5   6   7   8   9  10 \n/*  1 */   0,  1,  0,
+    \ 0,  0,  0,  1,  1,  1,  0,\n/*  2 */   0,  0,  0,  0,  1,  0,  0,  1,  1,  0,\n/*
+    \ 3 */   0,  0,  0,  1,  0,  0,  1,  0,  1,  0,\n/*  4 */   1,  0,  1,  1,  0,
+    \ 0,  1,  0,  0,  0,\n/*  5 */   0,  1,  0,  0,  0,  0,  0,  0,  1,  0,\n/*  6
+    */   1,  0,  0,  0,  1,  0,  1,  1,  0,  1,\n/*  7 */   0,  1,  0,  0,  0,  0,
+    \ 1,  0,  0,  0,\n/*  8 */   0,  0,  0,  0,  0,  0,  0,  0,  0,  1,\n/*  9 */
+    \  1,  0,  0,  0,  0,  0,  1,  0,  0,  1,\n/* 10 */   0,  0,  0,  0,  1,  1,  0,
+    \ 0,  1,  0\n};\n\n// 基本パターン固定型\nstatic const int graph_paturn2[ HEIGHT * WIDTH
+    ] =\n{\n//         1   2   3   4   5   6   7   8   9  10 \n/*  1 */   0,  0,  0,
+    \ 0,  0,  0,  0,  0,  0,  0,\n/*  2 */   0,  1,  0,  0,  0,  0,  0,  1,  0,  0,\n/*
+    \ 3 */   0,  1,  0,  0,  0,  1,  0,  0,  1,  0,\n/*  4 */   0,  1,  0,  0,  0,
+    \ 1,  0,  0,  1,  0,\n/*  5 */   0,  0,  0,  0,  0,  0,  1,  0,  0,  0,\n/*  6
+    */   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n/*  7 */   0,  0,  0,  0,  0,  0,
+    \ 0,  0,  0,  0,\n/*  8 */   0,  0,  1,  0,  0,  0,  0,  0,  0,  0,\n/*  9 */
+    \  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n/* 10 */   0,  0,  0,  0,  0,  0,  0,
+    \ 0,  0,  0\n};\n\ninline void CLS(void){  printf(\"\\x1b[2J\"); }\ninline void
+    LOCATE(int x, int y){ printf(\"\\x1b[%d;%dH\", y, x); }\ninline void STORE_LOCATE(void){
+    printf(\"\\x1b[s\"); }\ninline void RESTORE_LOCATE(void){ printf(\"\\x1b[u\");
+    }\n\n/* 指定した座標のセル取得 */\ninline int getCell(CELL **out, int x, int y)\n{\n    assert(out
+    != NULL );\n\n    /* 座標の正規化 */\n    y %= HEIGHT; if( y &lt; 0 ){ y = HEIGHT +
+    y; }\n    x %= WIDTH;  if( x &lt; 0 ){ x = WIDTH  + x; }\n\n    /*  */\n    *out
+    = &amp;cells[y][x];\n    assert(*out != NULL );\n    return 0;\n}\n\n/* 現在の状態から次世代の状態を設定する
+    */\nint set_next_life(struct tagCell *cell)\n{\n    int score;\n    assert(cell
+    != NULL );\n    score = cell-&gt;around[0]-&gt;alive   + cell-&gt;around[1]-&gt;alive
+    + cell-&gt;around[2]-&gt;alive\n            + cell-&gt;around[3]-&gt;alive                          +
+    cell-&gt;around[5]-&gt;alive\n            + cell-&gt;around[6]-&gt;alive + cell-&gt;around[7]-&gt;alive
+    + cell-&gt;around[8]-&gt;alive;\n    switch( score )\n    {\n        case 2: //
+    維持\n            break;\n        case 3: // 誕生\n            cell-&gt;life = 1;\n
+    \           break;\n        default: // 死亡\n            cell-&gt;life = 0;\n            break;\n
+    \   }\n    return 0;\n}\n\n/* 初期化いろいろ */\nint initialize(void)\n{\n    static
+    const int *graph = graph_paturn1; // 初期配置\n\n    struct tagCell   *cell;\n\n    /*
+    スクリーンの初期化 */\n    CLS(); LOCATE(1,3);\n\n    /* セルの初期化 */\n    memset( &amp;cells,
+    0, sizeof(cells) );\n    for( int h=0; h &lt; HEIGHT; h ++ )\n    {\n        for(
+    int w=0; w &lt; WIDTH; w ++ )\n        {\n            cell = &amp;cells[ h ][
+    w ];\n            cell-&gt;alive = *graph++;\n            cell-&gt;life  = cell-&gt;alive;\n
+    \           /* 周囲セルの設定 */\n            getCell(&amp;cell-&gt;around[0], w-1, h-1);\n
+    \           getCell(&amp;cell-&gt;around[1], w  , h-1);\n            getCell(&amp;cell-&gt;around[2],
+    w+1, h-1);\n            getCell(&amp;cell-&gt;around[3], w-1, h  );\n            getCell(&amp;cell-&gt;around[4],
+    w  , h  ); //自分自身\n            getCell(&amp;cell-&gt;around[5], w+1, h  );\n            getCell(&amp;cell-&gt;around[6],
+    w-1, h+1);\n            getCell(&amp;cell-&gt;around[7], w  , h+1);\n            getCell(&amp;cell-&gt;around[8],
+    w+1, h+1);\n        }\n    }\n    return 0;\n}\n\n/* 現在の状態を表示 */\nint print_cells(void)\n{\n
+    \   struct tagCell *cell;\n    for( int h=0; h &lt; HEIGHT; h ++ )\n    {\n        for(
+    int w=0; w &lt; WIDTH; w ++ )\n        {\n            cell = &amp;cells[ h ][
+    w ];\n//          printf(\"[%c]\", (cell-&gt;alive == 1)?'*':' ');\n            printf(\"%s\",
+    CELL_CHAR[ cell-&gt;alive ] );\n            cell-&gt;alive = cell-&gt;life; //
+    表示したので次世代の状態を反映する\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}\n\n/*
+    \ */\nvoid play(int frame)\n{\n    struct timespec interval = \n    { \n        .tv_sec
+    = 0,\n        .tv_nsec = 125000000\n    };\n\n    STORE_LOCATE();\n    for( int
+    t=0; t&lt;=frame || frame==-1; t++ )\n    {\n        RESTORE_LOCATE();\n        /*
+    表示前に次の状態を計算 */\n        for( int h=0; h &lt; HEIGHT; h ++ )\n        {\n            for(
+    int w=0; w &lt; WIDTH; w ++ )\n            {\n                set_next_life( &amp;cells[
+    h ][ w ] );\n            }\n        }\n\n        /* 表示 */\n        printf(\"t=%d\\n\",
+    t);\n        print_cells();\n\n        /* ディレイ */\n        nanosleep(&amp;interval,
+    NULL);\n    }\n}\n\nint main(int argc, char *argv[])\n{\n    initialize();\n    play(
+    (argc&gt;1)?atoi( argv[1] ):-1 );\n    return 0;\n}\n"
+  :tags:
+  - C99
+  :references:
+    :url: 
+    :title: 
+- :id: '5447'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5447
+  :user_name: futoase
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/686/
+  :language: Python
+  :time: 2008/01/24 13:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>グライダーが動いているので大丈夫だと思います。</p>\n\n\t"
+  :code: "import time\n\nX_MAX = 9\nY_MAX = 9\n\ndef lefx(x,mx):\n    if (x - 1) &lt;
+    0:\n        return mx\n    else:\n        return x - 1\n\ndef rigx(x,mx):\n    if
+    (x + 1) &gt; mx:\n        return 0\n    else:\n        return x + 1\n\ndef up_y(y,my):\n
+    \   if (y - 1) &lt; 0:\n        return my\n    else:\n        return y - 1\n\ndef
+    dowy(y,my):\n    if (y + 1) &gt; my:\n        return 0\n    else:\n        return
+    y + 1\n\ndef list_search(motherlist):\n    buflist = [[0] * len(motherlist) for
+    i in range(len(motherlist))]\n    #range(9) = [0,1,2,3,4,5,6,7,8]\n    #range(9+1)
+    = [0,1,2,3,4,5,6,7,8,9]\n    for x in range(X_MAX+1):\n        for y in range(Y_MAX+1):\n
+    \           if motherlist[lefx(x,X_MAX)][up_y(y,Y_MAX)] == 1:\n                buflist[x][y]
+    += 1\n            if motherlist[lefx(x,X_MAX)][y] == 1:\n                buflist[x][y]
+    += 1\n            if motherlist[lefx(x,X_MAX)][dowy(y,Y_MAX)] == 1:\n                buflist[x][y]
+    += 1\n            if motherlist[x][up_y(y,Y_MAX)] == 1:\n                buflist[x][y]
+    += 1\n            if motherlist[x][dowy(y,Y_MAX)] == 1:\n                buflist[x][y]
+    += 1\n            if motherlist[rigx(x,X_MAX)][up_y(y,Y_MAX)] == 1:\n                buflist[x][y]
+    += 1\n            if motherlist[rigx(x,X_MAX)][y] == 1:\n                buflist[x][y]
+    += 1\n            if motherlist[rigx(x,X_MAX)][dowy(y,Y_MAX)] == 1:\n                buflist[x][y]
+    += 1\n    return buflist\n\ndef list_weight(motherlist,buflist):\n    buflist2
+    = [[0]*len(motherlist) for i in range(len(motherlist))]\n    for x in range(X_MAX+1):\n
+    \       for y in range(Y_MAX+1):\n            if buflist[x][y] == 3 and motherlist[x][y]
+    == 0:\n                buflist2[x][y] = 1\n            if buflist[x][y] == 2 and
+    motherlist[x][y] == 1:\n                buflist2[x][y] = 1\n            if buflist[x][y]
+    == 3 and motherlist[x][y] == 1:\n                buflist2[x][y] = 1\n\n    return
+    buflist2\n\ndef main(motherlist,count,sleep):\n    \n    while(count &gt; 0):\n\n
+    \       for i in range(len(motherlist)):\n            print(motherlist[i])\n        \n
+    \       print('\\n')\n        motherlist = list_weight(motherlist,list_search(motherlist))\n
+    \       time.sleep(sleep)\n        count -= 1\n\n\nif __name__ == '__main__':\n
+    \   testlist = [[0,0,0,0,0,0,0,0,0,0] for i in range(10)]\n    testlist[5][6]
+    = 1\n    testlist[6][7] = 1\n    testlist[7][5] = 1\n    testlist[7][6] = 1\n
+    \   testlist[7][7] = 1\n    main(testlist,100,1)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5449'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5449
+  :user_name: Nemo
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/685/
+  :language: PostScript
+  :time: 2008/01/24 16:55 GMT
+  :vote_count: '3'
+  :vote_score: '1'
+  :body: "\n\t  PostScript で書いてみました。\r\nこのままプリンタに流すと1世代1枚の紙を浪費しますのでご注意下さい。\r\n\n\t"
+  :code: "!PS\n\n%---------------- Initialize -----------\n/TestMap [ % 10x10\n   0
+    1 0 0 0 0 1 1 1 0\n   0 0 0 0 1 0 0 1 1 0\n   0 0 0 1 0 0 1 0 1 0\n   1 0 1 1
+    0 0 1 0 0 0\n   0 1 0 0 0 0 0 0 1 0\n   1 0 0 0 1 0 1 1 0 1\n   0 1 0 0 0 0 1
+    0 0 0\n   0 0 0 0 0 0 0 0 0 1\n   1 0 0 0 0 0 1 0 0 1\n   0 0 0 0 1 1 0 0 1 0\n]
+    def\n/RandomMap {\n    realtime srand\n    [1 1 MapSize2 { pop rand 1000 mod 300
+    gt {0} {1} ifelse } for]\n} def\n\n/OrgMap { TestMap } def\n/MapSizeX 10 def\n/MapSizeY
+    10 def\n/Loop 150 def\n\n%              0    1     2     3     4    5    6     7
+    \     8    \n/RuleBorn [ false false false  true false false false false false
+    ] def\n/RuleKeep [ false false  true  true false false false false false ] def\n\n%
+    ----Printout Size-------------------\n/MapWidth 500 def\n/MapHeight 500 def\n/MapOffsetX
+    20 def\n/MapOffsetY 70 def\n% -------------------------------------\n/Times-Roman
+    findfont 16 scalefont setfont\n/MapSizeX2 MapSizeX 2 add def\n/MapSize2 MapSizeX
+    MapSizeY mul def\n/MapSize3 MapSizeX2 MapSizeY mul def\n\n/Vect [-1 MapSizeX2
+    sub 0 MapSizeX2 sub 1 MapSizeX2 sub -1 1 MapSizeX2 1 sub M\\\napSizeX2 MapSizeX2
+    1 add] def\n\n/DispMap {\n    20 20 moveto (Life Game: Stage=) show\n    10 string
+    cvs show\n    /Map exch def\n    /VX MapWidth MapSizeX idiv def\n    /VY MapHeight
+    MapSizeY idiv def\n    0 1 MapSizeY 1 sub {\n        /y exch def\n        0 1
+    MapSizeX 1 sub {\n            /x exch def\n            x VX mul MapOffsetX add\n
+    \           y VY mul -1 mul MapHeight add MapOffsetY add moveto\n            VX
+    0 rlineto 0 VY rlineto 0 VX sub 0 rlineto closepath\n            Map x y MapSizeX2
+    mul add 1 add get 1 eq { fill } { stroke } ifels\\\ne\n        } for\n    } for\n}
+    def\n\n/ExpandMap {\n    /Offset exch def\n    /Width MapSizeX Offset 2 mul add
+    def\n    /Map exch def\n    [\n        0 1 MapSizeY 1 sub {\n            Width
+    mul Offset add /v exch def\n            Map v MapSizeX add 1 sub get\n            0
+    1 MapSizeX 1 sub {\n                v add Map exch get\n            } for\n            Map
+    v get\n        } for\n    ]\n} def\n\n/NewStage {\n    1 ExpandMap\n    /Map exch
+    def\n    [\n    0 1 MapSize3 1 sub {\n        /v exch def\n        /count 0 def\n
+    \       0 1 7 {\n            Vect exch get\n            v add MapSize3 add MapSize3
+    mod /vx exch def\n            /count count Map vx get add def\n        } for\n
+    \       0\n        Map v get 0 eq {RuleBorn count get { pop 1 } if }\n            {RuleKeep
+    count get { pop 1 } if } ifelse\n    } for\n    ]\n} def\n\n/OrgMap OrgMap 0 ExpandMap
+    def\n0 1 Loop {\n    OrgMap exch DispMap showpage\n    /OrgMap OrgMap NewStage
+    def\n} for\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5451'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5451
+  :user_name: Nemo
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/685/
+  :language: 
+  :time: 2008/01/24 17:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">投稿とちりました。\r\n1行目先頭に \"%\" が必要、41、57行は継続行です。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5454'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5454
+  :user_name: susu
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/218/
+  :language: OCaml
+  :time: 2008/01/25 10:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>お題のサンプルは一部違う動きをするのですが、\n間引きが無いからでしょうか？</p>\n<p>値をtrue,falseに限定すると生死判定の部分は少し短くできます。</p>\n\n\t"
+  :code: "(*範囲指定fold  x.(pos)からlen幅  はみ出し分はループ*)\nlet loop_fold_left_in f acc x pos
+    len =\n  let alen = Array.length x in\n  let pos = if -alen&lt;=pos &amp;&amp;
+    pos&lt;0 then alen+pos else pos in\n  let r,co = ref acc, ref 0 in\n  \n  for
+    i = pos to pos+len-1 do\n    if (i - !co)&gt;=alen then co:=!co+alen;\n    r :=
+    f !r (Array.get x (i - !co));\n  done; !r;;\n\n(*arr.(xpos).(ypos)中心の3*3マスでfがtrueとなる値の数*)\nlet
+    count9 f arr xpos ypos =\n  loop_fold_left_in (fun accx y -&gt; \n    loop_fold_left_in
+    (fun accy z -&gt; \n      if f z then accy+1 else accy\n    ) 0 y (ypos-1) 3 +
+    accx\n  ) 0 arr (xpos-1) 3 ;;\n\nlet mapi f arr =\n  Array.init (Array.length
+    arr) (fun i -&gt;\n    Array.init (Array.length arr.(i)) (fun j -&gt; f i j arr.(i).(j))\n
+    \ );;\n\n(* t:生の値 f:死の値 arr:二次元array *)\nlet next t f arr =\n  mapi (fun i j b
+    -&gt; \n    if j=0 then print_newline ();\n    Printf.printf \"[%c]\" (if b=t
+    then '*' else ' ');\n    \n    let num = count9 ((=) t) arr i j in\n    if (b=t)
+    then \n      if (num=3 || num=4) then t else f\n    else \n      if (num=3) then
+    t else f\n  ) arr;;\n\nlet rec preview t f arr n =\n  let rec loop arr i =\n    if
+    n&lt;i then () else (\n      Printf.printf \"\\nt=%d\" i;\n      loop (next t
+    f arr) (i+1)\n    )\n  in loop arr 0;;\n  \n(*使用例\n    preview 1 0 \n      [|[|0;
+    0; 0; 0; 0|];\n        [|0; 0; 1; 0; 0|];\n        [|0; 0; 1; 0; 0|];\n        [|0;
+    0; 1; 0; 0|];\n        [|0; 0; 0; 0; 0|]|] 5;;\n*)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5459'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5459
+  :user_name: uti
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/673/
+  :language: SQL
+  :time: 2008/01/26 06:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  まだ投稿されていないようなのでSQLで書いてみました。\r<br>Microsoft SQL Server 2005 で確認しています。\r<br>"
+  :code: |
+    /* 生存セルを格納する表: G=世代 */
+    CREATE TABLE LIFE (G INT, X INT, Y INT)
+
+    /* 周囲9セルを求めるための補助的な表 */
+    CREATE TABLE NEAR (X INT, Y INT)
+    INSERT INTO NEAR VALUES (-1, -1)
+    INSERT INTO NEAR VALUES ( 0, -1)
+    INSERT INTO NEAR VALUES ( 1, -1)
+    INSERT INTO NEAR VALUES (-1,  0)
+    INSERT INTO NEAR VALUES ( 0,  0)
+    INSERT INTO NEAR VALUES ( 1,  0)
+    INSERT INTO NEAR VALUES (-1,  1)
+    INSERT INTO NEAR VALUES ( 0,  1)
+    INSERT INTO NEAR VALUES ( 1,  1)
+
+    /* 初期配置 (グライダー) */
+    INSERT INTO LIFE VALUES (0, 1, 0)
+    INSERT INTO LIFE VALUES (0, 0, 1)
+    INSERT INTO LIFE VALUES (0, 0, 2)
+    INSERT INTO LIFE VALUES (0, 1, 2)
+    INSERT INTO LIFE VALUES (0, 2, 2)
+
+    /* 処理本体: 実行するたびにLIFE表に次世代を挿入します */
+    INSERT INTO LIFE
+    SELECT L1.G + 1, L1.X, L1.Y
+    FROM (SELECT L.G AS G, L.X + N.X AS X, L.Y + N.Y AS Y, COUNT(*) AS C
+          FROM LIFE L, NEAR N
+          WHERE L.G &gt;= ALL(SELECT G FROM LIFE)
+          GROUP BY L.G, L.X + N.X, L.Y + N.Y) L1
+          LEFT JOIN LIFE L2 ON L2.G = L1.G AND L2.X = L1.X AND L2.Y = L1.Y
+    WHERE L1.C = 3 OR L2.G IS NOT NULL AND L1.C = 4
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5461'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5461
+  :user_name: 匿名
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/01/26 07:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">おもしろいですね\r\n\r\nでも、2次元で表示しないといけないのでは</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5466'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5466
+  :user_name: koguro
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/438/
+  :language: Scheme
+  :time: 2008/01/26 11:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Gaucheでライフゲームを実装しました(間引き処理は実装していません)。あと、この実装過程をニコニコ動画にアップロードしてみました(<a
+    class=\"reference\" href=\"/web/20080325151021/http://www.nicovideo.jp/watch/sm2143250\">http://www.nicovideo.jp/watch/sm2143250</a>)。</p>\n<p>プログラムの説明ですが、Gauche-rfbを使っているので、ブラウザでライフゲームを見ることができます。</p>\n<p>実行方法は、以下のように画面のサイズ(ドット数)とフィールドのサイズと初期分布の確率を引数に与えてください。</p>\n<p>%
+    gosh lifegame.scm 400 400 10 10 0.3</p>\n\n\t"
+  :code: |
+    #!/usr/bin/env gosh
+    ;; lifegame
+
+    (use srfi-42)
+    (use math.mt-random)
+    (use rfb)
+    (use util.match)
+
+    ;; point
+    (define (make-point x y)
+      (cons x y))
+
+    (define (point-x p)
+      (car p))
+
+    (define (point-y p)
+      (cdr p))
+
+
+    ;; field
+    (define (make-field w h lifes)
+      (list w h lifes))
+
+    (define (field-width field)
+      (ref field 0))
+
+    (define (field-height field)
+      (ref field 1))
+
+    (define (field-lifes field)
+      (ref field 2))
+
+    (define make-random-field
+      (let ((m (make &lt;mersenne-twister&gt; :seed (sys-time))))
+        (lambda (w h prob)
+          (make-field w h (list-ec (: x 0 w)
+                                   (: y 0 h)
+                                   (if (&lt;= (mt-random-real m)
+                                           prob))
+                                   (make-point x y))))))
+
+    (define (field-adjacent-point field p dx dy)
+      (make-point (modulo (+ (point-x p) dx)
+                          (field-width field))
+                  (modulo (+ (point-y p) dy)
+                          (field-height field))))
+
+    (define (count-up-adjacent-points tbl field p)
+      (for-each
+       (match-lambda
+        ((dx dy)
+         (hash-table-update! tbl
+                             (field-adjacent-point field
+                                                   p
+                                                   dx
+                                                   dy)
+                             (cut + 1 &lt;&gt;)
+                             0)))
+       (list-ec (: x -1 2)
+                (: y -1 2)
+                (not (and (= x 0) (= y 0)))
+                (list x y))))
+
+    (define (survive-lifes tbl field)
+      (let ((lifes (field-lifes field)))
+        (hash-table-fold
+         tbl
+         (lambda (p v lst)
+           (if (or (and (or (= v 2) (= v 3))
+                         (member p lifes))
+                   (and (= v 3)
+                        (not (member p lifes))))
+               (cons p lst)
+               lst))
+         '())))
+
+    (define (next-field field)
+      (let ((tbl (make-hash-table 'equal?)))
+        (for-each (lambda (p)
+                    (count-up-adjacent-points tbl
+                                              field
+                                              p))
+                  (field-lifes field))
+        (make-field (field-width field)
+                    (field-height field)
+                    (survive-lifes tbl field))))
+
+    ;; screen
+    (define *screen-width* 200)
+    (define *screen-height* 200)
+
+    (define (screen-draw-box w h p)
+      (let* ((cx (/ *screen-width* w))
+             (cy (/ *screen-height* h))
+             (x (* cx (point-x p)))
+             (y (* cy (point-y p))))
+        (rfb-box x y (+ x cx -1) (+ y cy -1) 'white
+                 :filled? #t)))
+
+    (define (screen-clear)
+      (rfb-clear 'black))
+
+    (define (screen-draw-field field)
+      (for-each (lambda (p)
+                  (screen-draw-box (field-width field)
+                                   (field-height field)
+                                   p))
+                (field-lifes field)))
+
+    (define (lifegame w h prob)
+      (let ((f (make-random-field w h prob)))
+        (while #t
+          (with-rfb-transaction
+           (lambda ()
+             (screen-clear)
+             (screen-draw-field f)))
+          (set! f (next-field f)))))
+
+    (define (main args)
+      (match-let1 (_ scr-w-str scr-h-str
+                     field-w-str field-h-str
+                     prob-str) args
+        (set! *screen-width*
+              (string-&gt;number scr-w-str))
+        (set! *screen-height*
+              (string-&gt;number scr-h-str))
+        (rfb-init *screen-width*
+                  *screen-height*
+                  :port 8080)
+        (apply lifegame (map string-&gt;number
+                             (list field-w-str
+                                   field-h-str
+                                   prob-str)))
+        0))
+  :tags:
+  - gauche
+  - gauche-rfb
+  :references:
+    :url: 
+    :title: 
+- :id: '5474'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5474
+  :user_name: yohei
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/415/
+  :language: Prolog
+  :time: 2008/01/27 04:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>SWI-Prologで．間引きは実装してません．</p>\n\n\t"
+  :code: "in_range(X, L) :- Max is L - 1, between(0, Max, X).\n\nsurround((LX,LY),
+    (X,Y), (X1,Y1), B) :-\n    member((DX, DY), [(-1,-1),(0,-1),(1,-1),(-1,0),(1,0),(-1,1),(0,1),(1,1)]),\n
+    \   X1 is (LX + X + DX) mod LX, Y1 is (LY + Y + DY) mod LY, member((X1,Y1), B).\n\nlive((LX,LY),
+    (X,Y), B) :-\n    in_range(X, LX), in_range(Y, LY),\n    findall(T, surround((LX,LY),
+    (X,Y), T, B), S),\n    length(S, N), (member((X,Y), B) -&gt; (N = 2; N = 3); (N
+    = 3)).\n\nprint_board((LX, LY), B) :- \n    forall(in_range(Y, LY), (forall(in_range(X,
+    LX),\n        (member((X,Y), B) -&gt; write('■'); write('□'))\n    ), writeln(''))),
+    writeln('').\n\nlifegame(L, B) :-\n    print_board(L, B), sleep(1),\n    findall(X,
+    live(L, X, B), B1), lifegame(L, B1).\n\ninit_board((LX,LY), (X,Y)) :- in_range(X,
+    LX), in_range(Y, LY), random(10) &lt; 3.\n\n:- L= (10,10), findall(X, init_board(L,
+    X), B), lifegame(L, B).\n"
+  :tags:
+  - SWI-Prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '5491'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5491
+  :user_name: sumim
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/01/27 16:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk の（Erlang にこそ及ばないものの…）比較的軽量なスレッドを利用して、全セルにおける生死の判断をマルチスレッドで処理してみました。</p>\n\n\t"
+  :code: |
+    | 行数 マス目 ワーカ再開用 メイン中断用 スレッド群 |
+    行数 := 10.
+    マス目 := Matrix new: 行数 tabulate: [:行＃ :列＃ | #value -&gt; #(0 0 1) atRandom].
+    ワーカ再開用 := OrderedCollection new.
+    メイン中断用 := OrderedCollection new.
+    スレッド群 := OrderedCollection new.
+    マス目 withIndicesDo: [:セル :行＃ :列＃ |
+        | 再開指示 完了伝達 隣接セル群  |
+        再開指示 := ワーカ再開用 add: Semaphore new.
+        完了伝達 := メイン中断用 add: Semaphore new.
+        隣接セル群 := {0@1. 1@1. 1@0. 1@-1. 0@-1. -1@-1. -1@0. -1@1} collect: [:Δ |
+            | 位置 |
+            位置 := 行＃@列＃ + Δ - 1 \\ 行数 + 1.
+            マス目 at: 位置 x at: 位置 y].
+        スレッド群 add: [[
+            | 計 |
+            再開指示 wait.
+            計 := 隣接セル群 count: [:隣接セル | 隣接セル value &gt; 0].
+            計 = 2 ifTrue: [計 := 計 + セル value].
+            完了伝達 signal.
+            再開指示 wait.
+            セル value: (計 = 3 ifTrue: [1] ifFalse: [0]).
+            完了伝達 signal] repeat
+        ] fixTemps fork].
+
+    World findATranscript: nil.
+    [50 timesRepeat: [
+        Transcript cr; show: (String streamContents: [:ss |
+            (1 to: 行数) do: [:行＃ | (マス目 atRow: 行＃) do: [:セル |
+                ss nextPut: ('■□' atWrap: セル value)].
+                ss cr]]).
+
+        ワーカ再開用 do: [:再開指示 | 再開指示 signal].
+        メイン中断用 do: [:完了伝達 | 完了伝達 wait].
+        ワーカ再開用 do: [:再開指示 | 再開指示 signal].
+        メイン中断用 do: [:完了伝達 | 完了伝達 wait]].
+    ] ensure: [スレッド群 do: [:スレッド | スレッド terminate]]
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '5512'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5512
+  :user_name: TGBT
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/167/
+  :language: Other
+  :time: 2008/01/28 04:33 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>シェーダ言語のHLSLで書いてみました。\nこれ以外にシェーダを駆動するためのコードが500行以上必要なので、参考ページURLに載せておきました。</p>\n\n\t"
+  :code: |
+    // Cから変更できる変数の宣言。問題サイズに対応。座標計算に使う。
+    float F_X;
+    float F_Y;
+    // テクスチャの宣言
+    texture SrcTex1;
+    // テクスチャの定義
+    sampler Samp1 = sampler_state
+    {
+        Texture        = &lt;SrcTex1&gt;;
+        MinFilter    = POINT;
+        MagFilter    = POINT;
+        MipFilter    = NONE;
+        AddressU    = WRAP;
+        AddressV    = WRAP;
+    };
+    // 頂点シェーダの出力形式
+    struct VS_OUTPUT
+    {
+        float4 Pos        : POSITION;
+        float2 Tex        : TEXCOORD;
+    };
+    // 頂点シェーダ(未使用)
+    VS_OUTPUT VS_DEFAULT (
+        float4 Pos        : POSITION,
+        float2 Tex        : TEXCOORD
+    ){
+        VS_OUTPUT Out    = (VS_OUTPUT)0;
+        return Out;
+    }
+    // ピクセルシェーダ
+    float4 PS_TEST ( VS_OUTPUT In ) : COLOR
+    {
+        float4 Color        = {0.0f, 0.0f, 0.0f, 0.0f};
+        float2 TexA            = {0.0f, 0.0f};
+        float4 Color0        = {0.0f, 0.0f, 0.0f, 0.0f};
+        int num;
+        int sum;
+        int ret;
+
+        TexA                = In.Tex + float2(F_X*0.5f, F_Y*0.5f);
+
+        Color                += tex2D( Samp1, TexA+float2(-F_X, -F_Y) );
+        Color                += tex2D( Samp1, TexA+float2(0.0f, -F_Y) );
+        Color                += tex2D( Samp1, TexA+float2( F_X, -F_Y) );
+        Color                += tex2D( Samp1, TexA+float2(-F_X,  0.0f) );
+        Color0                =  tex2D( Samp1, TexA+float2( 0.0f,  0.0f) );
+        Color                += tex2D( Samp1, TexA+float2( F_X,  0.0f) );
+        Color                += tex2D( Samp1, TexA+float2(-F_X,  F_Y) );
+        Color                += tex2D( Samp1, TexA+float2(0.0f,  F_Y) );
+        Color                += tex2D( Samp1, TexA+float2( F_X,  F_Y) );
+        num                    = round(Color0.r);
+        sum                    = round(Color.r);
+        ret                    = (sum==3) + (sum==2) * num;
+        /*
+        // 上の行は以下の条件式をまとめたもの。
+        // 分岐をなくしたので多くのGPUで実行可能なはず。
+        if(num==0)
+        {
+            ret                = sum==3;
+        }else{
+            ret                = ((sum==2)+(sum==3)) != 0;
+        }
+        */
+        return float4((float)(ret*0xff), 0.0f, 0.0f, 1.0f);    // RGBA
+    }
+    // テクニック
+    technique RenderScene
+    {
+        pass P0
+        {
+            VertexShader    = compile vs_2_0 VS_DEFAULT();
+            PixelShader        = compile ps_2_0 PS_TEST();
+        }
+    }
+  :tags:
+  - HLSL
+  :references:
+    :url: /web/20080325151021/http://exth.net/~ohshima/cgi-bin/fswiki/wiki.cgi?page=GPU%A4%C7%A5%E9%A5%A4%A5%D5%A5%B2%A1%BC%A5%E0
+    :title: 'GPUでライフゲーム - Satoshi OHSHIMA''s web site:'
+- :id: '5580'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5580
+  :user_name: はやみず
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/440/
+  :language: Scheme
+  :time: 2008/01/30 19:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>生まれてはじめてライフゲームを書いてみました。いままで人の書いたものを見たことはあったのですが。</p>\n<p>ポイントとしては、循環リストを使って実装したことでしょうか。循環リストを使うことで、マップ境界に関する処理を一切考えなくてもよいようにしました。</p>\n\n\t"
+  :code: "#!/usr/bin/env gosh\n;; -*- coding: utf-8 mode: scheme -*-\n\n\n(use math.mt-random)\n(use
+    srfi-1)\n\n(define map-size 10)\n\n(define (main args)\n  (let1 m\n      (map-init\n
+    \      #?=(let1 init-data ()\n     (let ((mt (make &lt;mersenne-twister&gt; :seed
+    (sys-time))))\n       (for-each\n        (lambda (x)\n          (for-each\n           (lambda
+    (y)\n         (if (&lt;= (mt-random-real mt) 0.3)\n             (set! init-data
+    (cons (cons x y) init-data))))\n           (iota map-size 1)))\n        (iota
+    map-size 1)))\n     init-data))\n    ;; (print-map m)\n    (lifegame-loop m)\n
+    \   )\n  0)\n\n(define (map-init init-data)\n  (let1 map-data (make-map)\n    (for-each\n
+    \    (lambda (datum)\n       (let ((x (car datum))\n         (y (cdr datum)))\n
+    \    (map-set! map-data #t x y)))\n     init-data)\n    map-data))\n\n(define
+    (make-map)\n  (define (list-&gt;ring ls)\n    (let loop((ls_ ls))\n    (if (null?
+    (cdr ls_))\n        (begin (set-cdr! ls_ ls) ls)\n        (loop (cdr ls_)))))\n\n
+    \ (define (make-ring-line)\n    (list-&gt;ring (make-list map-size #f)))\n\n  (define
+    (make-ring-map)\n    (let1 ls\n    (let loop((ret ()) (itr map-size))\n      (if
+    (= 0 itr)\n          ret\n          (loop (cons (make-ring-line) ret) (- itr 1))))\n
+    \     (list-&gt;ring ls)))\n\n  (make-ring-map))\n\n(define (print-map map-data)\n
+    \ (define (print-line line)\n    (let loop((itr 1))\n      (if (&gt; itr map-size)\n
+    \     (newline)\n      (begin\n        (if (ref line itr) (display \"[*]\") (display
+    \"[ ]\"))\n        (loop (+ itr 1))))))\n  (let loop ((itr 1))\n    (if (&gt;
+    itr map-size)\n    (newline)\n    (begin\n      (print-line (ref map-data itr))\n
+    \     (loop (+ 1 itr))))))\n\n(define (delete-map)\n  (for-each\n   display\n
+    \  (make-list (+ 1 (* 3 map-size map-size ) map-size) \"\\x08\"))\n  )\n\n(define
+    (map-examine map-data x y)\n  (let1 args\n      (map\n       (lambda (x)\n     (while
+    (&lt; x 1)\n        (set! x (+ x map-size)))\n     x)\n       (list x y))\n    (set!
+    x (car args))\n    (set! y (cadr args)))\n  (ref (ref map-data y) x)\n  )\n\n(define
+    (map-on! map-data x y)\n  (print-map (map-set! map-data #t x y)))\n\n(define (map-off!
+    map-data x y)\n  (print-map (map-set! map-data #f x y)))\n\n(define (map-set!
+    map-data new-val x y)\n  (define (nth-cdr ls n)\n    (let loop((ret ls) (n n))\n
+    \     (if (= n 0)\n      ret\n      (loop (cdr ret) (- n 1)))))\n\n  (let1 args\n
+    \     (map\n       (lambda (x)\n     (while (&lt; x 1)\n        (set! x (+ x map-size)))\n
+    \    x)\n       (list x y))\n    (set! x (car args))\n    (set! y (cadr args)))\n
+    \ \n  (set-car! (nth-cdr (ref map-data y) x)\n        new-val)\n  map-data)\n\n(define
+    (count-neighbors map-data x y)\n    (let1 count 0\n      (for-each\n       (lambda
+    (arg)\n     (let ((x (car arg)) (y (cdr arg)))\n       (if (map-examine map-data
+    x y)\n           (set! count (+ count 1)))))\n       (let loop ((ret ()) (nx (-
+    x 1)) (ny (- y 1)))\n     (cond\n      ((&gt; ny (+ y 1))\n       ret)\n      ((&gt;
+    nx (+ x 1))\n       (loop ret (- x 1) (+ ny 1)))\n      (else\n       (loop (if
+    (and (= x nx) (= y ny))\n             ret\n             (cons `(,nx . ,ny) ret))\n
+    \        (+ nx 1)\n         ny)))))\n      count))\n\n(define (map-next-step old-map)\n
+    \ (let1 new-map\n      (make-map)\n    (for-each\n     (lambda (x)\n       (for-each\n
+    \   (lambda (y)\n      (let1 count (count-neighbors old-map x y)\n        (if
+    (map-examine old-map x y)\n        ;;; if alive\n        (if (or (= count 2) (=
+    3 count))\n            (map-set! new-map #t x y)\n            (map-set! new-map
+    #f x y))\n\n        ;;; if dead\n        (if (= count 3)\n            (map-set!
+    new-map #t x y)\n            (map-set! new-map #f x y))))\n      )\n    (iota
+    map-size 1)))\n     (iota map-size 1))\n    new-map))\n\n(define (lifegame-loop
+    map-data)\n  (print-map map-data)\n  (let loop((m map-data))\n    (delete-map)\n
+    \   (print-map m)\n    (sys-nanosleep 100000000)\n    (loop (map-next-step m))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5581'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5581
+  :user_name: UK
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/326/
+  :language: Ruby
+  :time: 2008/01/30 20:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>何か適当なキーをぽちぽちすると世代が進みます。\n生きているセルの周りをスコア付けして、維持・誕生・消滅の判断をしています。\nテストコードを書いてないので合っているかちょっと不安ですが・・・</p>\n\n\t"
+  :code: "require 'curses'\n\nmodule LifeWorld\n  class World\n    def initialize(map)\n
+    \     @map = map\n    end\n\n    def to_s \n      str = \"\"\n      @map.each
+    do |line|\n        line.each do |cell|\n          str += \"[#{cell}]\"\n        end\n
+    \       str += \"¥n\"\n      end\n\n      str\n    end\n\n    def next \n      ranking.each_with_index
+    do |line, h|\n        @map[h] = line.map {|cell| [3, 12, 13].include?(cell) ?
+    '*' : ' ' }\n      end\n    end\n\n    private\n    def live_list\n      list
+    = []\n      @map.each_with_index do |line, h|\n        line.each_with_index {|cell,
+    w| list &lt;&lt; [h,w] if cell == '*'}\n      end\n\n      list\n    end\n\n    def
+    set_score(rank_map, live)\n      (-1..1).each do |x|\n        (-1..1).each do
+    |y|\n          score = x == y &amp;&amp; y  == 0 ? 10 : 1\n          rank_map[live[0]+x][live[1]+y]
+    = rank_map[live[0]+x][live[1]+y] + score\n        end\n      end\n    end\n\n
+    \   def ranking\n      rank_map = List.new\n      @map.size.times { rank_map &lt;&lt;
+    List.new(@map[0].size, 0) }\n\n      live_list.each do |live|\n        set_score(rank_map.clone,
+    live)\n      end\n\n      rank_map\n    end\n  end\n\n  class List &lt; Array\n
+    \   alias original_get []\n    alias original_set []=\n\n      def [](index)\n
+    \       original_get(index % size)\n      end\n\n    def []=(index, value)\n      original_set(index
+    % size, value)\n    end\n  end\nend\n\nif __FILE__ == $0\n  begin\n    game =
+    LifeWorld::World.new([\n                                [' ', '*', ' ', ' ', '
+    ', ' ', '*', '*', '*', ' '],\n                                [' ', ' ', ' ',
+    ' ', '*', ' ', ' ', '*', '*', ' '],\n                                [' ', ' ',
+    ' ', '*', ' ', ' ', '*', ' ', '*', ' '],\n                                ['*',
+    ' ', '*', '*', ' ', ' ', '*', ' ', ' ', ' '],\n                                ['
+    ', '*', ' ', ' ', ' ', ' ', ' ', ' ', '*', ' '],\n                                ['*',
+    ' ', ' ', ' ', '*', ' ', '*', '*', ' ', '*'],\n                                ['
+    ', '*', ' ', ' ', ' ', ' ', '*', ' ', ' ', ' '],\n                                ['
+    ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],\n                                ['*',
+    ' ', ' ', ' ', ' ', ' ', '*', ' ', ' ', '*'],\n                                ['
+    ', ' ', ' ', ' ', '*', '*', ' ', ' ', '*', ' ']])\n\n    window = Curses::Window.new(Curses.lines,
+    Curses.cols, 0, 0)\n    loop do\n      window.setpos(0, 0)\n      window.addstr(game.to_s)\n
+    \     game.next \n      window.getch\n    end\n  ensure\n    window.close\n  end\nend\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5641'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5641
+  :user_name: ryugate
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/674/
+  :language: Scala
+  :time: 2008/02/02 12:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Scala実装がなかったので、作ってみました。\r\nまだまだ、Scalaになれてないので、\r\nツッコミどころ満載とおもいます。（バグもあるかも・・・）\r\nばしばし、ご指摘いただければ幸いです。</pre>\n\t"
+  :code: "object lifegame {\n  def main(args:Array[String]) {\n\n    println(\"make
+    field\")\n    val size = 10\n    val fields = new Array[Lifefield](2)\n    fields.update(0,
+    new Lifefield(size))\n    fields.update(1, new Lifefield(size))\n\n    println(\"init
+    cell\")\n    val f = fields.apply(0)\n    f.rndinit\n    // glider\n    //f.setcell(0,1,1)\n
+    \   //f.setcell(1,0,1)\n    //f.setcell(2,0,1)\n    //f.setcell(2,1,1)\n    //f.setcell(2,2,1)\n
+    \   println(fields.apply(0))\n\n    println(\"start\")\n    Iterator.range(0,1000).foreach
+    {i =&gt;\n      val fi = i % 2\n      val nfi = if (fi == 0) 1 else 0\n      fields.apply(fi).makenext(fields.apply(nfi))\n\n
+    \     println(\"age = \" + i.toString)\n      println(fields.apply(nfi))\n      Thread.sleep(200)\n
+    \   }\n  }\n}\n\nclass Lifefield {\n  var sx:int = 0\n  var sy:int = 0\n  var
+    field:Array[Array[int]] = null\n\n  def this(x:int, y:int) {\n    this()\n    sx
+    = x; sy = y\n    field = new Array[Array[int]](sx)\n    field.indices.foreach
+    {i =&gt; field.update(i, new Array[int](sy)) }\n\n    field.foreach {line =&gt;\n
+    \     line.indices.foreach {i =&gt;\n        line.update(i, 0)\n      }\n    }\n
+    \ }\n  def this(size:int) = this(size,size)\n  \n  def setcell(x:int,y:int,value:int)
+    = field.apply(y).update(x, value)\n  \n  def makenext(newfield:Lifefield) = {\n
+    \   Iterator.range(0,sy).foreach {y =&gt;\n      Iterator.range(0,sx).foreach
+    {x =&gt;\n        val cellvalue = field.apply(y).apply(x)\n        val num = checkaround(x,y)\n
+    \       if (cellvalue == 0 &amp;&amp; num == 3)\n          newfield.setcell(x,y,
+    1)\n        else\n          if (cellvalue == 1 &amp;&amp; (num == 2 || num ==
+    3))\n            newfield.setcell(x,y, 1)\n          else  \n            newfield.setcell(x,y,
+    0)\n      }\n    }\n  }\n  \n  def checkaround(x:int,y:int) = {\n    val r = Iterator.range(-1,2)\n
+    \   var n:int = 0\n    r.foreach {i1 =&gt;\n      r.foreach {i2 =&gt;\n        if(i1==0
+    &amp;&amp; i2==0)\n          null\n        else\n          n += cellvalue(x +
+    i1, y + i2)\n      }\n    }\n    n\n  }\n  \n  def cellvalue(x:int, y:int) = {\n
+    \   val xx = if (x &lt; 0) x + sx else x % sx\n    val yy = if (y &lt; 0) y +
+    sy else y % sy\n    field.apply(yy).apply(xx)\n  }\n\n  def rndinit {\n    val
+    rnd = new Random()\n    field.foreach {line =&gt;\n      line.indices.foreach
+    {i =&gt;\n        if (rnd.nextInt(3) == 0)\n          line.update(i, 1)\n        else\n
+    \         line.update(i, 0)\n      }\n    }\n  }\n\n  override def toString()
+    = {\n    var ret = \"\"\n    field.foreach {line =&gt;\n      line.foreach {cell
+    =&gt;\n        ret += (if (cell == 1) \"[*]\" else \"[ ]\")\n      }\n      ret
+    += \"\\n\"\n    }\n    ret\n  }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5674'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5674
+  :user_name: ygnon
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/701/
+  :language: OCaml
+  :time: 2008/02/03 20:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>思いつきでビット操作で書いたものです。読みにくくて済みません。\r</p>\n<p>ちょっと動作に自信が無かったり...(グライダーは動いた、と思う)\r</p>\n<p>間引きはしていません。</p>\n</div>\n\t"
+  :code: "let most = 0x400\nlet size = 10\n  \nlet exist num pos = num land pos !=
+    0\nlet i_of_b f = if f then 1 else 0\n  \n(* 左右端ループ対策 *)\nlet ring num = num lor
+    (num lsl size) lor (num lsr size)\n  \nlet rec update_line a b c pos =\n  if pos
+    = 1 then\n    0\n  else\n    let count num p =\n      i_of_b (exist num p) + i_of_b
+    (exist num (p lsr 1)) + i_of_b (exist num (p lsl 1)) in\n    let alive = count
+    a pos + count b pos + count c pos in\n      if alive = 3 || alive = 4 &amp;&amp;
+    exist b pos then\n        pos + update_line a b c (pos lsr 1)\n      else\n        update_line
+    a b c (pos lsr 1)\n          \nlet rec update_field = function\n    []          -&gt;
+    []\n  | _::[]       -&gt; []\n  | _::_::[]    -&gt; []\n  | a::b::c::xs -&gt;
+    ring (update_line a b c most) :: update_field (b::c::xs)\n      \nlet rec mk_line
+    n =\n  if n &lt;= 0 then 0 else (i_of_b (Random.int 10 &lt; 3) + mk_line (n-1))
+    lsl 1\n    \nlet rec mk_field n =\n  if n &lt;= 0 then [] else ring (mk_line size)
+    :: mk_field (n-1)\n    \nlet rec print_field = function\n    []    -&gt; ()\n
+    \ | x::xs -&gt;\n      for i = 0 to size-1 do\n        if x land (most lsr i)
+    != 0 then\n          print_string \"[*]\"\n        else\n          print_string
+    \"[ ]\";\n      done;\n      print_string \"\\n\";\n      print_field xs\n        \nlet
+    rec main_loop n fld =\n  print_string (\"t=\" ^ string_of_int n ^ \"\\n\");\n
+    \ print_field fld;\n  if String.compare (read_line ()) \"exit\" != 0 then\n    (*
+    上下端ループ対策 *)\n    let fld_ = List.concat [[List.nth fld 9]; fld; [List.hd fld]]
+    in\n      main_loop (n+1) (update_field fld_)\n        \nlet () =\n  Random.self_init
+    ();\n  main_loop 0 (mk_field size)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5769'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5769
+  :user_name: Uminchu
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/717/
+  :language: Scheme
+  :time: 2008/02/18 03:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>初めて投稿します。\nよろしくお願いします。\n普段はC++を扱う事が多いのですが、趣味でSchemeを勉強しています。\n書き方が変なところなどがあれば、ご指摘くださいませ。</p>\n\n\t"
+  :code: |
+    (use srfi-1)
+    (use srfi-27)
+    (use srfi-43)
+
+    ;;主手続き
+    (define (life-game n t)
+      (let loop ((board (make-initial-board n))
+                 (count 0))
+        (if (= count t)
+            #f
+            (begin
+              (display-life-game board n)
+              (loop (next-step board n) (+ count 1))))))
+
+    ;;画面出力
+    (define (display-life-game board n)
+      (begin
+        (vector-for-each (lambda (position state)
+                      (if (= (remainder (+ position 1) n) 0)
+                          (print state)
+                          (display state)))
+                    board)
+        (newline)))
+
+    ;;初期の盤面を作成
+    ;;ランダムな盤面を作成
+    (define (make-initial-board n)
+      (let1 board (make-vector (* n n) 0)
+        (vector-map (lambda (x y)
+                      (random-integer 2))
+                    board)))
+
+    ;;盤面を更新
+    (define (next-step board size)
+      (vector-map (lambda (loc stat)
+                    (state-change-rule stat
+                                       (fold +
+                                             0
+                                             (map (pa$ vector-ref board)
+                                                  (neighbor-cell loc size)))))
+                  board))
+
+    ;;状態を変えるルール
+    (define (state-change-rule self neighbor-sum)
+      (if (= self 0)
+          (if (= neighbor-sum 3)
+              1
+              0)
+          (if (or (= neighbor-sum 2) (= neighbor-sum 3))
+              1
+              0)))
+
+    ;;近傍セルを取得
+    (define (neighbor-cell r size)
+      (define (boundary-check x)
+        (cond ((&lt; x 0) (+ x size))
+              ((&gt;= x size) (- x size))
+      (define (make-coodinate-change-proc x y)
+        (lambda (offset)
+          (+ (boundary-check (+ x (car offset)))
+             (* (boundary-check (- y (cdr offset)))
+                size))))
+
+      (receive (y x) (quotient&amp;remainder r size)
+        (map (make-coodinate-change-proc x y)
+             (list (cons 1 0)
+                   (cons 1 -1)
+                   (cons 0 -1)
+                   (cons -1 -1)
+                   (cons -1 0)
+                   (cons -1 1)
+                   (cons 0 1)
+                   (cons 1 1)))))
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '5964'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/5964
+  :user_name: IOG
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/750/
+  :language: Haskell
+  :time: 2008/03/06 06:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Haskell の勉強中です．\n間引きはありません．\n初期状態を表す，\n\"0001000:0010010:001000...\"のような文字列を，引数として与えます（':'
+    は行の区切り）．</p>\n\n\t"
+  :code: "import List\nimport System\nimport System.Posix.Unistd\n\nmain = do args
+    &lt;- getArgs\n          let initState    = [[read [c] :: Int| c &lt;- line]|
+    line &lt;- initStateStr]\n              initStateStr = split ':' $ head args\n
+    \                 where\n                    split :: (Eq a) =&gt; a -&gt; [a]
+    -&gt; [[a]]\n                    split d xs\n                        | null xs
+    \  = []\n                        | otherwise = case break (== d) xs of\n                                        (fxs,[])
+    \ -&gt; [fxs]\n                                        (fxs,sxs) -&gt; fxs : split
+    d (tail sxs)\n          (putEachStrWithSleep 400000) . (map stateToStr) $ lifeGame
+    initState\n\nputEachStrWithSleep :: Int -&gt; [String] -&gt; IO ()\nputEachStrWithSleep
+    _ []        = putStr \"\"\nputEachStrWithSleep usec (s:ss) = (putStrLn . replace0
+    . replace1) s &gt;&gt; \n                                  usleep usec &gt;&gt;
+    \n                                  putEachStrWithSleep usec ss\n    where\n      replace0
+    = replaceStr '0' '.'\n      replace1 = replaceStr '1' '@'\n\n      replaceStr
+    :: Char -&gt; Char -&gt; String -&gt; String\n      replaceStr _ _ \"\"      =
+    []\n      replaceStr c c' (s:ss) = (if (c == s) then c' else s) : replaceStr c
+    c' ss\n\ninfixl 9 !!&gt;\n\n(!!&gt;) :: [a] -&gt; Int -&gt; a\n(!!&gt;) xs n\n
+    \   | null xs   = error \"Main.(!!&gt;): empty list\\n.\"\n    | otherwise = xs
+    !! (n `mod` length xs)\n\ntype State = [[Int]]\n\nstateToStr :: State -&gt; String\nstateToStr
+    []     = \"\"\nstateToStr (s:ss) = concatMap show s ++ \"\\n\" ++ stateToStr ss\n\nlifeGame
+    :: State -&gt; [State]\nlifeGame state = state : (lifeGame . nextState) state\n\nnextState
+    :: State -&gt; State\nnextState state = [[nextCell state (x,y)| x &lt;- [0..maxX]]|
+    y &lt;- [0..maxY]]\n    where\n      maxX = ((length . head) state) - 1\n      maxY
+    = (length state) - 1\n\nnextCell :: State -&gt; (Int,Int) -&gt; Int\nnextCell
+    state (x,y)\n    | numNeighborLives == 2 = targetCell\n    | numNeighborLives
+    == 3 = if (targetCell == 0) then 1 else targetCell\n    | otherwise             =
+    0\n    where\n      targetCell :: Int\n      targetCell = cell (x,y)\n\n      numNeighborLives
+    :: Int\n      numNeighborLives = (length . filter (== 1)) neighborCells\n\n      neighborCells
+    :: [Int]\n      neighborCells\n          = [cell (x-1,y-1), cell (x,y-1), cell
+    (x+1,y-1),\n             cell (x-1,y)  ,               cell (x+1,y)  ,\n             cell
+    (x-1,y+1), cell (x,y+1), cell (x+1,y+1)]\n\n      cell :: (Int,Int) -&gt; Int\n
+    \     cell (x,y) = state !!&gt; y !!&gt; x\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6021'
+  :parent_id: '126'
+  :url: http://ja.doukaku.org/comment/6021
+  :user_name: mizyo
+  :user_url: /web/20080325151021/http://ja.doukaku.org/user/762/
+  :language: Haskell
+  :time: 2008/03/18 15:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ランダムな初期環境を作り、50世代分を表示します。\r\n（ただし、乱数処理が手抜きです）\r\n間引きとかはやっていません。\r\n\n\t"
+  :code: |
+    module Main (main) where
+
+    import Data.Array
+    import Data.List (iterate)
+    import System.Random (randomRs, newStdGen)
+
+    newtype World = World (Array (Int, Int) Bool)
+    instance Show World where
+        show (World cells) = concat $ map f $ assocs cells
+            where showCell c = if c then "[*]" else "[ ]"
+                  (_, (lastx, _)) = bounds cells
+                  f ((_, x), c) | x == lastx = showCell c ++ "\n"
+                                | otherwise  = showCell c
+
+    (!@) :: World -&gt; (Int, Int) -&gt; Bool
+    (World cells) !@ (x, y) = cells ! (wrap x, wrap y)
+        where (_, (size, _)) = bounds cells
+              wrap n | n &lt; 0     = size
+                     | n &gt; size  = 0
+                     | otherwise = n
+
+    next :: World -&gt; World
+    next w@(World cells) = rebuild $ map step $ assocs cells
+        where rebuild = World . array (bounds cells)
+              around (px, py) = length $ filter id [w !@ (x, y) | x &lt;- [px - 1 .. px + 1],
+                                                                  y &lt;- [py - 1 .. py + 1],
+                                                                  x /= px || y /= py]
+              step (p, True)  = let a = around p in (p, a == 2 || a == 3)
+              step (p, False) = (p, around p == 3)
+
+    mkWorld :: Int -&gt; IO World
+    mkWorld size = do g1 &lt;- newStdGen
+                      g2 &lt;- newStdGen
+                      return $ w g1 g2
+        where ix       = ((0, 0), (size - 1, size - 1))
+              init     = [((x, y), False) | x &lt;- [0 .. size - 1], y &lt;- [0 .. size - 1]]
+              w g1 g2  = World $ array ix init // ps g1 g2
+              ps g1 g2 = take (size * size `div` 3) $
+                         flip zip (repeat True) $
+                         zipWith (,) (randomRs (0, size - 1) g1) (randomRs (0, size - 1) g2)
+
+    generations :: World -&gt; [World]
+    generations = iterate next
+
+    main :: IO ()
+    main = mkWorld 10 &gt;&gt;= mapM_ print . take 50 . generations
+  :tags: []
+  :references:
+    :url: 
+    :title: 

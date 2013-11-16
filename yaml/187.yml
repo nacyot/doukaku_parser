@@ -1,0 +1,816 @@
+---
+:id: '187'
+:title: 比較しないソートの作成
+:comments:
+- :id: '6628'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6628
+  :user_name: sweetie089
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/836/
+  :language: 
+  :time: 2008/06/30 13:37 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\r\n\t  <pre class=\"compact\">ソート対象のデータ同士で一切比較などを行わずにソートし、ソート結果を出力するプログラムを作成してください。条件は以下の通り。\r\n・最低値・最大値・個数・並び替え対象の4つを引数として受け取る\r\n・最大値と最低値はあくまで取りうる可能性であり、実際に出現することを保障するものではない。\r\n・同値が複数出現することがある。\r\n・入出力方法及びフォーマットは自由、関数として実装し引数に渡す形でも良い。\r\n・小数点以下の数値が渡されることはないが、負の数は渡される可能性がある。\r\n・最大値や最低値を元に算出した数値との比較は使用しても問題ありません。\r\n・出来るだけ多様な条件のデータをソートできるアルゴリズムを使ってください(データが多少多いときや一定の並び順だとソート失敗するものはダメ)\r\n・昇順降順はどちらでもかまいません\r\n\r\n以下サンプル入出力\r\n&gt;&gt;入力\r\n-1
+    10 10\r\n-1 9 4 8 9 6 3 9 5 2\r\n&gt;&gt;出力\r\n-1 2 3 4 5 6 8 9 9 9</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6645'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6645
+  :user_name: sumim
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/07/03 03:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    | sort |
+    sort := [:min :max :size :data |
+        | bag out |
+        bag := data asBag.
+        out := OrderedCollection new: size.
+        min to: max do: [:each |
+            (bag occurrencesOf: each) timesRepeat: [out add: each]].
+        out asArray].
+
+    sort valueWithArguments: #(-1 10 10 (-1 9 4 8 9 6 3 9 5 2))
+    "=&gt; #(-1 2 3 4 5 6 8 9 9 9) "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '6646'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6646
+  :user_name: ika
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2008/07/03 03:39 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Counting sort</p>\n\n\t"
+  :code: |
+    private import std.stdio;
+
+    void main() {
+        int[] a = [1, 9, 4, 8, 9, 6, 3, 9, 5, 2];
+        a.countingSort(1, 10);
+        writeln(a);
+    }
+
+    void countingSort(int[] array, int min, int max) {
+        auto counts = new uint[max - min + 1];
+        foreach(n; array) {
+            counts[n - min]++;
+        }
+        auto p = array.ptr;
+        foreach(i, c; counts) {
+            p[0..c] = i + min;
+            p += c;
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6647'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6647
+  :user_name: mono
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/398/
+  :language: Haskell
+  :time: 2008/07/02 23:10 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  クイックソート的にやりました。\r\nしかし、終了条件が悪いので遅いです。\n\t"
+  :code: |
+    import Data.List (group,sort)
+
+    main :: IO ()
+    main = print $ qsort (-1) 10 [-1,9,4,8,9,6,3,9,5,2]
+
+    uniq :: Ord a =&gt; [a] -&gt; [a]
+    uniq ns = map head $ group $ sort ns
+
+    qsort :: Integral a =&gt; a -&gt; a -&gt; [a] -&gt; [a]
+    qsort _ _ [] = []
+    qsort _ _ ns | length (uniq ns) == 1 = ns
+    qsort min max ns = let mid = div (max + min) 2
+                       in qsort min mid [y | y &lt;- ns, y &lt; mid] ++ qsort mid max [y | y &lt;- ns, y &gt;=mid ]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6648'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6648
+  :user_name: horiuchi
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/07/03 01:30 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>counting sortを実装しました。</p>\n\n\t"
+  :code: |
+    import java.util.Arrays;
+
+    public class Sample187 {
+        public static int[] countingSort(int min, int max, int[] data) {
+            int[] counter = new int[max - min + 1];
+            for (int i: data) {
+                counter[i - min]++;
+            }
+
+            int[] result = new int[data.length];
+            int index = 0;
+            for (int i = 0; i &lt; counter.length; i++) {
+                for (int count = 0; count &lt; counter[i]; count++) {
+                    result[index++] = i + min;
+                }
+            }
+            return result;
+        }
+
+        public static void main(String[] args) {
+            int[] sort = countingSort(-1, 10, new int[] {-1, 9, 4, 8, 9, 6, 3, 9, 5, 2});
+            System.out.println(Arrays.toString(sort));
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6649'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6649
+  :user_name: だいら
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/468/
+  :language: PHP
+  :time: 2008/07/03 02:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  バケツで。\n\t"
+  :code: |
+    &lt;?php
+    $min = -1;
+    $max = 10;
+    $input = array(-1, 9, 4, 8, 9, 6, 3, 9, 5, 2);
+    $sorted = bucketsort($min, $max, $input);
+
+    function bucketsort($min, $max, $input){
+        for($i = $min; $i &lt;= $max; $i++)
+            $temp[$i] = 0;
+        foreach($input as $v)
+            $temp[$v]++;
+        foreach($temp as $k =&gt; $v)
+            for($i = 0; $i &lt; $v; $i++)
+                $sorted[] = $k;
+        return $sorted;
+    }
+  :tags: []
+  :references:
+    :url: /web/20081121120500/http://ja.wikipedia.org/wiki/%E3%83%90%E3%82%B1%E3%83%83%E3%83%88%E3%82%BD%E3%83%BC%E3%83%88
+    :title: バケットソート
+- :id: '6650'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6650
+  :user_name: tetuinu
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/839/
+  :language: C
+  :time: 2008/07/03 03:21 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>初投稿です。\n勢いで作ったので例外処理とか入ってません。</p>\n\n\t"
+  :code: |
+    #include&lt;stdio.h&gt;
+
+    void sort(int min, int max, int len, int data[], int *result);
+
+    int main()
+    {
+            int min = -1;
+            int max = 10;
+            int data[] = {-1, 9, 4, 8, 9, 6, 3, 9, 5, 2};
+            int len = 10;
+            int i;
+            int *result;
+
+            sort(min, max, len, data, result);
+            for(i = 0; i &lt; len; i++)
+            {
+                    printf("%d\n", result[i]);
+            }
+
+            return 0;
+    }
+
+    void sort(int min, int max, int len, int data[], int * result)
+    {
+            int bucket[len];
+            int i, j;
+            int idx = 0;
+
+            for(i = min; i &lt; max; i++)
+            {
+                    bucket[i] = 0;
+            }
+
+            for(i = 0; i &lt; len; i++)
+            {
+                    bucket[data[i]]++;
+            }
+
+
+            for(i = min; i &lt; max; i++)
+            {
+                    for(j = 0; j &lt; bucket[i]; j++)
+                    {
+                            result[idx++] = i;
+                    }
+            }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6651'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6651
+  :user_name: baal
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/827/
+  :language: Scheme
+  :time: 2008/07/03 04:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Mosh (Scheme) で書きました。\r\nデータ個数を終了条件に使えばもっと効率よくできそうです。\n\t"
+  :code: |
+    (define count-sort (lambda (range-min range-max range-len data)
+      (let loop1 ((i range-min) (result '()))
+        (if (&gt;= i range-max)
+          result
+          (loop1 (+ i 1) (append result
+            (let loop2 ((ls data) (rs '()))
+              (if (pair? ls)
+                (loop2 (cdr ls) (if (= i (car ls)) (cons i rs) rs))
+                rs))))))))
+
+    (write (count-sort -1 10 10 '(-1 9 4 8 9 6 3 9 5 2)))
+    (newline)
+  :tags:
+  - Mosh
+  :references:
+    :url: 
+    :title: 
+- :id: '6652'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6652
+  :user_name: あにす
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/07/03 04:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  horiuchiさんの#6648をコピペしてC#のコードに改変しました。\r<br>殆ど一緒です。行数まで一致しています。\r<br>JavaとC#って似てますよね。\n\t"
+  :code: |
+    using System;
+
+    public class Sample187 {
+        public static int[] countingSort(int min, int max, int[] data) {
+            int[] counter = new int[max - min + 1];
+            foreach(int i in data) {
+                counter[i - min]++;
+            }
+
+            int[] result = new int[data.Length];
+            int index = 0;
+            for(int i = 0; i &lt; counter.Length; i++) {
+                for(int count = 0; count &lt; counter[i]; count++) {
+                    result[index++] = i + min;
+                }
+            }
+            return result;
+        }
+
+        public static void Main(String[] args) {
+            int[] sort = countingSort(-1, 10, new int[] { -1, 9, 4, 8, 9, 6, 3, 9, 5, 2 });
+            foreach(int i in sort) Console.Write(i + " ");
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6653'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6653
+  :user_name: baal
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/827/
+  :language: Scheme
+  :time: 2008/07/03 07:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  しまった。。。\r<br>バケットソートというのがあるんですね。\r<br>あんまり余裕がないので Gauche で書き直し。\r<br>"
+  :code: |
+    (use gauche.sequence)
+
+    (define bucket-sort (lambda (range-min range-max data-len data)
+      (let* ((range-len (+ 1 (- range-max range-min)))
+             (bucket (make-vector range-len 0))
+             (result '()))
+        (for-each (lambda (i)
+          (let ((j (- i range-min)))
+            (vector-set! bucket j (+ 1 (vector-ref bucket j)))))
+          data)
+        (for-each-with-index
+          (lambda (i count)
+            (set! result (append result
+              (make-list count (+ i range-min)))))
+          bucket)
+        result)))
+
+    (define main (lambda (args)
+      (write (bucket-sort -1 10 10 '(-1 9 4 8 9 6 3 9 5 2)))
+      (newline)
+      0))
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '6654'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6654
+  :user_name: syat
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/766/
+  :language: JavaScript
+  :time: 2008/07/03 08:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  JavaScript。クイックソート、かな？\r<br>効率悪そう。\n\t"
+  :code: |
+    Array.prototype.sort2 = function(minVal, maxVal) {
+        if (this.length &lt;= 1) return this;
+        var mid = (minVal + maxVal) / 2;
+        var lt = [], eq = [], gt = [];
+        for (var i=0; i &lt; this.length; i++) {
+            if (this[i] &gt; mid)
+                gt.push(this[i]);
+            else if (this[i] &lt; mid)
+                lt.push(this[i]);
+            else
+                eq.push(this[i]);
+        }
+        return lt.sort2(minVal, mid).concat(eq, gt.sort2(mid, maxVal));
+    };
+
+    [-1,9,4,8,9,6,3,9,5,2].sort2(-1,10)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6655'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6655
+  :user_name: syat
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/766/
+  :language: diff
+  :time: 2008/07/03 08:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  おっと。無駄が多すぎた。\r<br>以下の修正で関数に入る回数が109→15に改善しました。\n\t"
+  :code: |
+    3c3
+    &lt;       var mid = (minVal + maxVal) / 2;
+    ---
+    &gt;       var mid = Math.floor((minVal + maxVal) / 2);
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6657'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6657
+  :user_name: Otter
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2008/07/03 13:01 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>データのレンジがわかっているのであらかじめ順番に並んでいる結果のリストから入力リストにはいっているものだけ残すという方法です…</p>\n<p>入力リストの要素数は必要ありません…</p>\n\n\t"
+  :code: |
+    module Main where
+
+    sort_noComp :: (Num a, Ord a, Enum a)=&gt; a -&gt; a -&gt; Int -&gt; [a] -&gt; [a]
+    sort_noComp min max len xs = filter (\x -&gt; elem x xs) [min..max]
+
+    main = print $ sort_noComp 1 9 8 [4, 8, 9, 6, 3, 9, 5, 2]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6658'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6658
+  :user_name: mc
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/07/03 13:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  baalさんの #6653 を参考にバケットソートで書いてみました。\r<br><br>(bucket-sort -1 10 10 '(-1 9 4 8 9 6 3 9 5 2))\r<br>;=&gt; (-1 2 3 4 5 6 8 9 9 9)\n\t"
+  :code: |
+    (defun bucket-sort (min max size data)
+      (declare (integer min max size) (list data))
+      (loop :with tem := (make-array (max size (- max min)) :initial-element () )
+            :for item :of-type integer :in data
+            :do (push item (svref tem (- item min)))
+            :finally (return (reduce #'nconc tem))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6659'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6659
+  :user_name: kkobayashi
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2008/07/03 18:00 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>アルゴリズム的にはcounting sort相当になると思います。</p>\n\n\t"
+  :code: |
+    sort.uncompare &lt;- function(min, max, num, l){
+       unlist(sapply(min:max, function(n)(l[l==n])))
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6660'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6660
+  :user_name: ocean
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/07/03 23:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>これでいいのかな。</p>\n\n\t"
+  :code: |
+    def sort(min, max, a):
+        counts = [0] * (max - min + 1)
+        for x in a:
+            counts[x - min] += 1
+        result = []
+        for i, count in enumerate(counts):
+            for _ in xrange(count):
+                result.append(i + min)
+        return result
+
+    def main():
+        print sort(-1, 10, [-1, 9, 4, 8, 9, 6, 3, 9, 5, 2])
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6661'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6661
+  :user_name: 匿名
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/07/04 01:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>uniq の中で sort を使ってしまっていますよ。(^_^;)</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6662'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6662
+  :user_name: 匿名
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/07/04 01:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>重複する要素が一個にまとめられてしまいます。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6663'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6663
+  :user_name: ika
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2008/07/04 16:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Radix sort (内部アルゴリズムはBucket sort)</p>\n\n\t"
+  :code: "private import std.stdio, std.stdint;\n\nvoid main() {\n    int64_t[] a
+    = [int64_t.max, 0, -1, 3, 1 &lt;&lt; 17, -1 &lt;&lt; 30, int64_t.min];\n    writeln(a);
+    // [9223372036854775807 0 -1 3 131072 -1073741824 -9223372036854775808]\n    a.radixSort();\n
+    \   writeln(a); // [-9223372036854775808 -1073741824 -1 0 3 131072 9223372036854775807]\n}\n\nprivate
+    import std.traits : unsigned;\n\nvoid radixSort(T)(T[] array) if(is(unsigned!(T)))
+    {\n    alias unsigned!(T) U;\n\n    auto uarray = new U[array.length];\n    foreach(i,
+    ref n; uarray) {\n        n = array[i] - T.min;\n    }\n    \n    foreach(i; 0
+    .. T.sizeof * 8 / 4) {\n        auto buckets = new U[][1 &lt;&lt; 4];\n\n        foreach(n;
+    uarray) {\n            buckets[n &gt;&gt; i * 4 &amp; 0b1111] ~= n;\n        }\n\n
+    \       auto p = uarray.ptr;\n        foreach(bucket; buckets) {\n            p[0
+    .. bucket.length] = bucket;\n            p += bucket.length;\n        }\n    }\n\n
+    \   foreach(i, ref n; array) {\n        n = uarray[i] + T.min;\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6665'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6665
+  :user_name: lemonade
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/549/
+  :language: C
+  :time: 2008/07/04 15:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>基数ソートです。\n引数の最大値と最小値はメソッド内で使用してません。</p>\n\n\t"
+  :code: |
+    using System;
+    using System.Linq;
+
+    class Program
+    {
+        static void Main()
+        {
+            int[] x = { -1, 9, 4, 8, 9, 6, 3, 9, 5, 2 };
+
+            foreach (var item in RadixSort(x, int.MinValue, int.MaxValue))
+            {
+                Console.Write(item + "  ");
+            }
+            Console.WriteLine();
+        }
+
+        static int[] RadixSort(int[] a, int min, int max)
+        {
+            for (uint x = 1; x != 0; x &lt;&lt;= 1)
+            {
+                a = a.Where(n =&gt; (n &amp; x) == 0).Concat(a.Where(n =&gt; (n &amp; x) != 0)).ToArray();
+            }
+            return a.SkipWhile(n =&gt; 0 &lt;= n).Concat(a.TakeWhile(n =&gt; 0 &lt;= n)).ToArray();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6667'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6667
+  :user_name: pooq
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/606/
+  :language: J
+  :time: 2008/07/05 05:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  途中で (max-min+1)*n  の配列ができちゃう。メモリ使いすぎ。\r<br>"
+  :code: |
+    sortx=:3 :0
+      min=. 0 { y
+      max=. 1 { y
+      n=. 2 { y
+      a=. 3 }. y
+      b=. min + i. 1 + max - min
+      (+/"1 b =/ a) # b
+    )
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6669'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6669
+  :user_name: baal
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/827/
+  :language: Scheme
+  :time: 2008/07/05 08:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  mc さんの #6658 を参考にして、だいぶすっきりしたコードになりました。\r<br>ありがとうございます。\r<br>"
+  :code: |
+    (define bucket-sort (lambda (range-min range-max data-len data)
+      (let ((bucket (make-vector (+ 1 (- range-max range-min)) '())))
+        (for-each
+          (lambda (i)
+            (let ((j (- i range-min)))
+              (vector-set! bucket j (cons i (vector-ref bucket j)))))
+          data)
+        (fold-right append '() (vector-&gt;list bucket)))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6670'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6670
+  :user_name: kozima
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/164/
+  :language: Haskell
+  :time: 2008/07/05 11:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>短くする方向で書いてみました。個数は要りません。</p>\n\n\t"
+  :code: |
+    mysort min max ns = concat [filter (== x) ns | x &lt;- [min..max]]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6671'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6671
+  :user_name: 99yen
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2008/07/05 21:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  こんな感じでしょうか。配列と最小値だけ必要です。\n\t"
+  :code: |
+    ●sort(data,min)
+        tmpとは配列
+        bufとは配列
+        iとは整数
+        dataを反復
+            tmp[対象-min]=tmp[対象-min]+1
+        iで0から(tmpの配列要素数)-1まで繰り返す
+            (tmp[i])回
+                bufにi+minを配列追加
+        bufで戻る
+
+    a="-1 9 4 8 9 6 3 9 5 2"を" "で区切る
+    sort(a,-1)を表示
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6674'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6674
+  :user_name: Otter
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2008/07/06 00:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>あぁ、情けなし。</p>\n\n\t"
+  :code: |
+    module Main where
+
+    sort_noComp min max xs = foldr (addCount) (map (flip (,) $ 0) [min..max]) xs &gt;&gt;= \(x, c) -&gt; replicate c x
+        where
+            addCount :: Int -&gt; [(Int, Int)] -&gt; [(Int, Int)]
+            addCount i [] = []
+            addCount i ((j, x):xs)
+                | i == j = (j, x + 1) : xs
+                | otherwise = (j, x) : addCount i xs
+
+    main = print $ sort_noComp 1 9 [4, 8, 9, 6, 3, 9, 5, 2]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6675'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6675
+  :user_name: nskj77
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/375/
+  :language: Haskell
+  :time: 2008/07/06 00:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">counting sortを実装しました。\r\n&gt; ghc --make -O2
+    CountingSort.hs\r\n&gt; ./CountingSort</pre>\n\t"
+  :code: |
+    import qualified Data.Map as M
+    import Control.Monad.State
+
+    counter min max xs = recur (M.fromAscList $ zip [min..max] (repeat 0)) xs
+      where recur ctr [] = M.toAscList ctr
+                recur ctr (x:xs) = recur (M.update (\v -&gt; Just (succ v)) x ctr) xs
+
+    countingSort :: (Ord a, Enum a, Num a) =&gt; a -&gt; a -&gt; [a] -&gt; [a]
+    countingSort min max xs = let ctr = counter min max xs
+                                               result = M.fromAscList $ zip [0..len] (repeat 0)
+                                          in evalState (countingSort_S min ctr) (0,result)
+      where len = fromIntegral $ length xs - 1
+
+    countingSort_S :: (Ord a, Enum a, Num a) =&gt; a -&gt; [(a,a)] -&gt; State (a,M.Map a a) [a]
+    countingSort_S _ [] = get &gt;&gt;= return . M.elems . snd
+    countingSort_S min ((x,y):xs) = do
+        forM_ [1..y] update
+        countingSort_S min xs
+      where update _ = do
+                    (index,result) &lt;- get
+                    put (succ index, M.update f index result)
+                f _ = Just x
+
+    main :: IO ()
+    main = do
+        print $ countingSort (-1) 10 [-1,9,4,8,9,6,3,9,5,2]
+        print $ countingSort (-100000) 100000 [-100000..100000]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6676'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6676
+  :user_name: nskj77
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/375/
+  :language: Haskell
+  :time: 2008/07/06 01:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ちょっと修正しました。</pre>\n\t"
+  :code: "import qualified Data.Map as M                                                                                               \nimport
+    Control.Monad.State\n\ncounter min max xs = recur (M.fromAscList $ zip [min..max]
+    (repeat 0)) xs\n  where recur ctr [] = M.toAscList ctr \n        recur ctr (x:xs)
+    = recur (M.update (\\v -&gt; Just (succ v)) x ctr) xs\n\ncountingSort :: (Ord
+    a, Enum a, Num a) =&gt; a -&gt; a -&gt; [a] -&gt; [a] \ncountingSort min max xs
+    = let ctr = counter min max xs\n                          in evalState (countingSort_S
+    min ctr) []\n  where len = fromIntegral $ length xs - 1 \n\ncountingSort_S ::
+    (Ord a, Enum a, Num a) =&gt; a -&gt; [(a,a)] -&gt; State [a] [a] \ncountingSort_S
+    _ [] = get &gt;&gt;= return . reverse\ncountingSort_S min ((x,y):xs) = do\n    forM_
+    [1..y] (\\_ -&gt; get &gt;&gt;= \\xs -&gt; put $ x:xs)\n    countingSort_S min
+    xs\n\nmain :: IO ()\nmain = do\n    print $ countingSort (-1) 10 [-1,9,4,8,9,6,3,9,5,2]\n
+    \   print $ countingSort (-100000) 100000 [-100000..100000]\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6691'
+  :parent_id: '187'
+  :url: http://ja.doukaku.org/comment/6691
+  :user_name: nori
+  :user_url: /web/20081121120500/http://ja.doukaku.org/user/59/
+  :language: Python
+  :time: 2008/07/06 22:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>listを何回も作っているのがダサいです。アルゴリズムとしてはradix sort系です。</p>\n\n\t"
+  :code: |
+    def nocmpsort(min, max, count, data):
+      """
+        &gt;&gt;&gt; nocmpsort(min=-1, max=10, count=10,\
+              data=[-1, 9, 4, 8, 9, 6, 3, 9, 5, 2])
+        [-1, 2, 3, 4, 5, 6, 8, 9, 9, 9]
+      """
+      latitude = max - min
+      base = 0
+      x = 1
+      while latitude &gt; x:
+        x = x &lt;&lt; 1
+        base += 1
+      def encode(e):
+        return e - min
+      def decode(d):
+        return d + min
+      def nocmpsort_binary(data):
+        """
+        &gt;&gt;&gt; base =  5
+        &gt;&gt;&gt; nocmpsort_binary([0, 10, 5, 9, 10, 7, 4, 10, 6, 3])
+        [0, 3, 4, 5, 6, 7, 9, 10, 10, 10]
+        """
+        bin = list()
+        for i in range( 2 &lt;&lt; base):
+          bin.append(0)
+        for d in data:
+          bin[d]+=1
+        r = list()
+        for i, count in enumerate(bin):
+          while count &gt; 0:
+            r.append(i)
+            count -=1
+        return r
+
+      return map(decode, nocmpsort_binary(map(encode, data)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 

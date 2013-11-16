@@ -1,0 +1,1101 @@
+---
+:id: '116'
+:title: ワーカスレッドを安全に終了させるまで待機
+:comments:
+- :id: '4822'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4822
+  :user_name: todogzm
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/550/
+  :language: 
+  :time: 2007/12/15 05:26 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\r\n\t  <p>スレッドプールに複数のワーカスレッドが待機しており、メインスレッドはいつでもワーカスレッドに仕事を渡せるような状態になっているとします。</p>\n<p>さて、メインスレッドからスレッドプールにいくつか仕事を与え、メインスレッドは与えた仕事すべてが終了するまで待機し、次の処理に行ってはいけない、というようなコードを書いてください。\n＃現実に書く機会が多そうなコードですね…。</p>\n<p>ここでの仕事の内容は、適当に5秒から15秒の間スレッドをスリープする、というもので結構です。\nまた、ワーカスレッドのスレッドプール自体の使用を終了するか、または残して再利用するかは問いません。できればコメントにスレッドプールを残したかどうかを書いてください。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4954'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4954
+  :user_name: nobsun
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/12/25 01:29 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">スレッドプールはつかっていなくて、指定した数だけスレッドをフォークしてそれぞれに仕事をさせています。スレッドの終了を待つのにセマフォを使っています。\r\n\r\n実行例：\r\n*Main&gt;
+    :main 5\r\nTheread N.o. 4 filinshed\r\nTheread N.o. 5 filinshed\r\nTheread N.o.
+    3 filinshed\r\nTheread N.o. 1 filinshed\r\nTheread N.o. 2 filinshed\r\nAll threads
+    finished</pre>\n\t"
+  :code: "import Control.Concurrent\nimport Control.Concurrent.QSemN\nimport System.Environment\nimport
+    System.Random\nimport Text.Printf\n\nmain = do { a:_ &lt;- getArgs\n          ;
+    let n = read a\n          ; q   &lt;- newQSemN n\n          ; g &lt;- getStdGen\n
+    \         ; let rs = randomRs (5,15) g\n          ; mapM_ (forkIO . work q) (zip
+    [1..n] rs)\n          ; waitQSemN q n\n          ; putStrLn \"All threads finished\"\n
+    \         }\n\nwork :: QSemN -&gt; (Int, Int) -&gt; IO ()\nwork q (i,d) =  waitQSemN
+    q 1\n             &gt;&gt; threadDelay (d*10^6) \n             &gt;&gt; signalQSemN
+    q 1\n             &gt;&gt; printf \"Theread N.o. %d filinshed\\n\" i\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4956'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4956
+  :user_name: ところてん
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2007/12/25 01:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">workerThreadはexecを利用しているので、任意のpythonコードを実行できます。\r\nthreadPoolは引数を変更することで、workerThreadの数を変更できます。\r\n\r\n現在はthreadPoolがworkerThreadを監視して、タスクが空のやつにタスクを渡していますが、\r\nworkerThreadはタスクをリストで持っているので、実はいくらでもタスクを突っ込めます。</pre>\n\t"
+  :code: "import threading\nimport time\n\nclass workerThread(threading.Thread):\n
+    \   def __init__(self):\n        self.l = threading.Lock()\n        self.workque
+    = []\n        threading.Thread.__init__(self)\n    \n    def run(self):\n        while(True):\n
+    \           self.l.acquire()\n            if len(self.workque) == 0:\n                self.l.release()\n
+    \               time.sleep(0.001)\n                continue\n            \n            if
+    self.workque[0] == \"exit\":\n                self.l.release()\n                break\n
+    \           else:\n                w = self.workque[0]\n                self.workque
+    = self.workque[1:]\n                self.l.release()\n                exec(w)\n
+    \                   \n    def appendTask(self, task):\n        self.l.acquire()\n
+    \       self.workque.append(task)\n        self.l.release()\n\nclass threadPool(threading.Thread):\n
+    \   def __init__(self, n):\n        self.l = threading.Lock()\n        self.task
+    = []\n        self.w = []\n        self.isExit = False\n        for i in xrange(n):\n
+    \           self.w.append(workerThread())\n            self.w[-1].start()\n        threading.Thread.__init__(self)\n\n\n
+    \   def run(self):\n        while(True):\n            self.l.acquire()\n            \n
+    \           if len(self.task) == 0:\n                self.l.release()\n                if
+    self.isExit:\n                    break\n                time.sleep(0.001)\n                continue\n\n
+    \           isAppend = False\n            for w in self.w:\n                if
+    len(w.workque) == 0:\n                    isAppend = True\n                    w.appendTask(self.task[0])\n
+    \                   self.task = self.task[1:]\n                    self.l.release()\n
+    \                   break\n\n            if isAppend == False:\n                self.l.release()\n
+    \               time.sleep(0.001)\n\n        for w in self.w:\n            w.appendTask(\"exit\")\n
+    \       for w in self.w:\n            w.join()\n\n    def appendTask(self, task):\n
+    \       self.l.acquire()\n        self.task.append(task)\n        self.l.release()\n
+    \       \n    def exit(self):\n        self.l.acquire()\n        self.isExit =
+    True\n        self.l.release()\n\ntp = threadPool(2)\ntp.start()\n\ntp.appendTask(\"print
+    'hello world'\")\ntime.sleep(1)\ntp.appendTask(\"print 'sleeping...'\\ntime.sleep(10)\\nprint
+    'wake up!'\")\ntp.appendTask(\"print 'sleeping...'\\ntime.sleep(10)\\nprint 'wake
+    up!'\")\n\ntime.sleep(1)\ntp.exit()\ntp.join()\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4959'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4959
+  :user_name: SiroKuro
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/540/
+  :language: C
+  :time: 2007/12/25 03:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  C# では Delegate.BeginInvoke を使うとスレッドプール内のスレッドが使われるので、今回はそれを使ってみました。今回は複数タスクを待機するので、AsyncWaitHandle の配列を WaitHandle.WaitAll メソッドに渡しています。いろんな意味であまり好ましくない実装ですが……。\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Threading;
+    static class Program {
+        static void Main() {
+            Console.WriteLine("start.");
+            WaitCallback func = delegate(object obj) {   // 実行されるタスク
+                Console.WriteLine("start: {0}", obj);
+                Thread.Sleep(new Random().Next(5, 10) * 1000);
+                Console.WriteLine("finish: {0}", obj);
+            };
+            List&lt;WaitHandle&gt; waitHandles = new List&lt;WaitHandle&gt;();
+            for(int i = 0; i &lt; 10; i++) {
+                waitHandles.Add(func.BeginInvoke(i, null, null).AsyncWaitHandle);
+            }
+            WaitHandle.WaitAll(waitHandles.ToArray());   // メインスレッドはここで待機
+            Console.WriteLine("join.");
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4960'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4960
+  :user_name: ocean
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/177/
+  :language: Java
+  :time: 2007/12/25 04:43 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Javaのconcurrentユーティリティを使用。スレッドプールはpool.shutdown();で終了します。</p>\n\n\t"
+  :code: |
+    import java.util.*;
+    import java.util.concurrent.*;
+
+    class MeApp {
+        public static void main(String[] args) throws Exception {
+            final ExecutorService pool = Executors.newFixedThreadPool(3);
+            try {
+                final ArrayList&lt;Future&lt;?&gt; &gt; futures = new ArrayList&lt;Future&lt;?&gt; &gt;();
+                final Random random = new Random();
+                for (int i = 0; i &lt; 10; ++i) {
+                    final int id = i;
+                    final int wait = 5 + random.nextInt(10);
+                    futures.add(pool.submit(new Runnable() {
+                        public void run() {
+                            System.out.format("task %d start (%2d sec)\n", id, wait);
+                            try {
+                                Thread.sleep(wait * 1000);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                            System.out.format("task %d done\n", id);
+                        }
+                    }));
+                }
+                for (Future&lt;?&gt; future : futures) {
+                    future.get(); // wait for task completion
+                }
+            } finally {
+                pool.shutdown();
+            }
+            System.out.println("completed");
+        }
+    }
+  :tags:
+  - SUYjaGqhpWkFv
+  :references:
+    :url: 
+    :title: 
+- :id: '4961'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4961
+  :user_name: ocean
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/12/25 05:12 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <p>Queue.Queueを使って排他制御します。Javaのconcurrentに似てますが、Javaのと違ってThreadPool#shutdownがスレッドの終了を待ちます。</p>\n\n\t"
+  :code: |
+    import threading
+    import random
+    import Queue
+    import time
+
+    class ThreadPool:
+        def __init__(self, count):
+            self._queue = Queue.Queue(0) # infinite sized queue
+            self._threads = [threading.Thread(target=self._run) for _ in xrange(count)]
+            for thread in self._threads:
+                thread.start()
+
+        def _run(self):
+            while 1:
+                func = self._queue.get()
+                if func is None:
+                    break
+                func()
+
+        def submit(self, func):
+            if func is None:
+                raise ValueError("None is not allowed here")
+            self._queue.put(func)
+
+        def shutdown(self):
+            for thread in self._threads:
+                self._queue.put(None) # terminator
+            for thread in self._threads:
+                thread.join()
+
+    def create(id, wait):
+        def func():
+            print "task %d started (%2d sec)" % (id, wait)
+            time.sleep(wait)
+            print "task %d done" % id
+        return func
+
+    def main():
+        pool = ThreadPool(3)
+        try:
+            for id in xrange(10):
+                pool.submit(create(id, random.randint(5, 15)))
+        finally:
+            pool.shutdown()
+        print "completed"
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4965'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4965
+  :user_name: sumim
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/12/25 08:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk のスレッドは、Erlang にこそ及びませんが、それでも非常に軽量な部類に属するので、アドホックに作って（#fork）使い捨てて使います（プールして大事に使い回す、という処理も書いて書けなくもないですが…）。</p>\n<p>他方で、待ち合わせにはセマフォ（a
+    Semaphore）を用いるのが普通ですが、今回は簡単のため、スレッドセーフなキュー（a SharedQueue）をもって各ワーカスレッドからの出力とそれとの待ち合わせを兼ねることにしました。ばらばらのタイミングでフォークしたワーカスレッドが
+    5〜15 秒の停止時間順にソートされて終了しているところで動きは見て取れると思います。</p>\n<p>例によって copy fixTemps は、Smalltlak
+    処理系としては古典的な Squeak Smalltalk で、ブロック（無名関数オブジェクト）をクロージャっぽく使うためのおまじないです。今どきの Smalltalk
+    では必要ありません。</p>\n\n\t"
+  :code: |
+    | out nThreads |
+    out := SharedQueue new.
+    nThreads := 5.
+    nThreads timesRepeat: [
+        [   | secs |
+            out nextPut: {#start. (secs :=  (5 to: 15) atRandom)}.
+            (Delay forSeconds: secs) wait.
+            out nextPut: {#stop. secs}.
+        ] copy fixTemps fork].
+    World findATranscript: nil.
+    nThreads * 2 timesRepeat: [Transcript cr; show: out next]
+
+    "=&gt; #(#start 8)
+        #(#start 15)
+        #(#start 14)
+        #(#start 6)
+        #(#start 10)
+        #(#stop 6)
+        #(#stop 8)
+        #(#stop 10)
+        #(#stop 14)
+        #(#stop 15) "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '4966'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4966
+  :user_name: nobsun
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/12/25 11:38 GMT
+  :vote_count: '5'
+  :vote_score: '5'
+  :body: "\n\t  <p>マイナス評価をいただいたのを機会に(はじめてじゃないけど．．．)．．．</p>\n<p>自分ではなかなか自分の書いたプログラムの不具合や不都合，不足に気づけない\nので「△△が変だよ」「○○の条件を満たしてないよ」「××がだめじゃん」とか\n具体的に指摘していただけると幸いです．</p>\n<p>プログラムに不具合があるなら直しておきたいし，改良する手掛かりにもなるし，\n今後の研鑽にもなるし，あるいは，後からコードを読む人の注意点にもなるので．．．</p>\n<p>自分で気づいた誤り不具合は直せるのだけど．．．まだまだ未熟者ゆえ，\nよろしくお願いします．&gt;
+    みなさま．</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4967'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4967
+  :user_name: matyr
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/343/
+  :language: Smalltalk
+  :time: 2007/12/25 14:15 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>GNU Smalltalk に訳してみました。シンプルなのがいいですね。</p>\n\n\t"
+  :code: |
+    | out | out := SharedQueue new.
+    ((Smalltalk arguments at: 1 ifAbsent: [ ^'usage: gst 116.st -a &lt;nThread&gt;' displayNl ])
+     asNumber timesRepeat: [
+      [| secs |
+        out nextPut: { #start. secs := Random next * 11 // 1 + 5 }.
+        (Delay forSeconds: secs) wait.
+        out nextPut: { #stop.  secs }
+      ] fork
+    ]) * 2 timesRepeat: [ out next printNl ]!
+  :tags:
+  - GST
+  :references:
+    :url: 
+    :title: 
+- :id: '4970'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4970
+  :user_name: dankogai
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/12/25 18:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>Perlで<a href=\"/web/20100610210007/http://search.cpan.org/perldoc?threads\">threads</a>を使うためには、<code>-Dusethreads</code>をつけて<code>Configure</code>する必要がありますが、いちおうそうなっているという前提で。\n</p>\n<p>本質的なのは、\n</p>\n<p>1
+    while threads-&gt;list(threads::running);\n</p>\n<p>だけです。threadsを再利用するか否かは関係なく使えます。\n</p>\n<p>どちらかというと、threadsは使い捨てにした方がコードは書きやすいですね。\n</p>\n<p>Dan
+    the Threaded Perl Monger\n</p>\n\n\n\n\t"
+  :code: |
+    #!/usr/local/bin/perl
+    use strict;
+    use warnings;
+    use threads;
+    use Time::Hires qw/sleep/;
+
+    my @thr;
+    for my $i ( 1 .. shift || 10 ) {
+        push @thr, threads-&gt;create(
+            sub {
+                my $n = shift;
+                my $s = rand(10.0);
+                sleep $s;
+                warn "$n:slept $s sec.";
+            },
+            $i
+        );
+    }
+
+    1 while threads-&gt;list(threads::running);
+    warn "All Threads Done";
+
+    $thr[0]-&gt;join();    # on purpose
+
+    END {
+        $_-&gt;is_joinable() and $_-&gt;join() for @thr;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4971'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4971
+  :user_name: g000001
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2007/12/25 19:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Common Lispの標準的なスレッドの扱いというものを良く分かっていないのですが、\r\nスレッドプールを使ってスレッドを使い回すようなライブラリは探してみたものの\r\n自分には見付けられませんでした。ということで、Portable-Threadsを利用して、\r\nサブの全スレッドの終了をみとって次の仕事へ…というような内容になっています。\r\n識者のツッコミ大歓迎です。\r\n実行結果:\r\n(spawn-thread
+    'main #'main\r\n\t      (lambda () (subjob (gensym)))\r\n\t      (lambda () (subjob
+    (gensym)))\r\n\t      (lambda () (subjob (gensym)))\r\n\t      (lambda () (subjob
+    (gensym))) )\r\n; =&gt;\r\n;G3233(14 sec.) Start.\r\n;G3236( 6 sec.) Start.\r\n;G3238(12
+    sec.) Start.\r\n;G3239( 7 sec.) Start.\r\n;G3236( 6 sec.) Stop.\r\n;G3239( 7 sec.)
+    Stop.\r\n;G3238(12 sec.) Stop.\r\n;G3233(14 sec.) Stop.\r\n;All threads finished.</pre>\n\t"
+  :code: "(defpackage #:doukaku-116 (:use #:cl #:portable-threads))\n(in-package #:doukaku-116)\n\n(defun
+    subjob (name)\n  (let ((sleep (+ 5 (random 10))))\n    (format t \"~&amp;~A(~2D
+    sec.) Start.~%\" name sleep)\n    (sleep sleep)\n    (format t \"~&amp;~A(~2D
+    sec.) Stop.~%\" name sleep)))\n\n(defun main (&amp;rest jobs)\n  (do ((ths (mapcar
+    (lambda (exe) (spawn-thread (gensym) exe)) \n                    jobs)))\n      ((notany
+    #'thread-alive-p ths)\n       (format t \"~&amp;All threads finished.~%\"))))\n"
+  :tags: []
+  :references:
+    :url: /web/20100610210007/http://www.cliki.net/Portable-Threads
+    :title: Portable-Threads
+- :id: '4975'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4975
+  :user_name: yuin
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/12/26 09:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">自前でスレッドプールを実装しました。\r\n\r\nval pool = new ThreadPool(4)\r\npool.submit(()
+    =&gt;{\r\n  Thread.sleep(1000)\r\n  println(\"10\")\r\n})\r\npool.submit(() =&gt;{\r\n
+    \ Thread.sleep(2000)\r\n  println(\"20\")\r\n})\r\npool.submit(() =&gt;{\r\n  Thread.sleep(5000)\r\n
+    \ println(\"50\")\r\n})\r\npool.submit(() =&gt;{\r\n  Thread.sleep(500)\r\n  println(\"5\")\r\n})\r\npool.shutdown\r\nprintln(\"done\")\r\n\r\nスレッドプールは残しています。\r\n</pre>\n\t"
+  :code: |
+    import scala.collection.mutable.SynchronizedQueue
+
+    implicit def f2r(f:() =&gt; unit) = new Runnable{ def run = f() }
+    class ThreadPool(num:int) {
+      type Proc = ()=&gt;unit
+      val _queue = new SynchronizedQueue[Option[Proc]]
+      val _cs = (1 to num).map{ i =&gt; new Thread(() =&gt; {
+                 var flag = true; while(flag){
+                   var proc:Option[Proc] = Some(()=&gt;{})
+                   _queue.synchronized {
+                     if(!_queue.isEmpty) proc = _queue.dequeue
+                   }
+                   proc match {
+                     case Some(f) =&gt; f()
+                     case _ =&gt; flag = false
+                   }
+                 }
+               })}.toList.map{c =&gt; c.start;c}
+
+      def submit(f :Proc) = _queue += Some(f)
+      def shutdown = {
+        _cs.foreach{c =&gt; _queue += None }
+        _cs.foreach(_.join)
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4976'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4976
+  :user_name: matyr
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/12/26 09:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>さらに Rhino で。</p>\n\n\t"
+  :code: |
+    (function doukaku116(nThread){
+      var out = new java.util.concurrent.ArrayBlockingQueue(nThread * 2);
+      for(var i = nThread; i--;) spawn(function(secs){
+        out.put('#start '+ (secs = Math.random() * 11 + 5 | 0));
+        java.lang.Thread.sleep(secs * 1000);
+        out.put('#stop  '+ secs);
+      });
+      for(i = nThread * 2; i--;) print(out.take());
+    })(5);
+  :tags:
+  - Rhino
+  :references:
+    :url: 
+    :title: 
+- :id: '4977'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4977
+  :user_name: あにす
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/504/
+  :language: 
+  :time: 2007/12/26 12:16 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>マイナスを付けるときに匿名でコメント出来る機能があるといいかも知れませんね。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4982'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4982
+  :user_name: 匿名
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/12/26 15:28 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <p>すみません、マイナスをつけた人です。\nそんなに重い意味でつけたのではないのですが･･･</p>\n<p>マイナスをつけたのは</p>\n<p>「スレッドプールに複数のワーカスレッドが待機しており、メインスレッドはいつでもワーカスレッドに仕事を渡せるような状態になっているとします。</p>\n<p>さて、メインスレッドからスレッドプールにいくつか仕事を与え、メインスレッドは与えた仕事すべてが終了するまで待機し、次の処理に行ってはいけない、というようなコードを書いてください。」</p>\n<p>というように「スレッドプール」を使うということがお題に明確に書いてあるのに、スレッドプールを使っていないから、という理由でした。スレッドプールにスレッドが待機している、というのもお題に入っているんじゃないかと。そのコード自体がまずいから、という理由ではありません。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4983'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4983
+  :user_name: shiro
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/12/26 23:50 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>「標準的」というのは私も知りませんです。Allegro CLの場合はmultiprocessingパッケージというのがついてくるので普段はそれを使っています
+    (名前はprocessですが実態はネイティブスレッド)。</p>\n<p>スレッドプールについても標準的なものがあるのかどうかは知りません。昔、Allegroのmultiprocessingの上に書いたスレッドプールパッケージがあるんですが、ここにそのまま出せない事情があるので、もし時間が取れれば簡単なバージョンを書いてポストします。\n(ほんとはコードを書いてポストしようと思ってたんだけど、時間がきつきつなので…)</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4985'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4985
+  :user_name: nobsun
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/12/27 03:19 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <pre class=\"compact\">ご指摘ありがとうございます．\r\n\r\n私の解答には「スレッドプールを使っていない」ことに対する説明(言い訳?)が\r\nありませんでした．これではいくらなんでも．．．(気付けよ
+    &gt; 私)\r\n\r\nとうわけで改めて，説明(言い訳を(^^;))をばいたします．\r\n\r\nHaskellのプログラムには，異る内部状態をもつ同一の計算対象とか，同じ内部\r\n状態をもつ異る計算対象というものが存在しません．計算対象のエクステント\r\nという概念もありません．つまり，計算対象の生成，消滅という概念もありません．\r\n\r\nというわけで，Haskellでは「生成されたスレッド」，「タスク実行中のスレッド」，\r\n「アイドル中のスレッド」という計算対象を直接表現できません．そこで，\r\n「再利用するかどうかは問わない」とあるのをこれ幸いに，「再利用しないなら\r\nプールはいらない」とお題を曲解することにして，複数のスレッドの仕事の終了を\r\n待つという部分だけ実装してお茶を濁してしまいました．\r\n\r\nHaskellでばかりを使っているので，プログラミングの常識，非常識の感覚が\r\n他の言語のプログラマとずれていたり逆転していたりします．自分の非常識を\r\n確認しておきたいこともありますが，Haskellプログラミングのどんなところを\r\nどんな風にプレゼンテーションしたら楽しんでもらえるか，あるいは，どこが\r\n伝わり難いのかにも大変興味があります．プラスであれマイナスであれ評価が\r\n付いたということは多少とも興味をもってもらったということなので，これ幸い\r\nと「ついでにコメントも下さい」とお願いしてみたしだいです．\r\n\r\nお題，回答，評価，コメントというコミュニケーションそのものが楽しめるし，\r\n勉強になるので．．．\r\n\r\nP.S.\r\n私自身は，マイナス評価を付けることはプラス評価を付けるのと同様に気軽に\r\nやればいいと思っていますし，評価を付けるのに正当な理由の説明が必要だとも\r\n思っていません．\r\n\r\n\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4986'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4986
+  :user_name: shiro
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/12/27 03:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>逆に、処理系が勝手にネイティブスレッドのプールを作っておいてforkIOした言語上のスレッドを適宜並列実行するってセマンティクスはありなんですよね。そういう実装は無いんでしょうか?</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4990'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4990
+  :user_name: todogzm
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/550/
+  :language: Java
+  :time: 2007/12/27 05:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>oceanさん作バージョンはFuture#get()を用いて各スレッドの終了を待つような実装でした。\nもうひとつの解として、ExecutorService#awaitTermination()を用いて、\nスレッドプールの各タスクがすべて安全に終了するまでを待つような実装も投稿します。</p>\n<p>(今回のプログラムにてExecutorService#submit()
+    を execute()に変えたのは、Futureを使わないことを明示する以外に特に意味はありません。)</p>\n\n\t"
+  :code: |
+    import java.util.concurrent.ExecutorService;
+    import java.util.concurrent.Executors;
+    import java.util.concurrent.TimeUnit;
+
+    class MeApp2 {
+        public static void main(String[] args) throws Exception {
+            final ExecutorService pool = Executors.newFixedThreadPool(3);
+            try {
+                final Random random = new Random();
+                for (int i = 0; i &lt; 10; ++i) {
+                    final int id = i;
+                    final int wait = 5 + random.nextInt(10);
+                    pool.execute(new Runnable() {
+                        public void run() {
+                            System.out.format("task %d start (%2d sec)\n", id, wait);
+                            try {
+                                Thread.sleep(wait * 1000);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                            System.out.format("task %d done\n", id);
+                        }
+                    });
+                }
+            } finally {
+                pool.shutdown();
+                //ここで全タスクの終了を待つ
+                pool.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
+            }
+            System.out.println("completed");
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4991'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4991
+  :user_name: ところてん
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/12/27 06:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  自分が自前で実装した機能のほとんどがPythonの標準でできたのか。\r\n自分が今書いているコードの参考にさせてもらいます。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4992'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/4992
+  :user_name: g000001
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/405/
+  :language: 
+  :time: 2007/12/27 07:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>コメント頂きありがとうございます。とても参考になりました。自分もAllegro CL試してみたいと思います。\nスレッドプールのコードについては、興味津々です。いつかお手隙の際にでもポストして頂けたらと思います。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5012'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/5012
+  :user_name: 匿名
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/12/27 14:23 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  題意から\r<br>・スレッドプールに複数の仕事を与え\r<br>・全ての仕事が終わるまで待機する\r<br>ことができれば良い事になります。\r<br><br>これは、ExecutorService#invokeAll を使えば1メソッドで実現できます。\r<br><br>この例では意図的に仕事の数よりスレッドの数を少なく設定しています。\r<br><br>＃スレッドプールは再利用可能です。\n\t"
+  :code: |
+    import java.util.concurrent.*;
+    import java.util.*;
+
+    public class Sample implements Callable&lt;Void&gt; {
+        public static final int NUM_OF_THREADS = 10;
+        private static ExecutorService es = Executors.newFixedThreadPool(NUM_OF_THREADS);
+        private int sleepTime;
+
+        public static void main(String[] args) throws InterruptedException {
+            try {
+                List&lt;Callable&lt;Void&gt;&gt; taskList = new ArrayList&lt;Callable&lt;Void&gt;&gt;();
+                Random r = new Random();
+                for (int i = 0; i &lt; 15; i++) {
+                    taskList.add(new Sample(5 + r.nextInt(11)));
+                }
+                es.invokeAll(taskList);
+                System.out.println("done.");
+            } finally {
+                es.shutdown();
+            }
+        }
+
+        public Sample(int sleepTime) {
+            this.sleepTime = sleepTime;
+        }
+
+        public Void call() throws Exception {
+            Thread.currentThread().sleep(1000 * sleepTime);
+            System.out.println(sleepTime + " sec sleeped.");
+            return null;
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5030'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/5030
+  :user_name: sawat
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/322/
+  :language: JavaScript
+  :time: 2007/12/28 09:10 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Pure-JavaScript(?)でProducer-Consumerパターンを組んでみました。\nConcurrent.Threadライブラリを使用しています。なお、スレッドプール停止後に再開することはできません。</p>\n<p>&lt;html&gt;&lt;body&gt;\n&lt;script
+    type=\"text/javascript\" src=\"Concurrent.Thread.ScriptExecuter+Http.js\"&gt;&lt;/script&gt;\n&lt;script
+    type=\"text/javascript\" src=\"producer_consumer.js\"&gt;&lt;/script&gt;\n&lt;/body&gt;&lt;/html&gt;</p>\n\n\t"
+  :code: "Concurrent.Thread.create(function() {\n  var pool = {stop : false, queue
+    : [], threads : [], waitSet : [], \n      puts : function puts(s) { document.body.innerHTML
+    += s + \"&lt;br&gt;\"; }};\n  pool.worker = Concurrent.Thread.compile(function(){\n
+    \   var job;\n    while (!this.stop) {\n      job = this.queue.shift();\n      if(job)
+    {\n        this.puts(\"sleep \" + job + \" seconds.\");\n        Concurrent.Thread.sleep(job
+    * 1000);\n      } else {\n        try {\n          waitSet.push(Concurrent.Thread.self());\n
+    \         Concurrent.Thread.stop();\n        } catch(e) {\n          if(e instanceof
+    Concurrent.Thread.KillException)  throw e;\n        }\n      }\n    }\n    this.puts(\"stop\");\n
+    \ });\n\n  pool.producer = Concurrent.Thread.compile(function(){\n    var job;\n
+    \   while (!this.stop) {\n      this.queue.push(Math.floor(Math.random() * 10));\n
+    \     Concurrent.Thread.sleep(Math.floor(Math.random() * 1000));\n      var cons
+    = this.waitSet.pop();\n      if(cons) cons.notify(\"wake up!\");\n    }\n    this.puts(\"producer
+    stop\");\n  });\n\n  for(var i=0; i&lt;10; i++) pool.threads[i] = pool.worker.async(pool);\n\n
+    \ pool.threads.push(pool.producer.async(pool));\n\n  setTimeout(function() { pool.stop
+    = true; } , 10*1000);\n\n  for(var i=0; i&lt;5; i++) pool.threads[i].join();\n\n
+    \ pool.puts(\"All threads is stoped.\");\n});\n"
+  :tags:
+  - Concurrent.Thread
+  :references:
+    :url: /web/20100610210007/http://www.infoq.com/jp/articles/js_multithread
+    :title: 'InfoQ: JavaScriptへのマルチスレッド・プログラミングの導入'
+- :id: '5031'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/5031
+  :user_name: sawat
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/322/
+  :language: diff
+  :time: 2007/12/28 09:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>修正漏れ。</p>\n\n\t"
+  :code: |
+    @@ -40,3 +40,3 @@
+
+    -  for(var i=0; i&lt;pool.threads.length; i++) pool.threads[i].join();
+    +  for(var i=0; i&lt;5; i++) pool.threads[i].join();
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5036'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/5036
+  :user_name: nobsun
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/12/28 11:39 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">何を以ってスレッドプールと呼ぶかは微妙ですがHaskellでスレッドプールもどきを\r\nを表現してみました．\r\n\r\n11〜17行目でそれらしい型名を導入しています．\r\nWorker
+    というのがひとつのワーカスレッドです．これは IO () という型で，\r\nHaskell 的には，アクションとよばれる値を表わす型です．アクションは実行\r\nされると入出力を行うような値です．\r\n\r\n26行目でワーカスレッドプールを作成しています．ここでは，n
+    個のワーカの\r\nリストをforkIOをつかって「実行」されると別スレッドで動くアクションのリ\r\nストに変換しています．これがこのリストがスレッドプールを表現していると\r\n考えることができます．\r\n\r\nワーカは
+    mkWorkerを使って作ります．ワーカはワーカ番号とワーカの開始と\r\n終了を知るためのセマフォとタスクを受けとる口とで作ります．ワーカ本体は，\r\n59〜67行目までで定義されているとおり，\r\n・口からタスクを読むアクション(60行目)\r\n・タスクの有無で選択(61行目)\r\n
+    \ ・タスクない場合は一旦ほかのスレッドに実行を渡すアクション+自分自身(62行目)\r\n  ・タスクがあった場合は(63行目)\r\n      ・タスクの種類で選択(64行目)\r\n
+    \         ・終了マークなら，なにもしないアクション(65行目)\r\n          ・仕事なら，セマフォを掴むアクション\r\n                     +その仕事\r\n
+    \                    +セマフォを戻すアクション\r\n                     +自分自身\r\nとなっています．\r\nタスクをワーカに渡すのにはMVarを経由します．\r\n\r\n細部の説明はきりがないのでここでやめますが，注意点をひとつ．\r\n「実行」と「評価」は別ものです．「実行」は
+    Haskell のプログラムの意味\r\nににあらわれません．do構文のなかにならんでいる行は，命令型の言語でいう\r\nところの文(statement)とか命令(command)ではなく，式です．それぞれの式は\r\n「評価」するとアクションとよばれる値を表わしています．\r\nHaskell
+    では do 構文(糖衣)を使ってアクションの並びをひとつのアクション\r\nにまとめます．\r\n\r\nここでは，できるだけ命令型の構文や概念に近くなるように書きました．\r\n正直に白状するとHaskell脳症の頭で考えるのは難しかったです．\r\n\r\nより具体的な課題に対してはもっと関数的な
+    Haskell らしい書き方というのが\r\nあるような気がしていますが．．．\r\n\r\n\r\n*Main&gt; :main 3\r\nWorker
+    1 starts at 2007-12-28 10:15:29.973076 UTC\r\nWork 1 starts at 2007-12-28 10:15:29.973809
+    UTC\r\nWorker 2 starts at 2007-12-28 10:15:29.97446 UTC\r\nWork 2 starts at 2007-12-28
+    10:15:29.975092 UTC\r\nWorker 3 starts at 2007-12-28 10:15:29.975778 UTC\r\nWork
+    3 starts at 2007-12-28 10:15:29.976253 UTC\r\nWork 3 ends   at 2007-12-28 10:15:38.984953
+    UTC\r\nWork 2 ends   at 2007-12-28 10:15:41.985189 UTC\r\nWork 1 ends   at 2007-12-28
+    10:15:43.984072 UTC\r\nWork 4 starts at 2007-12-28 10:15:43.984574 UTC\r\nWork
+    6 starts at 2007-12-28 10:15:43.984975 UTC\r\nWork 5 starts at 2007-12-28 10:15:43.985371
+    UTC\r\nWork 4 ends   at 2007-12-28 10:15:50.993701 UTC\r\nWork 6 ends   at 2007-12-28
+    10:15:53.994784 UTC\r\nWork 5 ends   at 2007-12-28 10:15:54.995536 UTC\r\nWorker
+    2 ends   at 2007-12-28 10:15:54.996034 UTC\r\nWorker 3 ends   at 2007-12-28 10:15:54.996436
+    UTC\r\nWorker 1 ends   at 2007-12-28 10:15:54.996838 UTC\r\nMain thread finished.\r\n\r\n</pre>\n\t"
+  :code: "module Main (main) where\n\nimport Control.Concurrent\nimport Data.List\nimport
+    Data.Time\nimport System.Environment\nimport System.IO\nimport System.Random\nimport
+    Text.Printf\n\ntype Done     = ()      -- ワーカ終了合図\ntype Work     = IO ()   --
+    仕事\ntype WorkID   = Int     -- 仕事番号\ntype Task     = (QSemN, Either Done Work)
+    -- タスク(１クールセマフォ，仕事)\ntype Conn     = MVar Task -- ワーカにタスクを渡す口\ntype Worker   =
+    IO ()     -- ワーカ\ntype WorkerID = Int       -- ワーカ番号\n\nmain :: IO ()\nmain =
+    do {\n; a:_ &lt;- getArgs\n; g &lt;- getStdGen\n; let { n = read a; rs = map (10^6*)
+    $ randomRs (5,15) g ; cours = mkcours n rs}\n; ps &lt;- workerSems  n -- ワーカの状態を知るためのセマフォ\n;
+    cs &lt;- connections n -- メインスレッドからワーカスレッドへの仕事を渡すための口\n; mapM_ forkIO $ zipWith3
+    mkWorker [1..n] ps cs -- ワーカスレッドプール作成\n; qn &lt;- newQSemN n                           --
+    ワークの終了を知るためのセマフォ\n; deliver qn cs (map Right $ cours !! 0)     -- 一回目の仕事の割り振り\n;
+    waitQSemN qn (2*n);                        -- 一クールの終了待ち\n; signalQSemN qn n                           --
+    セマフォのリセット\n; deliver qn cs (map Right $ cours !! 1)     -- 二回目の仕事の割り振り\n; waitQSemN
+    qn (2*n);                        -- 一クールの終了待ち\n; signalQSemN qn n                           --
+    セマフォのリセット\n; deliver qn cs (replicate n $ Left ())      -- ワーカに終了の合図\n; mapM_
+    waitQSem ps                          -- すべてのワーカの終了を待ち\n; hPutStrLn stderr \"Main
+    thread finished.\"\n}\n\nworkerSems :: Int -&gt; IO [QSem]\nworkerSems n = mapM
+    (const $ newQSem 1) [1..n]\n\ndeliverSem :: Int -&gt; IO QSemN\ndeliverSem = newQSemN\n\nconnections
+    :: Int -&gt; IO [Conn]\nconnections n = mapM (const newEmptyMVar) [1..n]\n\nmkWorker
+    :: WorkerID -&gt; QSem -&gt; Conn -&gt; Worker\nmkWorker wid wq conn \n = do {
+    waitQSem wq\n      ; s &lt;- getCurrentTime\n      ; hPutStrLn stderr (printf
+    \"Worker %d starts at %s\" wid (show s))\n      ; worker\n      ; e &lt;- getCurrentTime\n
+    \     ; hPutStrLn stderr (printf \"Worker %d ends   at %s\" wid (show e))\n      ;
+    signalQSem wq\n      }\n where \n   worker\n    = do { mt &lt;- tryTakeMVar conn\n
+    \        ; case mt of\n             Nothing -&gt; yield &gt;&gt; worker\n             Just
+    (q,dw)\n               -&gt; case dw of\n                    Left  ()   -&gt;
+    return ()\n                    Right work -&gt; waitQSemN q 1 &gt;&gt; work &gt;&gt;
+    signalQSemN q 2 &gt;&gt; worker\n         }\n\ndeliver :: QSemN -&gt; [Conn] -&gt;
+    [Either Done Work] -&gt; IO ()\ndeliver q cs ws = mapM_ (uncurry putMVar) (zip
+    cs (map ((,) q) ws))\n\nslices :: Int -&gt; [a] -&gt; [[a]]\nslices n = unfoldr
+    phi\n  where phi [] = Nothing\n        phi xs = Just $ splitAt n xs\n\nmkcours
+    :: Int -&gt; [Int] -&gt; [[Work]]\nmkcours n = slices n . zipWith mkWork [1..]\n\ntype
+    MuSec = Int                   -- 遅延microsec(サンプル用)\nmkWork :: WorkID -&gt; MuSec
+    -&gt; Work  -- サンプルの仕事作成\nmkWork wid musec\n = do { s &lt;- getCurrentTime \n
+    \     ; hPutStrLn stderr (printf \"Work %d starts at %s\" wid (show s))\n      ;
+    threadDelay musec\n      ; e &lt;- getCurrentTime\n      ; hPutStrLn stderr (printf
+    \"Work %d ends   at %s\" wid (show e))\n      }\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5040'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/5040
+  :user_name: ocean
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/177/
+  :language: 
+  :time: 2007/12/28 14:22 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>threadingモジュールにないし発見しにくいんですよね &gt; Queue.Queue</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5226'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/5226
+  :user_name: saws
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/01/08 10:49 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  \n\t"
+  :code: |
+    puts 'Starting: main thread'
+    n = 4
+    Array.new(n){|i|
+      Thread.new(i){|j|
+        Thread.stop
+        puts "Starting: #{j+1}th thread."
+        sleep rand(10)+5
+        puts "Ended: #{j+1}th thread."
+      }
+    }.each{|t| t.wakeup}
+    sleep 1 while Thread.list.size &gt; 1
+    puts 'Ended: main thread.'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5331'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/5331
+  :user_name: vtwntmtn
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/380/
+  :language: Erlang
+  :time: 2008/01/15 15:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Poolに対してErlangのプロセスをプールしておき、それらに対してSleepを渡します。\nPoolにあるプロセスは再利用可能です。\nスレッドって何だろうと言うのがあるのですが、「並列実行してくれるなにか」と解釈してます。問題の意図にあってるでしょうか？</p>\n<pre
+    class=\"literal-block\">\n&gt; erlc worker_thread.erl\n&gt; erl -noshell -s worker_thread
+    worker_thread -s init stop\n</pre>\n\n\t"
+  :code: |
+    -module(worker_thread).
+    -export([worker_thread/0]).
+
+    worker() -&gt;
+        receive
+            {Pid, Fun} -&gt;
+                Fun(),
+                Pid ! true,
+                worker()
+        end.
+
+    for(End, End, Func) -&gt; [Func()];
+    for(Index, End, Func) -&gt; [Func() | for(Index + 1, End, Func)].
+
+    worker_thread() -&gt;
+        Pool = for(1, 3, fun() -&gt; spawn(fun() -&gt; worker() end) end),
+        Sleep = [fun() -&gt; timer:sleep(1000 * X) end || X &lt;- lists:seq(1, 3)],
+        Temp = lists:zip(Pool, Sleep),
+        lists:foreach(fun({Pid, Fun}) -&gt; Pid ! {self(), Fun} end, Temp),
+        for(1, 3, fun() -&gt; receive true -&gt; void end end).
+  :tags:
+  - ErlangOTP_R12B-0
+  :references:
+    :url: 
+    :title: 
+- :id: '6100'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/6100
+  :user_name: 匿名
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/03/29 12:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Twistedを使って実装</p>\n\n\t"
+  :code: |
+    from twisted.internet import threads, reactor, defer
+    import random
+    import time
+
+    def task(value):
+        time.sleep(value)
+
+    tasks = [threads.deferToThread(task, random.randint(5, 15)) for _ in range(5)]
+    defer.DeferredList(tasks).addCallback(lambda r:reactor.stop())
+    reactor.run()
+  :tags:
+  - Twisted
+  :references:
+    :url: 
+    :title: 
+- :id: '6134'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/6134
+  :user_name: M.Suzuki
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/771/
+  :language: Ruby
+  :time: 2008/04/03 03:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  「スレッドプールを作り、スレッドを待機させてから、リクエストを投げて結果を全て受け取る」と言う要求と受け取りました。\r\n\r\nこのプログラムでは、スレッドプールは残るようになっています。\r\n\r\n\n\t"
+  :code: "#\n#   Thread pool\n#\n  \nrequire 'thread'\n  \nTHREADS = 5\n  \ncmd_queue
+    = Queue.new\nresult_queue = Queue.new\nthread_list = []\n  \nputs 'Thread start'\n
+    \ \n(0..THREADS).each do | no |\n  thread_list &lt;&lt; Thread.new(no) do | no
+    |\n    puts \"Thread #{no} start\"\n    while cmd = cmd_queue.pop\n      puts
+    \"Thread #{no} execute to #{cmd}\"\n      sleep rand(10)+5\n      puts \"Thread
+    #{no} finished\"\n      result_queue.push(\"#{no}\")\n    end\n  end\nend\n  \nputs
+    'Execute start'\n(0..THREADS).each do | no |\n  cmd_queue.push(\"cmd #{no}\")\nend\n\nputs
+    'Waitting execute'\n(0..THREADS).each do\n  no = result_queue.pop\n  puts \"Result
+    #{no}\"\nend\n\nputs 'All complete'\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6138'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/6138
+  :user_name: Nemo
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/685/
+  :language: FORTRAN
+  :time: 2008/04/04 16:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">FORTRAN / OpenMP で。\r\n15行で明示的に 8 threads 生成\r\n18行で空きスレッドに仕事を割り当て\r\n22行で
+    NOWAIT 指定によりスレッド間同期を取らずに先へ\r\n24行で全てのスレッドの終了待ち、\r\nってところです。\r\n\r\nスレッドプールの管理は
+    OpenMP に任せきりですが、通常の実装ではスレッドプールは残される、んではないかと。\r\n# OpenMP の仕様を読みきれていない....\r\n\r\n\r\n</pre>\n\t"
+  :code: "      subroutine random_wait(i)\n      integer omp_get_thread_num, omp_get_num_threads\n
+    \     j=mod(irand(),10)\n      write(*,'(AI2AI2AI2AI2)') 'begin ',i,' - ',j,'
+    sec, thread ',\n     c     omp_get_thread_num(), '/', omp_get_num_threads()\n
+    \     call sleep(j)\n      write(*,'(AI2AI2AI2AI2)') 'end   ',i,' - ',j,' sec,
+    thread ',\n     c     omp_get_thread_num(), '/', omp_get_num_threads()\n      end\n\n
+    \     program thread_test\n      integer omp_get_thread_num, omp_get_num_threads\n
+    \     write(*,*) 'Single Thread'\n      call sleep(4)\n!$OMP PARALLEL NUM_THREADS(8)
+    \                                                  \n      write(*,'(AI2AI2)')
+    'Multi Thread ',\n     c     omp_get_thread_num(),'/',omp_get_num_threads()\n!$OMP
+    DO SCHEDULE(DYNAMIC)                                                      \n      do
+    i=1,20\n         call random_wait(i)\n      end do\n!$OMP END DO NOWAIT                                                             \n
+    \     write(*,'(AI2)') 'finish', omp_get_thread_num()\n!$OMP BARRIER                                                                   \n!$OMP
+    MASTER                                                                    \n      write(*,*)
+    'Finish'\n!$OMP END MASTER                                                                \n!$OMP
+    END PARALLEL                                                              \n      end\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6139'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/6139
+  :user_name: Nemo
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/685/
+  :language: C
+  :time: 2008/04/04 16:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">C / OpenMP で。\r\nFortran 版とほぼ同じ。\r\n19行でスレッド8本を生成、\r\n23行で空きスレッドに仕事を割り当て、\r\n28行でスレッド終了待ち\r\n\r\n</pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;unistd.h&gt;
+    #include &lt;omp.h&gt;
+
+    void random_wait(int i) {
+      int w;
+      w=rand() % 10;
+      fprintf(stderr,"begin %d - %d sec, thread %d/%d\n",i,w,
+          omp_get_thread_num(), omp_get_num_threads());
+      sleep(w);
+      fprintf(stderr,"end   %d - %d sec, thread %d/%d\n",i,w,
+          omp_get_thread_num(), omp_get_num_threads());
+    }
+
+    int main(int argc, char **argv) {
+      fprintf(stderr,"Single Thread\n");
+      sleep(4);
+    #pragma omp parallel num_threads(8)
+      {
+        int i;
+        fprintf(stderr,"Multi Thread %d\n",omp_get_thread_num());
+    #pragma omp for schedule(dynamic) nowait
+        for(i=0;i&lt;20;i++) {
+          random_wait(i);
+        }
+        fprintf(stderr,"finish %d\n",omp_get_thread_num());
+    #pragma omp barrier
+    #pragma omp master
+        {
+          fprintf(stderr,"Finish\n");
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6162'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/6162
+  :user_name: Nemo
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/685/
+  :language: 
+  :time: 2008/04/09 14:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">しまった、8行目の前に rand 関数再入防止の\r\n#pragma omp critical\r\nが要りますね...\r\nrand_r()
+    を使う手もありますが。\r\n# そもそも rand を使うなという話もある。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6592'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/6592
+  :user_name: genzou
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/06/26 08:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ワーカースレッドは残してみました。\r\n\r\n・mainThreadが仕事を配る\r\n・customerが仕事を供給する\r\n・workerThreadが仕事を行う\r\n\r\nというつくりです。</pre>\n\t"
+  :code: "/*\nスレッドプールに複数のワーカスレッドが待機しており、\nメインスレッドはいつでもワーカスレッドに仕事を渡せるような状態になっているとします。\n\nさて、\nメインスレッドからスレッドプールにいくつか仕事を与え、\nメインスレッドは与えた仕事すべてが終了するまで待機し、\n次の処理に行ってはいけない、\nというようなコードを書いてください。＃現実に書く機会が多そうなコードですね…。\n\nここでの仕事の内容は、\n適当に5秒から15秒の間スレッドをスリープする、\nというもので結構です。また、\nワーカスレッドのスレッドプール自体の使用を終了するか、\nまたは残して再利用するかは問いません。できればコメントにスレッドプールを残したかどうかを書いてください。\n*/\n\ndef
+    workerThreads = []\ndef synchronized 新規依頼タスク = []\ndef synchronized 割当済タスク = []\n\n\n//
+    とりあえず３つぐらい\n[\"A\", \"B\", \"C\"].each{\n    def worker = {\n        // たまったタスクはひとつずつ片付けます！！\n
+    \       while( !割当済タスク.empty ){\n            def task = 割当済タスク.pop()\n            task()\n
+    \           println \"worker:終了しました！\" + ((割当済タスク.empty)?\"僕は終わったよ！\":\"あと\" +
+    割当済タスク.size() + \"件！\")\n        }\n    } as Runnable\n    workerThreads &lt;&lt;
+    worker\n}\n\n\ndef customer = {\n    while(true){\n        def count = (int)(Math.random()*10)\n
+    \       println \"customer:仕事依頼します！！(${count}件)\"\n        count.times{\n            新規依頼タスク
+    &lt;&lt; { Thread.sleep((int)(500 * Math.random())) }\n        }\n        Thread.sleep(5000)\n
+    \   }\n} as Runnable\nnew Thread(customer).start()\n\n\n// 実行！\ndef mainThread
+    = {\n    while(true){\n        if( 割当済タスク.empty &amp;&amp; !新規依頼タスク.empty ){\n
+    \           // 新しい仕事が来たな…\n            新規依頼タスク.size().times{\n                割当済タスク
+    &lt;&lt; 新規依頼タスク.pop()\n            }\n            \n            println \"mainThread:お前ら、仕事が終わるまで休むなよ！！仕事は\"
+    + 割当済タスク.size() + \"件あるぞ！\"\n            workerThreads.each{\n                new
+    Thread(it).start()\n            }\n        }\n        \n        Thread.sleep(10000)\n
+    \   }\n} as Runnable\nnew Thread(mainThread).start()\n"
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '9057'
+  :parent_id: '116'
+  :url: http://ja.doukaku.org/comment/9057
+  :user_name: egtra
+  :user_url: /web/20100610210007/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2009/06/06 06:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>スレッドの生成にはBoost.Thread、スレッドプールにはBoost.Asioを使いました。Asioはソケットライブラリですが、非同期IOを取り扱う関係でこのような機能も持っています。</p>\n<p>io_serviceのメンバ関数runで、プールに組み込まれます。仕事が無くなるとrunから戻ります。今回は、スレッドを作ったらいきなりrunを呼ぶようにしているので、runから戻った途端、そのスレッドは終わります。スレッドに仕事を投げるにはpostを呼びます。引数を渡すために、bind大活躍です。</p>\n\n\t"
+  :code: |
+    #define _WIN32_WINNT 0x0501 //Boost.Asioが要求
+    #include &lt;iostream&gt;
+    #include &lt;sstream&gt;
+    #include &lt;ctime&gt;
+    #include &lt;boost/asio.hpp&gt;
+    #include &lt;boost/thread/thread.hpp&gt;
+    #include &lt;boost/bind.hpp&gt;
+    #include &lt;boost/range.hpp&gt;
+    #include &lt;boost/date_time.hpp&gt;
+    #include &lt;boost/random.hpp&gt;
+
+    void worker(int i, int time)
+    {
+        using boost::posix_time::seconds;
+        std::ostringstream startMsg;
+        startMsg &lt;&lt; "worker #" &lt;&lt; i &lt;&lt; " start\n";
+        std::cout &lt;&lt; startMsg.str();
+
+        boost::this_thread::sleep(seconds(time));
+
+        std::ostringstream exitMsg;
+        exitMsg &lt;&lt; "worker #" &lt;&lt; i &lt;&lt; " end\n";
+        std::cout &lt;&lt; exitMsg.str();
+    }
+
+    int main()
+    {
+        using boost::asio::io_service;
+        using boost::bind;
+        using boost::thread;
+        //乱数生成器
+        boost::variate_generator&lt;
+            boost::mt19937, boost::uniform_smallint&lt;&gt; &gt; r(
+                boost::mt19937(static_cast&lt;unsigned long&gt;(std::time(0))),
+                boost::uniform_smallint&lt;&gt;(5, 15));
+        io_service io;
+        for (int i = 0; i &lt; 20; ++i)
+        {
+            io.post(bind(worker, i, r()));
+        }
+        thread t[] =
+        {
+            thread(bind(&amp;io_service::run, &amp;io)),
+            thread(bind(&amp;io_service::run, &amp;io)),
+            thread(bind(&amp;io_service::run, &amp;io)),
+            thread(bind(&amp;io_service::run, &amp;io)),
+        };
+        // 終了待ち
+        std::for_each(boost::begin(t), boost::end(t), bind(&amp;thread::join, _1));
+    }
+  :tags:
+  - Boost.Asio
+  - Boost.Thread
+  - Boost1.39
+  :references:
+    :url: 
+    :title: 

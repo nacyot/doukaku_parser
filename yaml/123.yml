@@ -1,0 +1,669 @@
+---
+:id: '123'
+:title: 必ず解ける迷路
+:comments:
+- :id: '5275'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5275
+  :user_name: squld
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/643/
+  :language: 
+  :time: 2008/01/12 07:53 GMT
+  :vote_count: '11'
+  :vote_score: '9'
+  :body: "\r\n\t  <pre class=\"compact\">\r\n以下のルールを満たすn×mの迷路を出力するプログラムを作ってください。\r\n\r\n1.
+    格子状の迷路であること。\r\n2. 経路の幅は均等であること。\r\n3. 迷路のある地点からの全ての地点に到達する経路が1つだけ存在すること。\r\n
+    \  ループも認めません。\r\n4. 出力の度にランダムな迷路であること。\r\n   ランダムシードが同じ時に同じ迷路になってしまうのはよいです。\r\n\r\nたとえば、n=4,
+    m=5の迷路の出力は以下のようになります。\r\n\r\n　｜１｜２｜３｜４｜\r\n―■■■■■■■■■\r\n１■　　　■　　　■\r\n―■■■　■■■　■\r\n２■　　　■　　　■\r\n―■　■■■　■　■\r\n３■　　　　　■　■\r\n―■　■■■　■　■\r\n４■　■　　　■　■\r\n―■　■　■■■　■\r\n５■　■　　　■　■\r\n―■■■■■■■■■\r\n\r\nこう言うのは、×の部分が3のルールに違反するのでダメです。\r\n　｜１｜２｜３｜４｜\r\n―■■■■■■■■■\r\n１■　　　■×■　■\r\n―■■■　■■■　■\r\n２■　　　■　　　■\r\n―■　■■■　■　■\r\n３■　　　　　■　■\r\n―■　■■■■■　■\r\n４■　■×××■　■\r\n―■　■×■■■　■\r\n５■　■×××■　■\r\n―■■■■■■■■■\r\n\r\nこのようなループも2のルールに違反するのでダメです。\r\n　｜１｜２｜３｜４｜\r\n―■■■■■■■■■\r\n１■　　　　　■　■\r\n―■■■　■　■　■\r\n２■　　　■　　　■\r\n―■　■■■　■　■\r\n３■　　　　　■　■\r\n―■　■■■　■　■\r\n４■　■　　　■　■\r\n―■　■　■■■　■\r\n５■　　　　　■　■\r\n―■■■■■■■■■\r\n\r\nできたプログラムを使って
+    n=1024, m=1024 の迷路を作るのにかかった時間を教えてください。\r\n\r\n\r\n難易度高めです。限られたメモリを使って縦方向に無限に広い迷路を\r\nどうやって作るのかを考えると答えが見えてくると思います。\r\nソースコードはJavaで150行程度になりました。\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5277'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5277
+  :user_name: yuin
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/01/12 11:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>たまには一番乗り狙いで。</p>\n<p>シンプルに穴掘り法を使いました。\nまた速度重視ということで手続き型スタイルなScalaになっています。</p>\n<ul
+    class=\"simple\">\n<li>CPU : Athlon64 3000+</li>\n<li>OS : XP</li>\n<li>MEM :
+    1G</li>\n</ul>\n<p>な環境で</p>\n<ul class=\"simple\">\n<li>出力なし: 45～50秒</li>\n<li>出力をファイルへリダイレクト
+    : 2分程度</li>\n</ul>\n<p>でした。</p>\n\n\t"
+  :code: "import java.util.Random\nimport java.lang.Integer.parseInt\nimport scala.collection.mutable.{HashMap,
+    Stack}\nimport scala.util.Sorting.stableSort\n\nobject main{\n  def main(args:
+    Array[String]) = {\n    mazeGenerate(parseInt(args(0)),parseInt(args(1)))\n  }\n\n
+    \ type Coord = (int, int)\n  final val BLANK = '■'\n  final val FILL = '□'\n\n
+    \ def mazeGenerate(_n:int, _m:int) = {\n    val n = _n*2+1\n    val m = _m*2+1\n
+    \   val map    = new HashMap[Coord, Char]\n    val stack  = new Stack[Coord]\n
+    \   val ramdom = new Random\n    val range = Array(0,1,2,3)\n\n    def badCoord_?(c:Coord)
+    = \n        map.getOrElse(c, BLANK) == FILL || c._1 &gt; n-2 || c._1 &lt; 1 ||
+    c._2 &gt; m-2 || c._2 &lt; 1\n    \n    stack += (1,1)\n    map(stack.top) = FILL\n
+    \   var break=false; while(!break) {\n      var c = stack.top\n      var siblings
+    = Array((c._1, c._2-2), (c._1+2, c._2), (c._1-2, c._2), (c._1, c._2+2))\n      if(siblings.forall(badCoord_?(_))){\n
+    \       stack.pop\n        if(stack.isEmpty) { break=true }\n      }else {\n        var
+    candies = stableSort[int,int](range, { x=&gt;ramdom.nextInt(4) })\n        var
+    break2=false;var i= -1; while({i = i+1; !break2&amp;&amp;i&lt;4}) {\n          var
+    sibling = siblings(candies(i))\n          if(!badCoord_?(sibling)) {\n            var
+    (x,y) = (sibling._1-c._1, sibling._2-c._2)\n            stack += sibling\n            if(x
+    != 0) {\n              map((c._1+x/2, c._2)) = FILL\n            }else {\n              map((c._1,
+    c._2+y/2)) = FILL\n            }\n            map(sibling) = FILL\n            break2
+    = true\n          }\n        }\n      }\n    }\n\n    for(i &lt;- (0 until m);
+    j &lt;- (0 until n)) {\n      print(map.getOrElse((j,i), BLANK))\n      if(j ==
+    n-1){ println(\"\") }\n    }\n  }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5279'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5279
+  :user_name: shiro
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2008/01/12 12:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">効率を度外視して素直に書きました。\r\n全部埋まった状態から掘れるだけ掘って、行き詰まったらバックトラックするだけです。\r\n\r\ngosh&gt;
+    (show-maze (maze 4 4))\r\n■■■■■■■■■\r\n■　■　　　■　■\r\n■　■　■　■　■\r\n■　■　■　　　■\r\n■　■　■■■　■\r\n■　　　■　　　■\r\n■■■■■　■■■\r\n■　　　　　　　■\r\n■■■■■■■■■\r\n#&lt;undef&gt;\r\n\r\n1024x1024にかかった時間は177秒でした。\r\n(Gauche
+    0.8.12, Pentium 4 2.0GHz)</pre>\n\t"
+  :code: |
+    ;; -*- coding: euc-jp -*-
+    (use gauche.array)
+    (use srfi-27)
+    (use srfi-42)
+    (use util.match)
+    (use gauche.sequence)
+
+    (set! (setter array-ref) array-set!) ;; missing in gauche.array
+    (random-source-randomize! default-random-source)
+
+    (define (advance pos d)
+      (match-let1 (x . y) pos
+        (case d
+          [(N) (cons x (- y 1))]
+          [(E) (cons (+ x 1) y)]
+          [(W) (cons (- x 1) y)]
+          [(S) (cons x (+ y 1))])))
+
+    (define (inverse d) (case d ((N) 'S) ((S) 'N) ((E) 'W) ((W) 'E)))
+
+    (define (maze n m)
+      (let1 tab (make-array (shape 0 n 0 m) '())
+        (define (diggable? x y)
+          (and (&lt;= 0 x (- n 1)) (&lt;= 0 y (- m 1)) (null? (array-ref tab x y))))
+        (define (dig pos d)
+          (let1 newpos (advance pos d)
+            (cond [(diggable? (car newpos) (cdr newpos))
+                   (push! (array-ref tab (car pos) (cdr pos)) d)
+                   (push! (array-ref tab (car newpos) (cdr newpos)) (inverse d))
+                   newpos]
+                  [else #f])))
+        (let rec ((pos '(0 . 0)) (from #f))
+          (and pos
+               (dolist (d (shuffle '(N E W S)))
+                 (unless (eq? d from) (rec (dig pos d) (inverse d))))))
+        tab))
+
+    (define (show-maze tab)
+      (dotimes (y (array-ref (array-shape tab) 0 1))
+        (dotimes (x (array-ref (array-shape tab) 1 1))
+          (display (if (memq 'N (array-ref tab x y)) "■\u3000" "■■")))
+        (display "■\n")
+        (dotimes (x (array-ref (array-shape tab) 1 1))
+          (display (if (memq 'W (array-ref tab x y)) "\u3000\u3000" "■\u3000")))
+        (display "■\n"))
+      (dotimes (x (array-ref (array-shape tab) 1 1))
+        (display "■■"))
+      (display "■\n"))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '5280'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5280
+  :user_name: yuin
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/01/12 12:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ふつうに配列を使った版。</p>\n<ul class=\"simple\">\n<li>CPU : Athlon64 3000+</li>\n<li>OS
+    : XP</li>\n<li>MEM : 1G</li>\n</ul>\n<p>な環境で1024 1024が</p>\n<ul class=\"simple\">\n<li>出力をファイルへリダイレクト
+    : Elapsed Time:     0:00:10.062</li>\n</ul>\n<p>でした。</p>\n\n\t"
+  :code: "import java.util.Random\nimport java.lang.Integer.parseInt\nimport scala.collection.mutable.{HashMap,
+    Stack}\nimport scala.util.Sorting.stableSort\n\nobject main{\n  def main(args:
+    Array[String]) = {\n    mazeGenerate(parseInt(args(0)),parseInt(args(1)))\n  }\n\n
+    \ type Coord = (int, int)\n  final val BLANK:char = '■'\n  final val FILL:char
+    = '□'\n\n  def mazeGenerate(_n:int, _m:int) = {\n    val n = _n*2+1\n    val m
+    = _m*2+1\n    val map:Array[Array[char]] = Array.make(m, 0).map(x=&gt;Array.make(n,
+    BLANK))\n    val stack  = new Stack[Coord]\n    val ramdom = new Random\n    val
+    range = Array(0,1,2,3)\n\n    def badCoord_?(c:Coord) = \n      c._1 &gt; n-2
+    || c._1 &lt; 1 || c._2 &gt; m-2 || c._2 &lt; 1 || map(c._2)(c._1) == FILL \n    \n
+    \   stack += (1,1)\n    map(1)(1) = FILL\n    var break=false; while(!break) {\n
+    \     var c = stack.top\n      var siblings = Array((c._1, c._2-2), (c._1+2, c._2),
+    (c._1-2, c._2), (c._1, c._2+2))\n      if(siblings.forall(badCoord_?(_))){\n        stack.pop\n
+    \       if(stack.isEmpty) { break=true }\n      }else {\n        var candies =
+    stableSort[int,int](range, { x=&gt;ramdom.nextInt(4) })\n        var break2=false;var
+    i= -1; while({i = i+1; !break2&amp;&amp;i&lt;4}) {\n          var sibling = siblings(candies(i))\n
+    \         if(!badCoord_?(sibling)) {\n            var (x,y) = (sibling._1-c._1,
+    sibling._2-c._2)\n            stack += sibling\n            map(c._2+y/2)(c._1+x/2)
+    = FILL\n            map(sibling._2)(sibling._1) = FILL\n            break2 = true\n
+    \         }\n        }\n      }\n    }\n\n    map.map(_.mkString(\"\")).foreach(println)\n
+    \ }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5281'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5281
+  :user_name: shiro
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2008/01/12 13:04 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  続いて高速化版です。\r<br><br>1024x1024、出力無しで7秒弱になりました(Pen4 2.0GHz)。約25倍。\r<br><br>- 接続をビットマップで保持\r<br>- 方向を整数値で表して条件判断を減らす\r<br>- トライすべき方向のリストをshuffleで毎回作るのではなく、すべての可能な組み合わせをあらかじめ計算しといて、ループ内ではそのうち一つをランダムに選ぶ\r<br><br>最後のが一番効きました。shuffleはgeneric functionのディスパッチがあるし、結果のリストのアロケートも行われるのでinner loopで使うと重いのでしょう。\r<br>"
+  :code: |
+    ;; -*- coding: euc-jp -*-
+    (use srfi-27)
+    (use srfi-42)
+    (use util.combinations)
+
+    (random-source-randomize! default-random-source)
+
+    (define-constant N -1)
+    (define-constant S  1)
+    (define-constant W -2)
+    (define-constant E  2)
+
+    (define (dir-&gt;mask d) (ash 1 (+ d 2)))
+
+    (define-constant NMASK (dir-&gt;mask N))
+    (define-constant SMASK (dir-&gt;mask S))
+    (define-constant WMASK (dir-&gt;mask W))
+    (define-constant EMASK (dir-&gt;mask E))
+
+    (define-macro (trials from)
+      (define (gen-combs src)
+        (list-&gt;vector (permutations src)))
+      `(vector-ref (case ,from
+                     ((,N) ',(gen-combs `(,S ,W ,E)))
+                     ((,S) ',(gen-combs `(,N ,W ,E)))
+                     ((,W) ',(gen-combs `(,N ,S ,E)))
+                     ((,E) ',(gen-combs `(,N ,S ,W))))
+                   (random-integer 6)))
+
+    (define (maze n m)
+      (let1 tab (make-vector (* n m) 0)
+        (let-syntax [(maze-ref
+                      (syntax-rules ()
+                        [(_ x y) (vector-ref tab (+ x (* y n)))]))
+                     (maze-flag-ior!
+                      (syntax-rules ()
+                        [(_ x y d)
+                         (let1 i (+ x (* y n))
+                           (vector-set! tab i (logior (vector-ref tab i)
+                                                      (dir-&gt;mask d))))]))]
+          (define (dig x y d)
+            (receive (dx dy) (quotient&amp;remainder d 2)
+              (let ((nx (+ x dx)) (ny (+ y dy)))
+                (cond [(and (&lt;= 0 nx) (&lt; nx n) (&lt;= 0 ny) (&lt; ny m)
+                            (= 0 (maze-ref nx ny)))
+                       (maze-flag-ior! x y d)
+                       (maze-flag-ior! nx ny (- d))
+                       (rec nx ny (- d))]
+                      [else #f]))))
+          (define (rec x y from)
+            (let loop ((ds (trials from)))
+              (unless (null? ds)
+                (dig x y (car ds))
+                (loop (cdr ds)))))
+          (rec 0 0 N)
+          tab)))
+
+    (define (show-maze n m)
+      (let1 tab (maze n m)
+        (do-ec (: y 0 (* n m) n)
+               (begin
+                 (dotimes (x n)
+                   (display (if (= 0 (logand NMASK (vector-ref tab (+ x y))))
+                              "■■" "■\u3000")))
+                 (display "■\n")
+                 (dotimes (x n)
+                   (display (if (= 0 (logand WMASK (vector-ref tab (+ x y))))
+                              "■\u3000" "\u3000\u3000")))
+                 (display "■\n")))
+        (dotimes (x n) (display "■■"))
+        (display "■\n")))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '5282'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5282
+  :user_name: katsu
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/117/
+  :language: Scheme
+  :time: 2008/01/12 14:40 GMT
+  :vote_count: '7'
+  :vote_score: '5'
+  :body: "\n\t  <pre class=\"compact\">これは、ありですか？\r\n一応、毎回ランダムに結果は変わるのですが。\r\n実行結果：\r\n
+    $ gosh 123.scm\r\nxxxxxxxxxxx\r\nx         x\r\nx xxxxxxx x\r\nx       x x\r\nx
+    xxxxxxx x\r\nx       x x\r\nx xxxxxxx x\r\nx       x x\r\nx xxxxxxx x\r\nx       x
+    x\r\nxxxxxxxxxxx\r\n $ gosh 123.scm\r\nxxxxxxxxxxx\r\nx       x x\r\nx xxxxxxx
+    x\r\nx       x x\r\nx xxxxxxx x\r\nx         x\r\nx xxxxxxx x\r\nx       x x\r\nx
+    xxxxxxx x\r\nx       x x\r\nxxxxxxxxxxx\r\n $ gosh 123.scm\r\nxxxxxxxxxxx\r\nx
+    \        x\r\nx xxxxxxx x\r\nx       x x\r\nx xxxxxxx x\r\nx       x x\r\nx xxxxxxx
+    x\r\nx       x x\r\nx xxxxxxx x\r\nx       x x\r\nxxxxxxxxxxx\r\n $\r\n</pre>\n\t"
+  :code: |
+    (use srfi-27)
+
+    (define (showmaze n m)
+      (let1 x (random-integer m)
+        (dotimes (i m)
+          (display (if (= i 0) "xx" "x "))
+          (dotimes (j (- n 2)) (display "xx"))
+          (display (if (= i 0) "xxx\n" "x x\n"))
+          (display "x ")(dotimes (j (- n 2)) (display "  "))
+          (display (if (= i x) "  x\n" "x x\n")))
+        (dotimes (j m) (display "xx")) (display "x\n")))
+
+    (define (main args)
+      (random-source-randomize! default-random-source)
+      (showmaze 5 5))
+  :tags:
+  - gauche
+  - 問題の裏をかく
+  :references:
+    :url: 
+    :title: 
+- :id: '5283'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5283
+  :user_name: squld
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/643/
+  :language: 
+  :time: 2008/01/12 14:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">解いても楽しくない迷路になりそうですが、ルールは満たしていますね。\r\nあと、めっちゃ速そう(笑)</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5286'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5286
+  :user_name: saws
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/01/12 18:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">棒倒し法で実装しました. \r\n1024 x 1024の迷路生成に約48秒 (CPU:
+    Intel P4 Northwood 2.8 GHz) かかりました. \r\nmapメソッドとgen_wallメソッドの処理の1行目のコメントは, 各メソッドの1行バージョンです.
+    \r\n全体をone-lineにする方法が見つからなかったのでせめてもの抵抗ということで. </pre>\n\t"
+  :code: "require 'matrix'\nN, M = 5, 4\nclass Maze\n  MARK, SPC = '*', ' '\n  def
+    initialize(n, m) #基準点を生成し, その上と左の壁の有無と真理値が対応. \n    @map = Matrix[*Array.new(@n
+    = n){Array.new(@m = m)}].map{Array.new(2)}\n    gen_maze\n  end\n  def map #得たマップデータを対応する記号で表現\n
+    \   #Array.new(2*@n-1){|i| Array.new(2*@m-1){|j| i%2 == j%2 ? (i%2 == 1 ? MARK
+    : SPC) : (@map[i.div(2), j.div(2)][i%2] ? MARK : SPC)}.unshift(MARK).push(\"#{MARK}\\n\")}.unshift(str
+    = \"#{MARK*(2*@m+1)}\\n\").push(str).join\n    print \"#{MARK*(2*@m+1)}\\n\"\n
+    \   (2*@n-1).times{|i|\n      print MARK\n      (2*@m-1).times{|j|\n        if
+    i%2 == j%2\n          print i%2 == 1 ? MARK : SPC\n        else\n          print
+    @map[i.div(2), j.div(2)][i%2] ? MARK : SPC\n        end\n      }\n      print
+    \"#{MARK}\\n\"\n    }\n    print \"#{MARK*(2*@m+1)}\\n\"\n  end\n  def gen_maze
+    #左端の列だけ4種の壁がランダムで生成. 他は3種のみ. \n    (@m-1).times{|j| (@n-1).times{|i| gen_wall(i,
+    j, (j == 0 ? 4 : 3))}}\n  end\n  def gen_wall(i, j, n) #ランダムに壁を生成. もし壁がすでにあれば再帰.
+    \n    #@map[x = i+((r=rand(n))==1 ? 1 : 0), y = j+(r==2 ? 1 : 0)][r%2] ? gen_wall(i,
+    j, n) : @map[x, y][r%2] = true\n    case rand(n)\n    when 0: x, y, k = i,   j,
+    0 #上\n    when 1: x, y, k = i+1, j, 0 #下\n    when 2: x, y, k = i, j+1, 1 #右\n
+    \   when 3: x, y, k = i,   j, 1 #左\n    end\n    @map[x, y][k] ? gen_wall(i, j,
+    n) : @map[x, y][k] = true\n  end\n  private :gen_maze, :gen_wall\nend\nmaze =
+    Maze.new(N, M)\nmaze.gen_maze\nmaze.map\n"
+  :tags:
+  - 1.8.6
+  - i386-mswin32
+  :references:
+    :url: /web/20081122103026/http://uk.geocities.com/sugar777pe/arugo/maze1.html
+    :title: アルゴリズム講座:棒倒し法
+- :id: '5287'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5287
+  :user_name: 匿名
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/01/12 18:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  はじめまして、通りすがりです。\r<br><br>懐かしいお題だったので、勢いで作ってみました。一応、テストはしましたけど、まだバグってるかも知れません。\r<br><br>開発環境は、\r<br>・東芝のノート：AX/530LL＋Mem512（=７０４位）・VC＋＋２００８　Express（C++＆STL）・6時間くらいの時間。\r<br><br>実行環境。\r<br>・上記の機材。・速度向け最適化。・リリースビルド。\r<br>＝＞ファイルにリダイレクトで3秒位でした。迷路の生成自体は1秒ちょいってとこじゃないでしょうか。\r<br>えぇーっと、ライブラリが良いのと、ネーティブコードなのでアドバンテージとれてるかもしれないです。\r<br><br>注意ですけど、最初にがーっとメモリ取るので環境によってはあんまり好ましくない動作をするかもしれません。ウチでは大丈夫というのはあてになりませんので。。。\r<br><br>長くなりましたけど、面白かったです。\n\t"
+  :code: "#include &lt;vector&gt;\n#include &lt;algorithm&gt;\n#include &lt;stdlib.h&gt;\n#include
+    &lt;time.h&gt;\n#include &lt;stdexcept&gt;\nclass Maze_t{\n    typedef unsigned
+    short MazeElement;\n    typedef std::vector&lt;MazeElement&gt; maze_t;\n    int
+    Width_,Height_;\n    maze_t Data;\n    struct Point2{\n        int x,y;\n        void
+    ToZero(){x=y=0;}\n        void Set(int x_, int y_){x=x_; y=y_;}\n    };\n    \npublic:\n
+    \   enum Flags{\n        Left=0,\n        Up,\n        Right,\n        Down,\n
+    \       Visit,\n    };\n    Maze_t(size_t W,size_t H){\n        Create(W,H);\n
+    \   }\n    void Create(size_t W,size_t H){\n        Destroy();\n        Width_=W;Height_=H;\n
+    \       Data.resize(W*H);\n        std::fill(Data.begin(),Data.end(),int(0));\n
+    \       Generate();\n    }\n    void Destroy(){\n        Data.clear();\n        Width_
+    = 0;Height_= 0;\n    }\n    int Width(){ return Width_;}\n    int Height(){ return
+    Height_;}\n    MazeElement WallInfo(int x, int y){\n        if(!CanVisit(x,y))
+    return 0; \n        return GetElement(x,y);\n    }\nprotected:\n    bool CanVisit(int
+    x, int y){\n        if(x&lt;0) return false;\n        if(y&lt;0) return false;\n
+    \       if(Width()&lt;=x) return false;\n        if(Height()&lt;=y) return false;\n
+    \       return true;\n    }\n    bool AlreadyVisit(int x,int y){\n        if(!CanVisit(x,y))
+    return true;\n        return GetElement(x,y)&gt;&gt;Visit &amp; 1;\n    }\n    void
+    MarkVisit(int x,int y){\n        if(CanVisit(x,y) == false) return;\n        MazeElement&amp;
+    Me = GetElement(x,y);\n        Me = Me | 1 &lt;&lt; Visit;\n    }\n    MazeElement&amp;
+    GetElement(int x,int y){\n        return Data[Width()*y+x];\n    }\n    void EraseWall(Point2
+    Base,Point2 To,int command){\n        char Flg1[] = {Left,Up,Right,Down};\n        char
+    Flg2[] = {Right,Down,Left,Up};\n        MazeElement* p;\n        p = &amp;(GetElement(Base.x,Base.y));\n
+    \       (*p) = (*p) | (1&lt;&lt;Flg1[command]);\n        p = &amp;(GetElement(Base.x+To.x,Base.y+To.y));\n
+    \       (*p) = (*p) | (1&lt;&lt;Flg2[command]);\n    }\n    struct Uni{\n        union{\n
+    \           int Int;\n            char Char[4];\n        };\n    };\n    void
+    Generate(){//メモリ等確保後に実行しないと不整合起こします。つまり単体で使用しないでください。Create関数がエントリです。\n        Point2
+    V[]={{-1,0},{0,1},{1,0},{0,-1}};\n        Point2 T={rand()%Width(),rand()%Height()};\n
+    \       std::vector&lt;Point2&gt; pov;\n        std::vector&lt;int&gt; command;\n
+    \       std::vector&lt;int&gt; rotate;\n        Uni U;\n        U.Int = 0x03020100;\n
+    \       std::random_shuffle(U.Char,U.Char+4);\n        int i=0;\n        pov.push_back(T);\n
+    \       command.push_back(i);\n        rotate.push_back(U.Int);\n        MarkVisit(T.x,T.y);\n
+    \       while(pov.size() != 0){\n            T = pov.back();\n            i =
+    command.back();\n            U.Int = rotate.back();\n            for(;i&lt;4;i++){\n
+    \               if(CanVisit(T.x+V[ U.Char[i]].x,T.y+V[ U.Char[i]].y)){\n                    if(AlreadyVisit(T.x+V[
+    U.Char[i]].x,T.y+V[ U.Char[i]].y)) continue;\n                    MarkVisit(T.x+V[
+    U.Char[i]].x,T.y+V[ U.Char[i]].y);\n                    EraseWall(T,V[ U.Char[i]],
+    U.Char[i]);\n                    T.x=T.x+V[ U.Char[i]].x;\n                    T.y=T.y+V[
+    U.Char[i]].y;\n                    pov.push_back(T);\n                    command.push_back(i);\n
+    \                   rotate.push_back(U.Int);\n                    i=0;\n                    std::random_shuffle(U.Char,U.Char+4);\n
+    \               }\n            }\n            pov.pop_back();\n            command.pop_back();\n
+    \           rotate.pop_back();\n        }\n    }\n};\nvoid PrintMaze(Maze_t&amp;
+    M){\n    char W='W',R=' ';\n    for(int i=0;i&lt;M.Height();i++){\n        for(int
+    k=0;k&lt;3;k++){\n            for(int j=0;j&lt;M.Width();j++){\n                int
+    wall = M.WallInfo(j,i);\n                if(k==0) printf(\"%c%c%c\",W, ((wall&gt;&gt;M.Down)&amp;1)?
+    R:W, W);\n                if(k==1) printf(\"%c%c%c\",((wall&gt;&gt;M.Left)&amp;1)?
+    R:W, ((wall&gt;&gt;M.Visit)&amp;1)? R:W, ((wall&gt;&gt;M.Right)&amp;1)? R:W);\n
+    \               if(k==2) printf(\"%c%c%c\",W, ((wall&gt;&gt;M.Up)&amp;1)? R:W,
+    W);            \n            }\n            puts(\"\");\n        }\n    }\n}\nvoid
+    PrintMaze2(Maze_t&amp; M){\n    char *W=\"■\",*R=\"　\";\n    for(int j=0;j&lt;M.Width();j++)
+    printf(\"%s%s\",W,W);\n    puts(W);\n    for(int i=0;i&lt;M.Height();i++){\n        for(int
+    k=1;k&lt;3;k++){\n            printf(\"%s\",W);\n            for(int j=0;j&lt;M.Width();j++){\n
+    \               int wall = M.WallInfo(j,i);\n                if(k==0) printf(\"%s%s\",
+    ((wall&gt;&gt;M.Down)&amp;1)? R:W, W);\n                if(k==1) printf(\"%s%s\",
+    ((wall&gt;&gt;M.Visit)&amp;1)? R:W, ((wall&gt;&gt;M.Right)&amp;1)? R:W);\n                if(k==2)
+    printf(\"%s%s\", ((wall&gt;&gt;M.Up)&amp;1)? R:W, W);            \n            }\n
+    \           puts(\"\");\n        }\n    }\n}\nint main(){\n    //srand(100);\n
+    \   srand(time(NULL));\n    Maze_t m(12,6);\n    //Maze_t m(1024,1024);\n    PrintMaze2(m);\n
+    \   return 0;\n}\n"
+  :tags:
+  - C++
+  - Maze
+  - Vc9Express
+  :references:
+    :url: 
+    :title: 
+- :id: '5288'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5288
+  :user_name: ocean
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/01/12 22:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>壁に孔をあける位置をランダムに。マシンが遅いので、Pentium2 266MHz で psyco を使って4分くらいです。</p>\n\n\t"
+  :code: |
+    # coding: shift_jis
+
+    import codecs
+    import random
+
+    def create_maze(path, n, m):
+        io = codecs.open(path, "w", "shift_jis")
+        holes = [random.randint(1, 2 * m - 1) for _ in xrange(n - 1)]
+        for y in xrange(2 * m + 1):
+            for x in xrange(2 * n + 1):
+                if x == 0 or x == 2 * n or y == 0 or y == 2 * m:
+                    io.write(u"■")
+                elif x % 2 == 1 or holes[x // 2 - 1] == y:
+                    io.write(u"　")
+                else:
+                    io.write(u"■")
+            io.write("\n")
+
+    def main():
+        create_maze("a.txt", 1024, 1024)
+
+    if __name__ == "__main__":
+        try:
+            import psyco
+        except ImportError:
+            pass
+        else:
+            psyco.full()
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5289'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5289
+  :user_name: squld
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/643/
+  :language: 
+  :time: 2008/01/13 04:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>これもまた#5282と同じように、解いても面白くなさそうな迷路が出力されますね。そしてすっごい速そうです。</p>\n<p>さらに、メモリ効率がすごくよいですね。\n実はこのアルゴリズムと同じメモリ効率(nに比例)で、しかも解いても面白い迷路が出力できるアルゴリズムが存在します。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5290'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5290
+  :user_name: katsu
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/117/
+  :language: 
+  :time: 2008/01/13 08:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">速さには自信があります。(笑)\r\n&gt;限られたメモリを使って縦方向に無限に広い迷路を\r\n&gt;どうやって作るのかを考えると答えが見えてくると思います。\r\nをすっごくまじめに考えて、最小のメモリで無限の迷路を作り出すことばかり考えていたら、\r\nこんなふざけたアイデアしか思いつかなかったので。\r\nすみません。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5291'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5291
+  :user_name: squld
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/643/
+  :language: 
+  :time: 2008/01/13 08:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>穴掘り法ですね。\n迷路生成1秒ですか。さすがC++は速いなぁ。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5292'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5292
+  :user_name: squld
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/643/
+  :language: 
+  :time: 2008/01/13 08:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>メモリ使用量はO(1)なので確かに理想的ですね。速さも文句なしです。でも、さすがにそこまでのメモリ効率は想定していませんでした(笑)</p>\n<p>他のコメントにも書きましたが、O(n)のアルゴリズムがあるんですよ。解いて楽しい迷路生成のメモリ効率としてはそれ以上のアルゴリズムは無いと踏んでます。\n時間のあるときにでも考えてみてください。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5293'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5293
+  :user_name: 99yen
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2008/01/13 09:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  棒倒し法で何も工夫していない上に、なでしこなので速度は遅め・・・。\r<br>6分57秒でした。表示に30秒くらいかかってる気がします。\r<br>(CPU:Athlon X2 3600+ [1.9GHz*2] RAM:2GB)\n\t"
+  :code: |
+    !変数宣言が必要
+
+    #幅/高さ
+    Xとは整数=1024
+    Yとは整数=1024
+
+    迷路とは配列
+    Iとは整数
+    Jとは整数
+    ワクとは文字列
+    結果とは文字列
+    X=X*2-1
+    Y=Y*2-1
+
+    #奇数のマスに置く
+    Iで0からX-1まで繰り返す
+        Jで0からY-1まで繰り返す
+            もし(I%2=1&amp;&amp;J%2=1)ならば
+                迷路[J,I]="■"
+            違えば
+                迷路[J,I]="　"
+
+    #一番左の列について
+    Iで0からY-1まで繰り返す
+        もし(I%2=1)ならば
+            壁生成(迷路,I,1,4)
+
+    #そのほかの列について
+    もし(X&gt;3)ならば
+        Iで3からX-1まで繰り返す
+            Jで0からY-1まで繰り返す
+                もし(I%2=1&amp;&amp;J%2=1)ならば
+                    壁生成(迷路,J,I,3)
+
+    #整形して表示
+    ワク="■"をX+2だけリフレイン
+    結果=ワク&amp;改行
+    (TOSTR(迷路)の","を""に置換)を反復
+        結果=結果&amp;"■"&amp;対象&amp;"■{~}"
+    結果=結果&amp;ワク
+    結果を表示
+
+    ●壁生成(MAP,X,Y,RND)
+        Mとは整数
+        Nとは整数
+        乱数初期化
+        乱数(RND)で条件分岐
+            0ならば,M=X-1;N=Y #上
+            1ならば,M=X;N=Y+1 #右
+            2ならば,M=X+1;N=Y #下
+            3ならば,M=X;N=Y-1 #左
+        もし(MAP[M,N]&lt;&gt;"■")ならば
+            MAP[M,N]="■"
+        違えば
+            壁生成(MAP,X,Y,RND)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5294'
+  :parent_id: '123'
+  :url: http://ja.doukaku.org/comment/5294
+  :user_name: horiuchi
+  :user_url: /web/20081122103026/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/01/13 11:22 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">メモリを O(n) でしか使わないのを書いてみました。\r\n最後の行で辻褄を合わせていますが、それなりな迷路になっているかと思います。\r\n\r\nn=4,
+    m=5, seed=6 でこんな感じになりました。\r\n\r\n■■■■■■■■■\r\n■　■　　　■　■\r\n■　■　■■■　■\r\n■　■　　　　　■\r\n■　■　■■■■■\r\n■　　　■　■　■\r\n■■■　■　■　■\r\n■　　　　　■　■\r\n■■■■■　■　■\r\n■　　　　　　　■\r\n■■■■■■■■■\r\n</pre>\n\t"
+  :code: |-
+    import java.io.BufferedWriter;
+    import java.io.FileWriter;
+    import java.io.IOException;
+    import java.util.Iterator;
+    import java.util.Random;
+
+
+    public class Sample123 {
+        public static void main(String[] args) {
+            try {
+                BufferedWriter writer = new BufferedWriter(new FileWriter("result.txt"));
+
+                long start = System.currentTimeMillis();
+                Iterator&lt;String&gt; ite = new MazeLineIterator(4, 5, 6);
+                while (ite.hasNext()) {
+                    writer.append(ite.next());
+                    writer.newLine();
+                }
+                long end = System.currentTimeMillis();
+
+                writer.close();
+                System.out.println("elapse: " + (end - start) + "(ms)");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    class MazeLineIterator implements Iterator&lt;String&gt; {
+        public static final String WALL_CHAR = "■";
+        public static final String SPACE_CHAR = "　";
+
+        private static final int WALL_AREA = 0;
+
+        private final Random random_;
+
+        private long line_ = -1;
+        private boolean oddLine_ = false;    // oddLine_ == true の時が通路の行、falseの時が柱の行
+        private int counter_ = 1;
+
+        private final int maxCol_;
+        private final long maxRow_;
+        private final int[] mazeLine_;
+
+        public MazeLineIterator(int col, long row) {
+            maxCol_ = col;
+            maxRow_ = row;
+            mazeLine_ = new int[col * 2 + 1];
+            random_ = new Random();
+        }
+        public MazeLineIterator(int col, long row, long seed) {
+            maxCol_ = col;
+
+
+
+
+    <!--
+         FILE ARCHIVED ON 10:30:26 Nov 22, 2008 AND RETRIEVED FROM THE
+         INTERNET ARCHIVE ON 13:21:02 Nov 16, 2013.
+         JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+         ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+         SECTION 108(a)(3)).
+    -->
+  :tags: []
+  :references:
+    :url: 
+    :title: 

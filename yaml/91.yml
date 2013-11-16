@@ -1,0 +1,1630 @@
+---
+:id: '91'
+:title: printfの自作
+:comments:
+- :id: '4119'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4119
+  :user_name: yappy
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/533/
+  :language: C
+  :time: 2007/11/16 17:00 GMT
+  :vote_count: '18'
+  :vote_score: '-4'
+  :body: "\r\n\t  <div class=\"line-block\">\n<div class=\"line\">printf関数を自作してください。</div>\n<div
+    class=\"line\">printfの説明は不要だと思います。とりあえずWikiPediaのリンクをはっておきます。</div>\n<div class=\"line\"><a
+    class=\"reference\" href=\"/web/20090422063755/http://ja.wikipedia.org/wiki/Printf\">http://ja.wikipedia.org/wiki/Printf</a></div>\n<div
+    class=\"line\"><br></div>\n<div class=\"line\">実際にはsprintf関数を作ってください。</div>\n<div
+    class=\"line\">注意事項</div>\n</div>\n<ul class=\"simple\">\n<li>標準でついているprintf系関数の使用禁止</li>\n<li>標準でついているライブラリ以外の使用禁止</li>\n<li>引数・返り値等の仕様はできるだけ似せればよい</li>\n</ul>\n<div
+    class=\"line-block\">\n<div class=\"line\"><br></div>\n<div class=\"line\">可変長引数など、言語によっては難しい/不可能な仕様もありますが、いろいろ工夫して本物に近づくようにしてみてください。</div>\n</div>\n\r\n\t"
+  :code: |
+    #include &lt;string.h&gt;
+
+    // なにもフォーマットしてない
+    int mysprintf(char *str, const char *format, ... ){
+        strcpy(str, format);
+        return strlen(str);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4395'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4395
+  :user_name: shiro
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/11/25 11:52 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  場合わけが多くなるのでなかなかきれいにまとまりませんが、仕事ではこういうベタな仕様をえいやっと書くことも多い気がするので、書いとけば参考になるかなと。\r<br><br>さぼったところ：\r<br>- 浮動小数点数はeEfFgGを区別せず。いい加減です。\r<br>- 変換指定子 aApnはサポートせず。\r<br>- 長さ修飾子はSchemeはサポートせず(Schemeでは意味がないかな)\r<br>- n$による引数の並べかえはサポートせず。\r<br><br>後はそれなりにサポートしているつもりです。\r<br>gosh&gt; (sprintf \"|%d|\" 123)\r<br>\"|123|\"\r<br>gosh&gt; (sprintf \"|%10d|\" 123)\r<br>\"|       123|\"\r<br>gosh&gt; (sprintf \"|%-10d|\" 123)\r<br>\"|123       |\"\r<br>gosh&gt; (sprintf \"|%10.5d|\" 123)\r<br>\"|     00123|\"\r<br>gosh&gt; (sprintf \"|%+10.5d|\" 123)\r<br>\"|    +00123|\"\r<br>gosh&gt; (sprintf \"|%+10d|\" 123)\r<br>\"|      +123|\"\r<br>gosh&gt; (sprintf \"|%+10o|\" 123)\r<br>\"|      +173|\"\r<br>gosh&gt; (sprintf \"|%10o|\" 123)\r<br>\"|       173|\"\r<br>gosh&gt; (sprintf \"|%#10o|\" 123)\r<br>\"|      0173|\"\r<br>gosh&gt; (sprintf \"|%10x|\" 123)\r<br>\"|        7b|\"\r<br>gosh&gt; (sprintf \"|%10X|\" 123)\r<br>\"|        7B|\"\r<br>gosh&gt; (sprintf \"|%#10x|\" 123)\r<br>\"|      0x7b|\"\r<br>gosh&gt; (sprintf \"|%f|\" 3.14)\r<br>\"|3.14|\"\r<br>gosh&gt; (sprintf \"|%.6f|\" (sqrt 2))\r<br>\"|1.414214|\"\r<br>gosh&gt; (sprintf \"|%10.6f|\" (sqrt 2))\r<br>\"|  1.414214|\"\r<br>gosh&gt; (sprintf \"|%10.6f|\" (- (sqrt 2)))\r<br>\"| -1.414214|\"\r<br>gosh&gt; (sprintf \"|%*.*f|\" 10 6 (log 10))\r<br>\"|  2.302585|\"\r<br>gosh&gt; (sprintf \"|%f|\" 10e100)\r<br>\"|1.0e101|\"\r<br>gosh&gt; (sprintf \"|%f|\" 1e100)\r<br>\"|1.0e100|\"\r<br>gosh&gt; (sprintf \"|%.6f|\" 1e100)\r<br>\"|1.000000e100|\"\r<br>gosh&gt; (sprintf \"|%s|\" \"abc\")\r<br>\"|abc|\"\r<br>gosh&gt; (sprintf \"|%10s|\" \"abc\")\r<br>\"|       abc|\"\r<br>gosh&gt; (sprintf \"|%-10s|\" \"abc\")\r<br>\"|abc       |\"\r<br>gosh&gt; (sprintf \"|%*s|\" 10 \"abc\")\r<br>\"|       abc|\"\r<br>gosh&gt; (sprintf \"|%c|\" #\\z)\r<br>\"|z|\"\r<br>gosh&gt; (sprintf \"|%%|\")\r<br>\"|%|\"\r<br>"
+  :code: |
+    (use gauche.sequence)
+    (use util.match)
+    (use text.tree)
+    (use srfi-1)
+
+    (define (sprintf fmt . args)
+      (define (get-var-arg name v args)
+        (if v
+          (cond [(string-&gt;number v) =&gt; (cut values &lt;&gt; args)]
+                [(equal? v "*")     (values (car args) (cdr args))]
+                [else (error #`",name needs to be a number or '*', but got:" v)])
+          (values #f args)))
+      (define (pick-arg conv args)
+        (if (equal? conv "%") (values #f args) (car+cdr args)))
+      (define (rec fmt args)
+        (rxmatch-case fmt
+          [#/(.*)%([-+ #0]*)(\d+|\*)?(?:\.(\d*|\*))?([diouxXeEfFgGaAcspn%])(.*)/
+           (_ before flags width prec conv after)
+           (receive (width args) (get-var-arg 'width width args)
+             (receive (prec args) (get-var-arg 'prec prec args)
+               (receive (arg args) (pick-arg conv args)
+                 `(,before
+                   ,(fill width flags (dispatch arg prec flags conv))
+                   ,(rec after args)))))]
+          [else fmt]))
+      (define (dispatch arg prec flags conv)
+        (case (ref conv 0)
+          [(#\d #\i #\u) (int arg prec flags 10 conv)]
+          [(#\o)         (int arg prec flags 8 conv)]
+          [(#\x #\X)     (int arg prec flags 16 conv)]
+          [(#\e #\E #\f #\F #\g #\G) (real arg prec flags conv)]
+          [(#\c)         (if (char? arg)
+                           (string arg)
+                           (error "char required for %c conversion:" arg))]
+          [(#\s)         (if (string? arg)
+                           (if (and prec (&lt; prec (string-length arg)))
+                             (string-take arg prec)
+                             arg)
+                           (error "string required for %s conversion:" arg))]
+          [(#\%)         "%"]
+          [else          (error "unsupported conversion:" conv)]))
+      (define (fill w f s)
+        (or (and-let* ([ w ]
+                       [len (string-length s)]
+                       [(&lt; len w)]
+                       [pad (- w len)])
+              (if (string-index f #\-)
+                (cons s (make-string pad #\space))
+                (cons (make-string pad (if (string-index f #\0) #\0 #\space)) s)))
+            s))
+      (define (sign arg f s)
+        (define (pos-sign)
+          (cond [(string-index f #\+) "+"]
+                [(string-index f #\space) " "]
+                [else ""]))
+        (string-append (if (negative? arg) "-" (pos-sign)) s))
+      (define (minpad p s)
+        (if (and p (&lt; (string-length s) p))
+          (string-append (make-string (- p (string-length s)) #\0) s)
+          s))
+      (define (prefix f c s)
+        (if (string-index f #\#)
+          (case (ref c 0)
+            [(#\o) (string-append "0" s)]
+
+            [(#\x) (string-append "0x" s)]
+            [(#\X) (string-append "0X" s)])
+          s))
+      (define (int arg p f r c)
+        (unless (and (exact? arg) (integer? arg))
+          (error "exact integer required for conversion:" c))
+        (sign arg f (prefix f c (minpad p (number-&gt;string (abs arg) r (equal? c "X"))))))
+      (define (maxprec p s)
+        (cond [(not p) s]
+              [else
+               (regexp-replace*
+                s #/\.(\d+)/
+                (lambda (m)
+                  (cond [(zero? p) ""]
+                        [else
+                         (let1 oprec (string-length (m 1))
+                           (cond [(&lt; p oprec)
+                                  #`".,(round-&gt;exact (/. (string-&gt;number (m 1)) (expt 10 (- oprec p))))"]
+                                 [else
+                                  #`".,(m 1),(make-string (- p oprec) #\\0)"]))
+                         ])))
+               ]))
+      (define (real arg p f c)
+        (unless (real? arg)
+          (error "real number required for conversion:" c))
+        (maxprec p (number-&gt;string arg)))
+      (tree-&gt;string (rec fmt args)))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '4396'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4396
+  :user_name: shiro
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/41/
+  :language: diff
+  :time: 2007/11/25 11:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>しまった。複数のフォーマット指示子がある場合にちゃんと動きませんでした。</p>\n\n\t"
+  :code: |
+    *** t.scm    2007-11-25 01:51:56.000000000 -1000
+    --- t2.scm    2007-11-25 01:53:52.000000000 -1000
+    ***************
+    *** 13,28 ****
+        (define (pick-arg conv args)
+          (if (equal? conv "%") (values #f args) (car+cdr args)))
+        (define (rec fmt args)
+    !     (rxmatch-case fmt
+    !       [#/(.*)%([-+ #0]*)(\d+|\*)?(?:\.(\d*|\*))?([diouxXeEfFgGaAcspn%])(.*)/
+    !        (_ before flags width prec conv after)
+    !        (receive (width args) (get-var-arg 'width width args)
+    !          (receive (prec args) (get-var-arg 'prec prec args)
+    !            (receive (arg args) (pick-arg conv args)
+    !              `(,before
+    !                ,(fill width flags (dispatch arg prec flags conv))
+    !                ,(rec after args)))))]
+    !       [else fmt]))
+        (define (dispatch arg prec flags conv)
+          (case (ref conv 0)
+            [(#\d #\i #\u) (int arg prec flags 10 conv)]
+    --- 13,31 ----
+        (define (pick-arg conv args)
+          (if (equal? conv "%") (values #f args) (car+cdr args)))
+        (define (rec fmt args)
+    !     (receive (pre post) (string-scan fmt #\% 'both)
+    !       (if post
+    !         (rxmatch-case post
+    !           [#/([-+ #0]*)(\d+|\*)?(?:\.(\d*|\*))?([diouxXeEfFgGaAcspn%])(.*)/
+    !            (_ flags width prec conv after)
+    !            (receive (width args) (get-var-arg 'width width args)
+    !              (receive (prec args) (get-var-arg 'prec prec args)
+    !                (receive (arg args) (pick-arg conv args)
+    !                  `(,pre
+    !                    ,(fill width flags (dispatch arg prec flags conv))
+    !                    ,(rec after args)))))]
+    !           [else (error "bad format string:" fmt)])
+    !         fmt)))
+        (define (dispatch arg prec flags conv)
+          (case (ref conv 0)
+            [(#\d #\i #\u) (int arg prec flags 10 conv)]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4401'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4401
+  :user_name: nobsun
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/11/25 19:21 GMT
+  :vote_count: '5'
+  :vote_score: '-1'
+  :body: "\n\t  <p>Haskellの場合，可変長引数の扱いに工夫が必要です．</p>\n<p>下手なコードを書くより，ghcのライブラリを読んで実際にどうしているかを見る方が勉強になると思うので，ライブラリのコード(Text.Printfモジュール)をそのまま掲載します．</p>\n\n\t"
+  :code: "-----------------------------------------------------------------------------\n--
+    |\n-- Module      :  Text.Printf\n-- Copyright   :  (c) Lennart Augustsson, 2004\n--
+    License     :  BSD-style (see the file libraries/base/LICENSE)\n-- \n-- Maintainer
+    \ :  lennart@augustsson.net\n-- Stability   :  provisional\n-- Portability :  portable\n--\n--
+    A C printf like formatter.\n--\n-----------------------------------------------------------------------------\n\nmodule
+    Text.Printf(\n   printf, hPrintf,\n   PrintfType, HPrintfType, PrintfArg, IsChar\n)
+    where\n\nimport Prelude\nimport Data.Char\nimport Data.Int\nimport Data.Word\nimport
+    Numeric(showEFloat, showFFloat, showGFloat)\nimport System.IO\n\n-------------------\n\n--
+    | Format a variable number of arguments with the C-style formatting string.\n--
+    The return value is either 'String' or @('IO' a)@.\n--\n-- The format string consists
+    of ordinary characters and /conversion\n-- specifications/, which specify how
+    to format one of the arguments\n-- to printf in the output string.  A conversion
+    specification begins with the\n-- character @%@, followed by one or more of the
+    following flags:\n--\n-- &gt;    -      left adjust (default is right adjust)\n--
+    &gt;    +      always use a sign (+ or -) for signed conversions\n-- &gt;    0
+    \     pad with zeroes rather than spaces\n--\n-- followed optionally by a field
+    width:\n-- \n-- &gt;    num    field width\n-- &gt;    *      as num, but taken
+    from argument list\n--\n-- followed optionally by a precision:\n--\n-- &gt;    .num
+    \  precision (number of decimal places)\n--\n-- and finally, a format character:\n--\n--
+    &gt;    c      character               Char, Int, Integer, ...\n-- &gt;    d      decimal
+    \                Char, Int, Integer, ...\n-- &gt;    o      octal                   Char,
+    Int, Integer, ...\n-- &gt;    x      hexadecimal             Char, Int, Integer,
+    ...\n-- &gt;    X      hexadecimal             Char, Int, Integer, ...\n-- &gt;
+    \   u      unsigned decimal        Char, Int, Integer, ...\n-- &gt;    f      floating
+    point          Float, Double\n-- &gt;    g      general format float    Float,
+    Double\n-- &gt;    G      general format float    Float, Double\n-- &gt;    e
+    \     exponent format float   Float, Double\n-- &gt;    E      exponent format
+    float   Float, Double\n-- &gt;    s      string                  String\n--\n--
+    Mismatch between the argument types and the format string will cause\n-- an exception
+    to be thrown at runtime.\n--\n-- Examples:\n--\n-- &gt;   &gt; printf \"%d\\n\"
+    (23::Int)\n-- &gt;   23\n-- &gt;   &gt; printf \"%s %s\\n\" \"Hello\" \"World\"\n--
+    &gt;   Hello World\n-- &gt;   &gt; printf \"%.2f\\n\" pi\n-- &gt;   3.14\n--\nprintf
+    :: (PrintfType r) =&gt; String -&gt; r\nprintf fmts = spr fmts []\n\n-- | Similar
+    to 'printf', except that output is via the specified\n-- 'Handle'.  The return
+    type is restricted to @('IO' a)@.\nhPrintf :: (HPrintfType r) =&gt; Handle -&gt;
+    String -&gt; r\nhPrintf hdl fmts = hspr hdl fmts []\n\n-- |The 'PrintfType' class
+    provides the variable argument magic for\n-- 'printf'.  Its implementation is
+    intentionally not visible from\n-- this module. If you attempt to pass an argument
+    of a type which\n-- is not an instance of this class to 'printf' or 'hPrintf',
+    then\n-- the compiler will report it as a missing instance of 'PrintfArg'.\nclass
+    PrintfType t where\n    spr :: String -&gt; [UPrintf] -&gt; t\n\n-- | The 'HPrintfType'
+    class provides the variable argument magic for\n-- 'hPrintf'.  Its implementation
+    is intentionally not visible from\n-- this module.\nclass HPrintfType t where\n
+    \   hspr :: Handle -&gt; String -&gt; [UPrintf] -&gt; t\n\n{- not allowed in Haskell
+    98\ninstance PrintfType String where\n    spr fmt args = uprintf fmt (reverse
+    args)\n-}\ninstance (IsChar c) =&gt; PrintfType [c] where\n    spr fmts args =
+    map fromChar (uprintf fmts (reverse args))\n\ninstance PrintfType (IO a) where\n
+    \   spr fmts args = do\n    putStr (uprintf fmts (reverse args))\n    return undefined\n\ninstance
+    HPrintfType (IO a) where\n    hspr hdl fmts args = do\n    hPutStr hdl (uprintf
+    fmts (reverse args))\n    return undefined\n\ninstance (PrintfArg a, PrintfType
+    r) =&gt; PrintfType (a -&gt; r) where\n    spr fmts args = \\ a -&gt; spr fmts
+    (toUPrintf a : args)\n\ninstance (PrintfArg a, HPrintfType r) =&gt; HPrintfType
+    (a -&gt; r) where\n    hspr hdl fmts args = \\ a -&gt; hspr hdl fmts (toUPrintf
+    a : args)\n\nclass PrintfArg a where\n    toUPrintf :: a -&gt; UPrintf\n\ninstance
+    PrintfArg Char where\n    toUPrintf c = UChar c\n\n{- not allowed in Haskell 98\ninstance
+    PrintfArg String where\n    toUPrintf s = UString s\n-}\ninstance (IsChar c) =&gt;
+    PrintfArg [c] where\n    toUPrintf = UString . map toChar\n\ninstance PrintfArg
+    Int where\n    toUPrintf = uInteger\n\ninstance PrintfArg Int8 where\n    toUPrintf
+    = uInteger\n\ninstance PrintfArg Int16 where\n    toUPrintf = uInteger\n\ninstance
+    PrintfArg Int32 where\n    toUPrintf = uInteger\n\ninstance PrintfArg Int64 where\n
+    \   toUPrintf = uInteger\n\n#ifndef __NHC__\ninstance PrintfArg Word where\n    toUPrintf
+    = uInteger\n#endif\n\ninstance PrintfArg Word8 where\n    toUPrintf = uInteger\n\ninstance
+    PrintfArg Word16 where\n    toUPrintf = uInteger\n\ninstance PrintfArg Word32
+    where\n    toUPrintf = uInteger\n\ninstance PrintfArg Word64 where\n    toUPrintf
+    = uInteger\n\ninstance PrintfArg Integer where\n    toUPrintf = UInteger 0\n\ninstance
+    PrintfArg Float where\n    toUPrintf = UFloat\n\ninstance PrintfArg Double where\n
+    \   toUPrintf = UDouble\n\nuInteger :: (Integral a, Bounded a) =&gt; a -&gt; UPrintf\nuInteger
+    x = UInteger (toInteger $ minBound `asTypeOf` x) (toInteger x)\n\nclass IsChar
+    c where\n    toChar :: c -&gt; Char\n    fromChar :: Char -&gt; c\n\ninstance
+    IsChar Char where\n    toChar c = c\n    fromChar c = c\n\n-------------------\n\ndata
+    UPrintf = UChar Char | UString String | UInteger Integer Integer | UFloat Float
+    | UDouble Double\n\nuprintf :: String -&gt; [UPrintf] -&gt; String\nuprintf \"\"
+    \      []       = \"\"\nuprintf \"\"       (_:_)    = fmterr\nuprintf ('%':'%':cs)
+    us   = '%':uprintf cs us\nuprintf ('%':_)  []       = argerr\nuprintf ('%':cs)
+    us@(_:_) = fmt cs us\nuprintf (c:cs)   us       = c:uprintf cs us\n\nfmt :: String
+    -&gt; [UPrintf] -&gt; String\nfmt cs us =\n    let (width, prec, ladj, zero, plus,
+    cs', us') = getSpecs False False False cs us\n        adjust (pre, str) = \n        let
+    lstr = length str\n            lpre = length pre\n            fill = if lstr+lpre
+    &lt; width then take (width-(lstr+lpre)) (repeat (if zero then '0' else ' '))
+    else \"\"\n        in  if ladj then pre ++ str ++ fill else if zero then pre ++
+    fill ++ str else fill ++ pre ++ str\n            adjust' (\"\", str) | plus =
+    adjust (\"+\", str)\n            adjust' ps = adjust ps\n        in\n    case
+    cs' of\n    []     -&gt; fmterr\n    c:cs'' -&gt;\n        case us' of\n        []
+    \    -&gt; argerr\n        u:us'' -&gt;\n        (case c of\n        'c' -&gt;
+    adjust  (\"\", [toEnum (toint u)])\n        'd' -&gt; adjust' (fmti u)\n        'i'
+    -&gt; adjust' (fmti u)\n        'x' -&gt; adjust  (\"\", fmtu 16 u)\n        'X'
+    -&gt; adjust  (\"\", map toUpper $ fmtu 16 u)\n        'o' -&gt; adjust  (\"\",
+    fmtu 8  u)\n        'u' -&gt; adjust  (\"\", fmtu 10 u)\n        'e' -&gt; adjust'
+    (dfmt' c prec u)\n        'E' -&gt; adjust' (dfmt' c prec u)\n        'f' -&gt;
+    adjust' (dfmt' c prec u)\n        'g' -&gt; adjust' (dfmt' c prec u)\n        'G'
+    -&gt; adjust' (dfmt' c prec u)\n        's' -&gt; adjust  (\"\", tostr u)\n        _
+    \  -&gt; perror (\"bad formatting char \" ++ [c])\n         ) ++ uprintf cs''
+    us''\n\nfmti :: UPrintf -&gt; (String, String)\nfmti (UInteger _ i) = if i &lt;
+    0 then (\"-\", show (-i)) else (\"\", show i)\nfmti (UChar c)      = fmti (uInteger
+    (fromEnum c))\nfmti _            = baderr\n\nfmtu :: Integer -&gt; UPrintf -&gt;
+    String\nfmtu b (UInteger l i) = itosb b (if i &lt; 0 then -2*l + i else i)\nfmtu
+    b (UChar c)      = itosb b (toInteger (fromEnum c))\nfmtu _ _              = baderr\n\ntoint
+    :: UPrintf -&gt; Int\ntoint (UInteger _ i) = fromInteger i\ntoint (UChar c)      =
+    fromEnum c\ntoint _             = baderr\n\ntostr :: UPrintf -&gt; String\ntostr
+    (UString s) = s\ntostr _          = baderr\n\nitosb :: Integer -&gt; Integer -&gt;
+    String\nitosb b n = \n    if n &lt; b then \n        [intToDigit $ fromInteger
+    n]\n    else\n        let (q, r) = quotRem n b in\n        itosb b q ++ [intToDigit
+    $ fromInteger r]\n\nstoi :: Int -&gt; String -&gt; (Int, String)\nstoi a (c:cs)
+    | isDigit c = stoi (a*10 + digitToInt c) cs\nstoi a cs                 = (a, cs)\n\ngetSpecs
+    :: Bool -&gt; Bool -&gt; Bool -&gt; String -&gt; [UPrintf] -&gt; (Int, Int, Bool,
+    Bool, Bool, String, [UPrintf])\ngetSpecs _ z s ('-':cs) us = getSpecs True z s
+    cs us\ngetSpecs l z _ ('+':cs) us = getSpecs l z True cs us\ngetSpecs l _ s ('0':cs)
+    us = getSpecs l True s cs us\ngetSpecs l z s ('*':cs) us = \n        case us of\n
+    \       [] -&gt; argerr\n        nu : us' -&gt;\n        let n = toint nu\n        (p,
+    cs'', us'') =\n            case cs of\n                    '.':'*':r -&gt; case
+    us' of { [] -&gt; argerr; pu:us''' -&gt; (toint pu, r, us''') }\n            '.':r
+    \    -&gt; let (n', cs') = stoi 0 r in (n', cs', us')\n            _         -&gt;
+    (-1, cs, us')\n        in  (n, p, l, z, s, cs'', us'')\ngetSpecs l z s ('.':cs)
+    us =\n    let (p, cs') = stoi 0 cs\n    in  (0, p, l, z, s, cs', us)\ngetSpecs
+    l z s cs@(c:_) us | isDigit c =\n    let (n, cs') = stoi 0 cs\n        (p, cs'')
+    = case cs' of\n            '.':r -&gt; stoi 0 r\n            _     -&gt; (-1,
+    cs')\n    in  (n, p, l, z, s, cs'', us)\ngetSpecs l z s cs       us = (0, -1,
+    l, z, s, cs, us)\n\ndfmt' :: Char -&gt; Int -&gt; UPrintf -&gt; (String, String)\ndfmt'
+    c p (UDouble d) = dfmt c p d\ndfmt' c p (UFloat f)  = dfmt c p f\ndfmt' _ _ _
+    \          = baderr\n\ndfmt :: (RealFloat a) =&gt; Char -&gt; Int -&gt; a -&gt;
+    (String, String)\ndfmt c p d =\n    case (if isUpper c then map toUpper else id)
+    $\n             (case toLower c of\n                  'e' -&gt; showEFloat\n                  'f'
+    -&gt; showFFloat\n                  'g' -&gt; showGFloat\n                  _
+    \  -&gt; error \"Printf.dfmt: impossible\"\n             )\n               (if
+    p &lt; 0 then Nothing else Just p) d \"\" of\n    '-':cs -&gt; (\"-\", cs)\n    cs
+    \    -&gt; (\"\" , cs)\n\nperror :: String -&gt; a\nperror s = error (\"Printf.printf:
+    \"++s)\nfmterr, argerr, baderr :: a\nfmterr = perror \"formatting string ended
+    prematurely\"\nargerr = perror \"argument list ended prematurely\"\nbaderr = perror
+    \"bad argument\"\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4402'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4402
+  :user_name: ところてん
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/11/26 01:03 GMT
+  :vote_count: '8'
+  :vote_score: '8'
+  :body: "\n\t  <pre class=\"compact\">仕様削ってもいいから、シンプルに実装しろとかなら良かったのに。\r\n組み込みとかの厳しい環境だと、printfの関数を入れると、かなりのメモリが圧迫されるケースがあるわけで、そういう奴用に。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4404'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4404
+  :user_name: naoya_t
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/348/
+  :language: Scheme
+  :time: 2007/11/26 05:09 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">前に作ったやつがあるので恥ずかしながら投げてみます。\r\nshiroさんがきっと書いてくれると思ったのでshiroさんの投稿を待った事をここに告白します。\r\nライブラリにntというディレクトリを作ってその下に置き、\r\n(use
+    nt.printf) して使います。\r\n\r\nGauche 0.8.12で動きます。0.8.11以前では正規表現にmatchしなかった場合に#fではなく\"\"が返るので一部修正が必要です。\r\nなお、104行目の
+    (d o x X) のところを (d b o x X) にすると、%bで２進表記をするオレオレ拡張が入ります。\r\n\r\nテストコードも以下に付けておきます。\r\n;;;
+    nt/test/printf.scm\r\n(use gauche.test)\r\n\r\n(test-start \"nt.printf\")\r\n(use
+    nt.printf)\r\n(test-module 'nt.printf)\r\n\r\n(test-section \"escaped symbols\")\r\n(test*
+    \"\\\\t\" \"\\t\" (sprintf \"\\t\"))\r\n(test* \"\\\\n\" \"\\n\" (sprintf \"\\n\"))\r\n(test*
+    \"\\\\\\\"\" \"\\\"\" (sprintf \"\\\"\"))\r\n(test* \"\\\\\\\\\" \"\\\\\" (sprintf
+    \"\\\\\"))\r\n(test* \"%%\" \"%\" (sprintf \"%%\"))\r\n\r\n(test-section \"%d\")\r\n(test*
+    \"%d 1\" \"1\" (sprintf \"%d\" 1))\r\n(test* \"%3d 1\" \"  1\" (sprintf \"%3d\"
+    1))\r\n(test* \"%3d 1111\" \"1111\" (sprintf \"%3d\" 1111))\r\n(test* \"%03d 1\"
+    \"001\" (sprintf \"%03d\" 1))\r\n(test* \"%-3d\" \"1  \" (sprintf \"%-3d\" 1))\r\n(test*
+    \"%+d 1\" \"+1\" (sprintf \"%+d\" 1))\r\n(test* \"%+3d 1\" \" +1\" (sprintf \"%+3d\"
+    1))\r\n\r\n(test* \"%d zero\" \"0\" (sprintf \"%d\" 0))\r\n\r\n(test* \"%d minusvalue\"
+    \"-1\" (sprintf \"%d\" -1))\r\n(test* \"%3d minusvalue\" \" -1\" (sprintf \"%3d\"
+    -1))\r\n;(test* \"%03d minusvalue\" \"-01\" (sprintf \"%03d\" -1))\r\n(test* \"%-d
+    minusvalue\" \"-1\" (sprintf \"%-d\" -1))\r\n(test* \"%+d minusvalue\" \"-1\"
+    (sprintf \"%+d\" -1))\r\n(test* \"%+3d minusvalue\" \" -1\" (sprintf \"%+3d\"
+    -1))\r\n\r\n(test-section \"%d with non-integer values\")\r\n(test* \"%d float
+    2.71828\" \"2\" (sprintf \"%d\" 2.71828))\r\n(test* \"%d rational 3/2\" \"1\"
+    (sprintf \"%d\" 3/2))\r\n(test* \"%d string \\\"123\\\"\" \"123\" (sprintf \"%d\"
+    \"123\"))\r\n(test* \"%d string \\\"abc\\\"\" \"0\" (sprintf \"%d\" \"abc\"))\r\n(test*
+    \"%d symbol '1\" \"1\" (sprintf \"%d\" '1))\r\n(test* \"%d symbol 'a\" \"0\" (sprintf
+    \"%d\" 'a))\r\n\r\n(test-section \"%i %u\")\r\n(test* \"%i\" \"999\" (sprintf
+    \"%i\" 999))\r\n(test* \"%u\" \"999\" (sprintf \"%u\" 999))\r\n\r\n(test-section
+    \"%x %X\")\r\n(test* \"%x 15\" \"f\" (sprintf \"%x\" 15))\r\n(test* \"%3x 15\"
+    \"  f\" (sprintf \"%3x\" 15))\r\n(test* \"%03x 15\" \"00f\" (sprintf \"%03x\"
+    15))\r\n(test* \"%03x 65535\" \"ffff\" (sprintf \"%03x\" 65535))\r\n;(test* \"%-3x
+    15\" \"f  \" (sprintf \"%-3x\" 15))\r\n\r\n(test* \"%X 15\" \"F\" (sprintf \"%X\"
+    15))\r\n(test* \"%3X 15\" \"  F\" (sprintf \"%3X\" 15))\r\n(test* \"%03X 15\"
+    \"00F\" (sprintf \"%03X\" 15))\r\n(test* \"%03X 65535\" \"FFFF\" (sprintf \"%03X\"
+    65535))\r\n;(test* \"%-3x 15\" \"f  \" (sprintf \"%-3x\" 15))\r\n\r\n(test-section
+    \"%o\")\r\n(test* \"%o 9\" \"11\" (sprintf \"%o\" 9))\r\n(test* \"%3o 9\" \" 11\"
+    (sprintf \"%3o\" 9))\r\n(test* \"%03o 9\" \"011\" (sprintf \"%03o\" 9))\r\n(test*
+    \"%3o 255\" \"377\" (sprintf \"%3o\" 255))\r\n(test* \"%3o 511\" \"777\" (sprintf
+    \"%3o\" 511))\r\n(test* \"%3o 585\" \"1111\" (sprintf \"%3o\" 585))\r\n;(test*
+    \"%-3o\" \"11 \" (sprintf \"%-3o\" 9))\r\n\r\n;(test-section \"%b\") ; original
+    feature\r\n;(test* \"%b 2\" \"10\" (sprintf \"%b\" 2))\r\n;(test* \"%3b 2\" \"
+    10\" (sprintf \"%3b\" 2))\r\n;(test* \"%03b 2\" \"010\" (sprintf \"%03b\" 2))\r\n;(test*
+    \"%3b 15\" \"1111\" (sprintf \"%3b\" 15))\r\n;;(test* \"%-3b 2\" \"10 \" (sprintf
+    \"%-3b\" 3))\r\n\r\n(test-section \"%c\")\r\n(test* \"%c 9\" \"\\t\" (sprintf
+    \"%c\" 9))\r\n(test* \"%c 13\" \"\\r\" (sprintf \"%c\" 13))\r\n(test* \"%c 32\"
+    \" \" (sprintf \"%c\" #x20)) ; 32\r\n(test* \"%c 55\" \"7\" (sprintf \"%c\" #x37))
+    ; 55\r\n(test* \"%c 69\" \"E\" (sprintf \"%c\" #x45)) ; 69\r\n(test* \"%c 12354\"
+    \"あ\" (sprintf \"%c\" #x3042)) ; = 12354\r\n\r\n(test* \"%c \\\"abc\\\"\" \"a\"
+    (sprintf \"%c\" \"a\"))\r\n(test* \"%c \\\"いろは\\\"\" \"い\" (sprintf \"%c\" \"いろは\"))\r\n\r\n(test-section
+    \"%s\")\r\n(test* \"%s\" \"\\n\" (sprintf \"%s\" \"\\n\"))\r\n(test* \"%s\" \"a\"
+    (sprintf \"%s\" \"a\"))\r\n(test* \"%3s\" \"   \" (sprintf \"%3s\" \"\"))\r\n(test*
+    \"%3s\" \"  a\" (sprintf \"%3s\" \"a\"))\r\n(test* \"%3s\" \" aa\" (sprintf \"%3s\"
+    \"aa\"))\r\n(test* \"%3s\" \"aaa\" (sprintf \"%3s\" \"aaa\"))\r\n(test* \"%3s\"
+    \"aaaa\" (sprintf \"%3s\" \"aaaa\"))\r\n(test* \"%-3s\" \"   \" (sprintf \"%-3s\"
+    \"\"))\r\n(test* \"%-3s\" \"a  \" (sprintf \"%-3s\" \"a\"))\r\n(test* \"%-3s\"
+    \"aa \" (sprintf \"%-3s\" \"aa\"))\r\n(test* \"%-3s\" \"aaa\" (sprintf \"%-3s\"
+    \"aaa\"))\r\n(test* \"%-3s\" \"aaaa\" (sprintf \"%-3s\" \"aaaa\"))\r\n\r\n(test-section
+    \"%s with non-string values\")\r\n(test* \"%s integer 5\" \"5\" (sprintf \"%s\"
+    5))\r\n(test* \"%s float 3.14\" \"3.14\" (sprintf \"%s\" 3.14))\r\n(test* \"%s
+    rational 3/2\" \"3/2\" (sprintf \"%s\" 3/2))\r\n(test* \"%s symbol 'abc\" \"abc\"
+    (sprintf \"%s\" 'abc))\r\n(test* \"%s list (1 2 3)\" \"(1 2 3)\" (sprintf \"%s\"
+    '(1 2 3)))\r\n(test* \"%s empty list ()\" \"()\" (sprintf \"%s\" '()))\r\n(test*
+    \"%s dotted list (1 . 2)\" \"(1 . 2)\" (sprintf \"%s\" '(1 . 2)))\r\n(test* \"%s
+    #t\" \"#t\" (sprintf \"%s\" #t))\r\n(test* \"%s #f\" \"#f\" (sprintf \"%s\" #f))\r\n\r\n(test-section
+    \"%f\")\r\n(test* \"%f\" \"3.140000\" (sprintf \"%f\" 3.14))\r\n(test* \"%f\"
+    \"3.141593\" (sprintf \"%f\" 3.1415926))\r\n\r\n(test* \"%f\" \"-3.140000\" (sprintf
+    \"%f\" -3.14))\r\n(test* \"%f\" \"-3.141593\" (sprintf \"%f\" -3.1415926))\r\n\r\n(test*
+    \"%.0f\" \"3\" (sprintf \"%.0f\" 3.14))\r\n(test* \"%.1f\" \"3.1\" (sprintf \"%.1f\"
+    3.14))\r\n(test* \"%.2f\" \"3.14\" (sprintf \"%.2f\" 3.14))\r\n(test* \"%.3f\"
+    \"3.140\" (sprintf \"%.3f\" 3.14))\r\n(test* \"%.4f\" \"3.1400\" (sprintf \"%.4f\"
+    3.14))\r\n\r\n(test* \"%1.0f 3.14\" \"3\" (sprintf \"%1.0f\" 3.14))\r\n(test*
+    \"%1.1f 3.14\" \"3.1\" (sprintf \"%1.1f\" 3.14))\r\n(test* \"%1.2f 3.14\" \"3.14\"
+    (sprintf \"%1.2f\" 3.14))\r\n(test* \"%1.0f 3.15\" \"3\" (sprintf \"%1.0f\" 3.15))\r\n(test*
+    \"%1.1f 3.15\" \"3.2\" (sprintf \"%1.1f\" 3.15))\r\n(test* \"%1.2f 3.15\" \"3.15\"
+    (sprintf \"%1.2f\" 3.15))\r\n\r\n(test* \"%2.0f\" \" 3\" (sprintf \"%2.0f\" 3.14))\r\n(test*
+    \"%2.1f\" \"3.1\" (sprintf \"%2.1f\" 3.14))\r\n(test* \"%2.2f\" \"3.14\" (sprintf
+    \"%2.2f\" 3.14))\r\n(test* \"%-2.0f\" \"3 \" (sprintf \"%-2.0f\" 3.14))\r\n(test*
+    \"%-2.1f\" \"3.1\" (sprintf \"%-2.1f\" 3.14))\r\n(test* \"%-2.2f\" \"3.14\" (sprintf
+    \"%-2.2f\" 3.14))\r\n\r\n(test* \"%3.0f\" \"  3\" (sprintf \"%3.0f\" 3.14))\r\n(test*
+    \"%3.1f\" \"3.1\" (sprintf \"%3.1f\" 3.14))\r\n(test* \"%3.2f\" \"3.14\" (sprintf
+    \"%3.2f\" 3.14))\r\n(test* \"%3.3f\" \"3.140\" (sprintf \"%3.3f\" 3.14))\r\n(test*
+    \"%-3.0f\" \"3  \" (sprintf \"%-3.0f\" 3.14))\r\n(test* \"%-3.1f\" \"3.1\" (sprintf
+    \"%-3.1f\" 3.14))\r\n(test* \"%-3.2f\" \"3.14\" (sprintf \"%-3.2f\" 3.14))\r\n(test*
+    \"%-3.3f\" \"3.140\" (sprintf \"%-3.3f\" 3.14))\r\n\r\n(test* \"%4.0f\" \"   3\"
+    (sprintf \"%4.0f\" 3.14))\r\n(test* \"%4.1f\" \" 3.1\" (sprintf \"%4.1f\" 3.14))\r\n(test*
+    \"%4.2f\" \"3.14\" (sprintf \"%4.2f\" 3.14))\r\n(test* \"%4.3f\" \"3.140\" (sprintf
+    \"%4.3f\" 3.14))\r\n(test* \"%4.4f\" \"3.1400\" (sprintf \"%4.4f\" 3.14))\r\n(test*
+    \"%-4.0f\" \"3   \" (sprintf \"%-4.0f\" 3.14))\r\n(test* \"%-4.1f\" \"3.1 \" (sprintf
+    \"%-4.1f\" 3.14))\r\n(test* \"%-4.2f\" \"3.14\" (sprintf \"%-4.2f\" 3.14))\r\n(test*
+    \"%-4.3f\" \"3.140\" (sprintf \"%-4.3f\" 3.14))\r\n(test* \"%-4.4f\" \"3.1400\"
+    (sprintf \"%-4.4f\" 3.14))\r\n\r\n(test* \"%5.0f\" \"    3\" (sprintf \"%5.0f\"
+    3.14))\r\n(test* \"%5.1f\" \"  3.1\" (sprintf \"%5.1f\" 3.14))\r\n(test* \"%5.2f\"
+    \" 3.14\" (sprintf \"%5.2f\" 3.14))\r\n(test* \"%5.3f\" \"3.140\" (sprintf \"%5.3f\"
+    3.14))\r\n(test* \"%5.4f\" \"3.1400\" (sprintf \"%5.4f\" 3.14))\r\n(test* \"%5.5f\"
+    \"3.14000\" (sprintf \"%5.5f\" 3.14))\r\n(test* \"%-5.0f\" \"3    \" (sprintf
+    \"%-5.0f\" 3.14))\r\n(test* \"%-5.1f\" \"3.1  \" (sprintf \"%-5.1f\" 3.14))\r\n(test*
+    \"%-5.2f\" \"3.14 \" (sprintf \"%-5.2f\" 3.14))\r\n(test* \"%-5.3f\" \"3.140\"
+    (sprintf \"%-5.3f\" 3.14))\r\n(test* \"%-5.4f\" \"3.1400\" (sprintf \"%-5.4f\"
+    3.14))\r\n(test* \"%-5.5f\" \"3.14000\" (sprintf \"%-5.5f\" 3.14))\r\n\r\n(test-section
+    \"%e %E\")\r\n(test* \"%e 0.0000314\" \"3.140000e-05\" (sprintf \"%e\" 0.0000314))\r\n(test*
+    \"%e 0.000314\" \"3.140000e-04\" (sprintf \"%e\" 0.000314))\r\n(test* \"%e 0.00314\"
+    \"3.140000e-03\" (sprintf \"%e\" 0.00314))\r\n(test* \"%e 0.0314\" \"3.140000e-02\"
+    (sprintf \"%e\" 0.0314))\r\n(test* \"%e 0.314\" \"3.140000e-01\" (sprintf \"%e\"
+    0.314))\r\n(test* \"%e 3.14\" \"3.140000e+00\" (sprintf \"%e\" 3.14))\r\n(test*
+    \"%e 31.4\" \"3.140000e+01\" (sprintf \"%e\" 31.4))\r\n(test* \"%e 314\" \"3.140000e+02\"
+    (sprintf \"%e\" 314))\r\n(test* \"%e 3140\" \"3.140000e+03\" (sprintf \"%e\" 3140))\r\n(test*
+    \"%e 31400\" \"3.140000e+04\" (sprintf \"%e\" 31400))\r\n(test* \"%e 314000\"
+    \"3.140000e+05\" (sprintf \"%e\" 314000))\r\n(test* \"%.0e 31415926\" \"3e+07\"
+    (sprintf \"%.0e\" 31415926))\r\n(test* \"%.1e 31415926\" \"3.1e+07\" (sprintf
+    \"%.1e\" 31415926))\r\n(test* \"%.2e 31415926\" \"3.14e+07\" (sprintf \"%.2e\"
+    31415926))\r\n(test* \"%.3e 31415926\" \"3.142e+07\" (sprintf \"%.3e\" 31415926))\r\n(test*
+    \"%.4e 31415926\" \"3.1416e+07\" (sprintf \"%.4e\" 31415926))\r\n(test* \"%.5e
+    31415926\" \"3.14159e+07\" (sprintf \"%.5e\" 31415926))\r\n\r\n(test* \"%E\" \"3.140000E+00\"
+    (sprintf \"%E\" 3.14))\r\n\r\n(test-section \"%g\")\r\n(test* \"%g\" \"3.14\"
+    (sprintf \"%g\" 3.14))\r\n(test* \"%g\" \"-3.14\" (sprintf \"%g\" -3.14))\r\n(test*
+    \"%g\" \"3.1415926\" (sprintf \"%g\" 3.1415926))\r\n\r\n(test-end)\r\n</pre>\n\t"
+  :code: ";;; nt/printf.scm\n(define-module nt.printf\n  (export\n   printf\n   sprintf\n
+    \  ))\n\n(select-module nt.printf)\n\n(define (log10 x) (/ (log x) (log 10.0)))\n\n(define
+    (sprintf fmt . args)\n  (let ((out (open-output-string)))\n    (let loop ((fmt
+    fmt) (args args))\n      (define (ret) (display fmt out) (get-output-string out))\n
+    \     (let ((match (#/%(?&lt;flag&gt;[-+# 0]*)(?&lt;num&gt;[1-9][0-9]*)?(\\.(?&lt;below&gt;[0-9]+))?(?&lt;type&gt;[%diouxXfeEgGbcs])/
+    fmt)))\n        (if match\n            (let* ((flags (if (match 'flag) (string-&gt;list
+    (match 'flag)) '()))\n                   (num (match 'num)) ;str/指定がなければ#f. ※0.8.11までは#fではなく\"\"が返る\n
+    \                  (below (match 'below)) ;str/指定がなければ#f. ※0.8.11までは#fではなく\"\"が返る\n
+    \                  (type (string-&gt;symbol (match 'type)))\n                   (consumes-an-arg?
+    (not (eq? '% type)))\n                   (flush-left? (memq #\\- flags))\n                   (signed?
+    (memq #\\+ flags))\n                   (zero-pad? (memq #\\0 flags))\n                   )\n
+    \             (if (and consumes-an-arg? (null? args))\n                  (ret)
+    ;;; arguments-exhausted\n                  (let ((arg (if consumes-an-arg? (car
+    args) 'not-eaten)))\n                    \n                    (define (format-int-value
+    type)\n                      (let ((%value (if (integer? arg) arg (x-&gt;integer
+    (truncate (x-&gt;number arg))))))\n                        (if flush-left?\n                            (let
+    ((%fmt (string-append \"~\" type)))\n                              (format (string-append
+    \"~\" (or num \"\") \"a\") (format %fmt %value)))\n                            (let
+    ((%fmt (string-append \"~\" (or num \"\") \",\" (if zero-pad? \"'0\" \"\")\n                                                       (if
+    signed? \"@\" \"\") type)))\n                              (format %fmt %value)))))\n\n
+    \                   (define (format-float-value); type)\n                      (let*
+    ((%value (if (real? arg) arg (x-&gt;number arg)))\n                             (%e-offset
+    (x-&gt;integer (floor (log10 (abs %value)))))\n                             (%precision
+    (case type\n                                           ((f)\n;                                            (if
+    (string=? \"\" below) 6 (x-&gt;integer below))) ; &lt; 0.8.12\n                                            (if
+    below (x-&gt;integer below) 6))\n                                           ((e
+    E)\n                                            (cond ((&gt; %e-offset 0) ;;;
+    sorry i'm using (set!)\n                                                   (set!
+    %value (/ %value (expt 10 %e-offset))))\n                                                  ((&lt;
+    %e-offset 0)\n                                                   (set! %value
+    (* %value (expt 10 (abs %e-offset)))))\n                                                  (else
+    #t))\n;                                            (if (string=? \"\" below) 6
+    (x-&gt;integer below))) ;&lt; 0.8.12\n                                            (if
+    below (x-&gt;integer below) 6))\n;                                           (else
+    (if (string=? \"\" below) 12 (x-&gt;integer below))))) ;&lt; 0.8.12\n                                           (else
+    (if below (x-&gt;integer below) 12))))\n                             )\n                        (let*
+    ((%int (x-&gt;integer (if (= 0 %precision)\n                                                     (round
+    %value)\n                                                     (truncate %value))))\n
+    \                              (%fract (abs (- %value %int)))\n                               (%rounded
+    (x-&gt;integer (round (+ (expt 0.1 (+ %precision 1))\n                                                               (*
+    (expt 10 %precision) %fract)))))\n                               (%str (if (=
+    0 %precision)\n                                         (format \"~d\" %int)\n
+    \                                        (format (string-append \"~d.~\" (format
+    \"~d\" %precision) \",'0d\")\n                                                 %int
+    %rounded)))\n                               (%f-fmt (string-append \"~\" (or num
+    \"\") ;\",\" (if zero-pad? \"'0\" \"\")\n                                                      (if
+    flush-left? \"\" \"@\") \"a\"))\n                               (%e-fmt (string-append
+    %f-fmt\n                                                      \"~a\" ; [eE]\n
+    \                                                     (if (&lt; %e-offset 0) \"-\"
+    \"+\")\n                                                      \"~2,'0d\"))\n                               )\n
+    \                         (case type\n                            ((f)\n                             (format
+    %f-fmt %str))\n                            ((g G)\n                             (format
+    %f-fmt (regexp-replace #/0+$/ %str \"\")))\n                            ((e E)\n
+    \                            (format %e-fmt %str type (abs %e-offset))\n                             )\n
+    \                           ))))\n                    \n                    (display
+    (match 'before) out)\n                    ;; warnings\n;                    (case
+    type\n;                      ((d i)\n;                       (when (not (integer?
+    arg))\n;                             (print \"warning: %~a requires &lt;integer&gt;\"
+    type) ))\n;                      ((b o u X x c)\n;                       (when
+    (not (and (integer? arg) (&lt; 0 arg)))\n;                             (print
+    \"warning: %~a requires &lt;unsigned integer&gt;\" type) ))\n;                      ((f
+    e E g G)\n;                       (when (not (real? arg))\n;                             (print
+    \"warning: %~a requires &lt;real&gt;\" type)))\n;;                      ((b))
+    ; we use %b for unsigned binary\n;                      ((s)\n;                       (when
+    (not (string? arg))\n;                             (format \"warning: %s requires
+    &lt;string&gt;\")))\n;                      )\n                    (display (case
+    type\n                               ((d o x X) ;;  %bを２進表記に使いたい場合は (d b o x X)\n
+    \                               (format-int-value (match 'type)))\n                               ((i
+    u) ; signed/unsigned decimal\n                                (format-int-value
+    \"d\"))\n                               ((f) ;float ; [-]ddd.ddd\n                                (format-float-value))\n
+    \                              ((e E) ;'not-supported) ; [-]d.ddde+-dd\n                                (format-float-value))\n
+    \                              ((g G) ; 'not-supported) ;\n                                (format-float-value))\n;
+    \                              ((b) 'not-supported) ; backslash-escape seq\n                               ((c)
+    ; first-char\n                                (cond ((integer? arg)\n                                       (string
+    (integer-&gt;char arg)))\n                                      ((string? arg)\n
+    \                                      (string-ref arg 0))\n                                      (else
+    \n                                       (string (integer-&gt;char (truncate (x-&gt;number
+    arg))))) ))\n                               ((s) ; 'str\n                                (let1
+    %s-fmt (string-append \"~\"\n                                                            (format
+    \"~a~a\"\n                                                                    (or
+    num \"\")\n                                                                    (if
+    flush-left? \"\" \"@\")\n                                                                    )\n
+    \                                                           \"a\")\n                                      (format
+    %s-fmt arg)))\n                               ((%) \"%\")) out)\n                    (loop
+    (match 'after)\n                          (if consumes-an-arg? (cdr args) args))\n
+    \                   )))\n            (ret))))))\n\n(define (printf fmt . args)
+    (display (apply sprintf (cons fmt args))))\n\n(provide \"nt/printf\")\n;;EOF\n"
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '4407'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4407
+  :user_name: sumim
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2007/11/26 07:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>これ。できたらお題じゃなくて、トピックに回してもらえませんかねぇ…(^_^;)。←泣きそう</p>\n<p>あと、以前の B+-Tree、一つ前のクイズスタイルのお題のときにも感じたのですが、お題の投稿に際して出題者には、ご自身の答えの事前の登録も義務づける（公開は一定時間経過後なされる）ようにしてはどうかと思いました。実際、書くとなると（出題者が）想像していたよりたいへんじゃん…てなことにならないように。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4408'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4408
+  :user_name: にしお
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/26 08:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>そうですねぇ…</p>\n<p>とりあえずこのお題はマイナス評価の激しさから見て\nカバレッジ計算の対象から外した方がよさそうですね。</p>\n<p>残りの二つに関しては今のところプラス評価とマイナス評価が拮抗しているようなので、このコメントを見て「このお題も外すべき」と思った人はマイナス評価、「残すべき」と思った人はプラス評価を押すということでどうでしょう。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4409'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4409
+  :user_name: jijixi
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/582/
+  :language: OCaml
+  :time: 2007/11/26 09:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">超手抜き実装。単に int, float, char, string を単純に変換して埋め込むだけのものです。\r\nOCaml
+    ではコンパイラをいじらないと、まともに使えるものはできっこないので、こんなもんで良いんです。\r\n\r\n3 ファイルを同じディレクトリに置き、\r\n%
+    ocamlbuild tiny_printf.cma\r\nなどとします。\r\n\r\n% ocaml -I _build tiny_printf.cma\r\n#
+    let r = Obj.repr;;               \r\nval r : 'a -&gt; Obj.t = &lt;fun&gt;\r\n#
+    Tiny_printf.sprintf \"hoge %% %d %s %c %f\" [r 10; r \"fuga\"; r 'C'; r 2.1];;\r\n-
+    : string = \"hoge % 10 fuga C 2.1\"\r\n\r\n</pre>\n\t"
+  :code: |
+    /* parser.mly */
+    %token &lt;string&gt; CONV
+    %token &lt;string&gt; STR
+    %start expr
+    %type &lt;string&gt; expr
+    %%
+    expr:
+         CONV  { $1 }
+       | STR   { $1 }
+    ;
+
+    (* lexer.mll *)
+    {
+    open Parser
+    exception Eof
+    }
+    let conv = ['d' 'f' 'c' 's']
+    rule token = parse
+         ('%' (conv | '%')) as str   { CONV(str) }
+       | ([^'%'] +) as str           { STR(str) }
+       | eof                         { raise Eof }
+
+    (* tiny_printf.ml *)
+    let sprintf format_str args =
+       let strbuf = Buffer.create 10 in
+       let add    = Buffer.add_string strbuf in
+       let lexbuf = Lexing.from_string format_str in
+       let rec loop args' =
+          match Parser.expr Lexer.token lexbuf with
+          | "%%" -&gt; (add "%"; loop args')
+          | s when s.[0] = '%' -&gt; begin
+               let arg, rest =
+                  match args' with
+                  | x::xs -&gt; x, xs
+                  | _ -&gt; failwith "number of args mismatch!"
+               in
+               add begin
+                  match s with
+                  | "%%" -&gt; "%"
+                  | "%d" when Obj.is_int arg -&gt;
+                       string_of_int (Obj.obj arg)
+                  | "%f" when Obj.tag arg = Obj.double_tag -&gt;
+                       string_of_float (Obj.obj arg)
+                  | "%c" when Obj.is_int arg -&gt;
+                       String.make 1 (Obj.obj arg)
+                  | "%s" when Obj.tag arg = Obj.string_tag -&gt;
+                       Obj.obj arg
+                  | _ -&gt;
+                       failwith "type mismatch!"
+               end;
+               loop rest
+            end
+          | s -&gt; (add s; loop args')
+       in
+       try loop args
+       with Lexer.Eof -&gt; Buffer.contents strbuf
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4410'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4410
+  :user_name: shiro
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/11/26 09:22 GMT
+  :vote_count: '5'
+  :vote_score: '5'
+  :body: "\n\t  <p>そうですね。printfの仕様自体が大きいので、問題の焦点がどこにあるかぼやけちゃってる感じがします。</p>\n<p>フラグとwidth,
+    precision等をオミットして%d, %f, %s, %cくらいに絞れば、(1)文字列のスキャン、 (2)オブジェクトから文字列への変換、(3)数も型も不定な引数リスト、あたりで課題がはっきりするので、「マルチリンガルレシピ」としてもわりと有用なものになったような気がします。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4412'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4412
+  :user_name: ether
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/96/
+  :language: OCaml
+  :time: 2007/11/26 14:30 GMT
+  :vote_count: '6'
+  :vote_score: '6'
+  :body: "\n\t  <p>OCaml で、サポートする書式指定は #4409 の jijixi さんのと大体同じですが、ちゃんと型チェックする版。</p>\n<p>基本は参考ページの手法を使って、でもそれだけだと
+    printf っぽく見えないので Camlp4 を被せました。</p>\n<pre class=\"literal-block\">\nKURO-BOX%
+    ocaml\n        Objective Caml version 3.09.2\n\n# #load \"camlp4o.cma\";;\n        Camlp4
+    Parsing version 3.09.2\n\n# #load \"pa_printf.cmo\";;\n# myprintf \"hoge %% %d
+    %s %c %f\" 10 \"fuga\" 'C' 2.1;;\n- : string = \"hoge % 10 fuga C 2.1\"\n# myprintf
+    \"hoge %% %d %s %c %f\" 3.14 \"fuga\" 'C' 2.1;;\nThis expression has type float
+    but is here used with type int\n</pre>\n\n\t"
+  :code: |
+    (* ocamlc -c -I +camlp4 -pp 'camlp4o pa_extend.cmo q_MLast.cmo' pa_printf.ml *)
+
+    let make_printf _loc format =
+      let parse_format format =
+        let rec lit e s = parser
+        | [&lt; ''%'; strm &gt;] -&gt; esc &lt;:expr&lt; compose $e$ (lit $str:s$) &gt;&gt;  "" strm
+        | [&lt; 'c; strm &gt;] -&gt; lit e (s  ^ String.make 1 c) strm
+        | [&lt; &gt;] -&gt; &lt;:expr&lt; compose $e$ (lit $str:s$) &gt;&gt;
+        and esc e s = parser
+        | [&lt; ''d'; strm &gt;] -&gt; lit &lt;:expr&lt; compose $e$ int &gt;&gt; "" strm
+        | [&lt; ''f'; strm &gt;] -&gt; lit &lt;:expr&lt; compose $e$ float &gt;&gt; "" strm
+        | [&lt; ''c'; strm &gt;] -&gt; lit &lt;:expr&lt; compose $e$ char &gt;&gt; "" strm
+        | [&lt; ''s'; strm &gt;] -&gt; lit &lt;:expr&lt; compose $e$ str &gt;&gt; "" strm
+        | [&lt; ''%'; strm &gt;] -&gt; lit &lt;:expr&lt; compose $e$ (lit "%") &gt;&gt; "" strm
+        in
+        lit &lt;:expr&lt; fun x -&gt; x &gt;&gt; "" (Stream.of_string format)
+      in
+      let parsed_format = parse_format format in
+      &lt;:expr&lt;
+        let compose f g x = f (g x) in
+        let lit x k s = k (s ^ x) in
+        let int k s x = k (s ^ string_of_int x) in
+        let str k s x = k (s ^ x) in
+        let float k s x = k (s ^ string_of_float x) in
+        let char k s x = k (s ^ String.make 1 x) in
+        let format p = p (fun s -&gt; s) "" in
+        format $parsed_format$
+      &gt;&gt;
+    ;;
+
+    EXTEND
+      Pcaml.expr: LEVEL "expr1" [
+        [ "myprintf"; format = STRING -&gt; make_printf _loc format ]
+      ];
+    END
+  :tags:
+  - Camlp4
+  :references:
+    :url: /web/20090422063755/http://www.brics.dk/RS/98/12/index.html
+    :title: Olivier Danvy (1998) "Functional Unparsing"
+- :id: '4415'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4415
+  :user_name: ether
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/96/
+  :language: 
+  :time: 2007/11/26 14:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>「引数・返り値等の仕様はできるだけ似せればよい」っていうのは仕様の適当なサブセットを決めるのが投稿者に任されてるってことじゃないですかね。「できるだけ」っていう言葉の解釈の問題かな？</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4416'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4416
+  :user_name: nobsun
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/11/26 15:24 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <p>そんなに神経質にならなくてもという気がします。もちろん言語のカバレッジや一番を目指すというのはモチベーションとしてはいいと思います。でもコンテストで何かの優劣をつけるのが目的ではないと思うのですがどうでしょう。いろいろな言語で同じお題を解いてみることで、一人ではとても収集できない対訳集のようなものが形成できるのが楽しみであってもいいと思っています。\nもちろん質のよいコードを集められる良問であればそれは素晴らしいことなので大いに評価すればよいし、残念ながらそうでない場合はそのような評価になってしまうのはしょうがないです。それでもネタが出ないよりもいいと思います。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4418'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4418
+  :user_name: yappy
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/533/
+  :language: 
+  :time: 2007/11/26 18:20 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  出題した者です。\r<br>確かにここに出すには適当でない問題でした。軽率でした。\r<br>申し訳ありません。\r<br><br>このお題の処理は管理人さんの判断に任せます。\r<br>問題の質に対する対応を考える機会にしてくだされば幸いです。\r<br><br>(関連リンクのところにJavaScriptで実装していて感動したものを載せておきます・・・)\n\t"
+  :code: ''
+  :tags:
+  - 参考になる
+  :references:
+    :url: /web/20090422063755/http://www.onicos.com/staff/iz/amuse/javascript/expert/
+    :title: 高度な JavaScript 技集
+- :id: '4419'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4419
+  :user_name: ところてん
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/11/26 23:53 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\"> #4418は/.的に『参考になる』か『興味深い』でモデレートしたいところ。\r\n\r\nモデレートの種類が無いとモデレートしにくいなぁ。\r\nコメントそのものが優れているわけじゃなくて、コメントの先が優れているので。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4421'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4421
+  :user_name: herumi
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/564/
+  :language: 
+  :time: 2007/11/27 03:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>問題を「作法」とか「思考」などのラベルで分類できるようになればよいのでしょうか．\r</p>\n<p>・doukaku.orgが目指す「他の言語でどう書くの?」的データを増やすための，一つ一つの答えはルーチンワークっぽいけど的確なものが要求される問題，\r</p>\n<p>・もう一つの「コロシアム」的側面としてのプログラマのアイデアやセンスも必要とされる問題，\r</p>\n<p>など．前者だけだとつまんないなーという気はします．\r</p>\n<p>\r</p>\n<p>今回のクイズについては(出題者としてどうなるかと思いつつ)，\r</p>\n<p>\r</p>\n<p>・問題自体は簡単で紙と鉛筆でも答えの一つは見つけられる，\r</p>\n<p>・小さい部分では総当たりでもそこそこ簡単に解が求まり，\r</p>\n<p>・1桁絞りはそんなに難しくなく，その場合は，実はその一つ前の自然数の分割が伏線だったりする(ruckerさんご指摘)，\r</p>\n<p>・やってるうちに法則性が見えて効率のよい枝刈りをして高速な答えが，\r</p>\n<p>・最終的には完全に答えを出せる，\r</p>\n<p>\r</p>\n<p>あたりで全体としてはよい流れだったなあと思っているのですが，ご不満な方も多いようで難しいですね．\r</p>\n</div>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4422'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4422
+  :user_name: にしお
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/27 03:34 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <p>nobsunの意見に大賛成です。野球にたとえると、一つのゲームの中でピッチャーが「ストライクゾーンに入らない球」を投げることはよくあることですし、逆にピッチャーがストライクゾーンを外すのをおそれてど真ん中ばかり投げたのではゲームになりません。</p>\n<p>yappyさんにはかわいそうなことになってしまいましたけど、今回投げた球はストライクゾーンよりちょっと「めんどくさい度高い側」にそれてしまったようです。でもそれに関してyappyさんを責める人がいるとしたらそれは間違いです。こういう処理が得意な言語があるかもしれないですから。実際下の方のOCamlでの解答(<a
+    class=\"reference\" href=\"/web/20090422063755/http://ja.doukaku.org/comment/4412/\">http://ja.doukaku.org/comment/4412/</a>)なんか想像以上に短いと思いました。\nなのでこのお題がストライクなのかボールなのかはすごく判断の難しいところかなと思います。かなり悩んでいます。</p>\n<p>一方、ボール球はトピックに移すべきかと思います。これは単純な理由で「言語詳細ページの『未解決問題』に表示して注目を集めつづける対象として適切か？」の答えがNoだと思うからなんです。投稿者を責めたり投稿を削除したりはしないんですが、初めてこのサイトに来た人が一番最初にたどり着くお題は自分の一番得意な言語の未解決問題だと思うんです。その最初に見る問題がマイナス評価のたくさん付いているお題なのはよくないかな、と。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4423'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4423
+  :user_name: nskj77
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/375/
+  :language: Haskell
+  :time: 2007/11/27 04:39 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <div class=\"section\">\n<p>ちょっと前に作ったのがあるので投稿します。template haskellのサンプルほぼそのままです。\r</p>\n<p>\r</p>\n<p>&gt;
+    ghci -fth Print.hs\r</p>\n<p>&gt; print ($(printf \"%d %d %d %x %o\") 1 2 3 10
+    10)\r</p>\n<p>\"1 2 3 a 12\"\r</p>\n<p>&gt; print ($(printf \"Hello, %s\") \"World!\")\r</p>\n<p>\"Hello,
+    World!\"</p>\n</div>\n\t"
+  :code: "import qualified Numeric as N\nimport Language.Haskell.TH\nimport Text.ParserCombinators.Parsec\n\ndata
+    Format = S | D | X | O | L String deriving Show\n\nrun s = case parse myParser
+    \"print\" s of\n            Left err -&gt; error $ show err\n            Right
+    x  -&gt; x\n\nmyParser = do\n  x &lt;- lineParser &lt;|&gt; return (L \"\")\n
+    \ case x of\n    L \"\"      -&gt; return []\n    otherwise -&gt; do y &lt;- myParser;
+    return (x:y)\n\nlineParser = (try (char '%' &gt;&gt; choice [s, d, x, o, l]))\n
+    \            &lt;|&gt; (try (many1 (noneOf \"%\")) &gt;&gt;= \\x -&gt; return
+    (L x))\n  where s = char 's' &gt;&gt; return S\n        d = char 'd' &gt;&gt;
+    return D\n        x = char 'x' &gt;&gt; return X\n        o = char 'o' &gt;&gt;
+    return O\n        l = anyChar &gt;&gt;= \\x -&gt; return (L ('%':[x]))\n\ngen
+    :: [Format] -&gt; ExpQ -&gt; ExpQ\ngen []        x = x\ngen (D  : xs) x = [|\\n
+    -&gt; $(gen xs [|$x ++ show n|])|]\ngen (X  : xs) x = [|\\n -&gt; $(gen xs [|$x
+    ++ toHex n|])|]\ngen (O  : xs) x = [|\\n -&gt; $(gen xs [|$x ++ toOct n|])|]\ngen
+    (S  : xs) x = [|\\s -&gt; $(gen xs [|$x ++ s|])|]\ngen (L s: xs) x = gen xs [|$x
+    ++ $(stringE s)|] \n\ntoHex n = N.showHex n \"\"\ntoOct n = N.showOct n \"\"\n\nprintf
+    :: String -&gt; ExpQ\nprintf s = gen (run s) [|\"\"|]\n"
+  :tags: []
+  :references:
+    :url: /web/20090422063755/http://www.haskell.org/th/
+    :title: template haskell
+- :id: '4430'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4430
+  :user_name: sumim
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/11/27 08:53 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Squeak Smalltalk で。\n\t"
+  :code: |
+    | printf |
+    printf := [:args |
+        | formStrm valsStrm outStrm |
+        formStrm := args first readStream.
+        valsStrm := args allButFirst readStream.
+        outStrm := String new writeStream.
+        [formStrm atEnd] whileFalse: [
+            | next width print scale format |
+            outStrm nextPutAll: (formStrm upTo: $%).
+            next := formStrm next.
+            width := scale := 0.
+            next ifNotNil: [
+                next isDigit ifTrue: [
+                    formStrm back.
+                    width := Integer readFrom: formStrm.
+                    next := formStrm next].
+                next = $. ifTrue: [
+                    scale := Integer readFrom: formStrm.
+                    next := formStrm next]].
+            print := [:val |
+                | str |
+                str := val asString.
+                width := width max: str size.
+                outStrm nextPutAll: (str forceTo: width paddingStartWith: $ )].
+            format := [:float |
+                | str idx |
+                str := (scale &gt; 0 ifTrue: [float asScaledDecimal: scale] ifFalse: [float]) asString.
+                (idx := str indexOf: $s) &gt; 0 ifTrue: [str := str first: idx - 1].
+                str].
+            next caseOf: {
+                [$%] -&gt; [outStrm nextPut: $%].
+                [$d] -&gt; [print value: valsStrm next asInteger].
+                [$f] -&gt; [print value: (format value: valsStrm next asFloat)].
+                [$o] -&gt; [print value: (valsStrm next radix: 16)].
+                [$x] -&gt; [print value: (valsStrm next radix: 8)].
+                [$c] -&gt; [outStrm nextPut: valsStrm next asCharacter].
+                [$s] -&gt; [outStrm nextPutAll: valsStrm next asString]} otherwise: []].
+        outStrm contents].
+
+    printf value: {'hoge %6.2f %6d %o %x %c %s %% fuga'. 1.234. 1234. 1234. 1234. 'a'. 'abc'}
+    "=&gt; 'hoge   1.23   1234 4D2 2322 a abc % fuga' "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '4436'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4436
+  :user_name: dankogai
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/27 11:42 GMT
+  :vote_count: '6'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>反則にしか見えないが、これでも注意事項の\n</p>\n<ul>\n<li>\n     標準でついているprintf系関数の使用禁止\n
+    </li>\n\n <li>\n     標準でついているライブラリ以外の使用禁止\n </li>\n</ul>\n<p>を満たしている点に注目。\n</p>\n<p>Dan
+    the Perl Monger\n</p>\n\n\n\n\t"
+  :code: |
+    #!/usr/local/bin/perl
+    use strict;
+    use warnings;
+    sub mysprintf{
+        my $cmd = join(' ', 'printf', @_);
+        return `$cmd`
+    }
+
+    if (__FILE__ eq $0){
+        print mysprintf("%.6g", exp(1));
+    }
+    __END__
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4442'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4442
+  :user_name: greentea
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/573/
+  :language: Python
+  :time: 2007/11/27 14:09 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">%%, %d, %f, %sに対応。フラグ文字はつけても無視されます。(glib拡張にある'I'など[A-Za-z]にマッチするフラグがあった場合、結果がおかしくなるかエラーになります)\r\n\r\n14行目、int(arg.next()).__str__()でなくstr(int(arg.next()))とすると\r\n
+    \   elif fmt[-1] == \"d\": return str(int(arg.next()))\r\nTypeError: 'str' object
+    is not callable\r\nのようなエラーが出たので__str__()を使いました。</pre>\n\t"
+  :code: |
+    import re
+
+    def sprintf(str, *args):
+      def getPercent():
+        index = str.find("%")
+        while index != -1:
+          yield index
+          t = str[index+2:].find("%")
+          if t == -1: raise StopIteration
+          index += t + 2
+
+      def parseFormat(fmt, arg):
+        if fmt[-1] == "%": return "%"
+        elif fmt[-1] == "d": return int(arg.next()).__str__()
+        elif fmt[-1] == "s": return arg.next().__str__()
+        elif fmt[-1] == "f": return float(arg.next()).__str__()
+        else: return "__Error or Unsupported__"
+
+      s = ""
+      arg = (i for i in args)
+      index = 0
+      for i in getPercent():
+        s += str[index:i]
+        fmt = re.match("%.*?[A-Za-z%]", str[i:]).group()
+        s += parseFormat(fmt, arg)
+        index = i + len(fmt)
+      s += str[index:]
+      return s
+
+    print sprintf("%d, %s%d(%s)", 2007, "Nov.", 27, "Tue") # =&gt; 2007, Nov.27(Tue)
+    print sprintf("%d/%d = %f%%", 12, 34, 12.0/34*100) # =&gt; 12/34 = 35.2941176471%
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4540'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4540
+  :user_name: kozima
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/12/01 09:22 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>マクロ、クロージャ、高階関数を使って。わりと Lisp らしく書けたかも？</p>\n<p>d,x,o,f,c,s,% に対応。フラグなどは実装してないし手抜き感はありますが。</p>\n\n\t"
+  :code: |
+    (defconstant *format-char-table* (make-hash-table))
+    (defmacro define-format-char (char lambda-list &amp;body body)
+      `(setf (gethash ,char *format-char-table*)
+             (lambda ,lambda-list ,@body)))
+
+    (defun process-format-char (char args stream)
+      (let ((fn (gethash char *format-char-table*)))
+        (if fn (funcall fn args stream)
+          (error "Undefined format character: ~C" char))))
+
+    (defun sprintf (fmt &amp;rest args)
+      (let ((rest args))
+        (flet ((getarg (&amp;optional n) (if n (nth n args) (pop rest))))
+          (with-output-to-string (out)
+            (with-input-from-string (in fmt)
+              (do () ((null (peek-char nil in nil)))
+                (let ((c (read-char in)))
+                  (if (char= c #\%)
+                      (process-format-char (read-char in) #'getarg out)
+                    (write-char c out)))))))))
+
+    (define-format-char #\f (fn stream) (write (funcall fn) :stream stream))
+    (define-format-char #\c (fn stream) (write-char (funcall fn) stream))
+    (define-format-char #\s (fn stream) (princ (funcall fn) stream))
+    (define-format-char #\% (fn stream) (write-char #\% stream))
+
+    (defun format-integer (n base stream)
+      (write n :base base :stream stream))
+
+    (defmacro define-integer-format-char (char base)
+      `(define-format-char ,char (fn stream)
+         (format-integer (funcall fn) ,base stream)))
+
+    (define-integer-format-char #\d 10)
+    (define-integer-format-char #\x 16)
+    (define-integer-format-char #\o 8)
+
+    ;;; test
+    (sprintf (sprintf "%s/%%%c" "%x/%d/%o" #\f)
+             11259375 (* 9 3607 3803) 2054353 3.141592653589793d0)
+    ;; =&gt; "ABCDEF/123456789/7654321/3.141592653589793d0"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4592'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4592
+  :user_name: t_ishida
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/592/
+  :language: JavaScript
+  :time: 2007/12/03 14:39 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <p>多分、printfのオリジナルの仕様の5分の１とかくらいなんじゃないかと思うんですが・・・</p>\n<p>全部やってたらキリが無いので、\n一旦アップします。\nもし、「ここの実装だけは行って欲しい」と言う仕様があったら、コメント下さい。\n追加で作ってみます。</p>\n\n\t"
+  :code: |
+    //WScript.Echo( printf("%5x%x", 1234, 1234 ) );
+    //WScript.Echo( printf("%5d%d", "F", "F" ) );
+    //WScript.Echo( printf("%5o%o", 1234, 1234 ) );
+    //WScript.Echo( printf("%%%%", 1234, 1234 ) );
+
+    function printf(){
+      var re = RegExp, arg = arguments, s = arg[0];
+      var _ = {
+        'd' : function(a,$){return RPAD( eval("0x" + a).toString(10) ,$ );} ,  //10進
+        'o' : function(a,$){return RPAD( eval( a.toString() ).toString(8)  ,$ );} ,  //8進
+        'x' : function(a,$){return RPAD( eval( a.toString() ).toString(16) ,$ );} ,  //16進(小文字)
+        '%' : function(a,$){return '%';}
+      };
+      var mk = [];
+      for(var key in _) mk.push(key);
+      var r = "%(\\d\*)(" + mk.join("|") + ")";
+      for(var i = 1; i &lt; arg.length; i++) {
+        if( !s.match(r) ) continue;
+        var x = re.$1 || 0, y = re.$2;
+        s = s.replace( re(r), _[y]( arg[i] + "", x ) );
+      }
+      return s;
+      function RPAD( s, len ){ while( s.length &lt; (len - 0) ) s += ' ';    return s; }
+      function LPAD( s, len ){ while( s.length &lt; (len - 0) ) s = ' ' + s; return s; }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4594'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4594
+  :user_name: t_ishida
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/592/
+  :language: JavaScript
+  :time: 2007/12/03 16:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>要求仕様どころか、バグってましたね。\n申し訳無いです。\n修正します。</p>\n<p>っていうか、</p>\n\n\t"
+  :code: |
+    //WScript.Echo( printf("%5x%x", 1234, 1234 ) );
+    //WScript.Echo( printf("%5d%d", "F", 10 ) );
+    //WScript.Echo( printf("%5o%o", 1234, 1234 ) );
+    //WScript.Echo( printf("%%%%", 1234, 1234 ) );
+
+    function printf(){
+      var re = RegExp, arg = arguments, s = arg[0];
+      var _ = {
+        'd' : function(a,$){   //10進
+          if( a.match(/[a-fA-F]/) ) return RPAD(eval( "0x" + a.toString() ).toString(10) ,$ );
+          else                      return RPAD(eval( a.toString() ).toString(10) ,$ );
+        } ,
+        'o' : function(a,$){return RPAD( eval( a.toString() ).toString(8)  ,$ );} ,  //8進
+        'x' : function(a,$){return RPAD( eval( a.toString() ).toString(16) ,$ );} ,  //16進(小文字)
+        '%' : function(a,$){return '%';}
+      };
+      var mk = [];
+      for(var key in _) mk.push(key);
+      var r = "%(\\d\*)(" + mk.join("|") + ")";
+      for(var i = 1; i &lt; arg.length; i++) {
+        if( !s.match(r) ) continue;
+        var x = re.$1 || 0, y = re.$2;
+        s = s.replace( re(r), _[y]( arg[i] + "", x ) );
+      }
+      return s;
+      function RPAD( s, len ){ while( s.length &lt; (len - 0) ) s += ' ';    return s; }
+      function LPAD( s, len ){ while( s.length &lt; (len - 0) ) s = ' ' + s; return s; }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4606'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/4606
+  :user_name: matyr
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/12/04 22:30 GMT
+  :vote_count: '3'
+  :vote_score: '1'
+  :body: "\n\t  Ruby の sprintf を参考にしました。あまりテストしてないのでバグだらけの可能性があります。\n\t"
+  :code: |
+    function sprintf(format){
+      var args = arguments, x = 1;
+      function addZero(s, p){ return ((p -= s.length) &gt; 0) ? Array(p + 1).join(0) + s : s }
+      return String(format).replace(
+        /%(?:(\d+)\$)?([-+ #0]*)(\d*|\*(?:(\d+)\$)?)(?:\.(\d+|\*(?:(\d+)\$)?))?([diubBoOxXeEfFgGaAcsp%])/g,
+        function($, pos_s, flag, width, pos_w, prec, pos_p, type){
+          if(type === '%') return '%';
+          if(~width.indexOf('*')) width = pos_w &gt; 0 ? args[pos_w] : args[x++];
+          prec = prec === undefined ? -1
+            : ~prec.indexOf('*') ? (pos_p &gt; 0 ? args[pos_p] : args[x++]) : +prec;
+          var r = '', a = pos_s &gt; 0 ? args[pos_s] : args[x++], sharp = ~flag.indexOf('#');
+          var sign = a &lt; 0 &amp;&amp; (a *= -1) ? '-' : ~flag.indexOf('+') ? '+' : ~flag.indexOf(' ')?' ':'';
+          switch(type){
+           case'd': case'i': r = !r &amp;&amp; prec == 0 ? '' : sign + addZero(''+ (a | 0), prec); break;
+           case'u':
+            a = sign == '-' ? (sign = '', 0x100000000 - (a | 0)) : a | 0;
+            r = sign + addZero(''+ a, prec); break;
+           case'b': case'B': r = sign + (sharp ? '0b' : '') + addZero((+a).toString(2),  prec); break;
+           case'o': case'O': r = sign + (sharp ? '0'  : '') + addZero((+a).toString(8),  prec); break;
+           case'x': case'X': r = sign + (sharp ? '0x' : '') + addZero((+a).toString(16), prec); break;
+           case'f': case'F':
+            r = sign + (+a).toFixed(~prec ? prec : 6);
+            if(!prec &amp;&amp; sharp) r += '.'; break;
+           case'e': case'E':
+            r = sign + (+a).toExponential(~prec ? prec : 6);
+            if(!prec &amp;&amp; sharp) r = r.replace(/e/, '.e'); break;
+           case'g': case'G':
+            r = sign + (+a).toPrecision(~prec ? prec : 6);
+            if(!sharp) r = r.replace(/\.?0+(?=e|$)/, '');
+            break;
+           case'a': case'A':
+            r = sign + (+a).toString(16);
+            if(~prec) r = r.replace(/([^.]+)\.?([^\(]*)(.*)/, function(i,d,e){
+              return i + (prec ? '.'+ (d +'0000000000000').substr(0, prec) + e : sharp?'.':'') });
+           case'c': r = String.fromCharCode(a | 0); break;
+           case'p': if(typeof uneval == 'function') a = uneval(a); // fallthrough
+           case's': r += ~prec ? a.substr(0, prec) : a; break;
+          }
+          if(/[BXEGA]/.test(type)) r = r.toUpperCase();
+          if((width -= r.length) &gt; 0){
+            var t = Array(width + 1).join(~flag.indexOf(0) &amp;&amp; /[^cs]/.test(type) ? 0 : ' ');
+            r = ~flag.indexOf('-') ? r + t : t + r;
+          }
+          return r;
+        });
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5220'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/5220
+  :user_name: szktty
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/648/
+  :language: Other
+  :time: 2008/01/08 03:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Mac OS X (PowerPC 32bit) アセンブリで、大雑把ですが。%%, %s, %d, %fのみ実装しています。精度指定はできません。</p>\n<p>浮動小数点数の命令がよくわからず、小数点を出力するのに「10倍した浮動小数点数の一の位を出力する」ことを精度分やってます。</p>\n<p>可変長引数はコンパイラ依存なので、次の専用の型を想定することにしました。</p>\n<pre
+    class=\"literal-block\">\ntypedef union dk_va {\n  char *sval;\n  int ival;\n
+    \ float fval;\n} dk_va, *dk_va_list_t;\n\nint dk_sprintf(char *dest, const char
+    *format, dk_va_list_t args);\n</pre>\n<p>例:</p>\n<pre class=\"literal-block\">\ndk_va
+    args[3];\nint i;\nargs[0].sval = \"hello\";\nargs[1].ival = 1510;\nargs[2].fval
+    = -384.148388;\ni = dk_sprintf(dest, \"%%, %s, %d, %f\", args);\n</pre>\n\n\t"
+  :code: ";; ------------------------------------------------\n;; mysprintf.s for
+    Mac OS X (PowerPC 32bit)\n;; % as -o dk_sprintf.o dk_sprintf.s\n;; ------------------------------------------------\n\n
+    \       .machine ppc\n        .globl  _dk_sprintf\n\n;; typedef union dk_va {\n;;
+    \  char *sval;\n;;   int ival;\n;;   float fval;\n;; } dk_va, *dk_va_list_t;\n;;
+    \n;; int dk_sprintf(char *dest, const char *format, dk_va_list_t args)\n\n;; r3:
+    char *dest\n;; r4: const char *format\n;; r5: dk_va_list_t args\n;;\n;; r7(buf):
+    \ dest の書き込み用コピー\n;; r8(c):    スキャンする文字\n;; r9(flag): 前の文字が % なら 1\n_dk_sprintf:\n
+    \       ;; 初期化\n        mr      r7, r3\n        li      r9, 0\n\n_scan:\n        ;;
+    format から一文字読み込む\n        lbz     r8, 0(r4)       ; c = *format\n\n        ;;
+    ディレクティブ\n        cmpli   cr7, r9, 1      ; flag == 1\n        beq     cr7, _scan_directive\n
+    \       cmpli   cr7, r8, 37     ; c == '%'\n        beq     cr7, _switch_directive\n
+    \               \n        ;; format から読み込んだ文字を書き込む\n        stb     r8, 0(r7)
+    \      ; *buf = c\n        addi    r7, r7, 1       ; buf++\n\n        ;; 文字列の終端\n
+    \       cmpli   cr7, r8, 0      ; c == 0\n        beq     cr7, _dk_sprintf_return\n\n
+    \       ;; 繰り返し\n        addi    r4, r4, 1       ; format++\n        b       _scan\n\n_switch_directive:\n
+    \       li      r9, 1           ; flag = 1\n        addi    r4, r4, 1       ;
+    format++\n        b       _scan\n\n_scan_directive:\n        li      r9, 0           ;
+    flag = 0\n\n        ;; %%\n        cmpli   cr7, r8, 37     ; c == '%'\n        beq
+    \    cr7, _write_escape\n\n        ;; %s   \n        cmpli   cr7, r8, 115    ;
+    c == 's'\n        beq     cr7, _write_s\n        \n        ;; %d\n        cmpli
+    \  cr7, r8, 100    ; c == 'd'\n        beq     cr7, _write_d\n        \n        ;;
+    %f\n        cmpli   cr7, r8, 102    ; c == 'f'\n        beq     cr7, _write_f\n
+    \       \n        ;; 未定義のディレクティブ\n        li      r10, 37         ; '%'\n        stb
+    \    r10, 0(r7)      ; *buf = '%'\n        stb     r8, 1(r7)       ; *(buf+1)
+    = c\n        addi    r7, r7, 2       ; buf += 2\n        addi    r4, r4, 1       ;
+    format++\n        b       _scan\n\n;; %%\n_write_escape:\n        li      r10,
+    37         ; '%'\n        stb     r10, 0(r7)      ; *buf = '%'\n        addi    r7,
+    r7, 1       ; buf++\n        addi    r4, r4, 1       ; format++\n        b       _scan\n\n;;
+    %s\n_write_s:\n        lwz     r10, 0(r5)      ; args-&gt;sval\n        addi    r5,
+    r5, 4\n        addi    r4, r4, 1       ; format++\n\n__write_s:\n        lbz     r11,
+    0(r10)     ; s = args-&gt;sval\n        cmpli   cr7, r11, 0\n        beq     cr7,
+    _scan\n        stb     r11, 0(r7)      ; *buf = s\n        addi    r7, r7, 1       ;
+    buf++\n        addi    r10, r10, 1     ; args-&gt;sval++\n        b       __write_s\n\n;;
+    %d\n_write_d:\n        lwz     r10, 0(r5)      ; i = args-&gt;ival\n        addi
+    \   r5, r5, 4\n        addi    r4, r4, 1       ; format++\n        mflr    r16
+    \            ; リンクレジスタをスタックに退避\n        bl      _write_digit\n        mtlr    r16
+    \            ; リンクレジスタをスタックから復帰\n        b       _scan\n\n;; %f\n;; r17: 精度\n;;
+    f0: 元の数値\n;; f1: 整数部\n;; f5: 0\n;; f6: 10\n_write_f:\n        ;; 定数の準備など\n        lis
+    \    r13, hi16(zero)\n        addi    r13, r13, lo16(zero)\n        lfs     f5,
+    0(r13)      ; 0\n        lis     r13, hi16(ten)\n        addi    r13, r13, lo16(ten)\n
+    \       lfs     f6, 0(r13)      ; 10\n        li      r17, 6          ; 精度\n        \n
+    \       lfs     f0, 0(r5)       ; f = args-&gt;fval\n        addi    r5, r5, 4\n
+    \       addi    r4, r4, 1       ; format++\n\n        ;; 整数部\n        fctiwz  f1,
+    f0          ; (int)f, ビットは整数表現になる\n        stfd    f1, -8(r1)      ; スタックを通して\n
+    \       lwz     r10, -4(r1)     ; 汎用レジスタに入れる\n        mflr    r16\n        bl
+    \     _write_digit\n        mtlr    r16\n\n        ;; 区切り\n        li      r14,
+    46         ; '.'\n        stb     r14, 0(r7)      ; *buf = '.'\n        addi    r7,
+    r7, 1       ; buf++\n\n        fabs    f2, f0\n        li      r11, 10\n        \n;;
+    小数部\n_write_fpointpart:\n        fmuls   f2, f2, f6\n        fctiwz  f3, f2\n
+    \       stfd    f3, -8(r1)\n        lwz     r10, -4(r1)\n\n        divwu   r12,
+    r10, r11\n        mullw   r12, r12, r11\n        sub     r10, r10, r12\n        \n
+    \       addi    r10, r10, 48    ; ASCII\n        stb     r10, 0(r7)\n        addi
+    \   r7, r7, 1       ; buf++\n\n        subi    r17, r17, 1\n        cmpli   cr7,
+    r17, 0\n        bgt     cr7, _write_fpointpart\n\n        b       _scan\n\n\n;;
+    整数を10進数で書き込む\n;; r10: 書き込む整数\n_write_digit:\n        li      r11, 25000      ;
+    fig, 桁\n        mulli   r11, r11, 4\n        li      r14, 10         ; 桁の除算用\n
+    \       li      r15, 0          ; 残りを数字をすべて表示するか\n\n        ;; 負の数\n        cmpi
+    \   cr7, r10, 0\n        bgt     cr7, _write_each_digit\n        li      r12,
+    45         ; '-'\n        stb     r12, 0(r7)      ; *buf = '-'\n        addi    r7,
+    r7, 1       ; buf++\n        mulli   r10, r10, -1    ; i = -i\n\n;; 上の桁から順に出力する\n_write_each_digit:\n
+    \       divw    r12, r10, r11   ; d = i / fig\n        mullw   r13, r11, r12   ;
+    rem = i - fig * d\n        sub     r10, r10, r13\n        divw    r11, r11, r14
+    \  ; fig /= 10\n\n        cmpli   cr7, r15, 0\n        cmpli   cr6, r12, 0     ;
+    d == 0\n        crand   2, 30, 26       ; cr0[eq] = cr7[eq] &amp;&amp; cr6[eq]\n
+    \       beq     cr0, _write_each_digit\n\n        li      r15, 1\n        addi
+    \   r12, r12, 48    ; ASCIIコードにする\n        stb     r12, 0(r7)      ; *buf = s\n
+    \       addi    r7, r7, 1       ; buf++\n\n        ;; 最後の桁\n        cmpli   cr7,
+    r11, 1     ; fig = 1\n        bgt     cr7, _write_each_digit\n        mr      r12,
+    r10\n        addi    r12, r12, 48    ; ASCIIコードにする\n        stb     r12, 0(r7)
+    \     ; *buf = s\n        addi    r7, r7, 1       ; buf++ \n\n        blr                     ;
+    終了\n\n_dk_sprintf_return:\n        sub     r3, r7, r3      ; return buf - dest\n
+    \       subi    r3, r3, 1\n        blr\n\n        .data\n        .align  2\n\nzero:\n
+    \       .single 0.0\n        .align  2\n\nten:\n        .single 10\n        .align
+    \ 2\n"
+  :tags:
+  - Assembly
+  - MacOSX
+  - PowerPC
+  :references:
+    :url: 
+    :title: 
+- :id: '5256'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/5256
+  :user_name: squld
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/643/
+  :language: Java
+  :time: 2008/01/09 11:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">やっつけで解いてみました。\r\n\r\n実行結果\r\n------------------\r\nabcdefg\r\nabc%defg\r\nabc1010e\\fg\r\n%c
+    = あ.\r\n%f = 10.5.\r\n%8ld =       10.\r\n%8d =       10.\r\n%s = abcdefg.\r\n%08s
+    = 0abcdefg.\r\n%08x = 0000000a.\r\n%08X = 0000000A.\r\n------------------</pre>\n\t"
+  :code: |
+    import java.util.regex.Matcher;
+    import java.util.regex.Pattern;
+
+    public class PrintFormat {
+        private static final Pattern PATTERN = Pattern.compile("%%|%0??[0-9]*?l??[dfcsxX]");
+
+        public static String format(String aFormat, Object... aValues) {
+            StringBuilder tBuffer = new StringBuilder();
+            int tValueIndex = 0;
+
+            Matcher tMatcher = PATTERN.matcher(aFormat);
+            int tPreviousIndex = 0;
+
+            while (tMatcher.find()) {
+                tBuffer.append(aFormat, tPreviousIndex, tMatcher.start());
+                tPreviousIndex = tMatcher.end();
+                String tMatch = tMatcher.group();
+                if (tMatch.equals("%%")) {
+                    tBuffer.append('%'); // エスケープ
+                    continue;
+                }
+                boolean tZeroPadding = tMatch.startsWith("%0");
+                boolean tLongType = tMatch.indexOf('l') &gt;= 0;
+                int tDigitNumber = 0;
+                if (Character.isDigit(tMatch.charAt(1))) {
+                    tDigitNumber = Integer.parseInt(tMatch.substring(tZeroPadding ? 2 : 1, tMatch.length() - (tLongType ? 2 : 1)));
+                }
+
+                Object tValue = aValues[tValueIndex++];
+                if (tMatch.endsWith("c")) {
+                    tBuffer.append(tValue);
+                } else if (tMatch.endsWith("f")) {
+                    tBuffer.append(padding(tValue.toString(), tDigitNumber, tZeroPadding));
+                } else if (tMatch.endsWith("d")) {
+                    tBuffer.append(padding(tValue.toString(), tDigitNumber, tZeroPadding));
+                } else if (tMatch.endsWith("s")) {
+                    tBuffer.append(padding(tValue.toString(), tDigitNumber, tZeroPadding));
+                } else if (tMatch.endsWith("x")) {
+                    if (tLongType) {
+                        tBuffer.append(padding(Long.toHexString((Long) tValue), tDigitNumber, tZeroPadding));
+                    } else {
+                        tBuffer.append(padding(Integer.toHexString((Integer) tValue), tDigitNumber, tZeroPadding));
+                    }
+                } else if (tMatch.endsWith("X")) {
+                    if (tLongType) {
+                        tBuffer.append(padding(Long.toHexString((Long) tValue).toUpperCase(), tDigitNumber, tZeroPadding));
+                    } else {
+                        tBuffer.append(padding(Integer.toHexString((Integer) tValue).toUpperCase(), tDigitNumber, tZeroPadding));
+                    }
+                }
+            }
+
+            tBuffer.append(aFormat, tPreviousIndex, aFormat.length());
+            return new String(tBuffer);
+        }
+
+        private static String padding(String aText, int aLength, boolean aZeroPadding) {
+            if (aLength == 0) {
+                return aText; // 長さ指定なし
+            }
+
+            int tDelta = aLength - aText.length();
+            if (tDelta &lt; 0) {
+                return aText.substring(-tDelta); // 長すぎる
+            } else if (tDelta == 0) {
+                return aText; // ぴったり
+            }
+
+            StringBuilder tBuilder = new StringBuilder(aLength);
+            for (int i = 0; i &lt; tDelta; i++) {
+                tBuilder.append(aZeroPadding ? '0' : ' ');
+            }
+            tBuilder.append(aText);
+
+            return new String(tBuilder);
+        }
+
+        public static void main(String[] args) {
+            System.out.println(format("abcdefg", new Object[] {}));
+            System.out.println(format("abc%%defg", new Object[] {}));
+            System.out.println(format("abc%ld%de\\fg", new Object[] { 10L, 10 }));
+            System.out.println(format("%%c = %c.", new Object[] { 'あ' }));
+            System.out.println(format("%%f = %f.", new Object[] { 10.5 }));
+            System.out.println(format("%%8ld = %8ld.", new Object[] { 10L }));
+            System.out.println(format("%%8d = %8d.", new Object[] { 10 }));
+            System.out.println(format("%%s = %s.", new Object[] { "abcdefg" }));
+            System.out.println(format("%%08s = %08s.", new Object[] { "abcdefg" }));
+            System.out.println(format("%%08x = %08x.", new Object[] { 10 }));
+            System.out.println(format("%%08X = %08X.", new Object[] { 10 }));
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5265'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/5265
+  :user_name: saws
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/01/11 08:02 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <p>Rubyのsprintfの仕様に従って実装しました.\npフラグは仕様が不明瞭だったので実装しませんでした.</p>\n<p>format系のメソッドは仕様不可ということで,
+    指数表示変換は自前で容易したのでバグが潜在している可能性が高いです.</p>\n\n\t"
+  :code: |
+    #%[フラグ][最小フィールド幅][.精度][長さ修飾子]変換指定子
+    MATCH_STR = '%([\+\-\s#0\*]*)(\d*)((?:\.\d+)?)([hliztl]*)([\w%]*)'
+    def mysprintf(*argv)
+      def check_flag(str, flag, width, precision)
+        str = str.to_s
+        width = width.to_i
+        pos = flag.include?('-')
+        sign = (/\A([\-\+])\w+\z/ =~ str or flag.include?('+'))
+        zero = flag.include?('0')
+        w = (width.to_i &gt; str.size ? width-str.size : 0)
+        if sign
+          s = (str.to_i.abs &gt;= 0 ? '+' : '-')
+          w = (w &gt;= 1 ? w - 1 : 0)
+        else
+          s = ''
+        end
+        num = (/\.(\d+)/ =~ precision and $1.to_i &lt;= w and $1.to_i &gt; 0) ? $i.to_i+1 : 0
+        filler = (zero ? '0' : ' ')*(w-num) + '0'*num
+        "#{pos ? '' : filler}#{s}#{str}#{pos ? filler : ''}"
+      end
+      def check_spec(str, spec, opt)
+        def exp_expr(n) #有理数を指数表示に変換
+          i = 0
+          break if eval("10**#{n.abs &gt; 1 ? '1' : '0'}*10**(i#{n.abs &gt; 1 ? '+= 1) &gt;' : '-= 1) &lt;='}#{'-1*' if n &lt; 0}n") while 1
+          "#{n.quo(10**(i+1))}e#{i+1}"
+        end
+        def e_flag(str)
+          if str.include?('e')
+            if str.include('.')
+              str
+            else
+              "#{str.split('e')[0]}.e#{str.split('e')[1]}"
+            end
+          else
+            exp_expr(str.to_f)
+          end
+        end
+        def g_flag(str)
+          str.to_f &lt; 10e-3 ? e_flag(str) : str.to_f.to_s
+        end
+        if opt
+          case spec
+          when 'b': "0b#{str.to_i.to_s(2)}"
+          when 'o': "0#{str.to_i.oct}"
+          when 'x': "0x#{str.to_i.hex}"
+          when 'X': "0x#{str.to_i.hex}".upcase
+          when 'f': str.include('.') ? str : "#{str}."
+          when 'F': (str.include('.') ? str : "#{str}.").upcase
+          when 'e': e_flag(str)
+          when 'E': e_flag(str).upcase
+          when 'g': g_flag(str)
+          when 'G': g_flag(str).upcase
+          else
+          end
+        else
+          case spec
+          when 'd': str.to_i
+          when 'i': str.to_i
+          when 'u': (str.to_i &lt; 0 ? 2**32 + str.to_i : str.to_i)
+          when 'o': str.to_i.oct
+          when 'x': str.to_i.hex
+          when 'X': str.to_i.hex.to_s.upcase
+          when 'e': e_flag(str)
+          when 'E': e_flag(str).upcase
+          when 'f': str.to_f
+          when 'F': str.to_f.to_s.upcase
+          when 'g': g_flag(str)
+          when 'G': g_flag(str).upcase
+          when 'c': str[0].chr
+          when 's': str.to_s
+          when '%': '%'
+          else
+            raise ArgumentError.new("malformed format string - #{spec}")
+          end
+        end
+      end
+      f = argv[0].match(/\A#{MATCH_STR}\z/)[1..-1]
+      if f[0].include?('*')
+        str = argv[2].to_s
+        width = argv[1]
+      else
+        str = argv[1].to_s
+        width = f[1]
+      end
+      if /\A[di]\z/ =~ f[4] and str.to_f != str.to_i
+        raise ArgumentError.new("invalid value for Integer: #{str}")
+      end
+      flag = f[0]
+      prec = f[2]
+      spec = f[4]
+      opt = f[0].include?('#')
+      check_flag(check_spec(str, spec, opt), flag, width, prec)
+    end
+    p mysprintf("%%", "testtest") # =&gt; "%"
+    p sprintf("%%", "testtest")   # =&gt; "%"
+    p mysprintf("%5.0u", '-1')    # =&gt; "4294967295"
+    p sprintf("%5.0u", '-1')      # =&gt; "4294967295"
+    p mysprintf("% 2d", "1", '2') # =&gt; " 1"
+    p sprintf("% 2d", "1", '2')   # =&gt; " 1"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5724'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/5724
+  :user_name: matarillo
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/136/
+  :language: C
+  :time: 2008/02/10 16:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>まじめに実装するのは面倒だし、クックブックに向かないので\n#4410に書かれていたように、仕様を限定して（%d %f %s
+    %cのみに対応して）実装。</p>\n\n\t"
+  :code: |
+    static string PrintF(string format, params object[] args)
+    {
+      Regex re = new Regex(@"%[dfsc%]");
+      int i = 0;
+      return re.Replace(format, delegate(Match m)
+      {
+        if (args.Length &lt;= i)
+          return m.Value;
+        object o = args[i++];
+        string r = null;
+        switch (m.Value[1])
+        {
+          case 'd':
+            r = Convert.ToDecimal(o).ToString();
+            break;
+          case 'f':
+            r = Convert.ToDecimal(o).ToString();
+            break;
+          case 's':
+            r = (o == null) ? "" : o.ToString();
+            break;
+          case 'c':
+            if (o.GetType().IsValueType)
+            {
+              r = Convert.ToString((char)o);
+            }
+            else
+            {
+              string s = (o == null) ? "" : o.ToString();
+              r = s.Length &gt; 0 ? new String(s[0], 1) : "";
+            }
+            break;
+          default:
+            r = m.Value;
+            break;
+        }
+        return r;
+      });
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6182'
+  :parent_id: '91'
+  :url: http://ja.doukaku.org/comment/6182
+  :user_name: 虹原いんく
+  :user_url: /web/20090422063755/http://ja.doukaku.org/user/787/
+  :language: C
+  :time: 2008/04/18 15:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>超簡易板です。</p>\n\n\t"
+  :code: "/*-\n * The MIT License\n * \n * Copyright (c) 2008 虹原いんく\n * \n * Permission
+    is hereby granted, free of charge, to any person obtaining a copy\n * of this
+    software and associated documentation files (the \"Software\"), to deal\n * in
+    the Software without restriction, including without limitation the rights\n *
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n *
+    copies of the Software, and to permit persons to whom the Software is\n * furnished
+    to do so, subject to the following conditions:\n * \n * The above copyright notice
+    and this permission notice shall be included in\n * all copies or substantial
+    portions of the Software.\n * \n * THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT
+    WARRANTY OF ANY KIND, EXPRESS OR\n * IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+    WARRANTIES OF MERCHANTABILITY,\n * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE\n * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+    DAMAGES OR OTHER\n * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+    ARISING FROM,\n * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN\n * THE SOFTWARE.\n */\n\n#include &lt;stdio.h&gt;\n#include &lt;stdarg.h&gt;\n\nchar
+    *itoa( int num ,char* buf, const int step)\n{\n    const char table[] = \"0123456789abcdef\";\n
+    \   char *p = buf;\n    int tmp;\n\n    if( num &lt; 0)\n    {\n        *p++ =
+    '-';\n        num = - num;\n    }\n\n    for(tmp=num;tmp&gt;0;tmp /= step) p++;\n
+    \   *p='\\0';\n    for(tmp=num;tmp&gt;0;tmp /= step) *--p=table[tmp%step];\n\n
+    \   return buf;\n}\n\nint mysprintf(char *str, const char *format, ... )\n{\n
+    \   char buf[64];\n    char *s, *b;\n    const char *fp, *np;\n    \n    char
+    *cp;\n    int  num;\n    \n    va_list va;\n    va_start(va, format);\n\n    fp=
+    format;\n    s= str;\n    b= str;\n    for(; *fp!='\\0';) {\n        if( *fp !=
+    '%' ) {\n            *s++ = *fp++;\n        }\n        else {\n            *fp++;
+    /* skip % */\n            switch((int)(unsigned char) *fp)\n            {\n            case
+    '%':\n                *s++ = *fp++;\n                continue;\n            break;\n
+    \           case 's':\n                np = (char *)va_arg( va, char * );\n            break;\n
+    \           case 'b':\n                num = (int)va_arg( va, int );\n                np
+    = itoa( num , buf, 2 );\n            break;\n            case 'o':\n                num
+    = (int)va_arg( va, int );\n                np = itoa( num , buf, 8 );\n            break;\n
+    \           case 'x':\n                num = (int)va_arg( va, int );\n                np
+    = itoa( num , buf, 16 );\n            break;\n            case 'd':\n                num
+    = (int)va_arg( va, int );\n                np = itoa( num , buf, 10 );\n            break;\n
+    \           }\n            *fp++; /* skip %V */\n            for(; *np!='\\0';*s++
+    = *np++);\n        }\n    }\n    *s = '\\0';\n    va_end(va);\n    \n    return
+    (s - str);\n}\n\n/* ------------------------------------------------------------------
+    */\nint main()\n{\n    char str[256];\n    int ret;\n    \n    ret = mysprintf(str,
+    \"%s %d%%%s%%\", \"ABCD\", -12345678, \"EFGHIJK\" );\n    printf(\"len = %d [%s]\",
+    ret, str );\n    \n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

@@ -1,0 +1,951 @@
+---
+:id: '17'
+:title: /*コメント*/を取り除く
+:comments:
+- :id: '3373'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/3373
+  :user_name: にしお
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/11 06:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  与えられた文字列から「/*」と「*/」で挟まれた部分を取り除くコードを書いてください。\r\n<p>\r\nなお、「/*」と入力末尾で挟まれた部分も取り除いてください。\r\nつまり、入力が「AAA/*BBB」なら出力は「AAA」です。\r\nまた、コメントは入れ子になりません。入力が「AAA/*BBB/*CCC*/DDD*/EEE」のとき、ひとつめの「*/」でコメントが終わるので出力は「AAADDD*/EEE」になります。\r\n「//」や「**」が混ざる場合の挙動は失敗しやすいので要注意です。\r\n</p>\n<p>\r\nPythonでの実行例は下のようになります：\r\n</p>\n<pre>\r\n&gt;&gt;&gt;
+    remove_comment('AAA')\r\n'AAA'\r\n&gt;&gt;&gt; remove_comment('AAA/*BBB*/')\r\n'AAA'\r\n&gt;&gt;&gt;
+    remove_comment('AAA/*BBB')\r\n'AAA'\r\n&gt;&gt;&gt; remove_comment('AAA/*BBB*/CCC')\r\n'AAACCC'\r\n&gt;&gt;&gt;
+    remove_comment('AAA/*BBB/*CCC*/DDD*/EEE')\r\n'AAADDD*/EEE'\r\n&gt;&gt;&gt; remove_comment('AAA/a//*BB*B**/CCC')\r\n'AAA/a/CCC'\r\n</pre>\r\n<p>\r\nこのお題は匿名での投稿を参考にして作成しました。\r\nありがとうございます。\r\n\t</p>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '535'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/535
+  :user_name: cats
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/07/11 07:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    using System;
+    using System.Text;
+    class Program
+    {
+      static void Main(string[] args)
+      {
+        Console.WriteLine(RemoveBlockComment("AAA"));
+        Console.WriteLine(RemoveBlockComment("AAA/*/BBB"));
+        Console.WriteLine(RemoveBlockComment("AAA/*BBB"));
+        Console.WriteLine(RemoveBlockComment("AAA/*BBB*/CCC"));
+        Console.WriteLine(RemoveBlockComment("AAA/*BBB/*CCC*/DDD*/EEE"));
+        Console.WriteLine(RemoveBlockComment("AAA/a//*BB*B**/CCC"));
+      }
+
+      static string RemoveBlockComment(string s)
+      {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i &lt; s.Length; ++i)
+        {
+          if (i &lt; s.Length - 1 &amp;&amp; s[i] == '/' &amp;&amp; s[i + 1] == '*')
+          {
+            i += 3;
+            while (i &lt; s.Length &amp;&amp; (s[i - 1] != '*' || s[i] != '/')) ++i;
+          }
+          else sb.Append(s[i]);
+        }
+        return sb.ToString();
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '536'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/536
+  :user_name: ところてん
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2007/07/11 07:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  一番乗りかな？\r\n正規表現は自信が無いので、あってるか不安。\n\t"
+  :code: |2
+     -*- coding: utf-8 -*-
+    import re
+
+    def remove_comment(comment):
+        print re.sub(r'/\*.*?((\*/)|($))','',comment, re.M)
+
+    remove_comment('AAA')
+    remove_comment('AAA/*BBB*/')
+    remove_comment('AAA/*BBB')
+    remove_comment('AAA/*BBB*/CCC')
+    remove_comment('AAA/*BBB/*CCC*/DDD*/EEE')
+    remove_comment('AAA/a//*BB*B**/CCC')
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '538'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/538
+  :user_name: rubikitch
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/105/
+  :language: Common
+  :time: 2007/07/11 07:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  一撃必殺！\n\t"
+  :code: |
+    (require :cl-ppcre)
+    (defun remove-comment (str)
+      (ppcre:regex-replace-all "/\\*(.+?)(\\*/|$)" str ""))
+
+    (remove-comment "AAA")                  ; =&gt; "AAA"
+    (remove-comment "AAA/*BBB*/")           ; =&gt; "AAA"
+    (remove-comment "AAA/*BBB")             ; =&gt; "AAA"
+    (remove-comment "AAA/*BBB*/CCC")        ; =&gt; "AAACCC"
+    (remove-comment "AAA/*BBB/*CCC*/DDD*/EEE") ; =&gt; "AAADDD*/EEE"
+    (remove-comment "AAA/a//*BB*B**/CCC")      ; =&gt; "AAA/a/CCC"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '539'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/539
+  :user_name: cats
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/07/11 07:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  上のと同じかも\n\t"
+  :code: "using System;\nusing System.Text;\nusing System.Text.RegularExpressions;\nclass
+    Program\n{\n  static void Main(string[] args)\n  {\n    string[] ss = {\"AAA\",
+    \"AAA/*/BBB\", \"AAA/*BBB\", \n      \"AAA/*BBB*/CCC\", \"AAA/*BBB/*CCC*/DDD*/EEE\",
+    \"AAA/a//*BB*B**/CCC\"};\n    foreach (string s in ss)\n      Console.WriteLine(Regex.Replace(Regex.Replace(s,
+    \"\\\\/\\\\*.*?\\\\*\\\\/\", \"\"), \"\\\\/\\\\*.*$\", \"\"));\n  }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '540'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/540
+  :user_name: rubikitch
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/105/
+  :language: Ruby
+  :time: 2007/07/11 07:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    def remove_comment(str)
+      str.gsub(%r!/\*(.+?)(\*/|$)!, "")
+    end
+
+    remove_comment('AAA')           # =&gt; "AAA"
+    remove_comment('AAA/*BBB*/')    # =&gt; "AAA"
+    remove_comment('AAA/*BBB')      # =&gt; "AAA"
+    remove_comment('AAA/*BBB*/CCC') # =&gt; "AAACCC"
+    remove_comment('AAA/*BBB/*CCC*/DDD*/EEE') # =&gt; "AAADDD*/EEE"
+    remove_comment('AAA/a//*BB*B**/CCC') # =&gt; "AAA/a/CCC"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '541'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/541
+  :user_name: kazuho
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/66/
+  :language: C
+  :time: 2007/07/11 07:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    #include &lt;string.h&gt;
+
+    void remove_comment(const char* s) {
+      const char* cs;
+      while ((cs = strstr(s, "/*")) != NULL) {
+        fwrite(s, 1, cs - s, stdout);
+        if ((s = strstr(cs, "*/")) == NULL)
+          return;
+        s += 2;
+      }
+      printf("%s\n", s);
+    }
+
+    main() {
+      remove_comment("AAA");
+      remove_comment("AAA/*BBB*/");
+      remove_comment("AAA/*BBB");
+      remove_comment("AAA/*BBB*/CCC");
+      remove_comment("AAA/*BBB/*CCC*/DDD*/EEE");
+      remove_comment("AAA/a//*BB*B**/CCC");
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '542'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/542
+  :user_name: rubikitch
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/105/
+  :language: Perl
+  :time: 2007/07/11 07:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  N年ぶりにperlでｗ\n\t"
+  :code: |
+    sub remove_comment($) {
+        my $s = @_[0];
+        $s =~ s/\/\*(.+?)(\*\/|$)//g;
+        $s;
+    }
+    print remove_comment('AAA'), "\n";
+    print remove_comment('AAA/*BBB*/'), "\n";
+    print remove_comment('AAA/*BBB'), "\n";
+    print remove_comment('AAA/*BBB*/CCC'), "\n";
+    print remove_comment('AAA/*BBB/*CCC*/DDD*/EEE'), "\n";
+    print remove_comment('AAA/a//*BB*B**/CCC'), "\n";
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '543'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/543
+  :user_name: rubikitch
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/105/
+  :language: D
+  :time: 2007/07/11 07:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  しばらく書いてないと書き方忘れたorz\r\n\r\nD言語も選択肢に入れてちょ\n\t"
+  :code: |
+    module doukaku;
+    private import std.regexp;
+    private import std.stdio;
+
+    char[] remove_comment(char[] str) {
+        return sub(str, r"/\*(.+?)(\*/|$)", "", "g");
+    }
+
+    int main () {
+        writefln(remove_comment("AAA"));
+        writefln(remove_comment("AAA/*BBB*/"));
+        writefln(remove_comment("AAA/*BBB"));
+        writefln(remove_comment("AAA/*BBB*/CCC"));
+        writefln(remove_comment("AAA/*BBB/*CCC*/DDD*/EEE"));
+        writefln(remove_comment("AAA/a//*BB*B**/CCC"));
+        return 0;
+    }
+  :tags:
+  - D
+  :references:
+    :url: 
+    :title: 
+- :id: '544'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/544
+  :user_name: tetsuro6502
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/213/
+  :language: JavaScript
+  :time: 2007/07/11 07:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "function remove_comment(s) {\n\treturn s.replace(/\\/\\*.*?(\\*\\/|$)/,
+    '');\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '545'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/545
+  :user_name: Kiske
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/202/
+  :language: PHP
+  :time: 2007/07/11 08:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">サクっとやってみました。</pre>\n\t"
+  :code: |
+    &lt;?php
+
+    function remove_comment($str)
+    {
+        return preg_replace('/\/\*.*?(\*\/|$)/', '', $str);
+    }
+
+    echo remove_comment('AAA')."\n";
+    echo remove_comment('AAA/*BBB*/')."\n";
+    echo remove_comment('AAA/*BBB')."\n";
+    echo remove_comment('AAA/*BBB/*CCC*/')."\n";
+    echo remove_comment('AAA/*BBB/*CCC*/DDD*/EEE')."\n";
+  :tags:
+  - PHP
+  :references:
+    :url: 
+    :title: 
+- :id: '546'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/546
+  :user_name: rubikitch
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/105/
+  :language: Scheme
+  :time: 2007/07/11 08:03 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Gaucheです\n\t"
+  :code: |
+    (define (remove-comment str)
+      (regexp-replace-all #/\/\*(.+?)(\*\/|$)/ str ""))
+
+    (print (remove-comment "AAA"))                  ; =&gt; "AAA"
+    (print (remove-comment "AAA/*BBB*/"))           ; =&gt; "AAA"
+    (print (remove-comment "AAA/*BBB"))             ; =&gt; "AAA"
+    (print (remove-comment "AAA/*BBB*/CCC"))        ; =&gt; "AAACCC"
+    (print (remove-comment "AAA/*BBB/*CCC*/DDD*/EEE")) ; =&gt; "AAADDD*/EEE"
+    (print (remove-comment "AAA/a//*BB*B**/CCC"))      ; =&gt; "AAA/a/CCC"
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '547'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/547
+  :user_name: rubikitch
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/105/
+  :language: Emacs
+  :time: 2007/07/11 08:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    (defun remove-comment (str)
+      (replace-regexp-in-string "/\\*\\(.+?\\)\\(\\*/\\|$\\)" "" str))
+
+    (remove-comment "AAA")                  ; =&gt; "AAA"
+    (remove-comment "AAA/*BBB*/")           ; =&gt; "AAA"
+    (remove-comment "AAA/*BBB")             ; =&gt; "AAA"
+    (remove-comment "AAA/*BBB*/CCC")        ; =&gt; "AAACCC"
+    (remove-comment "AAA/*BBB/*CCC*/DDD*/EEE") ; =&gt; "AAADDD*/EEE"
+    (remove-comment "AAA/a//*BB*B**/CCC")      ; =&gt; "AAA/a/CCC"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '550'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/550
+  :user_name: ocean
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/177/
+  :language: C
+  :time: 2007/07/11 08:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  std::stringで。\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+
+    std::string remove_comment(const std::string&amp; s)
+    {
+        std::string ret;
+
+        std::string::size_type i1 = 0;
+
+        while (1)
+        {
+            std::string::size_type i2;
+
+            if ((i2 = s.find("/*", i1)) == std::string::npos)
+            {
+                ret.append(s.substr(i1));
+
+                break;
+            }
+            else
+            {
+                ret.append(s.substr(i1, i2 - i1));
+
+                i1 = i2 + 2;
+            }
+
+            if ((i2 = s.find("*/", i1)) == std::string::npos)
+            {
+                break;
+            }
+            else
+            {
+                i1 = i2 + 2;
+            }
+        }
+
+        return ret;
+    }
+
+    void run(const std::string&amp; s)
+    {
+        std::cout &lt;&lt; remove_comment(s) &lt;&lt; std::endl;
+    }
+
+    int main()
+    {
+        run("AAA");
+        run("AAA/*BBB*/");
+        run("AAA/*BBB");
+        run("AAA/*BBB*/CCC");
+        run("AAA/*BBB/*CCC*/DDD*/EEE");
+        run("AAA/a//*BB*B**/CCC");
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '551'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/551
+  :user_name: tetsuro6502
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/213/
+  :language: Java
+  :time: 2007/07/11 08:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "import java.util.regex.Pattern;\n\npublic class StringUtils {\n\tprivate
+    static Pattern p = Pattern.compile(\"/\\\\*.*?(\\\\*/|$)\");\n\n\tpublic static
+    String removeComment(String s) {\n\t\treturn p.matcher(s).replaceAll(\"\");\n\t}\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '552'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/552
+  :user_name: ocean
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/177/
+  :language: C
+  :time: 2007/07/11 08:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  &lt;algorithm&gt;のstd::searchを使ってみた。size_typeよりイテレータのほうが扱いやすいかと思ったけど、そうでもなかった。(bcc32で確認）\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    #include &lt;algorithm&gt;
+
+    std::string remove_comment(const std::string&amp; s)
+    {
+        std::string ret;
+
+        const std::string beg = "/*";
+
+        const std::string end = "*/";
+
+        std::string::const_iterator it1 = s.begin();
+
+        while (1)
+        {
+            std::string::const_iterator it2;
+
+            it2 = std::search(it1, s.end(), beg.begin(), beg.end());
+
+            ret.append(std::string(it1, it2));
+
+            if (it2 == s.end())
+            {
+                break;
+            }
+            else
+            {
+                it1 = it2 + beg.size();
+            }
+
+            it2 = std::search(it1, s.end(), end.begin(), end.end());
+
+            if (it2 == s.end())
+            {
+                break;
+            }
+            else
+            {
+                it1 = it2 + end.size();
+            }
+        }
+
+        return ret;
+    }
+
+    void run(const std::string&amp; s)
+    {
+        std::cout &lt;&lt; remove_comment(s) &lt;&lt; std::endl;
+    }
+
+    int main()
+    {
+        run("AAA");
+        run("AAA/*BBB*/");
+        run("AAA/*BBB");
+        run("AAA/*BBB*/CCC");
+        run("AAA/*BBB/*CCC*/DDD*/EEE");
+        run("AAA/a//*BB*B**/CCC");
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '553'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/553
+  :user_name: id:nekoruri
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/111/
+  :language: Perl
+  :time: 2007/07/11 08:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  今回もoneliner。\r\n見落としがなければ、欲張らないmatchができる正規表現が書ける言語ならすぐできる？\n\t"
+  :code: |
+    perl -pe 's#/\*.*?(?:\*/|$)##g'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '556'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/556
+  :user_name: katsu
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/117/
+  :language: Scheme
+  :time: 2007/07/11 08:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">正規表現使ったら､負けかなと思ったりします｡\r\n愚直に､一文字ずつ</pre>\n\t"
+  :code: |
+    (define (comment a)
+      (with-output-to-string (lambda ()
+        (with-input-from-string a (lambda ()
+          (let loop ((sw #t) (c (read-char)))
+            (let ((loopx (cut loop &lt;&gt; (read-char)))
+                  (test-char-peek (lambda (x y) (and (char=? c x) (char=? (peek-char) y)))))
+              (cond ((eof-object? c) #t)
+                    ((and sw (test-char-peek #\/ #\*)) (loopx #f))
+                    ((and (not sw) (test-char-peek #\* #\/)) (read-char) (loopx #t))
+                    (else (when sw (write-char c)) (loopx sw))))))))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '557'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/557
+  :user_name: こう。
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2007/07/11 10:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  いちお～、文字列を返す仕様で。\r\nというか、元を破壊する方向で。\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;string.h&gt;\n\nchar* remove_comment(char*
+    str){\n\tchar* comment_start;\n\tchar* comment_end;\n\tcomment_end=str;\n\t\n\twhile(comment_start=strstr(comment_end,\"/*\")){\n\t\tcomment_end=strstr(comment_start,\"*/\");\n\t\tif(comment_end){\n\t\t\tstrcpy(comment_start,comment_end+2);\n\t\t\tcomment_end=comment_start+1;\n\t\t}else{\n\t\t\t*comment_start='\\0';\n\t\t\tbreak;\n\t\t}\n\t}\n\treturn
+    str;\n}\n\nint main(){\n\tputs(remove_comment(\"AAA\"));\n\tputs(remove_comment(\"AAA/*BBB*/\"));\n\tputs(remove_comment(\"AAA/*BBB\"));\n\tputs(remove_comment(\"AAA/*BBB*/CCC\"));\n\tputs(remove_comment(\"AAA/*BBB/*CCC*/DDD*/EEE\"));\n\tputs(remove_comment(\"AAA/a//*BB*B**/CCC\"));\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '560'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/560
+  :user_name: anekos
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/170/
+  :language: Haskell
+  :time: 2007/07/11 11:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  正規表現使わない\n\t"
+  :code: "removeComment []           = []\nremoveComment ('/':'*':xs) = skip xs\n
+    \   where skip []           = []\n          skip ('*':'/':xs) = removeComment
+    xs\n          skip (x:xs)       = skip xs  \nremoveComment (x:xs)       = x :
+    removeComment xs \n\nmain = getContents &gt;&gt;= (putStr . removeComment)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '566'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/566
+  :user_name: mimizu
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/103/
+  :language: 
+  :time: 2007/07/11 12:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  $だと複数行には対応できないので\\zを使って\"/\\\\*.*?(\\\\*/|\\\\z)\"とすべきかと。\r\n\r\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '569'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/569
+  :user_name: mimizu
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/103/
+  :language: 
+  :time: 2007/07/11 12:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  よく考えたらそれはPattern.MULTILINEを立ててる場合だけでした。\r\nしかし、よく考えたらデフォルトでは\".\"は行末記号と一致しないのでPattern.compile(\"/\\\\*.*?(\\\\*/|$)\",
+    Pattern.DOTALL);とすべきですね。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '571'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/571
+  :user_name: takatoh
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/189/
+  :language: Ruby
+  :time: 2007/07/11 13:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  これでいいんじゃないかな？\n\t"
+  :code: |
+    def remove_comment(str)
+      str.gsub(/\/\*.*?(\*\/|\z)/,"")
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '572'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/572
+  :user_name: bonlife
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/83/
+  :language: Python
+  :time: 2007/07/11 13:21 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  後で読んでも分かるようにVERBOSEにしてみました。\n\t"
+  :code: |
+    def remove_comment(xs):
+        import re
+        p = re.compile(r"""
+            /       # comment starts with slash
+            \*      # next comes asterisk
+            .*?     # comment contents
+            (?:     # start of grouping without getting value
+               \*/  #   end of comment (asterisk followed by slash)
+               |    #   or
+               $    #   end of input value
+            )       # end of grouping
+            """,re.VERBOSE)
+        return p.sub('',xs)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '582'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/582
+  :user_name: sumim
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/07/11 14:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Squeak Smalltalk で手続き的に。</pre>\n\t"
+  :code: |
+    | stream delimiter out string upToAll |
+    string := 'AAA/a//*BB*B**/CCC'.
+    stream := string readStream.
+    delimiter := '*/'.
+    upToAll := [stream upToAll: (delimiter := delimiter reversed)].
+    out := String new writeStream.
+    [stream atEnd] whileFalse: [
+       out nextPutAll: upToAll value.
+       upToAll value].
+    ^out contents
+
+    "=&gt; 'AAA/a/CCC' "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '583'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/583
+  :user_name: sh
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/225/
+  :language: Lua
+  :time: 2007/07/11 15:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Luaはまだいないかな？\n\t"
+  :code: "function remove_comment( str )\n\treturn (string.gsub( str, \"/%*.-%*/\",
+    \"\" ) )\nend\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '585'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/585
+  :user_name: es
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/147/
+  :language: Scheme
+  :time: 2007/07/11 15:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  shiroさんの\"なんでも再帰\"(http://practical-scheme.net/docs/tailcall-j.html)にでていた方法で。\n\t"
+  :code: |
+    (define (remove-comment str)
+      (define (cmnt-open-/ l r)
+        (cond ((null? l) r)
+              ((char=? #\/ (car l)) (cmnt-open-* (cdr l) r))
+              (else (cmnt-open-/ (cdr l) (cons (car l) r)))))
+      (define (cmnt-open-* l r)
+        (cond ((null? l) (cons #\/ r))
+              ((char=? #\* (car l)) (cmnt-close-* (cdr l) r))
+              (else (cmnt-open-/ l (cons #\/ r)))))
+      (define (cmnt-close-* l r)
+        (cond ((null? l) r)
+              ((char=? #\* (car l)) (cmnt-close-/ (cdr l) r))
+              (else (cmnt-close-* (cdr l) r))))
+      (define (cmnt-close-/ l r)
+        (cond ((null? l) (cons #\* r))
+              ((char=? #\/ (car l)) (cmnt-open-/ (cdr l) r))
+              (else (cmnt-close-* l r))))
+      (list-&gt;string (reverse (cmnt-open-/ (string-&gt;list str) '()))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '589'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/589
+  :user_name: odz
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/212/
+  :language: Python
+  :time: 2007/07/11 16:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  正規表現１つで\n\t"
+  :code: |
+    import re
+    PAT = re.compile(r'/\* (.(?!\*/)) *.? (?:\*/)? ', re.X)
+    def remove_comment(s):
+        return PAT.sub('', s)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '592'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/592
+  :user_name: odz
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/212/
+  :language: Haskell
+  :time: 2007/07/11 17:56 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Haskell の練習\n\t"
+  :code: |
+    removeComment :: String -&gt; String
+    removeComment = outOfComment
+      where
+        outOfComment ('/':'*':cs) = inComment cs
+        outOfComment (c:cs) = c : outOfComment cs
+        outOfComment [] = []
+        inComment ('*':'/':cs) = outOfComment cs
+        inComment (c:cs) = inComment cs
+        inComment [] = []
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '593'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/593
+  :user_name: mmm
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/150/
+  :language: Ruby
+  :time: 2007/07/11 18:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  既出のHaskellコードのアルゴリズムを拝借してRubyで書いてみた。\n\t"
+  :code: "def remove_comment(str)\n  def off_comment(cs, rs)\n    return rs.join unless(cs);\n
+    \   if ((cs[0] == \"/\") &amp;&amp; (cs[1] == \"*\"))\n      on_comment(cs[2..(cs.length
+    - 1)], rs);\n    else    \n      off_comment(cs[1..(cs.length - 1)], rs.push(cs[0]));\n
+    \   end\n  end\n\n  def on_comment(cs, rs)\n    return rs.join unless(cs);\n    if
+    ((cs[0] == \"*\") &amp;&amp; (cs[1] == \"/\"))\n      off_comment(cs[2..(cs.length
+    - 1)], rs);\n    else    \n      on_comment(cs[1..(cs.length - 1)], rs);\n    end\n
+    \ end\n\n  off_comment(str.split(//), []);\nend\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '599'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/599
+  :user_name: daisuke
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/157/
+  :language: Ruby
+  :time: 2007/07/12 00:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  いつもこんな風に書いてる。\n\t"
+  :code: |
+    def remove_comment(txt)
+      txt.gsub(/\/\*.*?\*\//m, '')
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '600'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/600
+  :user_name: daisuke
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/157/
+  :language: JavaScript
+  :time: 2007/07/12 00:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  javascript版\n\t"
+  :code: |
+    var remove_comment = function(txt) {
+     return txt.replace(/\/\*.*?\*\//, '')
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '601'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/601
+  :user_name: daisuke
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/157/
+  :language: Ruby
+  :time: 2007/07/12 01:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ぁ。行末処理…\n\t"
+  :code: |
+    def remove_comment(txt)
+      txt.gsub(/\/\*.*?(\*\/|$)/, '')
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '605'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/605
+  :user_name: daisuke
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/157/
+  :language: JavaScript
+  :time: 2007/07/12 02:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  こっちも行末処理忘れた。\n\t"
+  :code: |
+    var remove_comment = function(txt) {
+     return (txt + '\n').replace(/\/\*.*?(\*\/|\n)/, '')
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '609'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/609
+  :user_name: es
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/147/
+  :language: Scheme
+  :time: 2007/07/12 05:17 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: |
+    (define (remove-comment str)
+      (receive (ss cs) (string-scan str "/*" 'both)
+               (if ss
+                   (string-append ss (receive (se ce) (string-scan cs "*/" 'both)
+                                              (if se
+                                                  (remove-comment ce)
+                                                  "")))
+                   str)))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '613'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/613
+  :user_name: にしお
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/12 06:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  確かに、サンプル入力に「改行が含まれるケース」も入れておくべきでしたね(^^;\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '614'
+  :parent_id: '17'
+  :url: http://ja.doukaku.org/comment/614
+  :user_name: ether
+  :user_url: /web/20081203202105/http://ja.doukaku.org/user/96/
+  :language: OCaml
+  :time: 2007/07/12 07:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ocamllex で。（fslex でも通る）\n\t"
+  :code: |-
+    rule proc = parse
+    | "/*" { skip lexbuf }
+    | _    { Lexing.lexeme_char lexbuf 0 }
+    | eof  { raise End_of_file }
+    and skip = parse
+    | "*/" { proc lexbuf }
+    | _    { skip lexbuf }
+    | eof  { raise <s>
+
+
+
+
+    <!--
+         FILE ARCHIVED ON 20:21:05 Dec 3, 2008 AND RETRIEVED FROM THE
+         INTERNET ARCHIVE ON 13:59:28 Nov 16, 2013.
+         JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+         ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+         SECTION 108(a)(3)).
+    --></s>
+  :tags: []
+  :references:
+    :url: 
+    :title: 

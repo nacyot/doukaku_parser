@@ -1,0 +1,875 @@
+---
+:id: '44'
+:title: 全ての組み合わせ
+:comments:
+- :id: '3400'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/3400
+  :user_name: zigorou
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/64/
+  :language: 
+  :time: 2007/08/14 09:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  2個以上のリストlist1, list2, list3...が与えられたときに、\r\nその複数個のリストの中の要素を一つずつとりだして組にする方法の全通りのリストを返すコードを書いてください。\r\n<p>\r\nPythonで表現すると下のようになります。\r\n</p>\n<pre>\r\n&gt;&gt;&gt;
+    c = CrossProduct([1,2,3,4], \"abc\")\r\n&gt;&gt;&gt; list(c.all())\r\n[[1, 'a'],
+    [1, 'b'], [1, 'c'], [2, 'a'],\r\n [2, 'b'], [2, 'c'], [3, 'a'], [3, 'b'],\r\n
+    [3, 'c'], [4, 'a'], [4, 'b'], [4, 'c']]\r\n\r\n&gt;&gt;&gt; c = CrossProduct([0,
+    1], \"ab\", [\"Foo\", \"Bar\"])\r\n&gt;&gt;&gt; list(c.all())\r\n[[0, 'a', 'Foo'],
+    [0, 'a', 'Bar'], [0, 'b', 'Foo'], [0, 'b', 'Bar']\r\n [1, 'a', 'Foo'], [1, 'a',
+    'Bar'], [1, 'b', 'Foo'], [1, 'b', 'Bar']]\r\n</pre>\r\n\r\n順番はこの通りでなくても構いません。返すものはリストと書きましたが、\r\nなんらかの「一度に全部をメモリ上に作成しないリスト状のモノ」がある言語ではそちらを使う方がおすすめです。\r\n数値や文字列を一つのリストに混在させるのがやっかいな言語では整数のリストに限定しても構いません。\r\n<p>\r\nこのお題はZIGOROuさんとのやりとりにヒントを得て作りました。\r\n(しまった、先にブログで公開されてしまった→<a
+    href=\"/web/20081204193311/http://d.hatena.ne.jp/ZIGOROu/20070814/1187076955\">Yet
+    Another Hackadelic - 直積の導出と考えうる全ての値を網羅したハッシュの生成</a>)\r\n</p>\n<p>\r\n追記：サンプル出力が間違っていたのでoceanさんの解答を使って出力し直しました。\r\n\t</p>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2148'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2148
+  :user_name: shiro
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/08/14 09:58 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">ただ全ての組み合わせを得るだけなら、Gaucheだとライブラリ関数cartesian-productで\r\n済んでしまいます：\r\n\r\ngosh&gt;
+    (use util.combinations)\r\n#&lt;undef&gt;\r\ngosh&gt; (write (cartesian-product
+    '((1 2 3 4) (#\\a #\\b #\\c) (a b c))))\r\n((1 #\\a a) (1 #\\a b) (1 #\\a c) (1
+    #\\b a) (1 #\\b b) (1 #\\b c) (1 #\\c a) (1 #\\c b) (1 #\\c c) (2 #\\a a) (2 #\\a
+    b) (2 #\\a c) (2 #\\b a) (2 #\\b b) (2 #\\b c) (2 #\\c a) (2 #\\c b) (2 #\\c c)
+    (3 #\\a a) (3 #\\a b) (3 #\\a c) (3 #\\b a) (3 #\\b b) (3 #\\b c) (3 #\\c a) (3
+    #\\c b) (3 #\\c c) (4 #\\a a) (4 #\\a b) (4 #\\a c) (4 #\\b a) (4 #\\b b) (4 #\\b
+    c) (4 #\\c a) (4 #\\c b) (4 #\\c c))#&lt;undef&gt;\r\n\r\nこれではつまらないので、ジェネレータにしてみました。\r\n実行例：\r\n\r\ngosh&gt;
+    (define z (cross-products-gen '((1 2) (3 4 5))))\r\nz\r\ngosh&gt; (z)\r\n(1 3)\r\ngosh&gt;
+    (z)\r\n(1 4)\r\ngosh&gt; (z)\r\n(1 5)\r\ngosh&gt; (z)\r\n(2 3)\r\ngosh&gt; (z)\r\n(2
+    4)\r\ngosh&gt; (z)\r\n(2 5)\r\ngosh&gt; (z)\r\n#f\r\n\r\n</pre>\n\t"
+  :code: |
+    (use util.combinations)
+
+    (define (cross-products-gen lists)
+      (let ((restart #f)
+            (return #f))
+        (lambda ()
+          (let/cc k
+            (set! return k)
+            (cond (restart (restart #f))
+                  (else (cartesian-product-for-each
+                         (lambda (p) (let/cc k (set! restart k) (return p)))
+                         lists)
+                        #f))))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '2149'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2149
+  :user_name: ocean
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/08/14 10:02 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">普通に再帰で。（二番目の例の答えが違うけど、これでいいんですよね？）</pre>\n\t"
+  :code: |
+    def cross_product(*a):
+        stack = []
+        def traverse(i):
+            if i == len(a):
+                yield stack[:]
+            else:
+                for x in a[i]:
+                    stack.append(x)
+                    for the_stack in traverse(i + 1):
+                        yield the_stack
+                    stack.pop()
+        return traverse(0)
+
+    def print_cross_product(*a):
+        for b in cross_product(*a):
+            print b
+        print
+
+    def main():
+        print_cross_product([1,2,3,4], "abc")
+        print_cross_product([0, 1], "ab", ["Foo", "Bar"])
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2150'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2150
+  :user_name: cats
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/08/14 10:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    class Program
+    {
+      static void Main()
+      {
+        int[] ii = { 0, 1 };
+        string[] ss = { "Foo", "Bar" };
+        List&lt;List&lt;object&gt;&gt; lst = CrossProduct(ii, "ab".ToCharArray(), ss);
+        foreach (List&lt;object&gt; l in lst)
+        {
+          foreach (object o in l) Console.Write(o + ", ");
+          Console.WriteLine();
+        }
+      }
+      static List&lt;List&lt;object&gt;&gt; CrossProduct(params IList[] lsts)
+      {
+        int[] pos = new int[lsts.Length];
+        List&lt;List&lt;object&gt;&gt; lst = new List&lt;List&lt;object&gt;&gt;();
+        int n1 = lsts.Length - 1;
+        while (true)
+        {
+          List&lt;object&gt; l = new List&lt;object&gt;();
+          for (int i = 0; i &lt; lsts.Length; i++)l.Add(lsts[i][pos[i]]);
+          lst.Add(l);
+          int k = n1;
+          while (k &gt;= 0 &amp;&amp; pos[k] == lsts[k].Count - 1) pos[k--] = 0;
+          if (k &lt; 0) break;
+          ++pos[k];
+        }
+        return lst;
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2151'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2151
+  :user_name: にしお
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/14 10:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">サンプル出力間違い2連続orz\r\nすぐ直します…orz</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2152'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2152
+  :user_name: ether
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/96/
+  :language: Scala
+  :time: 2007/08/14 10:43 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">結果は（見易さのために改行を足しましたが）こんな感じです。\r\n\r\nscala&gt;
+    crossproduct(List(1,2,3), List(4,5,6))\r\nres14: List[List[Int]] = \r\n  List(List(1,
+    4), List(1, 5), List(1, 6), \r\n       List(2, 4), List(2, 5), List(2, 6), \r\n
+    \      List(3, 4), List(3, 5), List(3, 6))\r\n\r\nscala&gt; crossproduct(List(1,2),List(4,5),List(6,7))\r\nres15:
+    List[List[Int]] = \r\n  List(List(1, 4, 6), List(1, 4, 7), List(1, 5, 6), List(1,
+    5, 7), \r\n       List(2, 4, 6), List(2, 4, 7), List(2, 5, 6), List(2, 5, 7))</pre>\n\t"
+  :code: |
+    def crossproduct[T](xss: List[T]*) = {
+      var ps = List(List[T]())
+      for (xs &lt;- xss.reverse)
+        ps = for (i &lt;- xs; j &lt;- ps) yield i::j
+      ps
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2153'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2153
+  :user_name: sumim
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/14 11:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Squeak Smalltalk で。</pre>\n\t"
+  :code: |
+    | input results gen |
+    input := #((0 1) 'ab' (Foo Bar)).
+    results := OrderedCollection new.
+    gen := input reversed
+        inject: [:arr | results add: arr]
+        into: [:block :colln |
+            [:arr | colln do: [:ea | block value: arr, {ea}]] fixTemps].
+    gen value: #().
+    ^results asArray
+
+    "=&gt; #((0 $a Foo) (0 $a Bar) (0 $b Foo) (0 $b Bar)
+       (1 $a Foo) (1 $a Bar) (1 $b Foo) (1 $b Bar)) "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '2154'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2154
+  :user_name: katsu
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/117/
+  :language: Prolog
+  :time: 2007/08/14 12:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ずいぶんカバレッジ下がりました。\r\n勝手にHaskellに対抗意識を燃やしています。</pre>\n\t"
+  :code: |
+    crossp([],[]).
+    crossp([X|Xs],[I|Is]):-member(I,X),crossp(Xs,Is).
+    :-findall(X,crossp([[1,2,3],[uno,due,tre],[un,doux,trois]],X),Xs),writeln(Xs).
+  :tags:
+  - SWI-prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '2165'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2165
+  :user_name: drop
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/388/
+  :language: Haskell
+  :time: 2007/08/14 14:18 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">芸がない。そのくせ型という制約がある。</pre>\n\t"
+  :code: |
+    crossProduct = sequence :: [[a]] -&gt; [[a]]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2166'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2166
+  :user_name: iwk
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/49/
+  :language: OCaml
+  :time: 2007/08/14 14:21 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">直積はcross productじゃなくてdirect productだったと思います。</pre>\n\t"
+  :code: |
+    #light
+    open List
+    let rec directProduct = function
+        | [] -&gt; [[]]
+        | ls::lss -&gt; [for l in ls for rest in (directProduct lss) -&gt; l::rest]
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '2167'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2167
+  :user_name: miyamuko
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/382/
+  :language: xtal
+  :time: 2007/08/14 14:23 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">fiber でジェネレータにしました。\r\n\r\n「(...)」 というのは可変長引数をあらわすオブジェクトです。でも、コレ使うのなんかクラッシュする。。。\r\n\r\nあと、配列の分配がきれいにかけないです。\r\n</pre>\n\t"
+  :code: |
+    CrossProduct: class {
+        - _list: [];
+
+        initialize: method(...) {
+            (...).each_ordered_arg {
+                // ここのコメントを削除するとなぜかクラッシュする＾＾
+                if (it is String) {
+                    _list.push_back(it.split("").to_a);
+                } else {
+                    _list.push_back(it);
+                }
+            }
+        }
+
+        all: method fiber {
+            (fun (acc, rest) {
+                if (rest.empty()) {
+                    yield acc;
+                } else {
+                    x, xs: rest[0], rest.slice(1, rest.length);
+                    x {
+                        callee(acc ~ [it], xs);
+                    }
+                }
+            })([], _list);
+        }
+    }
+
+    c: CrossProduct([0, 1], "ab", ["Foo", "Bar"]);
+    c.all {
+        it.p;
+    }
+  :tags:
+  - xtal0.9.7
+  :references:
+    :url: 
+    :title: 
+- :id: '2168'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2168
+  :user_name: 匿名
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/08/14 14:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ちょうど、一つ前のお題で任意の個数からなるBool値のタプルの\r\n組み合わせを生成するのに、同じようなコードを書きました。\r\n\r\n余談ですが「コード：」のテキストボックスのフォントが、等幅だとうれしいのですが。\r\n</pre>\n\t"
+  :code: |
+    def CP(*l):
+      def f(l):
+        return ([a] + x for a in l[0] for x in f(l[1:])) if len(l) &gt; 1 else ([a] for a in l[0])
+      return f(l)
+
+    print CP([1,2,3,4], "abc")
+    print CP([0, 1], "ab", ["Foo", "Bar"])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2169'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2169
+  :user_name: 匿名
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/08/14 14:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  単純に再帰で\n\t"
+  :code: "import java.util.*;\n\npublic class Sample {\n    private static void comb(ArrayList&lt;Object&gt;
+    ans, List[] lists, int count, \n                            List&lt;List&gt; result)
+    {\n        if (count &gt;= lists.length) {\n            result.add(ans);\n            return;\n
+    \       }\n        for (Object ele : lists[count]) {\n            ArrayList&lt;Object&gt;
+    a = new ArrayList&lt;Object&gt;(ans);\n            a.add(ele);\n            comb(a,
+    lists, count + 1, result);\n        }\n    }\n\n    public static List combination(List...
+    lists) {\n        List&lt;List&gt; result = new ArrayList&lt;List&gt;();\n        comb(new
+    ArrayList&lt;Object&gt;(), lists, 0, result);\n        return result;\n    }\n\n
+    \   public static void main(String[] args) {\n        System.out.println(combination(Arrays.asList(0,
+    1),\n                                       Arrays.asList('a', 'b'),\n                                       Arrays.asList(\"foo\",
+    \"bar\")));\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2170'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2170
+  :user_name: 匿名
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/08/14 14:42 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">おっと、ジェネレータは単にprintしてもダメだった。\r\n\r\nちょっとだけ修正。\r\n</pre>\n\t"
+  :code: |
+    def CP(*l):
+      def f(l):
+        return ([a] + x for a in l[0] for x in f(l[1:])) if len(l) &gt; 1 else ([a] for a in l[0])
+      return f(l)
+
+    print list(CP([1,2,3,4], "abc"))
+    print list(CP([0, 1], "ab", ["Foo", "Bar"]))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2171'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2171
+  :user_name: sumim
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/14 14:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ether さんの #2152 の簡潔さに感心しつつ、それをヒントにして同様のことを
+    Squeak Smalltalk で。</pre>\n\t"
+  :code: |
+    | input |
+    input := #((0 1) 'ab' (foo bar)).
+    ^input reversed inject: #(()) into: [:arrs :colln |
+        colln inject: #() into: [:rs :elem | rs, (arrs collect: [:arr | {elem}, arr])]]
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '2172'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2172
+  :user_name: cats
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/08/14 14:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">もう１つおまけ</pre>\n\t"
+  :code: |
+    static List&lt;List&lt;object&gt;&gt; CrossProduct(params IList[] lsts)
+    {
+      List&lt;List&lt;object&gt;&gt; lst = new List&lt;List&lt;object&gt;&gt;();
+      lst.Add(new List&lt;object&gt;());
+      foreach (IList il in lsts)
+      {
+        List&lt;List&lt;object&gt;&gt; l = new List&lt;List&lt;object&gt;&gt;();
+        foreach (List&lt;object&gt; ls0 in lst)
+        {
+          foreach (object o in il)
+          {
+            List&lt;object&gt; ls = new List&lt;object&gt;(ls0);
+            ls.Add(o);
+            l.Add(ls);
+          }
+        }
+        lst = l;
+      }
+      return lst;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2173'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2173
+  :user_name: yuin
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/08/14 14:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">1行にしてみました。</pre>\n\t"
+  :code: |
+    def crossProduct(as:List[Any]*) = {
+      as.reverse./:(List(List[Any]())){for(i &lt;-_; j &lt;-_) yield j::i}
+    }
+
+
+    println(crossProduct(List(1,2,3,4), List('a', 'b', 'c')))
+    println(crossProduct(List(0,1), List('a', 'b'), List("Foo", "Bar")))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2178'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2178
+  :user_name: nobsun
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/14 17:11 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">引数の数(リストの数)を固定する</pre>\n\t"
+  :code: |
+    crossProduct2 = concatMap . (. repeat) . zip
+    crossProduct3 = (. crossProduct2) . (.) . crossProduct2
+    crossProduct4 = (. crossProduct3) . (.) . (.) . crossProduct2
+    crossProduct5 = (. crossProduct4) . (.) . (.) . (.) . crossProduct2
+    crossProduct6 = (. crossProduct5) . (.) . (.) . (.) . (.) . crossProduct2
+    crossProduct7 = (. crossProduct6) . (.) . (.) . (.) . (.) . (.) . crossProduct2
+
+    -- Test data
+
+    data RGB = Red | Green | Blue  deriving (Bounded,Enum, Show)
+    data ENWS = East | North | West | South deriving (Bounded,Enum, Show)
+
+    allItems :: (Bounded a, Enum a) =&gt; [a]
+    allItems = [minBound..maxBound]
+
+    test = crossProduct4 (allItems::[()]) (allItems::[Bool]) (allItems::[RGB]) (allItems::[ENWS])
+
+    {-
+    *Main&gt; test
+    [((),(False,(Red,East)))
+    ,((),(True,(Red,East)))
+    ,((),(False,(Green,East)))
+    ,((),(True,(Green,East)))
+    ,((),(False,(Blue,East)))
+    ,((),(True,(Blue,East)))
+    ,((),(False,(Red,North)))
+    ,((),(True,(Red,North)))
+    ,((),(False,(Green,North)))
+    ,((),(True,(Green,North)))
+    ,((),(False,(Blue,North)))
+    ,((),(True,(Blue,North)))
+    ,((),(False,(Red,West)))
+    ,((),(True,(Red,West)))
+    ,((),(False,(Green,West)))
+    ,((),(True,(Green,West)))
+    ,((),(False,(Blue,West)))
+    ,((),(True,(Blue,West)))
+    ,((),(False,(Red,South)))
+    ,((),(True,(Red,South)))
+    ,((),(False,(Green,South)))
+    ,((),(True,(Green,South)))
+    ,((),(False,(Blue,South)))
+    ,((),(True,(Blue,South)))]
+    -}
+  :tags:
+  - Haskell
+  :references:
+    :url: 
+    :title: 
+- :id: '2180'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2180
+  :user_name: rubikitch
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/105/
+  :language: Common
+  :time: 2007/08/14 17:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">loop萌え～\r\n</pre>\n\t"
+  :code: |
+    (defun cross-product (&amp;rest sequences)
+      (labels ((rec (lists)
+                 (if (null (cdr lists))
+                     (loop for a in (car lists) collect (list a))
+                     (loop for x in (rec (cdr lists)) appending
+                          (loop for a in (car lists) collect
+                               `(,a ,@x))))))
+        (rec (loop for arg in sequences collect (concatenate 'list arg)))))
+
+    (cross-product '(1 2 3 4) "abc")           ; =&gt; ((1 #\a) (2 #\a) (3 #\a) (4 #\a) (1 #\b) (2 #\b) (3 #\b) (4 #\b) (1 #\c) (2 #\c) (3 #\c) (4 #\c))
+    (cross-product #(0 1) "ab" '("Foo" "Bar")) ; =&gt; ((0 #\a "Foo") (1 #\a "Foo") (0 #\b "Foo") (1 #\b "Foo") (0 #\a "Bar") (1 #\a "Bar") (0 #\b "Bar") (1 #\b "Bar"))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2181'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2181
+  :user_name: rubikitch
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/105/
+  :language: Ruby
+  :time: 2007/08/14 18:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">配列でお茶を濁すと…</pre>\n\t"
+  :code: |
+    def cross_product(*arrays)
+      if arrays.length == 1
+        arrays.first.map{|x| [x]}
+      else
+        cross_product(*arrays[1..-1]).inject([]) {|result, x|
+          result.concat arrays.first.map{|a| [a, *x] }
+        }
+      end
+    end
+
+    cross_product [1,2,3,4], %w[a b c]  # =&gt; [[1, "a"], [2, "a"], [3, "a"], [4, "a"], [1, "b"], [2, "b"], [3, "b"], [4, "b"], [1, "c"], [2, "c"], [3, "c"], [4, "c"]]
+    cross_product [0,1], %w[a b], ["Foo", "Bar"] # =&gt; [[0, "a", "Foo"], [1, "a", "Foo"], [0, "b", "Foo"], [1, "b", "Foo"], [0, "a", "Bar"], [1, "a", "Bar"], [0, "b", "Bar"], [1, "b", "Bar"]]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2182'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2182
+  :user_name: rubikitch
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/105/
+  :language: Ruby
+  :time: 2007/08/14 18:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">文字列を1文字ずつ無理矢理取り出すにはこんな細工をする。</pre>\n\t"
+  :code: |
+    class Array
+      alias :_by_element :to_a
+    end
+
+    class String
+      def _by_element
+        split(//)
+      end
+    end
+
+    def cross_product(*sequences)
+      if sequences.length == 1
+        sequences.first._by_element.map{|x| [x]}
+      else
+        cross_product(*sequences[1..-1]).inject([]) {|result, x|
+          result.concat sequences.first._by_element.map{|a| [a, *x] }
+        }
+      end
+    end
+
+    cross_product [1,2,3,4], %w[a b c]  # =&gt; [[1, "a"], [2, "a"], [3, "a"], [4, "a"], [1, "b"], [2, "b"], [3, "b"], [4, "b"], [1, "c"], [2, "c"], [3, "c"], [4, "c"]]
+    cross_product [0,1], "ab", ["Foo", "Bar"] # =&gt; [[0, "a", "Foo"], [1, "a", "Foo"], [0, "b", "Foo"], [1, "b", "Foo"], [0, "a", "Bar"], [1, "a", "Bar"], [0, "b", "Bar"], [1, "b", "Bar"]]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2183'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2183
+  :user_name: nobsun
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/14 18:29 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">リストの数固定して、Dynamicを使うというのを書いてみました。</pre>\n\t"
+  :code: "import Data.Dynamic\n\ncrossProduct2 :: (Typeable a, Typeable b)\n              =&gt;
+    [a] -&gt; [b] -&gt; [(a,b)]\ncrossProduct2 ps qs \n = map tuple \n $ sequence
+    \n $ [ map toDyn ps\n   , map toDyn qs\n   ]\n where tuple [p,q]\n        = (
+    fromDyn p undefined\n          , fromDyn q undefined\n          )\n\ncrossProduct3
+    :: (Typeable a, Typeable b, Typeable c)\n              =&gt; [a] -&gt; [b] -&gt;
+    [c] -&gt; [(a,b,c)]\ncrossProduct3 ps qs rs\n = map tuple \n $ sequence \n $ [
+    map toDyn ps\n   , map toDyn qs\n   , map toDyn rs\n   ]\n where tuple [p,q,r]\n
+    \       = ( fromDyn p undefined\n          , fromDyn q undefined\n          ,
+    fromDyn r undefined\n          )\n\ncrossProduct4 :: (Typeable a, Typeable b,
+    Typeable c, Typeable d)\n              =&gt; [a] -&gt; [b] -&gt; [c] -&gt; [d]
+    -&gt; [(a,b,c,d)]\ncrossProduct4 ps qs rs ss\n = map tuple \n $ sequence \n $
+    [ map toDyn ps\n   , map toDyn qs\n   , map toDyn rs\n   , map toDyn ss\n   ]\n
+    where tuple [p,q,r,s]\n        = ( fromDyn p undefined\n          , fromDyn q
+    undefined\n          , fromDyn r undefined\n          , fromDyn s undefined\n
+    \         )\n\ncrossProduct5 :: (Typeable a, Typeable b, Typeable c, Typeable
+    d, Typeable e)\n              =&gt; [a] -&gt; [b] -&gt; [c] -&gt; [d] -&gt; [e]
+    -&gt; [(a,b,c,d,e)]\ncrossProduct5 ps qs rs ss ts\n = map tuple \n $ sequence
+    \n $ [ map toDyn ps\n   , map toDyn qs\n   , map toDyn rs\n   , map toDyn ss\n
+    \  , map toDyn ts\n   ]\n where tuple [p,q,r,s,t]\n        = ( fromDyn p undefined\n
+    \         , fromDyn q undefined\n          , fromDyn r undefined\n          ,
+    fromDyn s undefined\n          , fromDyn t undefined\n          )\n\n-- Test data\n\ndata
+    RGB = Red | Green | Blue  deriving (Typeable,Bounded,Enum,Show)\ndata ENWS = East
+    | North | West | South deriving (Typeable,Bounded,Enum,Show)\n\nallItem :: (Bounded
+    a, Enum a) =&gt; [a]\nallItem = [minBound..maxBound]\n\ntest = crossProduct4 (allItem::[()])
+    (allItem::[Bool]) (allItem::[RGB]) (allItem::[ENWS])\n\n{-\n*Main&gt; putStr $
+    unlines $ map show $ test\n((),False,Red,East)\n((),False,Red,North)\n((),False,Red,West)\n((),False,Red,South)\n((),False,Green,East)\n((),False,Green,North)\n((),False,Green,West)\n((),False,Green,South)\n((),False,Blue,East)\n((),False,Blue,North)\n((),False,Blue,West)\n((),False,Blue,South)\n((),True,Red,East)\n((),True,Red,North)\n((),True,Red,West)\n((),True,Red,South)\n((),True,Green,East)\n((),True,Green,North)\n((),True,Green,West)\n((),True,Green,South)\n((),True,Blue,East)\n((),True,Blue,North)\n((),True,Blue,West)\n((),True,Blue,South)\n-}\n"
+  :tags:
+  - Haskell
+  :references:
+    :url: 
+    :title: 
+- :id: '2184'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2184
+  :user_name: shg
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/383/
+  :language: Matlab
+  :time: 2007/08/14 19:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  とりあえず御言葉に甘えて数字のみ対応。\n\t"
+  :code: |
+    function c = multisetcomb(varargin)
+    % return all combinations of items in given column vectors by picking up one
+    % item from each at once.
+    s1 = varargin{1};
+    s2 = varargin{2};
+    c = [repmat(s1,size(s2,1),1) sortrows(repmat(s2,size(s1,1),1))];
+    if length(varargin) &gt; 2
+        c = multisetcomb(c,varargin{3:end});
+    end
+  :tags:
+  - MATLAB7.4
+  :references:
+    :url: 
+    :title: 
+- :id: '2186'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2186
+  :user_name: matyr
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/08/14 22:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Arrayを拡張してみた。\n\t"
+  :code: "Array.prototype.cartesianProduct = function(){\n\tif(!arguments.length)
+    return this;\n\tvar r = [], a = arguments[0], i, j, l;\n\tfor(i = this.length,
+    l = (a[0] ? a : a = [a]).length; i--;){\n\t\tif(!this[i][0]) this[i] = [this[i]];\n\t\tfor(j
+    = l; j--;) r[i * l + j] = this[i].concat(a[j]);\n\t}\n\tfor(a = [], i = 1, l =
+    arguments.length; i &lt; l; i++) a[i - 1] = arguments[i];\n\treturn arguments.callee.apply(r,
+    a);\n};\n(this.WSH ? function($){ WSH.Echo($) } : alert)(\n\t[0, 1, 2, 3].cartesianProduct([\"X\",
+    \"Y\", \"Z\"], [true, false], NaN).join(\"\\n\"));\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2188'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2188
+  :user_name: 沢渡 みかげ
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/101/
+  :language: Mathematica
+  :time: 2007/08/15 01:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Tuplesというそのままの関数があります．\r\n</pre>\n\t"
+  :code: "In[1]:= Tuples[{{1, 2, 3, 4}, {\"a\", \"b\", \"c\"}}]\n\nOut[1]= {{1, \"a\"},
+    {1, \"b\"}, {1, \"c\"}, {2, \"a\"}, {2, \"b\"}, {2, \n  \"c\"}, {3, \"a\"}, {3,
+    \"b\"}, {3, \"c\"}, {4, \"a\"}, {4, \"b\"}, {4, \"c\"}}\n\nIn[2]:= Tuples[{{0,
+    1}, {\"a\", \"b\"}, {\"foo\", \"bar\"}}]\n\nOut[2]= {{0, \"a\", \"foo\"}, {0,
+    \"a\", \"bar\"}, {0, \"b\", \"foo\"}, {0, \"b\", \n  \"bar\"}, {1, \"a\", \"foo\"},
+    {1, \"a\", \"bar\"}, {1, \"b\", \"foo\"}, {1, \"b\", \n  \"bar\"}}\n"
+  :tags: []
+  :references:
+    :url: /web/20081204193311/http://reference.wolfram.com/mathematica/ref/Tuples.ja.html
+    :title: Mathematica マニュアル - Tuples
+- :id: '2192'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2192
+  :user_name: Felio
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/354/
+  :language: Groovy
+  :time: 2007/08/15 03:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">再帰で。</pre>\n\t"
+  :code: |
+    def cross_product(List[] lists) {
+      if(lists.size() == 0) {
+        return [[]]
+      } else {
+        return cross_product_2(cross_product(*cdr(lists)), lists[0])
+      }
+    }
+
+    def cross_product_2(xs,ys) {
+      xs.inject([]) { xval, x -&gt;
+        ys.inject(xval) { yval ,y -&gt;
+          yval + [[y, *x]]
+        }
+      }
+    }
+
+    def cdr(xs) {
+      if(xs.size() &lt; 2) {
+        return []
+      } else {
+        return xs[1..-1]
+      }
+    }
+
+
+    println cross_product([1,2,3],[4,5],[6,7])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2201'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2201
+  :user_name: 匿名
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/4/
+  :language: Haskell
+  :time: 2007/08/15 11:17 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">二番煎じ。</pre>\n\t"
+  :code: |
+    crossProduct :: [[a]]-&gt;[[a]]
+    crossProduct [] = [[]]
+    crossProduct (x:xs) = [y:ys |y&lt;-x, ys&lt;-crossProduct xs]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2203'
+  :parent_id: '44'
+  :url: http://ja.doukaku.org/comment/2203
+  :user_name: 匿名
+  :user_url: /web/20081204193311/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/08/15 14:41 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  問題を見ていて、何も正直にListの実体を作らなくてもいいのではないかと気付きました。そこでコンストラクタで与えた List の全組み合わせを表す
+    List の実装を提示します。もちろん Java Collections Framework に基づいています。メモリの制約がないため、原理的には組み合わせの数がいくら増えても対応できますが、Java
+    Collections Framework の制約から int の範囲を超えると例外を返すようにしました。\n\t"
+  :code: |-
+    import java.util.*;
+
+    public class CombinationList extends AbstractList {
+        private List[] sourceLists;
+        private int size;
+        private int[] ord;
+
+        private class ElementList extends AbstractList {
+            int[] indexs;
+            ElementList(int[] is) {
+                indexs = is;
+            }
+            public Object get(int index) {
+                return sourceLists[index].get(indexs[index]);
+            }
+            public int size() {
+                return sourceLists.length;
+            }
+        }
+
+        public CombinationList(List... source) {
+            sourceLists = source;
+            ord = new int[source.length];
+            long s = 1;
+            for (int i = source.length - 1; i &gt;= 0; i--) {
+                ord[i] = (int)s;
+                s *= source[i].size();
+            }
+            if (s &gt; Integer.MAX_VALUE || s &lt; 0) {
+                throw new IllegalArgumentException("Source list too large");
+            }
+            size = (int)s;
+        }
+
+        public List get(int index) {
+            if (index &gt; size || index &lt; 0) {
+                throw new IndexOutOfBoundsException();
+            }
+            int[] indexs = new int[sourceLists.length];
+            for (int i = 0; i &lt; indexs.length; i++) {
+                indexs[i] = index / ord[i];
+                index %= ord[i];
+            }
+            return new ElementList(indexs);
+        }
+
+        public int size() {
+            return size;
+        }
+
+        public static void main(String[] args) {
+            System.out.println(new CombinationList(Arrays.asList(0, 1),
+                                                   Arrays.asList('a', 'b'),
+                                                   Arrays.asList("Foo", "Bar")));
+        }
+    }&gt;
+
+
+
+
+    <!--
+         FILE ARCHIVED ON 19:33:11 Dec 4, 2008 AND RETRIEVED FROM THE
+         INTERNET ARCHIVE ON 13:48:05 Nov 16, 2013.
+         JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+         ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+         SECTION 108(a)(3)).
+    -->
+  :tags: []
+  :references:
+    :url: 
+    :title: 

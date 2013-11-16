@@ -1,0 +1,489 @@
+---
+:id: '129'
+:title: Schemeもどきの実装
+:comments:
+- :id: '5413'
+  :parent_id: '129'
+  :url: http://ja.doukaku.org/comment/5413
+  :user_name: にしお
+  :user_url: /web/20080418011027/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2008/01/21 03:31 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  <p>先日1000人スピーカカンファレンス(<a class=\"reference\" href=\"/web/20080418011027/http://ja.doukaku.org/wiki/index.php/1000speakers:1\">http://ja.doukaku.org/wiki/index.php/1000speakers:1</a>)の後の突発的ハッカソンでSchemeのようなものを実装しました。ソースコードをブログに貼ると見にくいのでこっちに貼ります。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5414'
+  :parent_id: '129'
+  :url: http://ja.doukaku.org/comment/5414
+  :user_name: にしお
+  :user_url: /web/20080418011027/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2008/01/21 03:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>飲み会の後5時間で作ったものなのでかなり適当ですが、いちおう下のコードでフィボナッチ数列が表示されます。</p>\n<pre
+    class=\"literal-block\">\nprint e(parse(\"\"\"\n(begin\n (define (fib n)\n   (if
+    (&lt; n 2) 1\n       (+ (fib (- n 1)) (fib (- n 2)))))\n (display (fib 2))\n (display
+    (fib 3))\n (display (fib 4)))\n\"\"\"))\n</pre>\n\n\t"
+  :code: "# -*- coding: cp932 -*-\n# Scheme\n# 文字列リテラルは作らない\n# ドットリストのパースもしない\n\nclass
+    Scope(object):\n    def __init__(self, d, parent = None):\n        self.d = d\n
+    \       self.parent = parent\n        #print \"scope\", d, parent\n    def __getitem__(self,
+    name):\n        if self.d.has_key(name):\n            return self.d[name]\n        elif
+    self.parent:\n            return self.parent[name]\n\n        raise \"can't resolve
+    name:\", name\n\n    def __setitem__(self, name, value):\n        self.d[name]
+    = value\n\n    def setx(self, name, value):\n        \"impl. of set!\"\n        if
+    self.d.has_key(name):\n            self.d[name] = value\n            return\n
+    \       elif self.parent:\n            return self.parent.setx(name, value)\n\n
+    \       raise \"can't resolve name:\", name\n        \n\nclass Lambda(object):\n
+    \   def __init__(self, args, body, scope):\n        self.args = args\n        self.body
+    = body\n        self.scope = scope\n\n    def __call__(self, xs):\n#        print
+    \"Lambda\", self.args, xs\n        old_scope = e.scope\n        e.scope = Scope(dict(zip(self.args,
+    xs)), self.scope)\n        result = evaluate(self.body)\n        e.scope = old_scope\n
+    \       return result\n\nimport re\n_PAT_LEAF = re.compile(r\"[^\\s()]+|\\(|\\)\")\ndef
+    _tokenize(s):\n    return re.findall(_PAT_LEAF, s)\n    \ndef parse(s):\n    tokens
+    = _tokenize(s)\n    result = []\n    stack = [result]\n    for t in tokens:\n
+    \       if t == \"(\":\n            stack.append([])\n        elif t == \")\":\n
+    \           stack[-2].append(stack[-1])\n            del stack[-1]\n        else:\n
+    \           stack[-1].append(t)\n\n    return result[0]\n\ndef add(xs):\n    return
+    sum(xs)\n\ndef mul(xs):\n    from operator import mul\n    return reduce(mul,
+    xs)\n\ndef sub(xs):\n    if len(xs) == 1: return -xs[0]\n    return xs[0] - sum(xs[1:])\n\ndef
+    begin(xs):\n    return xs[-1]\n\ndef expt(xs):\n    return xs[0] ** xs[1]\n\ndef
+    equal(xs):\n    return xs[0] == xs[1]\n\ndef div(xs):\n    return xs[0] / xs[1]\n\ndef
+    lt(xs):\n    return xs[0] &lt; xs[1]\n\ndef display(xs):\n    print xs[0]\n    return
+    xs[0]\n\nscope = Scope({\"+\": add, \"*\": mul, \"-\": sub, \"=\": equal, \"/\":
+    div, \"&lt;\": lt}, globals())\nUNDEF = \"#&lt;undef&gt;\"\n\ndef evaluate(tree):\n
+    \   if isinstance(tree, list):\n        car = tree[0]\n        if car == \"define\":\n
+    \           # special form\n            if isinstance(tree[1], str): # symbol\n
+    \               e.scope[tree[1]] = evaluate(tree[2])\n            else:\n                func_name
+    = tree[1][0]\n                args = tree[1][1:]\n                e.scope[func_name]
+    = Lambda(args, tree[2], e.scope)\n            return UNDEF\n        \n        if
+    car == \"lambda\":\n            assert len(tree) == 3\n            return Lambda(tree[1],
+    tree[2], e.scope)\n\n        if car == \"if\":\n            assert len(tree) ==
+    4\n            cond = evaluate(tree[1])\n            if cond:\n                return
+    evaluate(tree[2])\n            else:\n                return evaluate(tree[3])\n\n
+    \       if car == \"let\":\n            assert len(tree) == 3\n            d =
+    dict([(k, evaluate(v)) for (k, v) in tree[1]])\n            old_scope = e.scope\n
+    \           e.scope = Scope(d, e.scope)\n            result = evaluate(tree[2])\n
+    \           e.scope = old_scope\n            return result\n\n        if car ==
+    \"set!\":\n            e.scope.setx(tree[1], evaluate(tree[2]))\n            return
+    UNDEF\n            \n        car = evaluate(car)\n        cdr = tree[1:]\n        cdr
+    = map(evaluate, cdr)\n        return car(cdr) \n    else:\n        if tree[0]
+    in \"0123456789\":\n            return int(tree) # int leteral\n        else:\n
+    \           return e.scope[tree]\n   \ne = evaluate\ne.scope = scope\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5417'
+  :parent_id: '129'
+  :url: http://ja.doukaku.org/comment/5417
+  :user_name: にしお
+  :user_url: /web/20080418011027/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2008/01/21 04:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ブログにいきさつとかを書きました。</p>\n<ul class=\"simple\">\n<li>PythonでSchemeを作りました
+    - 西尾泰和のはてなダイアリー <a class=\"reference\" href=\"/web/20080418011027/http://d.hatena.ne.jp/nishiohirokazu/20080121/1200888986\">http://d.hatena.ne.jp/nishiohirokazu/20080121/1200888986</a>\n</li>\n</ul>\n<p>他のハッカソン参加者のエントリー：</p>\n<ul
+    class=\"simple\">\n<li>Scheme on JavaScript 作りました - yukobaの日記 <a class=\"reference\"
+    href=\"/web/20080418011027/http://d.hatena.ne.jp/yukoba/20080120/p1\">http://d.hatena.ne.jp/yukoba/20080120/p1</a>\n</li>\n<li>わーい
+    ＼（＾o＾）／ Scheme もどきを JS で書いたよー！ - IT戦記 <a class=\"reference\" href=\"/web/20080418011027/http://d.hatena.ne.jp/amachang/20080120/1200850505\">http://d.hatena.ne.jp/amachang/20080120/1200850505</a>\n</li>\n</ul>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5420'
+  :parent_id: '129'
+  :url: http://ja.doukaku.org/comment/5420
+  :user_name: ところてん
+  :user_url: /web/20080418011027/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2008/01/21 14:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">空気を読まずにPython実装のForthを投下してみる。\r\n未踏ユースOBの合宿で夏くらいに作ったものです。\r\n\r\n糞コード過ぎて、読み直したら読めないｗｗｗ\r\n\r\nカッコなんて不要です。えらい人にはそれがわからんのですよ。\r\n\r\n＃そのうちForthでどう書くの問題を解くか。\r\n</pre>\n\t"
+  :code: |
+    # -*- coding: utf-8 -*-
+
+    import re
+
+    class forth():
+
+        def __init__(self, text):
+            self.Stack = []
+            self.FunctionList = {}
+            self.VariableList = {}
+            self.ParsedCode = []
+
+            pc = self.perse(text)
+
+            #空文字列を取り除く
+            for x in pc:
+                if x != '':
+                    self.ParsedCode.append(x)
+
+            pass
+
+        def __del__(self):
+            pass
+
+
+        def perse(self, text):
+            ret = ""
+            for x in text.split("\n"):
+                t = x.split("#")
+                ret += t[0] + " "
+
+            return re.split("\s+", ret)
+
+        def execute(self):
+            cl = self.ParsedCode
+            pc = [0]
+            nc = [0]
+            self._execute(cl, pc, nc)
+
+
+        def _execute(self, cl, pc , nc):
+            while(pc[0] &lt; len(cl)):
+                if (self.operator(cl, pc, nc)):
+                    pass    #operatorが評価されたので、スタックに積まない
+                else:
+                    try:
+                        #数値化できれば数値化する
+                        i = int(cl[pc[0]])
+                        self.Stack.append(i)
+                    except:
+                        #数値化できないので、文字列として積む
+                        self.Stack.append(cl[pc[0]])
+
+                pc[0] += 1
+
+        def operator(self, cl, pc, nc):
+
+            #stack の回転関数 上からn個をm回回転させる n&gt;mが前提
+            def rot_p(n,m):
+                front = self.Stack[:len(self.Stack) - n]
+                back = self.Stack[-n:]
+                self.Stack = front + back[-m:] + back[:n - m]
+
+            ope = cl[pc[0]]
+
+            #四則演算系
+            if ope == "+":
+                self.Stack.append(self.Stack.pop() + self.Stack.pop())
+            elif ope == "-":
+                rot_p(2,1)
+                self.Stack.append(self.Stack.pop() - self.Stack.pop())
+            elif ope == "*":
+                self.Stack.append(self.Stack.pop() * self.Stack.pop())
+            elif ope == "/":
+                rot_p(2,1)
+                self.Stack.append(self.Stack.pop() / self.Stack.pop())
+
+            #比較演算系
+            elif ope == "&lt;":
+                rot_p(2,1)
+                self.Stack.append(int(self.Stack.pop() &lt; self.Stack.pop()))
+            elif ope == "&lt;=":
+                rot_p(2,1)
+                self.Stack.append(int(self.Stack.pop() &lt;= self.Stack.pop()))
+            elif ope == "&gt;":
+                rot_p(2,1)
+                self.Stack.append(int(self.Stack.pop() &gt; self.Stack.pop()))
+            elif ope == "&gt;=":
+                rot_p(2,1)
+                self.Stack.append(int(self.Stack.pop() &gt;= self.Stack.pop()))
+            elif ope == "==" or ope == "=":
+                rot_p(2,1)
+                self.Stack.append(int(self.Stack.pop() == self.Stack.pop()))
+            elif ope == "&lt;&gt;" or ope == "!=":
+                rot_p(2,1)
+                self.Stack.append(int(self.Stack.pop() != self.Stack.pop()))
+
+            #ビット演算系
+            elif ope == "|":
+                self.Stack.append(int(self.Stack.pop() | self.Stack.pop()))
+            elif ope == "&amp;":
+                self.Stack.append(int(self.Stack.pop() &amp; self.Stack.pop()))
+            elif ope == "^":
+                self.Stack.append(int(self.Stack.pop() ^ self.Stack.pop()))
+            elif ope == "~":
+                self.Stack.append(int(~self.Stack.pop()))
+
+
+            #論理演算系 めんどくさいのでドモルガンの定理を利用
+            elif ope == "or":
+                self.Stack.append(int(not self.Stack.pop() and not self.Stack.pop()))
+            elif ope == "and":
+                self.Stack.append(int(not self.Stack.pop() or not self.Stack.pop()))
+            elif ope == "not":
+                self.Stack.append(int(not self.Stack.pop))
+
+            #スタック操作系
+            elif ope == "dup":
+                s = self.Stack.pop()
+                self.Stack.append(s)
+                self.Stack.append(s)
+            elif ope == "load":
+                n = self.Stack.pop()
+                self.Stack.append(self.Stack[-n])
+            elif ope == "drop":
+                self.Stack.pop()
+            elif ope == "swap":
+                rot_p(2,1)
+            elif ope == "rot":
+                rot_p(3,1)
+            elif ope == "over":
+                self.Stack.append(self.Stack[-2])
+            elif ope == "dump":
+                print self.Stack
+
+
+
+            #表示系
+            elif ope == ".":
+                print self.Stack.pop()
+
+            elif ope =="if":
+                if self.Stack.pop():
+                    nc[0] += 1
+                    pass
+                else:
+                    #elseか、endifまで読み飛ばす
+                    n = 0
+                    while(True):
+                        pc[0] += 1
+                        o = cl[pc[0]]
+                        if o == "if":
+                            n += 1
+                        elif o == "else":
+                            if n == 0:
+                                nc[0] += 1
+                                break
+                        elif o == "endif":
+                            if n == 0:
+                                break
+                            else:
+                                n -= 1
+            elif ope == "else":
+                #endif まで読み飛ばす
+                n = 0
+                while(True):
+                    pc[0] += 1
+                    o = cl[pc[0]]
+                    if o == "if":
+                        n += 1
+                    elif o == "endif":
+                        if n == 0:
+                            break
+                        else:
+                            n -= 1
+            elif ope == "endif":
+                pass
+
+            #手続きの宣言
+            elif ope == ":" :   #これdefか何かに変える？
+                pc[0] += 1
+                name = cl[pc[0]]
+                self.FunctionList[name] = []
+                while(True):
+                    pc[0] += 1
+                    c = cl[pc[0]]
+                    if c == ";":
+                        break
+                    else:
+                        self.FunctionList[name].append(c)
+            elif self.FunctionList.has_key(ope):
+                self._execute(self.FunctionList[ope],[0],[0])
+
+            #変数の代入と参照
+            elif ope == "!":
+                name = self.Stack.pop()
+                self.VariableList[name] = self.Stack.pop()
+            elif ope == "@":
+                name = self.Stack.pop()
+                self.Stack.append(self.VariableList[name])
+
+
+            #while文
+            elif ope == "while":
+                if self.Stack.pop():
+                    pass
+                else:
+                    #対応するrepeat まで読み飛ばす
+                    n = 0
+                    while(True):
+                        pc[0] += 1
+                        o = cl[pc[0]]
+                        if o == "while":
+                            n += 1
+                        elif o == "repeat":
+                            if n == 0:
+                                break
+                            else:
+                                n -= 1
+            elif ope == "repeat":
+                #whileの一個前まで戻る
+                n = 0
+                while(True):
+                    pc[0] -= 1
+                    o = cl[pc[0]]
+                    if o == "while":
+                        if n == 0:
+                            #一個前に戻す
+                            pc[0] -= 1
+                            break
+                        else:
+                            n -= 1
+                    elif o == "repeat":
+                            n += 1
+            else:
+                return False
+
+
+            return True
+
+
+
+    f = forth(
+    '''
+    1 20 - .                    # 1-20をして表示する
+    1 10 &lt; .                    # 1&lt;10をして表示する
+
+    1 if                        # スタックの一番上を評価する
+        here is TRUE . . .      # trueならここが実行される
+        0 if
+            NOTCOMING .         # こない
+        endif
+    else
+        here is FALSE . . .     # falseならばここが実行される
+    endif
+
+    100 n !                     # nに100を代入する
+    n @ .                       # nを参照して表示する
+    : hoge n @ 1 - n ! ;        # void hoge(){n = n - 1} を定義する
+    hoge hoge hoge              # hogeを三回実行する
+    n @ .                       # nを表示してみる(97が表示される)
+
+                                # 0~9までカウントする
+    0 n !                       # nに0を代入する
+    1                           # スタックの一番上が真ならwhileを実行
+    while
+        n @ .                   # nの値を表示する
+        n @ 1 + n !             # n=n+1
+        n @ 10 &lt;                # n &lt; 10 をpushする
+    repeat                      # whileに戻る
+
+
+    : square dup * ;            # 二乗する関数を定義する
+    10 square .
+
+    : fac                       # 再帰で階乗を書いてみる。スタックを二個引数に取る
+        dump                    # 突入時にメモリダンプしてみる
+        dup
+        if
+            over over *
+            over 1 -
+            fac
+            rot drop drop       # ローカル変数を開放する(?)
+            dump
+        else
+            drop
+        endif
+    ;
+
+    1 10 fac .                  # 1*10!の意味
+    ''')
+
+    f.execute()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5421'
+  :parent_id: '129'
+  :url: http://ja.doukaku.org/comment/5421
+  :user_name: にしお
+  :user_url: /web/20080418011027/http://ja.doukaku.org/user/1/
+  :language: Other
+  :time: 2008/01/21 16:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>#5420\nぶっ、FORTHきたこれ</p>\n<p>ところでマクロを実装したのでもう一度貼る。</p>\n<pre class=\"literal-block\">\ne(parse(\"\"\"\n(begin\n(define-macro
+    unless (cond body)\n    (if cond () body))\n(display (unless 0 1))\n(display (unless
+    2 3))\n)\"\"\"))\n</pre>\n\n\t"
+  :code: "# -*- coding: cp932 -*-\n'''\nScheme\n* 文字列リテラルは作らない\n* ドットリストのパースもしない\n\n'''\n\nclass
+    Scope(object):\n    def __init__(self, d, parent = None):\n        self.d = d\n
+    \       self.parent = parent\n        #print \"scope\", d, parent\n    def __getitem__(self,
+    name):\n        if self.d.has_key(name):\n            return self.d[name]\n        elif
+    self.parent:\n            return self.parent[name]\n\n        raise \"can't resolve
+    name:\", name\n\n    def __setitem__(self, name, value):\n        self.d[name]
+    = value\n\n    def setx(self, name, value):\n        \"impl. of set!\"\n        if
+    self.d.has_key(name):\n            self.d[name] = value\n            return\n
+    \       elif self.parent:\n            return self.parent.setx(name, value)\n\n
+    \       raise \"can't resolve name:\", name\n        \n\nclass Lambda(object):\n
+    \   def __init__(self, args, body, scope):\n        self.args = args\n        self.body
+    = body\n        self.scope = scope\n\n    def __call__(self, xs):\n#        print
+    \"Lambda\", self.args, xs\n        assert len(xs) == len(self.args)\n        old_scope
+    = e.scope\n        e.scope = Scope(dict(zip(self.args, xs)), self.scope)\n        result
+    = evaluate(self.body)\n        e.scope = old_scope\n        return result\n\nimport
+    re\n_PAT_LEAF = re.compile(r\"[^\\s()]+|\\(|\\)\")\ndef _tokenize(s):\n    return
+    re.findall(_PAT_LEAF, s)\n    \ndef parse(s):\n    tokens = _tokenize(s)\n    result
+    = []\n    stack = [result]\n    for t in tokens:\n        if t == \"(\":\n            stack.append([])\n
+    \       elif t == \")\":\n            stack[-2].append(stack[-1])\n            del
+    stack[-1]\n        else:\n            stack[-1].append(t)\n\n    return result[0]\n\ndef
+    add(xs):\n    return sum(xs)\n\ndef mul(xs):\n    from operator import mul\n    return
+    reduce(mul, xs)\n\ndef sub(xs):\n    if len(xs) == 1: return -xs[0]\n    return
+    xs[0] - sum(xs[1:])\n\ndef begin(xs):\n    return xs[-1]\n\ndef expt(xs):\n    return
+    xs[0] ** xs[1]\n\ndef equal(xs):\n    return xs[0] == xs[1]\n\ndef div(xs):\n
+    \   return xs[0] / xs[1]\n\ndef lt(xs):\n    return xs[0] &lt; xs[1]\n\ndef display(xs):\n
+    \   print xs[0]\n    return xs[0]\n\ndef car(xs):\n    return xs[0]\n\ndef cdr(xs):\n
+    \   return xs[1:]\n\nscope = Scope({\"+\": add, \"*\": mul, \"-\": sub, \"=\":
+    equal, \"/\": div, \"&lt;\": lt}, globals())\nUNDEF = \"#&lt;undef&gt;\"\n\n##\n#
+    macro table\ndef macro_define(tree):\n    if isinstance(tree[1], str): # symbol\n
+    \       e.scope[tree[1]] = evaluate(tree[2])\n    else:\n        func_name = tree[1][0]\n
+    \       args = tree[1][1:]\n        e.scope[func_name] = Lambda(args, tree[2],
+    e.scope)\n    return UNDEF\n\ndef macro_lambda(tree):\n    assert len(tree) ==
+    3\n    return Lambda(tree[1], tree[2], e.scope)\n\ndef macro_if(tree):\n    assert
+    len(tree) == 4\n    cond = evaluate(tree[1])\n    if cond:\n        return evaluate(tree[2])\n
+    \   else:\n        return evaluate(tree[3])\n\ndef macro_let(tree):\n    assert
+    len(tree) == 3\n    d = dict([(k, evaluate(v)) for (k, v) in tree[1]])\n    old_scope
+    = e.scope\n    e.scope = Scope(d, e.scope)\n    result = evaluate(tree[2])\n    e.scope
+    = old_scope\n    return result\n\ndef macro_setx(tree):\n    e.scope.setx(tree[1],
+    evaluate(tree[2]))\n    return UNDEF\n\ndef macro_define_macro(tree):\n    macro_table[tree[1]]
+    = lambda xs: Lambda(tree[2], tree[3], e.scope)(\n        map(evaluate, cdr(xs)))\n\ndef
+    macro_quote(tree):\n    return tree\n\nmacro_table = {\n    \"define\": macro_define,\n
+    \   \"lambda\": macro_lambda,\n    \"if\": macro_if,\n    \"let\": macro_let,\n
+    \   \"set!\": macro_setx,\n    \"define-macro\": macro_define_macro,\n    \"quote\":
+    macro_quote,\n}\n\ndef evaluate(tree):\n    if tree == []: return []\n    if isinstance(tree,
+    list):\n        car = tree[0]\n        if car in macro_table:\n            return
+    macro_table[car](tree)\n            \n        car = evaluate(car)\n        cdr
+    = tree[1:]\n        cdr = map(evaluate, cdr)\n        return car(cdr) \n    else:\n
+    \       if tree[0] in \"0123456789\":\n            return int(tree) # int leteral\n
+    \       else:\n            return e.scope[tree]\n   \ne = evaluate\ne.scope =
+    scope\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5429'
+  :parent_id: '129'
+  :url: http://ja.doukaku.org/comment/5429
+  :user_name: 匿名
+  :user_url: /web/20080418011027/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/01/22 16:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>マクロなのに先に引数評価してるっぽい？</p>\n<p>(unless 1 (display 999))</p>\n<p>999</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 

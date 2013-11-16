@@ -1,0 +1,690 @@
+---
+:id: '258'
+:title: loan patternのサンプル
+:comments:
+- :id: '9105'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9105
+  :user_name: yamamoto
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/1064/
+  :language: 
+  :time: 2009/06/10 21:31 GMT
+  :vote_count: '9'
+  :vote_score: '-7'
+  :body: "\r\n\t  <pre class=\"compact\">リソースを使うときのパターンloanのサンプルを書いて下さい。\r\n参考\r\nProgramming
+    in Scala (P.170 , P.172)\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20101119082810/http://scala.sygneca.com/patterns/loan
+    :title: '''Loan'' pattern (Scala wiki)'
+- :id: '9141'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9141
+  :user_name: yamamoto
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/1064/
+  :language: Scala
+  :time: 2009/06/12 21:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>妙なところに投稿してしまっていたようです。すみません。\nネットワークプログラムは不慣れなところがありますので、ビシィっと指導してくださいませ。</p>\n\r\n\t"
+  :code: |
+    //loan patternのサンプル
+    //お題:http://ja.doukaku.org/258/
+
+    import java.net._
+
+    object LoanSample {
+      def main(args : Array[String]) : Unit = {
+        SocketLoan.processWith("ja.doukaku.org",80){
+          sock=&gt;
+            println( sock )
+            // ここにいろいろな処理
+            // そして、たまに、間違う
+            var a = 1/0 // ---&gt; java.lang.ArithmeticException
+            // ここにいろいろな処理
+            ()
+        }
+      }
+    }
+
+    object SocketLoan{
+      def processWith(serverName:String,port:Int)(op:Socket=&gt;Unit) : Unit = {
+        try{
+          val sock = new Socket(serverName,port)
+          //-------------------------------
+          try{
+            // loan it
+            op(sock)
+          }catch{
+            case e:Exception =&gt; println("err inside loan : "+e)
+            case _ =&gt;
+          }
+          //-------------------------------
+          sock.close()
+        }catch{
+          case e:Exception =&gt; println("err outside loan"+ e)
+          case _ =&gt;
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9161'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9161
+  :user_name: egtra
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/759/
+  :language: D
+  :time: 2009/06/14 08:03 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  BOOST_SCOPE_EXITでも紹介しようかなと思いましたが、本家っぽい感じがしたD言語で書いてみました。いずれにせよ、スコープを抜けるときに対象の文を実行するというものという点では同じです。\r\n\t"
+  :code: |
+    import std.c.stdio;
+
+    int main()
+    {
+        FILE* fp = fopen("hoge.txt", "w");
+        scope(exit) fclose(fp);
+        fputs("hello, world", fp);
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9193'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9193
+  :user_name: lunlumo
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/813/
+  :language: Perl
+  :time: 2009/06/18 16:37 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <p>　perlがまだの様なので。</p>\n\r\n\t"
+  :code: |
+    #! /usr/bin/perl
+
+    package FileLoan;
+
+    use strict;
+
+    sub with_resource {
+        my    ($pkg, $path, $mode, $encoding, $closure) = @_;
+        my    $file;
+        open ($file, "${mode}:encoding(${encoding})", $path) || die "cannot open file.";
+        eval {
+            &amp;${closure}($file);
+        };
+        close($file);
+        die $@ if $@;
+    }
+
+    package main;
+
+    eval {
+        FileLoan-&gt;with_resource("test.txt", "&gt;", "utf8", sub {
+            my    $f = shift;
+            print $f "test\n";
+        });
+    };
+    print $@ if $@;
+
+    1;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9143'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9143
+  :user_name: yamamoto
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/1064/
+  :language: 
+  :time: 2009/06/12 21:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>そうです。\n組み込みの構文があるといいですね。\n低レベルのAPIを使うときに、有効なパターンではなかろうかと。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9146'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9146
+  :user_name: yamamoto
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/1064/
+  :language: Scala
+  :time: 2009/06/13 00:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>メモリマップをFileダンプにつかってみました。\n（バッファをloanする）</p>\n\r\n\t"
+  :code: |
+    import java.io._
+    import java.nio._
+    import java.nio.channels._
+
+    object LoanSample{
+      def main(args : Array[String]) : Unit = {
+        FileLoan.viewFileAsBuffer(args(0)){ byteBuffer =&gt;
+            //      "012345678:---
+            val maxPos  = byteBuffer.limit()
+            var viewLine=""
+            println("          0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F")
+            for{ i &lt;-0 until byteBuffer.limit() by 16
+                 j &lt;-0 until 16
+                 pos = i + j }{
+              if(j== 0){
+                print(pos.formatted("%08X: "))
+                viewLine = ""
+              }
+              if( pos&lt;byteBuffer.limit() ){
+                val b = byteBuffer.get(pos)
+                val c = b.toChar
+                print( b.formatted("%02X ") )
+                viewLine += (if( c.isControl ) "." else ""+c)
+              }else{
+                print(                                "    "  )
+                viewLine += " "
+              }
+              if(j==15){
+                println( viewLine )
+                viewLine = ""
+              }
+            }
+            ()
+        }
+      }
+    }
+
+    object FileLoan{
+      def viewFileAsBuffer(fileName:String)(op:ByteBuffer=&gt;Unit) : Unit = {
+        var channel:FileChannel = null
+        var buffer :ByteBuffer  = null
+        try{
+          channel = new FileInputStream(fileName).getChannel()
+          buffer  = channel.map(FileChannel.MapMode.READ_ONLY , 0 , channel.size())
+          op( buffer )
+        }catch{
+          case e:Exception =&gt;{
+              println(channel,buffer)
+              println(e)
+            }
+          case _ =&gt;
+        }finally{
+          buffer  = null
+          channel = null
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9158'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9158
+  :user_name: egtra
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2009/06/14 02:21 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  C++では広義のRAIIと呼ばれる技法です。基本はデストラクタです。ここでは、リソースとしてfopen/fcloseの対を用いました。\r\n\t"
+  :code: |
+    #include &lt;cstdio&gt;
+    #include &lt;stdexcept&gt;
+
+    class FilePtr
+    {
+    public:
+        FilePtr(std::FILE* filePointer) : fp(filePointer)
+        {
+            if (fp == 0)
+            {
+                throw std::invalid_argument("filePointer == 0");
+            }
+        }
+        ~FilePtr() {std::fclose(fp);} // デストラクタ
+        std::FILE* get() {return fp;}
+    private:
+        std::FILE* fp;
+        FilePtr(const FilePtr&amp;);
+        FilePtr&amp; operator =(const FilePtr&amp;);
+    };
+
+    int main()
+    {
+        FilePtr f(std::fopen("hoge.txt", "w"));
+        std::fputs("Hello, world\n", f.get());
+    } // ここでfのデストラクタが呼ばれる。
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9460'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9460
+  :user_name: uehaj
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2009/08/08 19:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Groovyではloanパターンは標準ライブラリでサポートされてますので，利用側の例として一つ。</p>\n\r\n\t"
+  :code: |
+    new Socket("www.google.com", 80).withStreams { ins, outs -&gt;
+      outs.write("GET / HTTP/1.0\n\n".getBytes())
+      ins.eachLine {
+        println it
+      }
+    }
+  :tags: []
+  :references:
+    :url: /web/20101119082810/http://groovy.codehaus.org/groovy-jdk/java/net/Socket.html#withStreams%28groovy.lang.Closure%20closure%29
+    :title: Socket#withStreams
+- :id: '9189'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9189
+  :user_name: lunlumo
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/813/
+  :language: Ruby
+  :time: 2009/06/17 15:02 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <p>　Rubyで。</p>\n\r\n\t"
+  :code: |
+    #! /usr/bin/ruby
+
+    class FileLoan
+      def self.with_resource(path, mode)
+        begin
+          f = File.open(path, mode)
+          begin
+            yield f
+          ensure
+            f.close
+          end
+        rescue =&gt; ex
+          puts ex.message
+        end
+      end
+    end
+
+    FileLoan.with_resource("test.txt", "r") do |f|
+      f &lt;&lt; "test"
+      f.flush
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9142'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9142
+  :user_name: selpo
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/1013/
+  :language: C
+  :time: 2009/06/12 21:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>「リソースを解放しよう」という感じでOK?</p>\n\r\n\t"
+  :code: |
+    using system;
+    using System.IO;
+    class P
+    {
+        static void Main()
+        {
+            using (var sr = new StreamReader("file-location"))
+            {
+                //うんちゃらかんちゃら
+                Console.WriteLine (sr.ReadToEnd());
+                //例外発生！
+                throw new Exception();
+                //でも、大丈夫
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9163'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9163
+  :user_name: sumim
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/06/14 07:42 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <p>Squeak Smalltalk で。</p>\n<p>第一パラメータで与えた名前のファイルを開き、第二パラメータで与えた処理を行い正常・異常に関わらず終了時にファイルを閉じる
+    #fileNamed:do: というメソッドがおそらくこのパターンのサンプルになっていると思います。</p>\n\r\n\t"
+  :code: |
+    FileStream fileNamed: 'test.txt' do: [:file | #doSomething]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9144'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9144
+  :user_name: ワサビ
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/1045/
+  :language: OCaml
+  :time: 2009/06/12 22:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  loan pattern 用の汎用関数です。\r<br>引数なしのコンストラクタを持ち、IDisposableインターフェースを実装するクラスに対して使用可能です。\r<br><br>＜実行結果＞\r<br>処理実行\r<br>破棄\r<br>"
+  :code: |
+    #light
+
+    open System
+
+    let loan (f : 'T -&gt; 'U when 'T : (new : unit -&gt; 'T) and 'T :&gt; IDisposable) =
+        use x = new 'T() in f x
+
+    type Example() =
+        member this.Method() = printfn "処理実行"
+        interface IDisposable with
+            member this.Dispose() = printfn "破棄"
+
+    loan (fun (x : Example) -&gt; x.Method())
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9141'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9141
+  :user_name: yamamoto
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/1064/
+  :language: Scala
+  :time: 2009/06/12 21:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>妙なところに投稿してしまっていたようです。すみません。\nネットワークプログラムは不慣れなところがありますので、ビシィっと指導してくださいませ。</p>\n\r\n\t"
+  :code: |
+    //loan patternのサンプル
+    //お題:http://ja.doukaku.org/258/
+
+    import java.net._
+
+    object LoanSample {
+      def main(args : Array[String]) : Unit = {
+        SocketLoan.processWith("ja.doukaku.org",80){
+          sock=&gt;
+            println( sock )
+            // ここにいろいろな処理
+            // そして、たまに、間違う
+            var a = 1/0 // ---&gt; java.lang.ArithmeticException
+            // ここにいろいろな処理
+            ()
+        }
+      }
+    }
+
+    object SocketLoan{
+      def processWith(serverName:String,port:Int)(op:Socket=&gt;Unit) : Unit = {
+        try{
+          val sock = new Socket(serverName,port)
+          //-------------------------------
+          try{
+            // loan it
+            op(sock)
+          }catch{
+            case e:Exception =&gt; println("err inside loan : "+e)
+            case _ =&gt;
+          }
+          //-------------------------------
+          sock.close()
+        }catch{
+          case e:Exception =&gt; println("err outside loan"+ e)
+          case _ =&gt;
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9162'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9162
+  :user_name: 匿名
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2009/06/14 11:21 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  Javaにはクロージャがないので、匿名クラスを使ってみました。まず、要件を以下と考えました。\r<br><br>・ブロックを抜ける時に強制的にリソースの解放を行う。\r<br>・リソースを使う箇所では解放を意識しない。\r<br><br>サンプルでは、mainメソッドの中身がリソースを使う箇所になります。匿名クラスなので構文的には複雑になっていますが、要件は満たしていると思います。\r\n\t"
+  :code: "import java.io.*;\n\npublic class WithResource&lt;T extends Closeable&gt;
+    {\n\n    private T resource;\n    \n    public WithResource(T resource) {\n        this.resource
+    = resource;\n    }\n    \n    public T get() {\n        return resource;\n    }\n\n
+    \   public void using(Runnable f) throws IOException {\n        try {\n            f.run();\n
+    \       } finally {\n            resource.close();\n        }\n    }\n\n    public
+    static void main(String[] args) throws IOException {\n        final WithResource&lt;PrintWriter&gt;
+    wr = new WithResource&lt;PrintWriter&gt;(\n                new PrintWriter(new
+    BufferedWriter(new OutputStreamWriter(System.out))));\n        wr.using(new Runnable()
+    {\n            public void run() {\n                wr.get().print(\"この文字列はflushしないと書き出されない\");\n
+    \               wr.get().print(\"（closeし忘れは良くある間違い）。\");\n            }\n        });\n
+    \   }\n\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9157'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9157
+  :user_name: yamamoto
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/1064/
+  :language: 
+  :time: 2009/06/14 00:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>nullをいれたら、後始末してくれるのかと思ってました。</p>\n<p>・・・</p>\n<p>Java/Scalaマスター
+    への道は遠いなあ。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9164'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9164
+  :user_name: yamamoto
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/1064/
+  :language: Scala
+  :time: 2009/06/14 08:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Java版(#9162)をScalaに移植しました。\nこれはこれで味わい深いです。\nありがとうございました。</p>\n\r\n\t"
+  :code: |
+    // Java版#9162を移植
+    import java.io._
+
+    case class WithResource[T&lt;:Closeable]( resource:T ) {
+        def using[F&lt;:Runnable](f:F) : Unit= {
+            try {
+                f.run();
+            } finally {
+                resource.close();
+            }
+        }
+    }
+
+    object Main{
+        def main(args:Array[String]) : Unit = {
+            val wr = WithResource(  new PrintWriter(
+                                    new BufferedWriter(
+                                    new OutputStreamWriter(System.out))))
+            wr.using(new Runnable{
+                        override def run():Unit = {
+                            wr.resource.print("この文字列はflushしないと書き出されない");
+                            wr.resource.print("（closeし忘れは良くある間違い）。");
+                        } } )
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9145'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9145
+  :user_name: yamamoto
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/1064/
+  :language: Scala
+  :time: 2009/06/12 22:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>少し、ひねってみました。</p>\n\r\n\t"
+  :code: |
+    import java.net._
+
+    object LoanSample {
+      def main(args : Array[String]) : Unit = {
+        SocketLoan.usingSocketOf(
+                   ("ja.doukaku.org",80),
+                   ("http://ja.doukaku.org/",80), //&lt;---勘違い
+                   ("\\.org",80), // &lt;---たまに、異常なデータ
+                   ("labs.cybozu.co.jp",80) ){ (serverName,port,sock) =&gt;
+            println( sock )
+            // ここにいろいろな処理
+            // そして、たまに、間違う
+            var a = 1/0 // ---&gt; java.lang.ArithmeticException
+            // ここにいろいろな処理
+            ()
+        }
+      }
+    }
+
+    object SocketLoan{
+      def usingSocketOf(hosts:(String,Int)*)( op:(String,Int,Socket)=&gt;Unit ):Unit={
+        for((serverName,port)&lt;-hosts){
+          println("using "+ serverName)
+          usingSocketOf(serverName,port)(op(serverName,port,_))
+          println("used "+ serverName)
+        }
+      }
+      def usingSocketOf(serverName:String,port:Int)(op:Socket=&gt;Unit) : Unit = {
+        try{
+          println("opening")
+          val sock = new Socket(serverName,port)
+          println("opened")
+          //-------------------------------
+          try{
+            // loan it
+            op(sock)
+          }catch{
+            case e:Exception =&gt; println("err inside loan : "+e)
+            case _ =&gt;
+          }
+          //-------------------------------
+          println("closing")
+          sock.close()
+          println("closed")
+        }catch{
+          case e:Exception =&gt; println("err outside loan"+ e)
+          case _ =&gt;
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9151'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9151
+  :user_name: sna
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/819/
+  :language: 
+  :time: 2009/06/13 12:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  channel (またはFileInputStream) のclose()を忘れているかと思います。\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9152'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9152
+  :user_name: sna
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/819/
+  :language: Scala
+  :time: 2009/06/13 14:13 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  C#/VB.NETのusingに憧れて作った、Scala用のusing構文です。\r<br>IDisposableのような統一的な解放インターフェースが無いので、closeメソッドやdisposeメソッドを持つオブジェクトを対象にします。\r\n\t"
+  :code: "import java.io._\n\nobject UsingSyntax {\n  \n  trait Disposing[-A] extends
+    (A =&gt; Unit)\n  \n  // closeメソッドを持つオブジェクトの解放方法を定義\n  implicit val closeDefinedDisposing
+    = new Disposing[{def close(): Unit}] {\n    def apply(target: {def close(): Unit})
+    = target.close()\n  }\n  // disposeメソッドを持つオブジェクトの解放方法を定義\n  implicit val disposeDefinedDisposing
+    = new Disposing[{def dispose(): Unit}] {\n    def apply(target: {def dispose():
+    Unit}) = target.dispose()\n  }\n  // 自分で解放方法を指定する場合の変換\n  // using (obj) { 処理...
+    } { (_: MyDisposable).myDispose() }\n  implicit def functionToDisposing[A](f:
+    A =&gt; Any): Disposing[A] =\n  new Disposing[A] {\n    def apply(target: A):
+    Unit = f(target)\n  }\n  \n  def using[A, R](a: A)(block: A =&gt; R)(implicit
+    disposing: Disposing[A]): R = {\n    try {\n      block(a)\n    }\n    finally
+    {\n      disposing(a)\n    }\n  }\n  \n}\n\nobject Doukaku258 {\n  import UsingSyntax._\n
+    \ \n  def main(args: Array[String]): Unit = {\n    \n    // ファイルからテキストを読み込んで全部表示\n
+    \   // 使い終わったらファイルを閉じる\n    using (new FileInputStream(\"test.txt\")) { in =&gt;\n
+    \     using (new InputStreamReader(in, \"UTF-8\")) { rd =&gt;\n        \n        val
+    buf = new Array[Char](512)\n        var n = 0\n        while ({n = rd.read(buf);
+    n &gt; 0}) {\n          print(buf.take(n).mkString)\n        }\n        \n        //
+    処理中に例外が発生してもファイルは閉じる\n        throw new Exception()\n        \n      }\n    }\n
+    \   \n  }\n  \n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9235'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9235
+  :user_name: 匿名
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2009/06/24 02:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \r\n\t"
+  :code: |
+    with open('test.txt') as f:
+      print f.read()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9159'
+  :parent_id: '258'
+  :url: http://ja.doukaku.org/comment/9159
+  :user_name: egtra
+  :user_url: /web/20101119082810/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2009/06/14 02:29 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  まあ、使い回しするならクラスにまとめるのもいいですが、そうでないなら即席的に作る方法も色々あります。これ、shared_ptrは本来メモリ用ですが、解放に使う関数オブジェクトを指定できるので、だいたい何にでも使用できます。参照カウントというおまけ付きですが。\r\n\t"
+  :code: |
+    #include &lt;cstdio&gt;
+    #include &lt;memory&gt; // または&lt;boost/shared_ptr.hpp&gt;
+
+    int main()
+    {
+        std::tr1::shared_ptr&lt;std::FILE&gt; f(std::fopen("hoge.txt", "w"), std::fclose);
+        // またはboost::shared_ptr
+        std::fputs("Hello, world\n", f.get());
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 

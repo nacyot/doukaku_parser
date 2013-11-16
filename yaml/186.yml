@@ -1,0 +1,1142 @@
+---
+:id: '186'
+:title: 設定ファイルから値を取得
+:comments:
+- :id: '6562'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6562
+  :user_name: syat
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2008/06/23 17:32 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\r\n\t  設定ファイルから項目名をキーとして値を取得するコードを書いてください。\r<br>設定ファイルのイメージも載せてください。\r<br><br>ここで設定ファイルとは、\r<br>　・項目名と値のペアが書いてあるファイル\r<br>　・フォーマットはその言語で扱いやすいものでよい\r<br>　・コードと分離され、コードに影響を与えずに変更が可能\r<br>を条件とします。ファイルが難しければ同等のものでもかまいません（テーブル、環境変数など）。\r<br><br>例）\r<br>----\r<br>ファイル：ShowPrice.ini\r<br>ITEM_NAME=りんご\r<br>ITEM_COST=200\r<br><br>&gt; showPrice()\r<br>「りんご」は210円（税込み）\r<br>----\r<br>ITEM_NAME=みかん\r<br>ITEM_COST=100\r<br><br>&gt; showPrice()\r<br>「みかん」は105円（税込み）\r<br>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6605'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6605
+  :user_name: horiuchi
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/06/29 10:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>この頃、自分で書く時はこんな形にしてます。\r</p>\n<p>\r</p>\n<p>設定ファイルの内容は\r</p>\n<p>ファイル：ShowPrice.properties\r</p>\n<p>&gt;&gt;\r</p>\n<p>item.name=apple\r</p>\n<p>item.cost=200\r</p>\n<p>&lt;&lt;\r</p>\n<p>\r</p>\n<p>ファイル：ShowPrice2.properties\r</p>\n<p>&gt;&gt;\r</p>\n<p>item.name=orange\r</p>\n<p>item.cost=100\r</p>\n<p>&lt;&lt;\r</p>\n<p>\r</p>\n<p>ファイル：ShowPrice3.properties\r</p>\n<p>&gt;&gt;\r</p>\n<p>&lt;&lt;\r</p>\n</div>\n\t"
+  :code: |
+    import java.io.FileInputStream;
+    import java.io.IOException;
+    import java.io.InputStream;
+    import java.io.Reader;
+    import java.util.Properties;
+
+
+    public class Sample186 {
+        private static final Properties defaultProperties_ = new Properties();
+        static {
+            defaultProperties_.setProperty("item.name", "nothing");
+            defaultProperties_.setProperty("item.cost", "0");
+        }
+
+
+        private final Properties properties_ = new Properties(defaultProperties_);
+
+        public Sample186(InputStream stream) throws IOException {
+            properties_.load(stream);
+        }
+        public Sample186(Reader reader) throws IOException {
+            properties_.load(reader);
+        }
+
+        public String get(String key) {
+            return properties_.getProperty(key);
+        }
+        public int getInteger(String key) {
+            try {
+                return Integer.parseInt(get(key));
+            } catch (NumberFormatException ex) {
+                ex.printStackTrace();
+                return 0;
+            }
+        }
+        public long getLong(String key) {
+            try {
+                return Long.parseLong(get(key));
+            } catch (NumberFormatException ex) {
+                ex.printStackTrace();
+                return 0L;
+            }
+        }
+        public double getDouble(String key) {
+            try {
+                return Double.parseDouble(get(key));
+            } catch (NumberFormatException ex) {
+                ex.printStackTrace();
+                return 0.0;
+            }
+        }
+
+
+        public static void main(String[] args) {
+            try {
+                Sample186 apple = new Sample186(new FileInputStream("ShowPrice.properties"));
+                System.out.println(getPrice(apple));
+                Sample186 orange = new Sample186(new FileInputStream("ShowPrice2.properties"));
+                System.out.println(getPrice(orange));
+                Sample186 nothing = new Sample186(new FileInputStream("ShowPrice3.properties"));
+                System.out.println(getPrice(nothing));
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        private static String getPrice(Sample186 sample186) {
+            return String.format("「%s」は%d円（税込み）", sample186.get("item.name"), (int)(sample186.getInteger("item.cost") * 1.05));
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: /web/20100518184117/http://d.hatena.ne.jp/Horiuchi_H/20060911/1157941945
+    :title: 設定情報読み込みクラスの設計 に関して
+- :id: '6606'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6606
+  :user_name: sumim
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/06/29 11:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Squeak Smalltalk で。\r\n\r\n\r\nファイル： ShowPrice.ini\r\nItemName=りんご\r\nItemCost=200
+    \r\n\r\n出力： \r\n「りんご」は210円（税込み）</pre>\n\t"
+  :code: |
+    | file line dict str |
+    file := FileStream fileNamed: 'ShowPrice.ini'.
+    file converter: UTF8TextConverter new.
+    dict := Dictionary new.
+    [(line := file nextLine) notNil] whileTrue: [
+        | stream |
+        stream := line readStream.
+        dict at: (stream upTo: $=) asSymbol put: stream upToEnd].
+    file close.
+    World findATranscript: nil.
+    str := '「{1}」は{2}円（税込み）'
+        format: {dict at: #ItemName. ((dict at: #ItemCost) * 1.05) truncated}.
+    Transcript cr; show: str
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '6607'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6607
+  :user_name: fkmn
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/190/
+  :language: Perl
+  :time: 2008/06/29 11:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Config::Simple を使うと楽に書けます。\r\n\r\n設定ファイル例:
+    ShowPrice.ini\r\nITEM_NAME=りんご\r\nITEM_COST=200 \r\n\r\n% perl show_price.pl\r\n「りんご」は210円（税込み）
+    </pre>\n\t"
+  :code: |
+    use strict;
+    use warnings;
+    use Config::Simple;
+
+    my $cfg = Config::Simple-&gt;new('ShowPrice.ini');
+
+    sub ShowPrice {
+        printf('「%s」は%d円（税込み）',
+               $cfg-&gt;param('ITEM_NAME'),
+               $cfg-&gt;param('ITEM_COST') * 1.05);
+    }
+
+    ShowPrice();
+  :tags:
+  - Config::Simple
+  :references:
+    :url: 
+    :title: 
+- :id: '6608'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6608
+  :user_name: turugina
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/760/
+  :language: C
+  :time: 2008/06/29 11:23 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Boost.Spirit を使って。\r\nJavaのpropertiesファイルみたいな\r\nKEY
+    = VALUE\r\nKEY2 = VALUE2\r\n：\r\n形式のファイルを読み込みます。\r\n\r\n#で始まる行はコメントとして読み飛ばします。\r\nまた、KEYに使えるのがアルファベット、数字、\r\nアンダーバー、ハイフンのみという制約が\r\nあります。</pre>\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;map&gt;
+    #include &lt;string&gt;
+    #include &lt;stdexcept&gt;
+    #include &lt;fstream&gt;
+
+    #include &lt;boost/spirit.hpp&gt;
+    #include &lt;boost/spirit/actor/assign_actor.hpp&gt;
+    #include &lt;boost/spirit/actor/insert_at_actor.hpp&gt;
+    #include &lt;boost/algorithm/string/trim.hpp&gt;
+
+    class PropertyFileReader
+    {
+        public:
+            //! key-value paired map type
+            typedef std::map&lt;std::string, std::string&gt; property_map_type;
+
+        public:
+            static property_map_type
+                read(
+                        std::istream&amp; is
+                    );
+
+    };
+
+
+    PropertyFileReader::property_map_type
+    PropertyFileReader::read(
+            std::istream&amp; is
+            )
+    {
+        using namespace boost::spirit;
+
+        property_map_type prop;
+        property_map_type::key_type prop_key;
+
+        rule&lt;&gt; comment_r = comment_p("#");
+        rule&lt;&gt; name_r = (alpha_p | ch_p('_')) &gt;&gt; *( alnum_p | ch_p('_') | ch_p('-'));
+        rule&lt;&gt; key_r = name_r[assign_a(prop_key)];
+        rule&lt;&gt; value_r = (*(anychar_p - eol_p))[insert_at_a(prop, prop_key)];
+
+        rule&lt;&gt; kvpair_r = (key_r &gt;&gt; *blank_p &gt;&gt; ch_p('=') &gt;&gt; *blank_p &gt;&gt; value_r);
+
+        rule&lt;&gt; commentline_r = *blank_p &gt;&gt; comment_r;
+        rule&lt;&gt; emptyline_r = *blank_p &gt;&gt; eol_p;
+        rule&lt;&gt; kvpairline_r = *blank_p &gt;&gt; kvpair_r &gt;&gt; eol_p;
+
+        rule&lt;&gt; prop_r = *( commentline_r || emptyline_r || kvpairline_r ) &gt;&gt; end_p;
+
+        // slurp stream
+        std::string content;
+        while ( !is.eof() ) {
+            std::string line;
+            std::getline(is,line);
+            content += line + "\n";
+        }
+
+        parse_info&lt;&gt; result = parse(content.c_str(), prop_r);
+
+        if ( !result.full ) {
+            throw std::runtime_error("couldn't parse properties");
+        }
+
+        // trim following white spaces in value
+        for ( property_map_type::iterator it = prop.begin(); it != prop.end(); ++it )
+            boost::algorithm::trim(it-&gt;second);
+
+        return prop;
+    }
+
+    int main(int c, char** v)
+    {
+      if ( c != 3 ) {
+        std::cout &lt;&lt; "usage " &lt;&lt; v[0] &lt;&lt; " &lt;property file&gt; &lt;key name&gt;\n";
+        return 0;
+      }
+
+      try {
+        PropertyFileReader::property_map_type map(
+            PropertyFileReader().read(std::ifstream(v[1])) );
+
+        std::cout &lt;&lt; v[2] &lt;&lt; " = " &lt;&lt; map[std::string(v[2])] &lt;&lt; "\n";
+      }
+      catch ( const std::exception&amp; e ) {
+        std::cerr &lt;&lt; "ERROR: " &lt;&lt; e.what() &lt;&lt; "\n";
+        return 1;
+      }
+      return 0;
+    }
+  :tags:
+  - Boost.Spirit
+  - boost
+  :references:
+    :url: 
+    :title: 
+- :id: '6609'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6609
+  :user_name: あにす
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/06/29 12:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Xmlシリアライズが便利です。\n\t"
+  :code: |
+    using System;
+    using System.IO;
+    using System.Xml.Serialization;
+
+    class Program {
+        static void Main(string[] args) {
+            string Path = System.IO.Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]) + "\\ShowPrice.xml";
+            XmlSerializer serializer = new XmlSerializer(typeof(Item));
+
+            //値セット
+            Item item = new Item { Name = "りんご", Cost = 200 };
+
+            //書き込み
+            using(StreamWriter sw = new StreamWriter(Path)) {
+                serializer.Serialize(sw, item);
+            }
+
+            //ファイル内容表示
+            using(StreamReader sr = new StreamReader(Path)) {
+                Console.WriteLine(sr.ReadToEnd());
+            }
+            Console.ReadLine();
+
+            //読み込み,表示
+            using(StreamReader sr = new StreamReader(Path)) {
+                item = (Item)(serializer.Deserialize(sr));
+            }
+            Console.WriteLine("「{0}」は{1}円(税込み)", item.Name, item.Cost * 1.05);
+            Console.ReadLine();
+        }
+    }
+
+    public class Item {
+        public string Name { set; get; }
+        public int Cost { set; get; }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6610'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6610
+  :user_name: あにす
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/504/
+  :language: 
+  :time: 2008/06/29 12:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  WinAPIを叩いてINIファイルを読み書きするコードも挙げようと思ったのですが、\r<br>誰かがC辺りで書いてくれるのを期待します。\r<br>.NETでWinAPI使うとコードが読みにくくなるんですよね。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6611'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6611
+  :user_name: 匿名
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/06/29 13:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">今更ながらの、ini file 形式で、\r\nキーと値は、ファイルに一つだけなのか、そうでないのかよくわかりませんでしたので、特に全部読み出すような処理はしていません。\r\n</pre>\n\t"
+  :code: "using System;\nusing System.IO;\nusing System.Text;\nusing System.Runtime.InteropServices;\n\nclass
+    IniFileHandler {\n  [DllImport(\"KERNEL32.DLL\")]\n  public static extern uint\n
+    \   GetPrivateProfileString(string lpAppName,\n    string lpKeyName, string lpDefault,\n
+    \   StringBuilder lpReturnedString, uint nSize,\n    string lpFileName);\n\n  [DllImport(\"KERNEL32.DLL\",\n
+    \     EntryPoint=\"GetPrivateProfileStringA\")]\n  public static extern uint\n
+    \   GetPrivateProfileStringByByteArray(string lpAppName,\n    string lpKeyName,
+    string lpDefault,\n    byte [] lpReturnedString, uint nSize,\n    string lpFileName);\n\n
+    \ [DllImport(\"KERNEL32.DLL\")]\n  public static extern uint\n    GetPrivateProfileInt(
+    string lpAppName,\n    string lpKeyName, int nDefault, string lpFileName );\n\n
+    \ [DllImport(\"KERNEL32.DLL\")]\n  public static extern uint WritePrivateProfileString(\n
+    \   string lpAppName,\n    string lpKeyName,\n    string lpString,\n    string
+    lpFileName);\n}\n\npublic class Sample {\n  static void Main() {\n\n    // キーと値を書き加える\n
+    \   IniFileHandler.WritePrivateProfileString(\"Sample1\", \"ITEM_NAME\", \"りんご\",
+    @\".\\ShowPrice.ini\");\n    IniFileHandler.WritePrivateProfileString(\"Sample1\",
+    \"ITEM_COST\", \"200\",    @\".\\ShowPrice.ini\");\n    IniFileHandler.WritePrivateProfileString(\"Sample2\",
+    \"ITEM_NAME\", \"みかん\", @\".\\ShowPrice.ini\");\n    IniFileHandler.WritePrivateProfileString(\"Sample2\",
+    \"ITEM_COST\", \"100\",    @\".\\ShowPrice.ini\");\n\n    StringBuilder name =
+    new StringBuilder(1024);\n    uint cost = 0;\n   \n    IniFileHandler.GetPrivateProfileString(\"Sample1\",
+    \"ITEM_NAME\", \"\", name, (uint)name.Capacity, @\".\\ShowPrice.ini\");\n    cost
+    = IniFileHandler.GetPrivateProfileInt(\"Sample1\", \"ITEM_COST\", 0, @\".\\ShowPrice.ini\");\n
+    \   Console.WriteLine(\"「{0}」は{1}円（税込み）\", name, cost*1.05);\n\n    IniFileHandler.GetPrivateProfileString(\"Sample2\",
+    \"ITEM_NAME\", \"\", name, (uint)name.Capacity, @\".\\ShowPrice.ini\");\n    cost
+    = IniFileHandler.GetPrivateProfileInt(\"Sample2\", \"ITEM_COST\", 0, @\".\\ShowPrice.ini\");\n
+    \   Console.WriteLine(\"「{0}」は{1}円（税込み）\", name, cost*1.05);\n\n  }\n}\n"
+  :tags:
+  - C#2.0
+  - iniFile形式
+  :references:
+    :url: /web/20100518184117/http://www.atmarkit.co.jp/fdotnet/dotnettips/039inifile/inifile.html
+    :title: ''
+- :id: '6612'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6612
+  :user_name: g000001
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/06/29 14:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  設定ファイルをS式で書けば、READで読み込めるので便利です。\r<br><br>ファイル： ShowPrice.ini\r<br>((item-name . りんご)\r<br> (item-cost . 200))\r<br><br>出力： \r<br>(show-price)\r<br>=&gt; 「りんご」は210円(税込み)\r<br>"
+  :code: |
+    (defvar *show-price-initfile* "ShowPrice.ini")
+
+    (defun show-price (&amp;optional (file *show-price-initfile*) (out *standard-output*))
+      (with-open-file (str file :direction :input :external-format :utf-8)
+        (let ((in (read str)))
+          (let ((name (cdr (assoc 'item-name in)))
+                (cost (cdr (assoc 'item-cost in))))
+            (with-tax 105 (cost)
+              (format out "「~A」は~D円(税込み)~%" name cost))))))
+
+    (defmacro with-tax (rate (&amp;rest vars) &amp;body body)
+      `(let ,(mapcar (lambda (v) `(,v (truncate (* ,rate ,v) 100))) vars)
+         ,@body))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6613'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6613
+  :user_name: mattsan
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/833/
+  :language: C
+  :time: 2008/06/29 22:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>読み込みは手を抜いてしまいました。</p>\n\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;fstream&gt;
+    #include &lt;sstream&gt;
+    #include &lt;string&gt;
+
+    struct Price
+    {
+        std::string name;
+        int         cost;
+    };
+
+    Price loadPrice(std::istream&amp; in)
+    {
+        Price result = { "", 0 };
+
+        std::string line;
+        while(std::getline(in, line))
+        {
+            std::string::size_type p = line.find("=");
+            std::string key          = line.substr(0, p);
+            std::string value        = line.substr(p + 1);
+            if(key == "ITEM_NAME")
+            {
+                result.name = value;
+            }
+            else if(key == "ITEM_COST")
+            {
+                std::stringstream ss;
+                ss &lt;&lt; value;
+                ss &gt;&gt; result.cost;
+            }
+        };
+
+        return result;
+    }
+
+    void showPrice(const Price&amp; price)
+    {
+        std::cout &lt;&lt; "「" &lt;&lt; price.name &lt;&lt; "」は" &lt;&lt; static_cast&lt;int&gt;(price.cost * 1.05) &lt;&lt; "円(税込み）" &lt;&lt; std::endl;
+    }
+
+    int main(int, char* [])
+    {
+        std::ifstream source("ShowPrice.ini");
+        if(source.good())
+        {
+            Price price = loadPrice(source);
+            showPrice(price);
+        }
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6615'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6615
+  :user_name: genzou
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/06/29 23:05 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">config.groovyという設定ファイルが用意されている場合です。\r\n\r\n------------------------------\r\nITEM_NAME=\"りんご\"\r\nITEM_COST=200\r\n------------------------------\r\n</pre>\n\t"
+  :code: "def showPrice(){\n    def config = new ConfigSlurper().parse(new File('config.groovy').toURL())
+    \n    println \"「${config.ITEM_NAME}」は${(int)(config.ITEM_COST*1.05)}円（税込み） \"\n}\n\nshowPrice()\n"
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '6616'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6616
+  :user_name: nobsun
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/06/30 00:40 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n<p>Item型を定義して、これをReadクラスおよびShowクラスのインスタンスとする\n</p>\n<pre><code>--
+    ShowPrice.ini\nItem { name = りんご, cost = 200 }\n</code></pre>\n<p>日本語を扱うには System.IO.UTF8
+    モジュールを使うので\n   ShowPrice.iniはUTF8で記述する\n</p>\n\n\n\n\t"
+  :code: |
+    import qualified System.IO.UTF8 as U
+    import Text.Printf
+
+    data Item = Item { name :: String, cost :: Int } deriving (Read)
+
+    instance Show Item where
+      show i = printf "「%s」は%d円（税込）" (name i) (cost i * 105 `div` 100)
+
+    main = U.print . (read :: String -&gt; Item) =&lt;&lt; U.readFile "ShowPrice.ini"
+  :tags:
+  - System.IO.UTF8
+  :references:
+    :url: /web/20100518184117/http://code.haskell.org/utf8-string/
+    :title: utf8-string
+- :id: '6617'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6617
+  :user_name: ocean
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/06/30 01:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ConfigParserを使います。ShowPrice.ini は下のような形式で。\r<br><br>[item]\r<br>name=りんご\r<br>cost=200\r<br>"
+  :code: |
+    # coding: shift_jis
+
+    from ConfigParser import ConfigParser
+
+    def main():
+        parser = ConfigParser()
+        parser.read("ShowPrice.ini")
+        name = parser.get("item", "name")
+        cost = int(parser.get("item", "cost"))
+        print "「%s」は%d円（税込み）" % (name, cost * 1.05)
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6618'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6618
+  :user_name: honconn
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/830/
+  :language: C
+  :time: 2008/06/30 02:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>PerlのConfig::Simple かっこいいっす</p>\n\n\t"
+  :code: |
+    -------------------------------------------
+
+    ITEM_NAME=りんご
+    ITEM_COST=200
+
+    -------------------------------------------
+
+    #include &lt;stdio.h&gt;
+    #include &lt;string.h&gt;
+
+    #define SIZE 256
+    #define ITEM_NAME "ITEM_NAME"
+    #define ITEM_COST "ITEM_COST"
+
+    char* get_value(const char *path, const char *key, char *value) {
+        char buf[SIZE];
+        FILE *f;
+        char *key_ptr, *val_ptr;
+
+        f = fopen(path, "r");
+        while(fgets(buf, sizeof buf, f) != NULL) {
+            if((key_ptr = strstr(buf, key)) != NULL) {
+                if((val_ptr = strchr(key_ptr, '=')) != NULL) {
+                    strcpy(value, ++val_ptr);
+                }
+            }
+        }
+        *(value + strlen(value) -1) = '\0';
+        return value;
+    }
+
+    int main(int argc, char *argv[])
+    {
+        char value1[SIZE], value2[SIZE];
+        char path[] = "ShowPrice.ini";
+
+        get_value(path, ITEM_NAME, value1);
+        get_value(path, ITEM_COST, value2);
+        printf("「%s」は%.f円（税込み）", value1, (atoi(value2)*1.05));
+
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6619'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6619
+  :user_name: mattsan
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/833/
+  :language: Delphi
+  :time: 2008/06/30 03:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">久々に使ったので、いろいろ忘れてます。\r\n-- ShowPrice.ini\r\n[doukaku186]\r\nITEM_NAME=りんご\r\nITEM_COST=200</pre>\n\t"
+  :code: |
+    program doukaku186;
+
+    {$APPTYPE CONSOLE}
+
+    uses
+      IniFiles, SysUtils;
+
+    var
+      Name: String;
+      Cost: Integer;
+    begin
+      with TIniFile.Create(ExtractFilePath(ParamStr((0)))+'\ShowPrice.ini') do
+      begin
+        try
+          Name := ReadString('doukaku186', 'ITEM_NAME', '');
+          Cost := ReadInteger('doukaku186', 'ITEM_COST', 0);
+          WriteLn('「', Name, '」は', Cost * 105 div 100, '円（税込み）');
+        finally
+          Free;
+        end;
+      end
+    end.
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6620'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6620
+  :user_name: 99yen
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/591/
+  :language: Other
+  :time: 2008/06/30 04:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  なでしこでは標準でINIファイル関連の関数があるので、それを使います。\r<br>Windows標準形式で以下のようにします。\r<br><br>ShowPrice.ini\r<br>[item]\r<br>name=りんご\r<br>cost=200\n\t"
+  :code: "●ShowPrice\n    Hとは整数 #ハンドル\n    nameとは文字列\n    costとは文字列\n    H=\"{母艦パス}ShowPrice.ini\"のINI開く\n
+    \   name=Hで\"item\"の\"name\"をINI読む\n    cost=Hで\"item\"の\"cost\"をINI読む\n    HのINI閉じる\n
+    \   \"「{name}」は{cost * 1.05}円（税込み）\"を表示 \n\nShowPrice\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6621'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6621
+  :user_name: 99yen
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2008/06/30 04:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>上、言語を選び損ねましたorz</p>\n<p>標準のINI関数ではセクションがないと値を取得できないので、セクションがないファイルの場合は「ハッシュ変換」を使うと便利です。</p>\n<p>ShowPrice.ini\nname=りんご\ncost=200</p>\n\n\t"
+  :code: "●ShowPrice\n    tmpとは文字列\n    nameとは文字列\n    costとは文字列\n    tmp=\"{母艦パス}ShowPrice.ini\"を開いてハッシュ変換\n
+    \   name=tmp＠\"name\"\n    cost=tmp＠\"cost\"\n    \"「{name}」は{cost * 1.05}円（税込み）\"を表示
+    \n\nShowPrice\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6624'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6624
+  :user_name: Nemo
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/685/
+  :language: PostScript
+  :time: 2008/06/30 09:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">普通 PostScript ではプリンタ依存性が大きくなるので外部ファイルの読み込みをユーザープログラムでやることはないと思います。\r\nここでは
+    GhostScript で試しています。\r\n\r\nShowPrice.ini\r\n--- Cut Here ---\r\n/ITEM_NAME (リンゴ)\r\n/ITEM_COST
+    200\r\n--- Cut Here ---\r\n</pre>\n\t"
+  :code: |
+    %!PS
+
+    /ReadPrice { % (filename.ini)  ReadPrice  -dict-
+        &lt;&lt; exch runlibfile &gt;&gt;
+    } bind def
+
+    % --- Test Code ---
+
+    (ShowPrice.ini) ReadPrice
+
+    dup (ITEM_NAME) get
+    (「) print print (」は) print
+
+    dup (ITEM_COST) get
+    1.05 mul 0.5 add cvi 10 string cvs print (円(税込み)) =
+
+    pop
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6625'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6625
+  :user_name: baal
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/827/
+  :language: Scheme
+  :time: 2008/06/30 14:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  S式 で書いて read で読みます。\r<br><br>$ cat ShowPrice.ini\r<br>((item-name . \"りんご\") (item-cost . 200))\r<br>"
+  :code: |
+    (define add-tax (lambda (cost)
+      (inexact-&gt;exact (floor (+ cost (/ (* cost 5) 100))))))
+
+    (define show-price (lambda (file)
+      (let ((data (call-with-input-file file (lambda (in) (read in)))))
+        (let ((item-name (assq 'item-name data)) (item-cost (assq 'item-cost data)))
+          (if (and (pair? item-name) (pair? item-cost))
+            (let ((name (cdr item-name)) (cost (cdr item-cost)))
+              (if (and (string? name) (number? cost))
+                (begin
+                  (display (string-append "「" name "」は"
+                    (number-&gt;string (add-tax cost)) "円（税込み）"))
+                  (newline)))))))))
+
+    (define main (lambda (args)
+      (show-price "ShowPrice.ini")
+      0))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6626'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6626
+  :user_name: kkobayashi
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2008/06/30 14:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>データフレームとして読み込んでから名前つきベクトルに変換することで連想配列と同様の機能が使えますが、</p>\n<p>要素数が２つ程度であればデータフレームのまま使っちゃった方が早いと思います。</p>\n\n\t"
+  :code: |
+    showPrice &lt;- function(){
+        d &lt;- read.table("ShowPrice.ini", sep="=", stringsAsFactors=FALSE)
+        sprintf("「%s」は%d円（税込み）", d$V2[d$V1=="ITEM_NAME"], as.numeric(d$V2[d$V1=="ITEM_COST"])*1.05)
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6629'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6629
+  :user_name: nemo_kaz
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/837/
+  :language: Groovy
+  :time: 2008/06/30 16:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  XMLのフィードの場合\r\n\n\t"
+  :code: "--------------------\n&lt;?xml version=\"1.0\" encoding=\"Shift_JIS\" ?&gt;
+    \n&lt;ShowPrice&gt;\n   &lt;goods ITEM_NAME=\"りんご\" ITEM_COST=\"200\" /&gt;\n
+    \  &lt;goods ITEM_NAME=\"みかん\" ITEM_COST=\"100\" /&gt;\n&lt;/ShowPrice&gt;\n--------------------\n\n\nshowPrice()\n\ndef
+    showPrice() {\n    def ShowPriceData = new XmlParser().parse(new File(args[0]))\n
+    \       print  \"「\"+ShowPriceData.goods[0].'@ITEM_NAME'+\"」は\"\n        println
+    \ \"(\"+((ShowPriceData.goods[0].'@ITEM_COST').toInteger()*1.05).toInteger()+\")円\"\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6630'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6630
+  :user_name: ocean
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/06/30 20:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ctypes+Win32APIで。初期化ファイルは前と同じ。</p>\n\n\t"
+  :code: |
+    # coding: shift_jis
+
+    import ctypes
+    import os
+
+    def main():
+        path = os.path.abspath("ShowPrice.ini")
+        dll = ctypes.windll.kernel32
+        buf = ctypes.create_string_buffer(1000)
+        dll.GetPrivateProfileStringA("item", "name", "", buf, len(buf), path)
+        name = buf.value
+        cost = dll.GetPrivateProfileIntA("item", "cost", 0, path)
+        print "「%s」は%d円（税込み）" % (name, cost * 1.05)
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6631'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6631
+  :user_name: takatoh
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/189/
+  :language: Ruby
+  :time: 2008/06/30 23:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  YAML形式が楽ですね。\r\n\r\n設定ファイル(show_price.yaml)はこんな感じ。\r\n\r\nitem_name:
+    りんご\r\nitem_cost: 200\r\n\n\t"
+  :code: |
+    $KCODE = 'sjis'
+
+    require 'yaml'
+
+    config = YAML.load_file("show_price.yaml")
+
+    puts "「#{config['item_name']}」は#{config['item_cost']}円（税込み）"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6632'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6632
+  :user_name: takatoh
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/189/
+  :language: 
+  :time: 2008/06/30 23:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">いかん。コメントの形式を間違えて設定ファイルのフォーマットが\r\n崩れてしまった。正しくはこう(↓）です。\r\n\r\nitem_name:
+    りんご\r\nitem_cost: 200\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6636'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6636
+  :user_name: turugina
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/760/
+  :language: XSLT
+  :time: 2008/07/01 04:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">こーゆーのが、XSLTの本来の使い方かと。</pre>\n\t"
+  :code: |
+    &lt;xsl:stylesheet version="1.0"
+      xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+      &gt;
+
+      &lt;!-- 以下のようなxml文書を渡します
+      &lt;item name="りんご" cost="200" /&gt;
+      --&gt;
+
+      &lt;xsl:output method="text" encoding="sjis" /&gt;
+
+      &lt;xsl:template match="/item" &gt;
+        &lt;xsl:call-template name="showPrice" /&gt;
+      &lt;/xsl:template&gt;
+
+      &lt;xsl:template name="showPrice"&gt;
+        &lt;xsl:text&gt;「&lt;/xsl:text&gt;
+        &lt;xsl:value-of select="@name" /&gt;
+        &lt;xsl:text&gt;」は&lt;/xsl:text&gt;
+        &lt;xsl:value-of select="floor(@cost * 1.05)" /&gt;
+        &lt;xsl:text&gt;円（税込み）です。&amp;#xA;&lt;/xsl:text&gt;
+      &lt;/xsl:template&gt;
+
+    &lt;/xsl:stylesheet&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6642'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6642
+  :user_name: gandalf
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/780/
+  :language: Other
+  :time: 2008/07/02 06:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">やはりshellかと。\r\nb-shellですが、kshやbashやzshなどでもよいかと。\r\n[ShowProc.ini]\r\nITEM_NAME=りんご\r\nITEM_COST=200</pre>\n\t"
+  :code: |
+    #!/bin/sh
+    . ./ShowPrice.ini
+
+    showPrice()
+    {
+            cat &lt;&lt;- EOF
+            「${ITEM_NAME}」は${ITEM_COST}円（税込み）
+    EOF
+    }
+
+    showPrice
+
+    exit 0
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6643'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6643
+  :user_name: 匿名
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/4/
+  :language: Emacs
+  :time: 2008/07/02 16:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">設定ファイルのフォーマットは S式の連想リストです。\r\nファイルの内容を一時バッファに格納し、そのバッファを\r\nread
+    で読み込んでいます。\r\n\r\nファイル：ShowPrice.ini\r\n((item-name . りんご)\r\n (item-cost . 200))\r\n\r\n&gt;
+    (show-price)\r\n=&gt; \"「りんご」は210円（税込み）\"</pre>\n\t"
+  :code: |
+    (defun show-price ()
+      (let ((call-with-input-file #'(lambda (filename proc)
+                                      (with-temp-buffer
+                                        (progn (insert-file-contents filename)
+                                               (funcall proc (current-buffer))))))
+            (call-with-name&amp;cost #'(lambda (alist proc)
+                                     (funcall proc
+                                              (cdr (assq 'item-name alist))
+                                              (cdr (assq 'item-cost alist)))))
+            (call-with-add-tax #'(lambda (rate base proc)
+                                   (funcall proc (/ (* base (+ rate 100)) 100)))))
+        (funcall call-with-input-file (expand-file-name "ShowPrice.ini")
+                 #'(lambda (in)
+                     (funcall call-with-name&amp;cost (read in)
+                              #'(lambda (name cost)
+                                  (funcall call-with-add-tax 5 cost
+                                           #'(lambda (cost)
+                                               (format "「%s」は%d円（税込み）" name cost)))))))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6656'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6656
+  :user_name: lufia
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/242/
+  :language: Other
+  :time: 2008/07/03 09:41 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Infernoシェルです。\nrunはUNIXシェルの.と同じで、()は配列表記のため''を使ってエスケープ。\nexpr式では、めんどくさいことをしてますね。</p>\n<p>showprice.ini:</p>\n<pre
+    class=\"literal-block\">\nITEM_NAME=りんご\nITEM_COST=200\n</pre>\n\n\t"
+  :code: |
+    #!/dis/sh
+    load std
+    load expr
+
+    run showprice.ini
+
+    echo 「$ITEM_NAME」は${expr $ITEM_COST $ITEM_COST 5 x 100 / +}'円(税込み)'
+  :tags:
+  - Inferno
+  :references:
+    :url: 
+    :title: 
+- :id: '6666'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6666
+  :user_name: syat
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/766/
+  :language: C
+  :time: 2008/07/05 03:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  C#とアプリケーション設定で。\r<br><br>Visual Studio 2005以降では （アプリケーション名）.config という名前のXMLファイルを簡単に扱えます。\r<br>　・GUIから項目の追加削除変更ができる\r<br>　・ラッパクラスや設定ファイル自身を自動生成してくれる\r<br>　・設定の保存（Saveメソッド）や前バージョンからの引継ぎ（Upgradeメソッド）ができる\r<br>など、なかなか高機能です。\r<br><br>"
+  :code: |
+    using System;
+
+    namespace ConfigNs
+    {
+        class Program
+        {
+            static void Main(string[] args)
+            {
+                var setting = Properties.Settings.Default;
+                Console.WriteLine("「{0}」は{1}円（税込み） ",
+                    setting.ItemName,
+                    setting.ItemCost * 1.05);
+                Console.ReadKey();
+            }
+        }
+    }
+
+    設定ファイルの例：ConfigTest.exe.config
+    &lt;?xml version="1.0" encoding="utf-8" ?&gt;
+    &lt;configuration&gt;
+        &lt;configSections&gt;
+            &lt;sectionGroup name="userSettings" type="System.Configuration.UserSettingsGroup, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" &gt;
+                &lt;section name="ConfigNs.Properties.Settings" type="System.Configuration.ClientSettingsSection, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" allowExeDefinition="MachineToLocalUser" requirePermission="false" /&gt;
+            &lt;/sectionGroup&gt;
+        &lt;/configSections&gt;
+        &lt;userSettings&gt;
+            &lt;ConfigNs.Properties.Settings&gt;
+                &lt;setting name="ItemName" serializeAs="String"&gt;
+                    &lt;value&gt;りんご&lt;/value&gt;
+                &lt;/setting&gt;
+                &lt;setting name="ItemCost" serializeAs="String"&gt;
+                    &lt;value&gt;200&lt;/value&gt;
+                &lt;/setting&gt;
+            &lt;/ConfigNs.Properties.Settings&gt;
+        &lt;/userSettings&gt;
+    &lt;/configuration&gt;
+  :tags:
+  - VisualStudio
+  :references:
+    :url: /web/20100518184117/http://dobon.net/vb/dotnet/programing/mysettings.html
+    :title: DOBON.NET：Visual Studioでアプリケーションの設定を保存する
+- :id: '6765'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6765
+  :user_name: 匿名
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/4/
+  :language: PHP
+  :time: 2008/07/19 00:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  PHPです。\r<br>実用性を考えると設定ファイルの形式や例外処理などを検討しないといけませんが、お題に対する回答としてはこんなもんじゃないかと。\n\t"
+  :code: "ファイル：ShowPrice.ini\n----------\nITEM_NAME=りんご\nITEM_COST=200 \n\nファイル：ShowPrice.php\n----------\n&lt;?php\nfunction
+    ShowPrice()\n{\n    $strFile = \"ShowPrice.ini\" ;\n    if ( $hsIni = parse_ini_file(
+    $strFile ))\n    {\n        printf( \"「%s」は%d円（税込み）\\n\", $hsIni['ITEM_NAME']\n
+    \                                         , $hsIni['ITEM_COST']*1.05) ;\n    }\n}\n@ShowPrice()
+    ;\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6958'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/6958
+  :user_name: lunlumo
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/813/
+  :language: Scala
+  :time: 2008/08/03 17:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>こんな感じでしょうか。</p>\n</div>\n\t"
+  :code: |
+    import    java.io.BufferedInputStream
+    import    java.io.FileInputStream
+    import    java.io.FileNotFoundException
+    import    java.util.Properties
+
+    class LoadPrice(val propertyFile:String) {
+        private    var    properties:Properties[String,String] = null
+        private    var    name:String = null
+        private    var    cost:int = 0
+        def load:LoadPrice = {
+            val    properties = new Properties[String,String]
+            val    stream = new BufferedInputStream(new FileInputStream(propertyFile))
+            properties.load(stream)
+            stream.close
+            this.properties = properties
+            this.name = properties.getProperty("ITEM_NAME")
+            this.cost = Integer.parseInt(properties.getProperty("ITEM_COST"))
+            this
+        }
+        def getName:String = { name }
+        def getCost:int = { cost }
+    }
+    object ShowPrice {
+        def showPrice(loaded:LoadPrice):Unit = {
+            Console.printf("「%s」は%d円(税込み)\n",loaded.getName,loaded.getCost)
+        }
+        def main(args:Array[String]):Unit = {
+            try {
+                showPrice(new LoadPrice(args(0)).load)
+            } catch {
+                case e:FileNotFoundException =&gt; Console.println("property file not found.")
+                case e:Exception =&gt; e.printStackTrace
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7573'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/7573
+  :user_name: emasaka
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/09/05 11:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>お題のShowPrice.iniに合わせた回答です。</p>\n\n\t"
+  :code: "showPrice() {\n    local ITEM_NAME ITEM_COST \n    . ShowPrice.ini\n    echo
+    \"「$ITEM_NAME」は$((ITEM_COST + ITEM_COST * 5 / 100))円（税込み）\"\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9360'
+  :parent_id: '186'
+  :url: http://ja.doukaku.org/comment/9360
+  :user_name: rennos
+  :user_url: /web/20100518184117/http://ja.doukaku.org/user/1024/
+  :language: HSP
+  :time: 2009/07/13 16:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>INIファイルを使い、ローマ字を漢字に変換します (林檎、葡萄、蜜柑に対応)。\n作成と削除もスクリプト側が行います。</p>\n\n\t"
+  :code: "#uselib \"kernel32.dll\"\n#func   global WritePrivateProfileString \"WritePrivateProfileStringA\"
+    sptr,sptr,sptr,sptr\n#func   global GetPrivateProfileString   \"GetPrivateProfileStringA\"
+    \  sptr,sptr,sptr,int,int,sptr\n\n#define global SetIniName(%1) sdim INIPATH,
+    260 : INIPATH = str(%1)\n#define global INIPATH _ininame@\n\n#define global WriteIni(%1,%2,%3,%4=INIPATH)
+    WritePrivateProfileString %1,%2,str(%3),%4\n#define global WriteStrIni(%1,%2,%3,%4=INIPATH)
+    WriteIni %1,%2,\"\\\"\"+ (%3) +\"\\\"\",%4\n#define global WriteIntIni WriteIni\n\n#define
+    global GetIni(%1,%2,%3,%4=64,%5=\"\",%6=INIPATH) GetPrivateProfileString %1,%2,str(%5),varptr(%3),%4,%6\n\n#module\n\n#deffunc
+    __ClearnUp onexit\n    gosub *LDestroyTestIniFile@\n    return\n    \n#global\n\n#runtime
+    \"hsp3cl\"\n\n    SetIniName dir_mydoc +\"\\\\_____test_____.ini\"\n    sdim sResult\n
+    \   sdim sInput, 321\n    \n    gosub *LCreateTestIniFile\n    \n    goto *LMainLoop\n
+    \   \n*LMainLoop\n    input  sInput, 320, 1\n    getstr sInput, sInput        //
+    改行を払う\n    if ( sInput == \"exit\" ) { end : end }\n    \n    gosub *LToKanji\n
+    \   \n    print sResult\n    \n    wait 10\n    goto *LMainLoop\n    \n*LToKanji\n
+    \   GetIni \"KanjiFromAlphabet\", sInput, sResult, 320 - 1, \"I don't know.\"\n
+    \   return\n    \n*LCreateTestIniFile\n    sData = {\"\n        [KanjiFromAlphabet]\n
+    \       ringo=\\\"林檎\\\"\n        mikan=\\\"蜜柑\\\"\n        budou=\\\"葡萄\\\"\n
+    \       \n    \"}\n    notesel sData\n    notesave INIPATH\n    noteunsel\n    return\n
+    \   \n*LDestroyTestIniFile\n    exist INIPATH\n    if ( strsize &gt;= 0 ) {\n
+    \       delete INIPATH\n    }\n    return\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

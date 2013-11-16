@@ -1,0 +1,649 @@
+---
+:id: '81'
+:title: FizzBuzz問題の一般化
+:comments:
+- :id: '3923'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/3923
+  :user_name: nobsun
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/11/13 03:46 GMT
+  :vote_count: '5'
+  :vote_score: '5'
+  :body: "\r\n\t  <div class=\"section\">\r\n<p>このお題ではいくつかのパラメータが固定されているので，そのことを利用してプログラムを単純化できます．パラメータが固定されていることを利用するのは最適化のひとつの常道だと思います．\r\n</p>\r\n<p>\r\n</p>\r\n<p>一方で，パラメータを固定せずにプログラムを汎用化して，かつ，いくつかの制約をクリアするというのも楽しめるかもしれませんね．\r\n</p>\r\n<p>\r\n</p>\r\n<p>以前「今日の一行」というブログで，FizzBuzz問題を一般化というお題をやったことがありました．\r\n</p>\r\n<p>\r\n</p>\r\n<p>このときの一般化を今回の問題にあてはめると\r\n</p>\r\n<ul>\n<li>\r\n
+    表示する行の範囲を開始行と終了行で指定できるようにせよ\r\n</li>\r\n<li> 3とFizz，5とBuzz のように固定されている対応をたとえば
+    3とPizz，5とQuzz，7とRazzのように指定できるようにせよ\r\n</li>\r\n</ul>\n<p>となります．このようにお題を勝手に拡張したものに対応したコードを書いてみました．\r\n</p>\r\n<p>\r\n</p>\r\n<p>実行例\r\n</p>\r\n<p>\r\n</p>\r\n<p>
+    % ./gfizzbuzz 101 120 3 Pizz 5 Quzz 7 Razz\r\n</p>\r\n<p> 101: hoge\r\n</p>\r\n<p>
+    102: Pizz\r\n</p>\r\n<p> 103: hoge\r\n</p>\r\n<p> 104: hoge\r\n</p>\r\n<p> 105:
+    PizzQuzzRazz\r\n</p>\r\n<p> 106: hoge\r\n</p>\r\n<p> 107: hoge\r\n</p>\r\n<p>
+    108: Pizz\r\n</p>\r\n<p> 109: hoge\r\n</p>\r\n<p> 110: Quzz\r\n</p>\r\n<p> 111:
+    Pizz\r\n</p>\r\n<p> 112: Razz\r\n</p>\r\n<p> 113: hoge\r\n</p>\r\n<p> 114: Pizz\r\n</p>\r\n<p>
+    115: Quzz\r\n</p>\r\n<p> 116: hoge\r\n</p>\r\n<p> 117: Pizz\r\n</p>\r\n<p> 118:
+    hoge\r\n</p>\r\n<p> 119: Razz\r\n</p>\r\n<p> 120: PizzQuzz\r\n</p>\r\n</div>\r\n\t"
+  :code: "module Main where\r\n\r\nimport Control.Monad\r\nimport Data.List\r\nimport
+    System.Environment\r\nimport Text.Printf\r\n\r\nls :: (Int,String) -&gt; [String]\r\nls
+    (i,s) = cycle $ take i $ s : repeat \"\"\r\n\r\nfbs :: [(Int,String)] -&gt; [String]\r\nfbs
+    = map concat . transpose . map ls\r\n\r\nmktbl :: [String] -&gt; [(Int,String)]\r\nmktbl
+    (i:s:rest) = (read i, s) : mktbl rest\r\nmktbl _          = []\r\n\r\nmain ::
+    IO ()\r\nmain = do {\r\n          ; f:t:rs@(_:_:_) &lt;- getArgs\r\n          ;
+    let (from,to) = (read f,read t)\r\n          ; let tbl = mktbl rs\r\n          ;
+    let ls  = map fst tbl\r\n          ; mapM_ (uncurry printing)\r\n          $ take
+    (to-from+1)\r\n          $ zip [from .. to]\r\n          $ drop (from `mod` foldr
+    lcm 1 ls)\r\n          $ fbs tbl\r\n          }\r\n\r\nprinting :: Int -&gt; String
+    -&gt; IO ()\r\nprinting n s = printf \"%4d: \" n &gt;&gt; when (s == \"\") (putStr
+    \"hoge\") &gt;&gt; putStrLn s\r\n"
+  :tags: []
+  :references:
+    :url: /web/20080221112930/http://karetta.jp/article/blog/oneline/030146
+    :title: FizzBuzzの一般化
+- :id: '3930'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/3930
+  :user_name: にしお
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/13 07:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">これせっかくですから別トピックにしませんか？</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3987'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/3987
+  :user_name: nobsun
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/11/14 04:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <div class=\"section\">\n<p>もう一度、書きおこすのがいいかしらん？それとも管理者さんに別トピックに変更してもらえばいいのかしらん？</p>\n</div>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3993'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/3993
+  :user_name: にしお
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/14 05:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>ためしに移動してみました。</p>\n<p>元のお題：変形Fizz-Buzz問題 どう書く？org</p>\n<p><a
+    class=\"reference\" href=\"/web/20080221112930/http://ja.doukaku.org/77/\">http://ja.doukaku.org/77/</a></p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3996'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/3996
+  :user_name: uho
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/498/
+  :language: C
+  :time: 2007/11/14 06:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">LINQが便利すぎる。\r\nエラー処理は適当です。</pre>\n\t"
+  :code: |
+    static void Main(string[] args)
+    {
+        FizzBuzz( 101,120, "3","Pizz","5","Quzz","7","Razz" );
+        FizzBuzz(   1, 20, "3","Fizz","5","Buzz" );
+    }
+
+    static public void FizzBuzz(int from, int to, params string[] kv)
+    {
+        if (kv.Length % 2 != 0 || from &gt; to )
+            return;
+
+        Dictionary&lt;int, string&gt; fbPair = new Dictionary&lt;int, string&gt;();
+
+        try
+        {
+            for (int i = 0; i &lt; kv.Length; i += 2)
+            {
+                fbPair.Add(int.Parse(kv[i]), kv[i + 1]);
+            }
+        }
+        catch (Exception)
+        {
+            return;
+        }
+
+        for (int i = from; i &lt;= to; ++i)
+        {
+            var x = from y in fbPair
+                    where i % y.Key == 0
+                    orderby y.Key ascending
+                    select y.Value;
+
+            StringBuilder    outStr = new StringBuilder();
+
+            foreach( string v in x )
+            {
+                outStr.Append( v );
+            }
+
+            Console.WriteLine("{0," + to.ToString().Length + "}:{1}", i, outStr.Length != 0 ? outStr.ToString() : "hoge" );
+        }
+    }
+  :tags:
+  - LINQ
+  :references:
+    :url: 
+    :title: 
+- :id: '3999'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/3999
+  :user_name: yohei
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/415/
+  :language: C
+  :time: 2007/11/14 09:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">C#3.0勉強中です．LINQは面白いですね．\r\n空の時のデフォルト値と文字列の連結にもLINQ使ってみました．</pre>\n\t"
+  :code: |
+    using System;
+    using System.Text;
+    using System.Linq;
+
+    class Program {
+        class FBMatch {
+            public int n;
+            public string s;
+        };
+        static void Main(string[] args) {
+            FizzBuzz(101, 120, new FBMatch{n=3, s="Pizz"},
+                new FBMatch{n=5, s="Quzz"}, new FBMatch{n=7, s="Razz"});
+            FizzBuzz(1, 20, new FBMatch{n=3, s="Fizz"}, new FBMatch{n=5, s="Buzz"});
+        }
+        static void FizzBuzz(int from, int to, params FBMatch[] table) {
+            var format = "{0," + to.ToString().Length + "}:{1}";
+
+            for (var i = from; i &lt;= to; i++) {
+                var x = from y in table where i % y.n == 0 select y.s;
+
+                Console.WriteLine(format, i, x.DefaultIfEmpty("hoge")
+                    .Aggregate(new StringBuilder(), (sb, s) =&gt; sb.Append(s)));
+            }
+        }
+    }
+  :tags:
+  - C#3.0
+  - LINQ
+  :references:
+    :url: 
+    :title: 
+- :id: '4008'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4008
+  :user_name: federkasten
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/556/
+  :language: Python
+  :time: 2007/11/14 10:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">初投稿。素直に書いてみました。</pre>\n\t"
+  :code: "import sys\nfrom itertools import izip\n\ndef message(n,conf):\n    s =
+    ''\n    for num, msg in conf:\n        if n % num == 0:\n            s += msg\n\n
+    \   if len(s) == 0:\n        s = 'hoge'\n\n    return s\n\ndef gfizzbuzz( begin,
+    end, conf ):\n    for i in range(begin, end+1):\n        print '%2d:%s' % (i,
+    message(i, conf) )\n\nif __name__ == '__main__':\n    \n    if len(sys.argv) &lt;
+    3 or len(sys.argv) % 2 != 1:\n        sys.exit()\n    \n    begin = int(sys.argv[1])\n
+    \   end = int(sys.argv[2])\n    conf = [ [int(num), msg] for num, msg in izip(
+    sys.argv[3::2], sys.argv[4::2] ) ]\n    \n    gfizzbuzz( begin, end, conf )\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4027'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4027
+  :user_name: shimakuma
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/11/14 15:00 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  これでいいのかな。\r<br><br>javascript:(function(f,t,c,r,k,s){for(r='';s='',f&lt;=t;r+=f+++':'+(s||c.rest)+'&lt;br&gt;')for(k in c)if(f%k==0)s+=c[k];return r})(-42,42,{3:'Pizz',5:'Quzz',7:'Razz',rest:'hoge'})\n\t"
+  :code: |
+    function doukaku81(from, to, config){
+      for(var r = [], i = from, k, s; s = '', i &lt;= to; i++){
+        for(k in config) if(i % k == 0) s += config[k];
+        r.push(i +': '+ (s || config.rest));
+      }
+      return r.join('\n');
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4029'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4029
+  :user_name: あにす
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/504/
+  :language: VB
+  :time: 2007/11/14 15:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  こんなんで如何でしょう？\n\t"
+  :code: |
+    Module Module1
+        Sub Main(ByVal args() As String)
+            For i As Integer = Integer.Parse(args(0)) To Integer.Parse(args(1))
+                Dim Line As String = ""
+                For j As Integer = 1 To args(1).Length - i.ToString.Length
+                    Line &amp;= " "
+                Next
+                Line &amp;= i.ToString &amp; ":"
+                Dim IsHoge As Boolean = True
+                For j As Integer = 2 To args.Length - 2 Step 2
+                    If i Mod Integer.Parse(args(j)) = 0 Then
+                        Line &amp;= args(j + 1)
+                        IsHoge = False
+                    End If
+                Next
+                If IsHoge Then
+                    Line &amp;= "hoge"
+                End If
+                Console.WriteLine(Line)
+            Next
+        End Sub
+    End Module
+  :tags:
+  - VB.NET2005
+  - VB2005
+  :references:
+    :url: 
+    :title: 
+- :id: '4030'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4030
+  :user_name: sumim
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/11/14 15:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk で。\n\t"
+  :code: |
+    | gFizzBuzz |
+    gFizzBuzz := [:ints :specPairs |
+        | cycles |
+        cycles := specPairs pairsCollect: [:size :label |
+            (Array new: size withAll: '') atLast: 1 put: label; yourself].
+        World findATranscript: nil.
+        ints do: [:int |
+            | fizzBuzzStr |
+            fizzBuzzStr := cycles inject: '' into: [:str :cyc | str, (cyc atWrap: int)].
+            fizzBuzzStr ifEmpty: [fizzBuzzStr := #hoge].
+            Transcript cr; show: int printString, ': ', fizzBuzzStr]].
+
+    gFizzBuzz value: (101 to: 120) value: #(3 Pizz 5 Quzz 7 Razz)
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '4031'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4031
+  :user_name: mtsuyugu
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/481/
+  :language: C
+  :time: 2007/11/14 16:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  素直に書いてみました。指定する数に上限があります。\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+
+    #define MAX 32
+    struct pair{
+       int num;
+       char *word;
+    };
+
+    struct pair target[MAX];
+
+    int main (int argc, char *argv[] ){
+       int start, end;
+       int i,f;
+       struct pair *p = target;
+
+       if( argc &lt; 5 ){
+          fprintf(stderr,"usage: %s start end number word [num word]\n", argv[0] );
+          return EXIT_FAILURE;
+       }
+       start = atoi(argv[1]);
+       end = atoi(argv[2]);
+       for( i = 3; i &lt; argc; i++ ){
+          if( i % 2 ){
+             p-&gt;num = atoi(argv[i]);
+             p-&gt;word = "";
+             continue;
+          }
+          (p++)-&gt;word = argv[i];
+       }
+       for( i = start; i &lt;= end; i++ ){
+          printf("%d: ", i);
+          for( f = 0, p = target; p-&gt;num != 0; p++ )
+             (i % p-&gt;num == 0 ) &amp;&amp; printf("%s", p-&gt;word ) &amp;&amp; (f = 1);
+          if( f == 0 )
+             printf("hoge");
+          puts("");
+       }
+
+       return EXIT_SUCCESS;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4032'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4032
+  :user_name: あにす
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/504/
+  :language: Java
+  :time: 2007/11/14 16:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Java始めました。\n\t"
+  :code: |
+    class fFizzBuzz{
+        public static void main(String args[]){
+            for(Integer i = Integer.parseInt(args[0]) ; i &lt;= Integer.parseInt(args[1]) ; i++){
+                String Line = "";
+                for(int j = 1 ; j &lt;= args[1].length() - i.toString().length() ; j++){
+                    Line += " ";
+                }
+                Line += i.toString() + ":";
+                Boolean IsHoge = true;
+                for(int j = 2 ; j &lt;= args.length -2 ; j = j+2){
+                    if(i % Integer.parseInt(args[j]) == 0){
+                        Line += args[j+1];
+                        IsHoge = false;
+                    }
+                }
+                if(IsHoge){
+                    Line += "hoge";
+                }
+                System.out.println(Line);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4037'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4037
+  :user_name: eeweiga
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/537/
+  :language: Perl
+  :time: 2007/11/14 19:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>お題に萌えたので書きました。\n</p>\n\n\n\n\t"
+  :code: "use strict;\nuse warnings;\n\nnFizzBuzz(@ARGV);\n\nsub nFizzBuzz {\n    my
+    $start = shift;\n    my $end = shift;\n    ($start, $end) = ($end, $start) if
+    $start &gt; $end;\n    my %str_of = @_;\n    my $default_str = \"hoge\";\n    \n
+    \   for my $i ($start..$end) {\n        my $str;\n        for my $num (sort keys
+    %str_of) {\n            if ($i % $num == 0) {\n                $str .= $str_of{$num};\n
+    \           }\n        }\n        $str = $default_str unless $str;\n        print
+    \"$i : $str\\n\";\n    }\n    \n    return;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4040'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4040
+  :user_name: SiroKuro
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/540/
+  :language: C
+  :time: 2007/11/15 02:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">LINQ 面白そうだなあ……と思いながら書いた C#2.0 です\r\ngfizzbuzz
+    101 120 3 Pizz 5 Quzz 7 Razz みたいに実行</pre>\n\t"
+  :code: |
+    using System;
+    static class Program {
+        static void Main(string[] args) {
+            int start = int.Parse(args[0]);
+            string[] line = new string[int.Parse(args[1]) - start + 1];
+            for(int i = 2; i + 1 &lt; args.Length; i += 2) {
+                int num = int.Parse(args[i]);
+                for (int j = 0; j &lt; line.Length; j++) {
+                    if ((j + start) % num == 0) {
+                        line[j] += args[i + 1];
+                    }
+                }
+            }
+            foreach(string text in line) {
+                Console.WriteLine("{0}:{1}", start++, text ?? "hoge");
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4044'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4044
+  :user_name: federkasten
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/556/
+  :language: C
+  :time: 2007/11/15 02:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  #4031を参考に、任意の引数の数に拡張してみました。\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n\nstruct
+    pair{\n   int num;\n   char *word;\n};\n\nint main (int argc, char *argv[] ){\n
+    \ \n   int start, end;\n   int i, j;\n   \n   int length_pairs;\n   struct pair*
+    pairs = NULL;\n   \n   if( argc &lt; 3 || argc % 2 != 1 ){\n      fprintf(stderr,\"usage:
+    %s start end number word [num word]\\n\", argv[0] );\n      return EXIT_FAILURE;\n
+    \  }\n   \n   /* parse input */\n   start = atoi(argv[1]);\n   end = atoi(argv[2]);\n
+    \  \n   length_pairs = (argc - 3)/2;\n   \n   if( length_pairs &gt; 0 ) {\n     \n
+    \    pairs = ( struct pair* ) malloc( sizeof( struct pair ) * length_pairs );\n
+    \    \n     for( i=0; i&lt;length_pairs; i++ ){\n       pairs[i].num = atoi( argv[3+2*i]
+    );\n       pairs[i].word = argv[4+2*i];\n     }\n     \n   }\n   \n   /* output
+    */\n   for( i=start; i&lt;=end; i++ ){\n     char out[1024];\n     out[0] = '\\0';\n
+    \    \n     for( j=0; j&lt;length_pairs; j++ ) {\n       if( i % pairs[j].num
+    == 0 ) \n     strcat( out, pairs[j].word );\n     }\n     \n     if( out[0] ==
+    '\\0' ) \n       strcat( out, \"hoge\" );\n     \n     fprintf( stdout, \"%3d:%s\\n\",
+    i, out );\n   }\n\n   return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4045'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4045
+  :user_name: federkasten
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/556/
+  :language: Python
+  :time: 2007/11/15 03:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">前のをジェネレータにした。こっちの方がシンプルか。基本的にはあんまり変わってないです。</pre>\n\t"
+  :code: "import sys\n\ndef gfizzbuzz( begin, end, conf ):\n    for n in xrange( begin,
+    end+1 ):\n        s =''\n        for num, msg in conf:\n            if n % num
+    == 0:\n                s += msg\n\n        if len(s) == 0:\n            s = 'hoge'\n
+    \               \n        yield n, s\n\nif __name__ == '__main__':\n    if len(sys.argv)
+    &lt; 3 or len(sys.argv) % 2 != 1:\n        sys.exit()\n    \n    begin = int(sys.argv[1])\n
+    \   end = int(sys.argv[2])\n    \n    iter = gfizzbuzz( begin, end, zip( [int(x)
+    for x in sys.argv[3::2]], sys.argv[4::2] ) )\n    \n    for n, s in iter: \n        print
+    \"%3d:%s\" % (n,s)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4062'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4062
+  :user_name: ihag
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/560/
+  :language: Ruby
+  :time: 2007/11/15 10:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>まだRuby版がなかったので普通に書いてみた．</p>\n\n\t"
+  :code: |
+    from, to, *params = ARGV
+    from, to = from.to_i, to.to_i
+    factor = {}
+    Hash[*params].each {|key, value| factor[key.to_i] = value}
+    factor_keys = factor.keys.sort
+
+    from.upto(to) do |i|
+      out = ''
+      factor_keys.each do |f|
+        out &lt;&lt; factor[f] if i % f == 0
+      end
+      out = 'hoge' if out.empty?
+      puts "%d: %s" % [i, out]
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4074'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4074
+  :user_name: yuin
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/11/15 14:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>無限リストで。</p>\n<p>ScalaにはStreamという無限リストがありますが、\nいまいち使い勝手がよくありません・・・</p>\n\n\t"
+  :code: "def cycle[A](s:Iterable[A]):Stream[A] = {\n  def rep[A](s:Stream[A], p:int):Stream[A]
+    = {\n    val n = (if(p&lt;s.size){p}else{0})\n    Stream.cons(s(n), rep(s, n+1))\n
+    \ }; rep(s.toStream,0)\n}\n\ndef streams(params:List[String]):List[Stream[String]]
+    = params match {\n  case n::str::rest =&gt; List(cycle(str::List.make(n.toInt-1,\"\")
+    reverse)):::streams(rest)\n  case _ =&gt; Nil\n}\n\ndef orHoge(s:String) = if(s==\"\"){\"hoge\"}else{s}\n\nval
+    from::to::rest = args.toList\n(streams(rest) /: (from.toInt to to.toInt)){(ss,
+    i) =&gt; \n  println(i+\":\"+orHoge(ss.map(_(i-1)).mkString(\"\")))\n  ss\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4079'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4079
+  :user_name: kkobayashi
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2007/11/15 16:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">お題の意図から、引数の指定方法はサンプルと全く同じでなくてもよいと解釈しました。\r\n\r\n&gt;
+    FizzBuzz.g(101, 120, Pizz=3, Quzz=5, Razz=7)\r\n101:hoge\r\n102:Pizz\r\n103:hoge\r\n104:hoge\r\n105:PizzQuzzRazz\r\n106:hoge\r\n107:hoge\r\n108:Pizz\r\n109:hoge\r\n110:Quzz\r\n111:Pizz\r\n112:Razz\r\n113:hoge\r\n114:Pizz\r\n115:Quzz\r\n116:hoge\r\n117:Pizz\r\n118:hoge\r\n119:Razz\r\n120:PizzQuzz</pre>\n\t"
+  :code: |
+    FizzBuzz.g &lt;- function(from, to, ...){
+        v &lt;- character(to-from+1)
+        mapply(function(i, s){v[!from:to%%i] &lt;&lt;- paste(v[!from:to%%i], s, sep="")}, c(...), names(c(...)))
+        v[v == ""] &lt;- "hoge"
+        cat(paste(from:to, v, sep=":"), sep="\n")
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4188'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4188
+  :user_name: horiuchi
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2007/11/18 04:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Javaのprintfを使って書いてみました。</p>\n\n\t"
+  :code: |
+    public class Answer81 {
+        public static void main(String[] args) {
+            String format = String.format("%%0%dd:%%s%%n", args[1].length());
+            for (int index = Integer.parseInt(args[0]), end = Integer.parseInt(args[1]);
+                    index &lt;= end; index++) {
+                String value = "";
+                for (int keyIndex = 2; keyIndex &lt; args.length; keyIndex += 2) {
+                    if (index % Integer.parseInt(args[keyIndex]) == 0) {
+                        value += args[keyIndex + 1];
+                    }
+                }
+                if (value.length() == 0) {
+                    value = "hoge";
+                }
+                System.out.format(format, index, value);
+            }
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '4291'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4291
+  :user_name: cho45
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/579/
+  :language: Ruby
+  :time: 2007/11/21 14:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>ずっと inject のターン。\r</p>\n<p>\r</p>\n<p>ruby1.9
+    です。(each_slice から inject へのチェイン部分で)\r</p>\n<p>\r</p>\n<p>引数 (数は任意) を指定順に連結してます。あとは普通かな?</p>\n</div>\n\t"
+  :code: |
+    # ARGV = %w(101 120 3 Pizz 5 Quzz 7 Razz)
+
+    from, to, = ARGV.shift.to_i, ARGV.shift.to_i
+    params    = ARGV.each_slice(2).inject([]) {|r,(k,v)| r &lt;&lt; [k.to_i, v]}
+    p [from, to, params]
+
+    (from..to).map {|i|
+        [i, params.inject("") {|r,(j,v)|
+            r &lt;&lt; v if i % j == 0
+            r
+        }]
+    }.each do |i,v|
+        puts "%4d: %s" % [i, v.empty?? "hoge" : v]
+    end
+  :tags:
+  - ruby1.9
+  :references:
+    :url: 
+    :title: 
+- :id: '4292'
+  :parent_id: '81'
+  :url: http://ja.doukaku.org/comment/4292
+  :user_name: cho45
+  :user_url: /web/20080221112930/http://ja.doukaku.org/user/579/
+  :language: Ruby
+  :time: 2007/11/21 15:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>params の部分はこっちのほうがいいですね……</p>\n</div>\n\t"
+  :code: |
+    params    = ARGV.each_slice(2).map {|k,v| [k.to_i, v]}
+  :tags: []
+  :references:
+    :url: 
+    :title: 

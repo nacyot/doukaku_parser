@@ -1,0 +1,1299 @@
+---
+:id: '288'
+:title: 箱詰めパズルの判定
+:comments:
+- :id: '9755'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/9755
+  :user_name: ckbx
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/893/
+  :language: 
+  :time: 2009/12/28 10:41 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  <pre class=\"compact\">以下の積み木のうち4つを、\r\n重複を含めてランダムに選びます。\r\nこのとき、それらを4×4の箱に\r\n詰められるかどうかを判定してください。\r\n\r\n1.\r\n■■■■\r\n\r\n2.\r\n■■\r\n■■\r\n\r\n3.\r\n■■■\r\n　■\r\n\r\n4.\r\n■■■\r\n■\r\n\r\n5.\r\n■■\r\n　■■\r\n\r\n例えば、{
+    1, 1, 1, 1 }, { 2, 2, 2, 2 } は箱につめることができますが、\r\n{ 1, 2, 2, 3 } は箱につめることができません。\r\n\r\n余力のある方は、以下の値を求めてみてください。\r\n・箱につめることができる積み木の組み合わせの総数\r\n・上記総数を、異なる詰め方の個数別にカウント\r\n　（箱の回転・裏返しで一致するものは同一視します）</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9795'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/9795
+  :user_name: ところてん
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2010/01/05 09:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">二次元配列とか使ってないです。\r\n整数とビット演算だけでゴリゴリ処理してます。\r\nCに移植しようかどうしようか考え中。</pre>\r\n\t"
+  :code: |
+    #coding:utf-8
+
+    import copy
+
+
+    class packField:
+        @staticmethod
+        def strToBitpattern(patternString):
+            n = 0
+            for s in patternString:
+                if s == 'x':
+                    n |= 1
+                    n &lt;&lt;= 1
+                elif s == '_':
+                    n &lt;&lt;= 1
+                else:
+                    pass
+
+            while n &amp; 1 == 0:
+                n &gt;&gt;= 1
+            return n
+
+        def __init__ (self):
+            self.field = packField.strToBitpattern(
+                    '''
+                    xxxxxx
+                    x____x
+                    x____x
+                    x____x
+                    x____x
+                    xxxxxx
+                    ''')
+
+            self.block = {}
+            self.block['I'] = []
+            self.block['O'] = []
+            self.block['T'] = []
+            self.block['L'] = []
+            self.block['Z'] = []
+
+            self.block['I'].append(
+                packField.strToBitpattern(
+                '''xxxx'''
+                )
+            )
+            self.block['I'].append(
+                packField.strToBitpattern(
+                    '''
+                    x_____
+                    x_____
+                    x_____
+                    x_____
+                    ''')
+            )
+            self.block['O'].append(
+                packField.strToBitpattern(
+                    '''
+                    xx____
+                    xx____
+                    ''')
+            )
+
+            self.block['T'].append(
+                packField.strToBitpattern(
+                    '''
+                    _x____
+                    xxx___
+                    ''')
+            )
+            self.block['T'].append(
+                packField.strToBitpattern(
+                    '''
+                    xxx___
+                    _x____
+                    ''')
+            )
+            self.block['T'].append(
+                packField.strToBitpattern(
+                    '''
+                    x_____
+                    xx____
+                    x_____
+                    ''')
+            )
+            self.block['T'].append(
+                packField.strToBitpattern(
+                    '''
+                    _x____
+                    xx____
+                    _x____
+                    ''')
+            )
+
+            self.block['L'].append(
+                packField.strToBitpattern(
+                    '''
+                    x_____
+                    x_____
+                    xx____
+                    ''')
+            )
+
+            self.block['L'].append(
+                packField.strToBitpattern(
+                    '''
+                    _x____
+                    _x____
+                    xx____
+                    ''')
+            )
+            self.block['L'].append(
+                packField.strToBitpattern(
+                    '''
+                    xx____
+                    _x____
+                    _x____
+                    ''')
+            )
+            self.block['L'].append(
+                packField.strToBitpattern(
+                    '''
+                    xx____
+                    x_____
+                    x_____
+                    ''')
+            )
+            self.block['L'].append(
+                packField.strToBitpattern(
+                    '''
+                    xxx___
+                    x_____
+                    ''')
+            )
+            self.block['L'].append(
+                packField.strToBitpattern(
+                    '''
+                    xxx___
+                    __x___
+                    ''')
+            )
+            self.block['L'].append(
+                packField.strToBitpattern(
+                    '''
+                    x_____
+                    xxx___
+                    ''')
+            )
+            self.block['L'].append(
+                packField.strToBitpattern(
+                    '''
+                    __x___
+                    xxx___
+                    ''')
+
+            )
+            self.block['Z'].append(
+                packField.strToBitpattern(
+                    '''
+                    xx____
+                    _xx___
+                    ''')
+            )
+            self.block['Z'].append(
+                packField.strToBitpattern(
+                    '''
+                    _xx___
+                    xx____
+                    ''')
+            )
+            self.block['Z'].append(
+                packField.strToBitpattern(
+                    '''
+                    x_____
+                    xx____
+                    _x____
+                    ''')
+            )
+            self.block['Z'].append(
+                packField.strToBitpattern(
+                    '''
+                    _x____
+                    xx____
+                    x_____
+                    ''')
+            )
+
+            print self.field
+            print self.block
+
+        def solve(self, blocks, field = None):
+            if blocks == []:
+                return True
+
+            if field == None:
+                field = self.field
+
+            for pattern in self.block[blocks[0]]:
+                while pattern &lt; field:
+                    if field &amp; pattern == 0:
+                        field ^= pattern
+                        result = self.solve(blocks[1:], field)
+                        if result == True:
+                            return True
+                        field ^= pattern
+                    pattern &lt;&lt;= 1
+            return False
+
+
+
+
+    if __name__ == "__main__":
+        p = packField()
+        print 'IIII', p.solve(['I','I','I','I',])
+        print 'OOOO', p.solve(['O','O','O','O',])
+        print 'IOOT', p.solve(['I','O','O','T',])
+        print 'LZLZ', p.solve(['L','Z','L','Z',])
+        print 'IZZZ', p.solve(['I','Z','Z','Z',])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10551'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/10551
+  :user_name: ' U D '
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/1085/
+  :language: 
+  :time: 2010/06/19 03:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>やってることは Ruby と同じ。</p>\n\r\n\t"
+  :code: |
+    ！I = 1
+    ！O = 2
+    ！T = 3
+    ！L = 4
+    ！Z = 5
+
+    四路盤とは配列
+    四路盤=「0,0,0,0{~}0,0,0,0{~}0,0,0,0{~}0,0,0,0」をデータ化
+
+    ミノとは配列
+    ミノ[I] = 「1,1,1,1」をデータ化
+    ミノ[O] = 「1,1{~}1,1」をデータ化
+    ミノ[T] = 「1,1,1{~}0,1,0」をデータ化
+    ミノ[L] = 「1,1,1{~}1,0,0」をデータ化
+    ミノ[Z] = 「1,1,0{~}0,1,1」をデータ化
+
+    ミノ候補とは配列
+    ミノ候補[I] = ミノ[I],(ミノ[I]を表右回転)のミノ達
+    ミノ候補[O] = ミノ[O]のミノ達
+    ミノ候補[T] = ミノ[T],ミノ[T]のミノ達
+    ミノ候補[T]を鏡増
+    ミノ候補[L] = ミノ[L],ミノ[L]を表右回転,ミノ[L]を表反転,ミノ[L]を表左回転のミノ達
+    ミノ候補[L]を鏡増
+    ミノ候補[Z] = ミノ[Z],ミノ[Z]を表右回転のミノ達
+    ミノ候補[Z]を鏡増
+
+    四路盤にI,I,I,Iのミノ達を詰められるかを表示
+    四路盤にO,O,O,Oのミノ達を詰められるかを表示
+    四路盤にI,O,O,Tのミノ達を詰められるかを表示
+    四路盤にL,Z,L,Zのミノ達を詰められるかを表示
+    四路盤にI,Z,Z,Zのミノ達を詰められるかを表示
+
+    ●データ化({文字列}Sを)
+    　結果とは配列。一行とは配列
+    　SをCSV取得して反復
+    　　一行 = 空
+    　　対象を反復、一行にINT(対象)を配列追加
+    　　一行を結果に配列追加
+    　結果を戻す
+
+    ●ミノ達({=?}A,{=?}B,{=?}C,{=?}Dの)
+    　MINOとは配列
+    　もしAが空でなければMINOにAを配列追加
+    　もしBが空でなければMINOにBを配列追加
+    　もしCが空でなければMINOにCを配列追加
+    　もしDが空でなければMINOにDを配列追加
+    　MINOを戻す
+
+    ●表反転({配列 値渡し}Aを)
+    　Aを表右回転を表右回転
+
+    ●表左回転({配列 値渡し}Aを)
+    　Aを表反転を表右回転
+
+    ●配列末尾切り取り({配列}Aの|Aから)
+    　Aの(Aの要素数-1)を配列切り取る
+
+    ●鏡増({配列}MINOSを)
+    　MINOSを反復
+    　　対象を配列逆順
+    　　対象をMINOSに配列追加
+
+    ●詰める({配列 値渡し}盤に{配列 値渡し}MINOSを)
+    　もしMINOSの要素数が0ならば
+    　　盤が完成済みかどうかを戻す
+    　Xとは整数。Yとは整数
+    　Mとは配列。M = MINOSから配列末尾切り取り
+    　残りミノとは配列。仮盤とは配列
+    　Yを0から3まで繰り返し、Xを0から3まで繰り返す
+    　　ミノ候補[M]を反復
+    　　　仮盤 = 盤
+    　　　もし仮盤のX,Yに対象を配置可能ならば
+    　　　　残りミノ=MINOS
+    　　　　もし仮盤に残りミノを詰められるならば
+    　　　　　OKを戻す
+    　NGを戻す
+
+    ●配置可能か({配列 参照渡し}盤の{整数}X,{整数}Yに{配列}MINOを)
+    　Wとは整数=MINOの表列数
+    　Hとは整数=MINOの表行数
+    　もし(X+W＞4)||(Y+H＞4)ならば、NGを戻す
+    　DXとは整数。DYとは整数
+    　DYを0からH-1まで繰り返し、DXを0からW-1まで繰り返す
+    　　盤[Y+DY][X+DX]にMINO[DY][DX]を直接足す
+    　　もしそれが2ならば、NGを戻す
+    　OKを戻す
+
+    ●完成済み({配列}盤が)
+    　Xとは整数。Yとは整数
+    　Yを0から3まで繰り返し、Xを0から3まで繰り返す
+    　　もし盤[Y][X]が1でなければNGを戻す
+    　OKを戻す
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10546'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/10546
+  :user_name: 匿名
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/06/17 04:33 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\r\n\t  <p>Download Free Best Films HD in the World.</p>\n<p>&lt;a href=http://animal-health-online.zanovo.pp.ua/&gt;Harry
+    Potter and the Deathly Hallows (2010) HDTV&lt;/a&gt;</p>\n<p>&lt;a href=http://college-world-series-rosenblatt-stadium.zanovo.pp.ua/&gt;&lt;img&gt;http://kino-manija.ru/images/stories/films_1/harry-potter-and-the-deathly-hallows%201.jpg&lt;/img&gt;&lt;/a&gt;\n&lt;a
+    href=http://advanced-placement-american-politics-review.zanovo.pp.ua/&gt;advanced
+    placement american politics review&lt;/a&gt; 43402 movie theatres\n&lt;a href=http://belfair-hilton-head-reviews.zanovo.pp.ua/&gt;belfair
+    hilton head reviews&lt;/a&gt; book imac to external dvd\n&lt;a href=http://dvd-to-video-transfer.zanovo.pp.ua/&gt;dvd
+    to video transfer&lt;/a&gt; flotv reviews\n&lt;a href=http://czech-babes-naked-free.zanovo.pp.ua/&gt;czech
+    babes naked free&lt;/a&gt; dvd cover we were marshalls\n&lt;a href=http://big-black-dong-free.zanovo.pp.ua/&gt;big
+    black dong free&lt;/a&gt; cosmi forms maker download\n<a class=\"reference\" href=\"/web/20110408110725/http://dvd-swrink.zanovo.pp.ua/\">http://dvd-swrink.zanovo.pp.ua/</a>
+    dvd columbo\n<a class=\"reference\" href=\"/web/20110408110725/http://automatic-watch-instructions.zanovo.pp.ua/\">http://automatic-watch-instructions.zanovo.pp.ua/</a>
+    1996 audi a6 reviews\n<a class=\"reference\" href=\"/web/20110408110725/http://free-explosive-cum-shots-movies.zanovo.pp.ua/\">http://free-explosive-cum-shots-movies.zanovo.pp.ua/</a>
+    download phil keaggy beyond nature\n<a class=\"reference\" href=\"/web/20110408110725/http://bible-dictionary-review.zanovo.pp.ua/\">http://bible-dictionary-review.zanovo.pp.ua/</a>
+    free 1800 voice mail\n<a class=\"reference\" href=\"/web/20110408110725/http://cathy-barry-free-movie-clips.zanovo.pp.ua/\">http://cathy-barry-free-movie-clips.zanovo.pp.ua/</a>
+    free cocoto</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20110408110725/http://california-senate-video.zanovo.pp.ua/
+    :title: Harry Potter and the Deathly Hallows (2010) HDTV
+- :id: '10545'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/10545
+  :user_name: 匿名
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/06/14 10:53 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\r\n\t  <p>Download Free Best Films HD in the World.</p>\n<p>&lt;a href=http://free-birth-help-tennessee.zanovo.pp.ua/&gt;Harry
+    Potter and the Deathly Hallows (2010) HDTV&lt;/a&gt;</p>\n<p>&lt;a href=http://city-show.zanovo.pp.ua/&gt;&lt;img&gt;http://kino-manija.ru/images/stories/films_1/harry-potter-and-the-deathly-hallows%201.jpg&lt;/img&gt;&lt;/a&gt;\n&lt;a
+    href=http://download-70-270-dumps.zanovo.pp.ua/&gt;download 70 270 dumps&lt;/a&gt;
+    downtown file free\n&lt;a href=http://free-devil-mascot-clip-art.zanovo.pp.ua/&gt;free
+    devil mascot clip art&lt;/a&gt; free map of saltillo mexico\n&lt;a href=http://anime-werewolf-transformation-video.zanovo.pp.ua/&gt;anime
+    werewolf transformation video&lt;/a&gt; dhudgus torrent on rapidshare\n&lt;a href=http://concord-cameras-and-driver-downloads.zanovo.pp.ua/&gt;concord
+    cameras and driver downloads&lt;/a&gt; child actors starz\n&lt;a href=http://best-free-photo-software.zanovo.pp.ua/&gt;best
+    free photo software&lt;/a&gt; all seasons jet ski rental\n<a class=\"reference\"
+    href=\"/web/20110408110725/http://aol-version-50-download.zanovo.pp.ua/\">http://aol-version-50-download.zanovo.pp.ua/</a>
+    free diveing powered by phpbb\n<a class=\"reference\" href=\"/web/20110408110725/http://free-beaded-doily-patterns.zanovo.pp.ua/\">http://free-beaded-doily-patterns.zanovo.pp.ua/</a>
+    extraordinary measures trailer\n<a class=\"reference\" href=\"/web/20110408110725/http://extend-a-watch-band.zanovo.pp.ua/\">http://extend-a-watch-band.zanovo.pp.ua/</a>
+    free no join birthday ecard\n<a class=\"reference\" href=\"/web/20110408110725/http://free-mature-pporno-videos.zanovo.pp.ua/\">http://free-mature-pporno-videos.zanovo.pp.ua/</a>
+    black rifle powder online\n<a class=\"reference\" href=\"/web/20110408110725/http://boy-britney-video-psycho.zanovo.pp.ua/\">http://boy-britney-video-psycho.zanovo.pp.ua/</a>
+    carmike cinemas olean</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20110408110725/http://film-studios-sample-business-plans.zanovo.pp.ua/
+    :title: Harry Potter and the Deathly Hallows (2010) HDTV
+- :id: '9797'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/9797
+  :user_name: taisuke_h
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/425/
+  :language: Other
+  :time: 2010/01/05 16:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <div class=\"section\">\n<p>dfs手続きが非常に見づらかったので書き直してみました。\r</p>\n<p>\r</p>\n<p>手続き型言語のようなコードなので、継続を使って脱出すると見通しがだいぶ良くなります。</p>\n</div>\r\n\t"
+  :code: |
+    (define (dfs ht tbl mino-list)
+      (let/cc return
+        (if (null? mino-list) (return #t))
+        (let ([e (tbl-encode tbl)])
+          (if (hash-table-get ht e #f) (return #f))
+          (hash-table-put! ht e #t)
+          (for-each (lambda (m)
+                      (do-ec (: row 0 height) (: col 0 width)
+                        (when (tbl-put tbl m row col)
+                          (if (dfs ht tbl (cdr mino-list)) (return #t))
+                          (tbl-unput-mino tbl m row col))))
+                    (mino-patterns (car mino-list)))
+          #f)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9803'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/9803
+  :user_name: hoge
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/1111/
+  :language: Haskell
+  :time: 2010/01/06 14:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">補題だけに集中してみた。\r\n\r\n＜実行結果＞\r\nCombinations
+    of Blocks: 12\r\n1111: 1\r\n1122: 2\r\n1144: 2\r\n1244: 3\r\n1334: 2\r\n1445:
+    2\r\n2222: 1\r\n2244: 1\r\n3333: 1\r\n3345: 1\r\n4444: 2\r\n4455: 1</pre>\r\n\t"
+  :code: |
+    import Data.List
+    import Data.Maybe(mapMaybe)
+    import Data.Tree(unfoldTree, levels)
+
+    emptyBox = replicate 16 0
+    b1 = [[1, 1, 1, 1]]
+    b2 = [[1, 1], [1, 1]]
+    b3 = [[1, 1, 1], [0, 1, 0]]
+    b4 = [[1, 1, 1], [1, 0, 0]]
+    b5 = [[1, 1, 0], [0, 1, 1]]
+
+    packBlock   [] = []
+    packBlock   b  = [take 4 b] ++ (packBlock $ drop 4 b)
+    unpackBlock b  = concat b
+
+    rotateBlock d b = f d b
+      where f d = case (d `mod` 360 + 360) `mod` 360 of
+                    0   -&gt; id
+                    90  -&gt; reverse . transpose
+                    180 -&gt; rotateBlock  90 . rotateBlock 90
+                    270 -&gt; rotateBlock 180 . rotateBlock 90
+
+    normalizeBlock b = unfoldr f (0, b)
+      where f (4, _     ) = Nothing
+            f (i, (x:xs)) = Just (take 4 $ x ++ (repeat 0), (i + 1, xs))
+            f (i, _     ) = Just (replicate 4 0, (i + 1, []))
+
+    rotatePattern b = unfoldr f b
+      where f b'
+              | null b' = Nothing
+              | any (/= 0) $ last b' = Just (b', [])
+              | otherwise = Just (b', (last b') : (take 3 b'))
+
+    generatePatterns b = nub $ [] ++ (map (f (reverse b)) l) ++ (map (f b) l)
+              where l = [0, 90, 180, 270]
+                    f b d = normalizeBlock $ rotateBlock d b
+
+    allPatterns = map ((map unpackBlock) . f) [b1, b2, b3, b4, b5]
+      where f = concatMap rotatePattern . concatMap (map transpose . rotatePattern . transpose)
+                . generatePatterns
+
+    patternsToBlocks ps = sort $ f ps allPatterns
+      where f []       _           = ""
+            f pps'@(p':ps') (x:xs) = case find (== p') x of
+                                  Just _ -&gt; (show (length allPatterns - length xs)) ++ (f ps' allPatterns)
+                                  otherwise -&gt; f pps' xs
+
+    rawSolutions = map (sort. snd) $ levels (unfoldTree f (emptyBox, [])) !! 4
+      where f x@(b, ps) = (x, mapMaybe g $ concat allPatterns)
+              where g p = if any (1 &lt;) b' then Nothing else Just (b', p : ps)
+                      where b' = zipWith (+) b p
+
+    solutions = map (\x -&gt; (patternsToBlocks (head x), x))
+                $ filterPatterns $ groupByPatterns $ nub rawSolutions
+                  where groupByPatterns = f . g
+                          where f = groupBy (\x1 x2 -&gt; (patternsToBlocks x1) == (patternsToBlocks x2))
+                                g = sortBy  (\x1 x2 -&gt; compare (patternsToBlocks x1) (patternsToBlocks x2))
+                        filterPatterns  = map f
+                          where f [] = []
+                                f (x:xs) = x : (f $ filter g xs)
+                                  where g p =  h x /= h p
+                                        h = sort . concatMap (generatePatterns . packBlock)
+
+    printResult = do
+        -- 箱につめることができる積み木の組み合わせの総数
+        putStrLn $ "Combinations of Blocks: "   ++ (show $ length solutions)
+
+        -- 上記総数を、異なる詰め方の個数別にカウント
+        flip mapM_ solutions $ \x -&gt; putStrLn (fst x ++ ": " ++ (show $ length $ snd x))
+
+        -- 組み合わせをテキストで出力
+        p solutions
+
+      where p = mapM_ f
+            f x = putStrLn "\n---------" &gt;&gt; putStrLn ("&lt;" ++ (fst x) ++ "&gt;") &gt;&gt; mapM_ g (snd x)
+            g x = putStrLn "---------\n" &gt;&gt; mapM_ h (map packBlock x)
+            h x = mapM_ print x &gt;&gt; putStrLn ""
+
+    main = printResult
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9794'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/9794
+  :user_name: taisuke_h
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/425/
+  :language: Scheme
+  :time: 2010/01/05 09:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <div class=\"section\">\n<p>Scheme(Gauche)です。\r</p>\n<p>\r</p>\n<p>積み木は、(行
+    . 列)という整数のペアで表しています。\r</p>\n<p>探索は、DFSで、回転、反転をした積み木をテーブルのすべての位置に置くことを順に試しています。\r</p>\n<p>\r</p>\n<p>#
+    Schemeの練習として書いてみました。あまりきれいに書けている気がしません。</p>\n</div>\r\n\t"
+  :code: |
+    (use util.match)
+    (use gauche.array)
+    (use srfi-1)
+    (use srfi-42)
+
+    (define height 4)
+    (define width 4)
+
+    (define mino-images
+      '(("****")
+
+        ("**"
+         "**")
+
+        ("***"
+         " * ")
+
+        ("***"
+         "*  ")
+
+        ("** "
+         " **")))
+
+
+    ;; string list -&gt; point list
+    (define (mino-image-&gt;points mino-image)
+      (append-map (lambda (row s)
+                    (filter-map (lambda (col)
+                                  ;; asterisk -&gt; (row . col)
+                                  (match (string-ref s col)
+                                    [#\*    (cons row col)]
+                                    [#\space #f]))
+                                (iota (string-length s) 0)))
+                  (iota (length mino-image) 0)
+                  mino-image))
+
+    (define (rotate mino) (map (match-lambda [(row . col) (cons col (- row))]) mino))
+    (define (flip mino) (map (match-lambda [(row . col) (cons col row)]) mino))
+
+    ;; rotate, flip and delete duplicates
+    (define (mino-patterns mino)
+      (define (rotate-n mino n)
+        (let f ([i 0] [m mino] [l '()])
+          (if (&lt; i n) (f (+ i 1) (rotate m) (cons m l)) l)))
+      (delete-duplicates (append (rotate-n mino 4) (rotate-n (flip mino) 4))))
+
+    ;;; Table
+
+    (define (make-tbl row col) (make-array (shape 0 row 0 col) #f))
+    (define tbl-ref array-ref)
+    (define tbl-set  (cut array-set! &lt;&gt; &lt;&gt; &lt;&gt; #t))
+    (define tbl-unset  (cut array-set! &lt;&gt; &lt;&gt; &lt;&gt; #f))
+
+    (define (tbl-encode tbl)
+      (fold (lambda (c n) (match c [#t (+ (* 2 n) 1)] [#f (* 2 n)]))
+            0
+            (array-&gt;list tbl)))
+
+    (define (tbl-put tbl mino row col)
+      (define (valid? tbl mino row col)
+        (every (match-lambda [(d-row . d-col)
+                              (let ([r (+ row d-row)] [c (+ col d-col)])
+                                (and (&gt;= r 0) (&lt; r height)
+                                     (&gt;= c 0) (&lt; c width)
+                                     (not (tbl-ref tbl r c))))])
+               mino))
+      (and (valid? tbl mino row col)
+          (let ()
+            (for-each (match-lambda [(d-row . d-col)
+                                     (tbl-set tbl (+ row d-row) (+ col d-col))])
+                      mino)
+            #t)))
+    (define (tbl-unput-mino tbl mino row col)
+      (for-each (match-lambda [(d-row . d-col)
+                               (tbl-unset tbl (+ row d-row) (+ col d-col))])
+                mino))
+
+    ;; for debug
+    (define (tbl-dump tbl)
+      (format #t "--~%")
+      (do-ec (: row 0 height)
+             (begin
+               (do-ec (: col 0 width)
+                      (format #t "~a" (if (tbl-ref tbl row col) #\* #\space)))
+               (format #t "~%"))))
+
+    (define (dfs ht tbl mino-list)
+      (or (null? mino-list)
+          (let* ([e (tbl-encode tbl)])
+            (and (not (hash-table-get ht e #f))
+                (let ()
+                  (hash-table-put! ht e #t)
+                  (and (not (null? mino-list))
+                       (any?-ec (:list m (mino-patterns (car mino-list)))
+                                (: row 0 height) (: col 0 width)
+                                (if (tbl-put tbl m row col)
+                                    (let1 r (dfs ht tbl (cdr mino-list))
+                                      (tbl-unput-mino tbl m row col)
+                                      r)
+                                    #f))))))))
+
+    (define all-mino-list (map mino-image-&gt;points mino-images))
+
+    (define (can-put-minos? ids)
+      (format #t "~a : ~a~%"
+              ids
+              (if (dfs (make-hash-table) (make-tbl height width)
+                       (map (lambda (id) (ref all-mino-list (- id 1))) ids))
+                  "ok"
+                  "ng")))
+
+    (define (main args)
+      (can-put-minos? '(1 1 1 1))
+      (can-put-minos? '(2 2 2 2))
+      (can-put-minos? '(3 3 3 3))
+      (can-put-minos? '(4 4 4 4))
+      (can-put-minos? '(5 5 5 5))
+      (can-put-minos? '(1 2 2 3))
+      (can-put-minos? '(1 4 4 5))
+      0) ; exit code
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10095'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/10095
+  :user_name: 匿名
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/4/
+  :language: Other
+  :time: 2010/02/04 05:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">Explorerでは積み木の形が認識できませんでした。\r\n地道な解法です。5の裏返しを認めない場合は、置き方の総数は99通り。\r\n認めた場合は117通り。\r\nどちらにしろ、組み合わせの総数は12通り、詰め方は22通りという結果となりました。\r\n実行結果は次のようになります。\r\n\r\n置き方の総数...99\r\n\r\n[1;
+    1; 1; 1]\r\n[1; 1; 2; 2]\r\n[1; 1; 4; 4]\r\n[1; 2; 4; 4]\r\n[1; 3; 3; 4]\r\n[1;
+    4; 4; 5]\r\n[2; 2; 2; 2]\r\n[2; 2; 4; 4]\r\n[3; 3; 3; 3]\r\n[3; 3; 4; 5]\r\n[4;
+    4; 4; 4]\r\n[4; 4; 5; 5]\r\n\r\n組み合わせの総数...12\r\n\r\n異なる詰め方の個数...22\r\n\r\n[1;
+    1; 1; 1]\r\n\r\n1|1|1|1\r\n       \r\n1|1|1|1\r\n       \r\n1|1|1|1\r\n       \r\n1|1|1|1\r\n\r\n\r\n[1;
+    1; 2; 2]\r\n\r\n1|2 2|1\r\n       \r\n1|2 2|1\r\n  - -  \r\n1|2 2|1\r\n       \r\n1|2
+    2|1\r\n\r\n\r\n[1; 1; 2; 2]\r\n\r\n2 2|2 2\r\n       \r\n2 2|2 2\r\n- - - -\r\n1
+    1 1 1\r\n- - - -\r\n1 1 1 1\r\n\r\n\r\n[1; 1; 4; 4]\r\n\r\n1|4 4|1\r\n    -  \r\n1|4|4|1\r\n
+    \      \r\n1|4|4|1\r\n  -    \r\n1|4 4|1\r\n\r\n\r\n[1; 1; 4; 4]\r\n\r\n4|4 4
+    4\r\n  - -  \r\n4 4 4|4\r\n- - - -\r\n1 1 1 1\r\n- - - -\r\n1 1 1 1\r\n\r\n\r\n[1;
+    2; 4; 4]\r\n\r\n4 4|2 2\r\n  -    \r\n4|4|2 2\r\n    - -\r\n4|4 4 4\r\n- - - -\r\n1
+    1 1 1\r\n\r\n\r\n[1; 2; 4; 4]\r\n\r\n4 4|4 4\r\n  - -  \r\n4|2 2|4\r\n       \r\n4|2
+    2|4\r\n- - - -\r\n1 1 1 1\r\n\r\n\r\n[1; 2; 4; 4]\r\n\r\n4 4 4|1\r\n- -    \r\n2
+    2|4|1\r\n    -  \r\n2 2|4|1\r\n- -    \r\n4 4 4|1\r\n\r\n\r\n[1; 2; 4; 4]\r\n\r\n4
+    4 4|4\r\n- -    \r\n2 2|4|4\r\n    -  \r\n2 2|4 4\r\n- - - -\r\n1 1 1 1\r\n\r\n\r\n[1;
+    3; 3; 4]\r\n\r\n3|4 4|1\r\n  -    \r\n3 3|4|1\r\n  -    \r\n3|3|4|1\r\n-   -  \r\n3
+    3 3|1\r\n\r\n\r\n[1; 3; 3; 4]\r\n\r\n4 4|3|1\r\n  -    \r\n4|3 3|1\r\n  -    \r\n4|3|3|1\r\n-
+    \  -  \r\n3 3 3|1\r\n\r\n\r\n[1; 4; 4; 5]\r\n\r\n4 4|5|1\r\n  -    \r\n4|5 5|1\r\n
+    \   -  \r\n4|5|4|1\r\n- -    \r\n4 4 4|1\r\n\r\n\r\n[1; 4; 4; 5]\r\n\r\n4 4|5|4\r\n
+    \ -    \r\n4|5 5|4\r\n    -  \r\n4|5|4 4\r\n- - - -\r\n1 1 1 1\r\n\r\n\r\n[1;
+    4; 4; 5]\r\n\r\n5 5|4 4\r\n-   -  \r\n4|5 5|4\r\n  - -  \r\n4 4 4|4\r\n- - - -\r\n1
+    1 1 1\r\n\r\n\r\n[2; 2; 2; 2]\r\n\r\n2 2|2 2\r\n       \r\n2 2|2 2\r\n- - - -\r\n2
+    2|2 2\r\n       \r\n2 2|2 2\r\n\r\n\r\n[2; 2; 4; 4]\r\n\r\n4|4 4 4\r\n  - -  \r\n4
+    4 4|4\r\n- - - -\r\n2 2|2 2\r\n       \r\n2 2|2 2\r\n\r\n\r\n[3; 3; 3; 3]\r\n\r\n3|3
+    3 3\r\n  -   -\r\n3 3|3|3\r\n  - -  \r\n3|3|3 3\r\n-   -  \r\n3 3 3|3\r\n\r\n\r\n[3;
+    3; 4; 5]\r\n\r\n5 5|4 4\r\n-   -  \r\n3|5 5|4\r\n  - -  \r\n3 3|3|4\r\n  -   -\r\n3|3
+    3 3\r\n\r\n\r\n[4; 4; 4; 4]\r\n\r\n4|4 4 4\r\n  - -  \r\n4 4 4|4\r\n- - - -\r\n4|4
+    4 4\r\n  - -  \r\n4 4 4|4\r\n\r\n\r\n[4; 4; 4; 4]\r\n\r\n4|4 4 4\r\n  - -  \r\n4
+    4 4|4\r\n- - - -\r\n4 4 4|4\r\n  - -  \r\n4|4 4 4\r\n\r\n\r\n[4; 4; 4; 4]\r\n\r\n4
+    4 4|4\r\n- -    \r\n4 4|4|4\r\n  - -  \r\n4|4|4 4\r\n    - -\r\n4|4 4 4\r\n\r\n\r\n[4;
+    4; 5; 5]\r\n\r\n5 5|4 4\r\n-   -  \r\n4|5 5|4\r\n  - -  \r\n4|5 5|4\r\n  -   -\r\n4
+    4|5 5</pre>\r\n\t"
+  :code: "let pieces = [|\n        ((1,0),[|(0,0);(1,0);(2,0);(3,0)|]);((1,1),[|(0,0);(0,1);(0,2);(0,3)|]);\n
+    \       ((2,0),[|(0,0);(1,0);(0,1);(1,1)|]);\n        ((3,0),[|(0,0);(1,0);(2,0);(1,1)|]);((3,1),[|(0,0);(0,1);(1,1);(0,2)|]);
+    \                      \n        ((3,2),[|(0,0);(-1,1);(0,1);(1,1)|]);((3,3),[|(0,0);(-1,1);(0,1);(0,2)|]);
+    \                      \n        ((4,0),[|(0,0);(1,0);(2,0);(0,1)|]);((4,1),[|(0,0);(1,0);(1,1);(1,2)|]);
+    \                      \n        ((4,2),[|(0,0);(0,1);(0,2);(1,2)|]);((4,3),[|(0,0);(-2,1);(-1,1);(0,1)|]);\n
+    \       ((4,4),[|(0,0);(1,0);(2,0);(2,1)|]);((4,5),[|(0,0);(1,0);(0,1);(0,2)|]);
+    \                      \n        ((4,6),[|(0,0);(0,1);(1,1);(2,1)|]);((4,7),[|(0,0);(0,1);(-1,2);(0,2)|]);\n
+    \       ((5,0),[|(0,0);(1,0);(1,1);(2,1)|]);((5,1),[|(0,0);(-1,1);(0,1);(-1,2)|]);
+    \                      \n//5の逆転     ((5,2),[|(0,0);(0,1);(1,1);(1,2)|]);((5,3),[|(0,0);(1,0);(-1,1);(0,1)|])\n
+    \            |]\nlet Mdim = 4 \nlet isPutable p (x,y) (arr:int[,])=\n    let isThatPositionPutable
+    (x1,y1) = \n        0 &lt;= x+x1 &amp;&amp; 0 &lt;= y+y1 &amp;&amp; \n        x+x1&lt;Mdim
+    &amp;&amp; y+y1&lt;Mdim &amp;&amp; arr.[y+y1,x+x1] = 0\n    let (_,rPositions)
+    = p     \n    Array.forall isThatPositionPutable rPositions    \n\nlet put p (x,y)
+    (arr:int[,]) =\n    let putOneLocation pID  (x1,y1) = arr.[y+y1,x+x1] &lt;- pID\n
+    \   let ((pId,_),rPositions) = p\n    Array.map (putOneLocation pId) rPositions\n\nlet
+    remove p (x,y) (arr:int[,]) =\n   let removeOneLocation (x1,y1) = arr.[y+y1,x+x1]
+    &lt;- 0\n   let (_,rPositions) = p     \n   Array.map removeOneLocation rPositions\n\nlet
+    findNextPutLoc (arr:int[,]) =\n    let mutable isFirst = true\n    let  result
+    = ref None\n    for y in 0 .. Mdim-1 do\n       for x in 0 .. Mdim-1 do\n            if
+    arr.[y,x] = 0 &amp;&amp; isFirst then\n                result := Some((x,y))\n
+    \               isFirst &lt;- false\n    !result\n \nlet check in_arr =\n    let
+    sucHisLst = ref []  \n    let rec search hist  (arr:int[,]) =\n        if findNextPutLoc
+    arr = None then //成功!全部置けた\n            sucHisLst := hist:: !sucHisLst\n        else\n
+    \           let (x,y) = (findNextPutLoc arr).Value\n            for p in pieces
+    do\n                if isPutable p (x,y) arr then\n                    put p (x,y)
+    arr |&gt; ignore\n                    search (((x,y),p)::hist) arr\n                    remove
+    p (x,y) arr |&gt; ignore\n    search [] in_arr                       \n    sucHisLst\n
+    \nlet initArr = Array2D.create Mdim Mdim 0 //0は何も置かれていない状態 \nlet solutions = !(check
+    initArr)\n\nprintfn \"\\n置き方の総数...%d\\n\" solutions.Length\n\n///ここから「箱につめることができる積み木の組み合わせの総数」の処理\n\nlet
+    extractKindlistAndSort eles  =\n    let t = List.map (fun ((x,y),((k,_),_)) -&gt;
+    k) eles\n    List.sort t\n\nlet combSet = solutions \n              |&gt; List.map
+    extractKindlistAndSort \n              |&gt; Set.ofList\nSet.iter (fun x -&gt;
+    printfn \"%A\" x ) combSet\nprintfn \"\\n組み合わせの総数...%d\\n\" combSet.Count\n\n///ここから「上記総数を、異なる詰め方の個数別にカウント\n//　（箱の回転・裏返しで一致するものは同一視します）」の処理\n\n//縦横2*Mdimの配列を準備して境界線を引きながら、もう一度積み木を置いていく。\n//それから、回転裏返しで一致するものを除きながら、解のリストを作る。\n\nlet
+    Connected = -1\nlet Discreet = -2\n\nlet put2 p (x,y) (arr:int[,]) =\n    let
+    putOneLocation pID  (x1,y1) = arr.[2*y+2*y1,2*x+2*x1] &lt;- pID\n    let ((pId,_),rPositions)
+    = p\n    Array.map (putOneLocation pId) rPositions\n\nlet upDateConnection (arr:int[,])
+    =\n    for c in 0 .. Mdim - 1 do\n        for r in 0 .. Mdim - 2 do\n            if
+    arr.[2*r,2*c] &lt;&gt; 0 &amp;&amp; arr.[2*r,2*c]=arr.[2*r + 2,2*c] &amp;&amp;
+    arr.[2*r+1,2*c] = 0\n                then arr.[2*r+1,2*c] &lt;- Connected \n            if
+    arr.[2*r,2*c] &lt;&gt; arr.[2*r + 2,2*c] &amp;&amp; arr.[2*r+1,2*c] = 0\n                then
+    arr.[2*r+1,2*c] &lt;- Discreet \n    for c in 0 .. Mdim - 2 do\n        for r
+    in 0 .. Mdim - 1 do\n            if arr.[2*r,2*c] &lt;&gt; 0 &amp;&amp; arr.[2*r,2*c]=arr.[2*r,2*c+2]
+    &amp;&amp; arr.[2*r,2*c+1] = 0\n                then arr.[2*r,2*c+1] &lt;- Connected
+    \n            if arr.[2*r,2*c] &lt;&gt; arr.[2*r,2*c+2] &amp;&amp; arr.[2*r,2*c+1]
+    = 0\n                then arr.[2*r,2*c+1] &lt;- Discreet \n             \nlet
+    rotateArr (arr:int[,]) =\n    let tempArr = Array2D.create (2*Mdim-1) (2*Mdim-1)
+    0\n    for c in 0 .. 2*Mdim - 2 do\n        for r in 0 .. 2*Mdim - 2 do\n            tempArr.[r,(2*Mdim-1)
+    - c - 1 ] &lt;- arr.[c,r]\n    tempArr\n\nlet reverseArr (arr:int[,]) =\n    let
+    tempArr = Array2D.create (2*Mdim-1) (2*Mdim-1) 0\n    for c in 0 .. 2*Mdim - 2
+    do\n        for r in 0 .. 2*Mdim - 2 do\n            tempArr.[r,c] &lt;- arr.[c,r]\n
+    \   tempArr\n\nlet makeUpPA ele =\n    let tempArr = Array2D.create (2*Mdim-1)
+    (2*Mdim-1) 0\n    let t = List.fold (fun s ((x,y),((k,id),a)) -&gt;\n                            put2
+    ((k,id),a)(x,y) tempArr |&gt;ignore;\n                            upDateConnection
+    tempArr|&gt; ignore ;\n                            k :: s) [] ele\n    ((List.sort
+    t),tempArr)\n\nlet isEqueWRR oriP uP oriArr arr = //回転反転すると等しくなる \n    let rec
+    isEqueWRRSub arr1 arr2 count =\n        if count = 4 then \n            false\n
+    \       else\n          if oriArr = arr1 || oriArr = arr2 then\n            true\n
+    \         else\n            isEqueWRRSub (rotateArr arr1) (rotateArr arr2) (count
+    + 1)\n    if oriP &lt;&gt; uP then\n        false\n    else\n        isEqueWRRSub
+    arr (reverseArr arr) 0\n              \nlet makeUpSolutions2 sols =\n    let isInclude
+    ele lst =\n        let (usedPiece,arr0) = ele\n        List.exists(fun (u,arr)
+    -&gt;isEqueWRR usedPiece u arr0 arr) lst\n\n    let rec musSub lst res =\n        match
+    lst with\n        |[]\n            -&gt;res\n        |hd::tl \n            -&gt;let
+    t = makeUpPA hd\n              if (isInclude t res)  then\n                musSub
+    tl res\n              else\n                musSub tl (t::res)\n    musSub sols
+    []\n\n\nlet solutions2 = (makeUpSolutions2 solutions)\n\nprintf \"異なる詰め方の個数...%d\"
+    \ solutions2.Length\n\n///ここまでで答え終わり\n//ここから見やすく答えを表示\n\nlet dispEach (kLst, (arr
+    : int [,])) =\n    printfn \"\\n\\n%A\" kLst\n    for r in 0 .. 2*Mdim - 2 do\n
+    \       printfn \"\"\n        for c in 0 .. 2*Mdim - 2 do\n          let st =
+    \ \n                match arr.[r,c] with\n                |i  when i = 0 || i
+    = Connected -&gt; \" \"\n                |i  when i = Discreet &amp;&amp; (c %
+    2 = 1 &amp;&amp; r % 2 = 0) -&gt; \"|\"\n                |i  when i = Discreet
+    &amp;&amp; (c % 2 = 0 &amp;&amp; r % 2 = 1) -&gt; \"-\"\n                |i   -&gt;
+    i.ToString()\n          printf \"%s\" st     \n    printfn \"\"\n\nList.iter (fun
+    ele -&gt; dispEach ele) (List.sort solutions2)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10541'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/10541
+  :user_name: 匿名
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/06/09 06:55 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\r\n\t  <p>Download Free Best Films HD in the World.</p>\n<p>&lt;a href=http://christian-cross-clip-art.zanuda.pp.ua/&gt;Harry
+    Potter and the Deathly Hallows (2010) HDTV&lt;/a&gt;</p>\n<p>&lt;a href=http://blah-blah-blah-download.zanuda.pp.ua/&gt;&lt;img&gt;http://kino-manija.ru/images/stories/films_1/harry-potter-and-the-deathly-hallows%201.jpg&lt;/img&gt;&lt;/a&gt;\n&lt;a
+    href=http://female-christian-artist-2000.zanuda.pp.ua/&gt;female christian artist
+    2000&lt;/a&gt; covert blu ray\n&lt;a href=http://ab-core-belt-tv.zanuda.pp.ua/&gt;ab
+    core belt tv&lt;/a&gt; buy msoffice online\n&lt;a href=http://adult-dvd-collection.zanuda.pp.ua/&gt;adult
+    dvd collection&lt;/a&gt; capsa 68 download\n&lt;a href=http://free-lessons-on-the-banjo.zanuda.pp.ua/&gt;free
+    lessons on the banjo&lt;/a&gt; college course online saddlestring wyoming\n&lt;a
+    href=http://dartsy-model-gallery-pairs-free.zanuda.pp.ua/&gt;dartsy model gallery
+    pairs free&lt;/a&gt; backmasking in movies\n<a class=\"reference\" href=\"/web/20110408110725/http://abudhabi-cinema.zanuda.pp.ua/\">http://abudhabi-cinema.zanuda.pp.ua/</a>
+    editable free recipe cards\n<a class=\"reference\" href=\"/web/20110408110725/http://camera-film-movie.zanuda.pp.ua/\">http://camera-film-movie.zanuda.pp.ua/</a>
+    disney halloween movies bogie\n<a class=\"reference\" href=\"/web/20110408110725/http://big-tit-fuck-massage-movies.zanuda.pp.ua/\">http://big-tit-fuck-massage-movies.zanuda.pp.ua/</a>
+    ba music education online\n<a class=\"reference\" href=\"/web/20110408110725/http://adobe-premier-pro-training-video.zanuda.pp.ua/\">http://adobe-premier-pro-training-video.zanuda.pp.ua/</a>
+    assparade laundr o buns torrent\n<a class=\"reference\" href=\"/web/20110408110725/http://free-adobe-acrobat-pro-download.zanuda.pp.ua/\">http://free-adobe-acrobat-pro-download.zanuda.pp.ua/</a>
+    casino empire download</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20110408110725/http://dodge-charger-brake-clips.zanuda.pp.ua/
+    :title: Harry Potter and the Deathly Hallows (2010) HDTV
+- :id: '9798'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/9798
+  :user_name: hoge
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/1111/
+  :language: Haskell
+  :time: 2010/01/05 13:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">　先に全数検索するコードを書いて、後でブロックが置けるか調べるコードを追加したら、\r\nグチャグチャになってしまいました。テトリスと違って裏返しもカウントしてます。\r\n\r\n＜実行結果＞\r\n*Main&gt;
+    main\r\n&lt;1111&gt;\r\n[0,0,0,0]\r\n[0,0,0,0]\r\n[0,0,0,0]\r\n[1,1,1,1]\r\n\r\n[0,0,0,0]\r\n[0,0,0,0]\r\n[1,1,1,1]\r\n[0,0,0,0]\r\n\r\n[0,0,0,0]\r\n[1,1,1,1]\r\n[0,0,0,0]\r\n[0,0,0,0]\r\n\r\n[1,1,1,1]\r\n[0,0,0,0]\r\n[0,0,0,0]\r\n[0,0,0,0]\r\n...\r\n&lt;4455&gt;\r\n[0,0,0,0]\r\n[0,0,0,0]\r\n[0,1,1,0]\r\n[0,0,1,1]\r\n\r\n[0,0,0,0]\r\n[1,0,0,0]\r\n[1,0,0,0]\r\n[1,1,0,0]\r\n\r\n[0,0,1,1]\r\n[0,0,0,1]\r\n[0,0,0,1]\r\n[0,0,0,0]\r\n\r\n[1,1,0,0]\r\n[0,1,1,0]\r\n[0,0,0,0]\r\n[0,0,0,0]\r\n\r\nNumber
+    of solutions: 70\r\n\r\nCan put {1,1,2,2}? : True\r\nCan put {2,3,4,5}? : False\r\nCan
+    put {4,4,5,5}? : True</pre>\r\n\t"
+  :code: |
+    import Data.List
+    import Data.Maybe(isJust, mapMaybe)
+    import Data.Tree(unfoldTree, levels)
+
+    initialState = replicate 16 0 -- 空箱
+    b1 = [[1, 1, 1, 1]]
+    b2 = [[1, 1], [1, 1]]
+    b3 = [[1, 1, 1], [0, 1, 0]]
+    b4 = [[1, 1, 1], [1, 0, 0]]
+    b5 = [[1, 1, 0], [0, 1, 1]]
+
+    packBox [] = []
+    packBox b  = [take 4 b] ++ (packBox $ drop 4 b)
+    unpackBox b = concat b
+
+    rotate b d = case (d `mod` 360 + 360) `mod` 360 of
+      0 -&gt; b
+      90 -&gt; reverse $ transpose b
+      180 -&gt; flip rotate  90 $ rotate b 90
+      270 -&gt; flip rotate 180 $ rotate b 90
+
+    normalize b = unfoldr f (0, b) --箱の大きさに正規化
+      where f (4, _     ) = Nothing
+            f (i, (x:xs)) = Just (take 4 $ x ++ (repeat 0), (i + 1, xs))
+            f (i, _     ) = Just ([0, 0, 0, 0], (i + 1, []))
+
+    horizontalPatterns b = if any (/= 0) $ b' !! 3 then [b]
+                           else b : (horizontalPatterns $ transpose $ [last b'] ++ (take 3 b'))
+      where b' = transpose b
+
+    verticalPatterns   b = if any (/= 0) $ b !! 3 then [b]
+                           else b : (verticalPatterns $ [last b] ++ (take 3 b))
+
+    -- 指定されたブロックの全ての配置パターンを生成
+    generatePatterns b = concatMap verticalPatterns $ concatMap horizontalPatterns ps
+      where ps = nub
+                 $ (normalize $ reverse b) : (normalize $ reverse $ rotate b 90) -- 反転パターン
+                 : (map (\d -&gt; normalize $ rotate b d) [0, 90, 180, 270])        -- 回転パターン
+
+    listOfPatterns = map ((map unpackBox) . generatePatterns) [b1, b2, b3, b4, b5]
+
+    listOfBlocks ps = sort $ f ps listOfPatterns
+      where f []       _           = ""
+            f _        []          = ""
+            f pps'@(p':ps') (x:xs) = case find (== p') x of
+                                  Just i -&gt; (show (length listOfPatterns - length xs)) ++ (f ps' listOfPatterns)
+                                  otherwise -&gt; f pps' xs
+
+    solutions = sortBy (\a b -&gt; compare (fst a) (fst b)) $ map (\x -&gt; (listOfBlocks x, x))
+                $ nub $ map (sort . snd) $ flip (!!) 4 $ levels $ unfoldTree f (initialState, [])
+      where f x@(b, ps) = (x, mapMaybe g $ concat listOfPatterns)
+              where g p = if any (1 &lt;) b' then Nothing else Just (b', p : ps)
+                      where b' = zipWith (+) b p
+
+    solve s = let s' = sort s in
+                if isJust $ find (\x -&gt; s' == (fst x)) solutions then True else False
+
+    main = do mapM_ f solutions
+              putStrLn $ "Number of solutions: " ++ (show $ length solutions)
+              putStrLn ""
+              putStr "Can put {1,1,2,2}? : "
+              print $ solve "1122"
+              putStr "Can put {2,3,4,5}? : "
+              print $ solve "2345"
+              putStr "Can put {4,4,5,5}? : "
+              print $ solve "4455"
+      where f x = do putStrLn $ "&lt;" ++ (fst x) ++ "&gt;"
+                     mapM_ g $ map packBox $ snd x
+              where g x' = do mapM_ print x'
+                              putStrLn ""
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9796'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/9796
+  :user_name: ところてん
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2010/01/05 09:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>import copyは不要ですね。整数演算してなかったときの名残です。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10542'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/10542
+  :user_name: 匿名
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/06/10 02:01 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\r\n\t  <p>Download Free Best Films HD in the World.</p>\n<p>&lt;a href=http://elegance-constitution-pocket-watch.zanuda.pp.ua/&gt;Harry
+    Potter and the Deathly Hallows (2010) HDTV&lt;/a&gt;</p>\n<p>&lt;a href=http://free-club-pogo-promo-code.zanuda.pp.ua/&gt;&lt;img&gt;http://kino-manija.ru/images/stories/films_1/harry-potter-and-the-deathly-hallows%201.jpg&lt;/img&gt;&lt;/a&gt;\n&lt;a
+    href=http://dog-knot-cum-trailer.zanuda.pp.ua/&gt;dog knot cum trailer&lt;/a&gt;
+    free fake magazine cover\n&lt;a href=http://comdey-show-san-diego.zanuda.pp.ua/&gt;comdey
+    show san diego&lt;/a&gt; detoxifying foot patch tv commercial\n&lt;a href=http://apple-ipod-shuffle-dock.zanuda.pp.ua/&gt;apple
+    ipod shuffle dock&lt;/a&gt; escaflowne movie images\n&lt;a href=http://consumer-reviews-gas-range.zanuda.pp.ua/&gt;consumer
+    reviews gas range&lt;/a&gt; free jet express\n&lt;a href=http://bellingham-airbrush-artist.zanuda.pp.ua/&gt;bellingham
+    airbrush artist&lt;/a&gt; accura legend review mirror\n<a class=\"reference\"
+    href=\"/web/20110408110725/http://colibri-deer-pocket-watch.zanuda.pp.ua/\">http://colibri-deer-pocket-watch.zanuda.pp.ua/</a>
+    david walliams sex tape\n<a class=\"reference\" href=\"/web/20110408110725/http://acne-free-diets.zanuda.pp.ua/\">http://acne-free-diets.zanuda.pp.ua/</a>
+    free erotic stiories\n<a class=\"reference\" href=\"/web/20110408110725/http://download-art-instruction-videos.zanuda.pp.ua/\">http://download-art-instruction-videos.zanuda.pp.ua/</a>
+    free educational interactive kid games\n<a class=\"reference\" href=\"/web/20110408110725/http://best-christmas-pageant-ever-downloads.zanuda.pp.ua/\">http://best-christmas-pageant-ever-downloads.zanuda.pp.ua/</a>
+    attainment movie\n<a class=\"reference\" href=\"/web/20110408110725/http://free-kyocera-mobile-phone-ringtones.zanuda.pp.ua/\">http://free-kyocera-mobile-phone-ringtones.zanuda.pp.ua/</a>
+    free acroread</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20110408110725/http://dvd-overnight.zanuda.pp.ua/
+    :title: Harry Potter and the Deathly Hallows (2010) HDTV
+- :id: '9801'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/9801
+  :user_name: uho
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/498/
+  :language: C
+  :time: 2010/01/06 08:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>ごちゃごちゃと長くなってしまったが、答えは出たっぽいので投稿。組み合わせ数：11、重複の無い詰め方数：15</p>\n\r\n\t"
+  :code: "using System;\nusing System.Collections.Generic;\nusing System.Linq;\nusing
+    System.Text;\n\nnamespace hakodume\n{\n    class Program\n    {\n        static
+    void Main(string[] args)\n        {\n            var a1 = new Mino(new int[,]{\n
+    \                           {1,1,1,1}\n                        }, 1);\n            var
+    a2 = new Mino(new int[,]{\n                            {1},\n                            {1},\n
+    \                           {1},\n                            {1}\n                        },
+    1);\n\n            var b = new Mino(new int[,]{\n                            {2,2},\n
+    \                           {2,2}\n                       }, 2);\n\n            var
+    c1 = new Mino(new int[,]{\n                            {3,3,3},\n                            {0,3,0}\n
+    \                       },3);\n            var c2 = new Mino(new int[,]{\n                            {3,0},\n
+    \                           {3,3},\n                            {3,0}\n                        },3);\n
+    \           var c3 = new Mino(new int[,]{\n                            {0,3},\n
+    \                           {3,3},\n                            {0,3}\n                        },3);\n
+    \           var c4 = new Mino(new int[,]{\n                            {0,3,0},\n
+    \                           {3,3,3}\n                        },3);\n            var
+    d1 = new Mino(new int[,]{\n                            {4,4,4},\n                            {4,0,0}\n
+    \                       },4);\n            var d2 = new Mino(new int[,]{\n                            {4,4},\n
+    \                           {0,4},\n                            {0,4}\n                        },4);\n
+    \           var d3 = new Mino(new int[,]{\n                            {0,0,4},\n
+    \                           {4,4,4}\n                        },4);\n            var
+    d4 = new Mino(new int[,]{\n                            {4,0},\n                            {4,0},\n
+    \                           {4,4}\n                        },4);\n            var
+    e1 = new Mino(new int[,]{\n                            {5,5,0},\n                            {0,5,5}\n
+    \                       },5);\n            var e2 = new Mino(new int[,]{\n                            {0,5},\n
+    \                           {5,5},\n                            {5,0}\n                        },5);\n\n
+    \           var minos = new List&lt;Mino&gt; { a1, a2, b, c1, c2, c3, c4, d1,
+    d2, d3, d4, e1, e2 };\n\n            Box box = new Box(minos);\n\n            box.Solve(1);\n
+    \           box.DisplayAll();\n        }\n\n        class Mino\n        {\n            private
+    int[,] mino;\n\n            public Mino( int[,] mino, int pattern )\n            {\n
+    \               this.mino = mino;\n                this.Pattern = pattern;\n            }\n\n
+    \           public int RowLength { get { return mino.GetLength(0); } }\n            public
+    int ColomnLength { get { return mino.GetLength(1); } }\n            public int
+    Pattern { get; private set; }\n            public int GetValue(int row, int col)\n
+    \           {\n                return mino[row, col];\n            }\n        }\n\n
+    \       class Box\n        {\n            private int[,] box = {\n                           {0,0,0,0},\n
+    \                          {0,0,0,0},\n                           {0,0,0,0},\n
+    \                          {0,0,0,0}\n                       };\n            private
+    int RowLength { get { return box.GetLength(0); } }\n            private int ColomnLength
+    { get { return box.GetLength(1); } }\n            private int GetValue(int row,
+    int col)\n            {\n                return box[row, col];\n            }\n
+    \           private void SetValue(int row, int col, int value)\n            {\n
+    \               box[row, col] = value;\n            }\n\n            private List&lt;Mino&gt;
+    minos;\n\n            public Box(List&lt;Mino&gt; minos)\n            {\n                this.minos
+    = minos;\n            }\n\n            private List&lt;int[,]&gt; boxes = new
+    List&lt;int[,]&gt;();\n            private int[] pattern = new int[4];\n            private
+    List&lt;int[]&gt; patterns = new List&lt;int[]&gt;();\n\n            public void
+    DisplayAll()\n            {\n                foreach (var b in boxes)\n                {\n
+    \                   for (int i = 0; i &lt; RowLength; ++i)\n                    {\n
+    \                       for (int j = 0; j &lt; ColomnLength; ++j)\n                        {\n
+    \                           Console.Write(\"{0}\", b[i, j]);\n                        }\n
+    \                       Console.WriteLine();\n                    }\n                    Console.WriteLine();\n
+    \               }\n\n                foreach (var p in patterns)\n                {\n
+    \                   foreach (var i in p)\n                    {\n                        Console.Write(i);\n
+    \                   }\n                    Console.WriteLine();\n                }\n\n
+    \               Console.WriteLine(\"組み合わせ積み木のパターン数：{0}\", patterns.Count);\n                Console.WriteLine(\"重複のない詰め方の数：{0}\",
+    boxes.Count);\n            }\n            \n            private void Record()\n
+    \           {\n                var pattern_sorted = pattern.Clone() as int[];\n
+    \               Array.Sort&lt;int&gt;(pattern_sorted);\n\n                if (!ExistPatternMino(pattern_sorted))\n
+    \               {\n                    patterns.Add(pattern_sorted);\n                }\n\n
+    \               if (!ExistPatternBox(box))\n                {\n                    boxes.Add(box.Clone()
+    as int[,]);\n                }\n            }\n\n            private bool ExistPatternMino(int[]
+    pattern)\n            {\n                return patterns.Any( p =&gt; EqualArray(
+    p, pattern ) );\n            }\n\n            private bool ExistPatternBox(int[,]
+    box)\n            {\n                return boxes.Any(r =&gt; EqualBox(r, box))
+    ||\n                    boxes.Any(r =&gt; EqualBox(r, Rotate(box, Rotation._90
+    ))) ||\n                    boxes.Any(r =&gt; EqualBox(r, Rotate(box, Rotation._180
+    ))) ||\n                    boxes.Any(r =&gt; EqualBox(r, Rotate(box, Rotation._270
+    ))) ||\n                    boxes.Any(r =&gt; EqualBox(r, Rotate(box, Rotation._y
+    ))) ||\n                    boxes.Any(r =&gt; EqualBox(r, Rotate(box, Rotation._90y
+    ))) ||\n                    boxes.Any(r =&gt; EqualBox(r, Rotate(box, Rotation._180y
+    ))) ||\n                    boxes.Any(r =&gt; EqualBox(r, Rotate(box, Rotation._270y
+    )));\n            }\n\n            private int[,] Rotate(int[,] box_s, Rotation
+    rotation)\n            {\n                int[,] box_d = {\n                           {0,0,0,0},\n
+    \                          {0,0,0,0},\n                           {0,0,0,0},\n
+    \                          {0,0,0,0}\n                       };\n                \n
+    \               switch (rotation)\n                {\n                    case
+    Rotation._90:\n                        for (int i = 0; i &lt; 4; i++)\n                        {\n
+    \                           for (int j = 0; j &lt; 4; j++)\n                            {\n
+    \                               box_d[3 - j, i] = box_s[i, j];\n                            }\n
+    \                       }\n                        break;\n                    case
+    Rotation._180:\n                        for (int i = 0; i &lt; 4; i++)\n                        {\n
+    \                           for (int j = 0; j &lt; 4; j++)\n                            {\n
+    \                               box_d[3 - i, 3 - j] = box_s[i, j];\n                            }\n
+    \                       }\n                        break;\n                    case
+    Rotation._270:\n                        for (int i = 0; i &lt; 4; i++)\n                        {\n
+    \                           for (int j = 0; j &lt; 4; j++)\n                            {\n
+    \                               box_d[j, 3 - i] = box_s[i, j];\n                            }\n
+    \                       }\n                        break;\n                    case
+    Rotation._y:\n                        for (int i = 0; i &lt; 4; i++)\n                        {\n
+    \                           for (int j = 0; j &lt; 4; j++)\n                            {\n
+    \                               box_d[3 - i, j] = box_s[i, j];\n                            }\n
+    \                       }\n                        break;\n                    case
+    Rotation._90y:\n                        for (int i = 0; i &lt; 4; i++)\n                        {\n
+    \                           for (int j = 0; j &lt; 4; j++)\n                            {\n
+    \                               box_d[j, i] = box_s[i, j];\n                            }\n
+    \                       }\n                        break;\n                    case
+    Rotation._180y:\n                        for (int i = 0; i &lt; 4; i++)\n                        {\n
+    \                           for (int j = 0; j &lt; 4; j++)\n                            {\n
+    \                               box_d[i, 3 - j] = box_s[i, j];\n                            }\n
+    \                       }\n                        break;\n                    case
+    Rotation._270y:\n                        for (int i = 0; i &lt; 4; i++)\n                        {\n
+    \                           for (int j = 0; j &lt; 4; j++)\n                            {\n
+    \                               box_d[3 - j, 3 - i] = box_s[i, j];\n                            }\n
+    \                       }\n                        break;\n                }\n\n
+    \               return box_d;\n            }\n\n            private enum Rotation\n
+    \           {\n                _90,\n                _180,\n                _270,\n
+    \               _y,\n                _90y,\n                _180y,\n                _270y\n
+    \           }\n\n            private bool EqualBox(int[,] lhs, int[,] rhs)\n            {\n
+    \               return Enumerable.Range(0, lhs.GetLength(0)).All(i =&gt;\n                    Enumerable.Range(0,
+    lhs.GetLength(1)).All(j =&gt;\n                        lhs[i, j] == rhs[i, j]\n
+    \                   ));\n            }\n\n            private bool EqualArray(int[]
+    lhs, int[] rhs)\n            {\n                return Enumerable.Range(0, lhs.Length).All(i
+    =&gt; lhs[i] == rhs[i]);\n            }\n\n            private bool CanPut(int
+    row, int col, Mino mino)\n            {\n                if (row + mino.RowLength
+    &gt; RowLength ||    col + mino.ColomnLength &gt; ColomnLength)\n                {\n
+    \                   return false;\n                }\n\n                return
+    Enumerable.Range(0, mino.RowLength).Any(i =&gt;\n                    Enumerable.Range(0,
+    mino.ColomnLength).Any(j =&gt;\n                        GetValue(row + i, col
+    + j) != 0 &amp;&amp; mino.GetValue(i, j) != 0)) ? false : true;\n            }\n\n
+    \           private void Put(int row, int col, Mino mino, int n)\n            {\n
+    \               for (int i = 0; i &lt; mino.RowLength; i++)\n                {\n
+    \                   for (int j = 0; j &lt; mino.ColomnLength; j++)\n                    {\n
+    \                       if (mino.GetValue(i, j) != 0)\n                        {\n
+    \                           SetValue(row+i, col+j, mino.GetValue(i, j));\n                        }\n
+    \                   }\n                }\n                pattern[n - 1] = mino.Pattern;\n
+    \           }\n\n            private void Remove(int row, int col, Mino mino)\n
+    \           {\n                for (int i = 0; i &lt; mino.RowLength; i++)\n                {\n
+    \                   for (int j = 0; j &lt; mino.ColomnLength; j++)\n                    {\n
+    \                       if (mino.GetValue(i, j) != 0)\n                        {\n
+    \                           SetValue(row+i, col+j, 0);\n                        }\n
+    \                   }\n                }\n            }\n\n            public
+    void Solve(int n)\n            {\n                for (int row = 0; row &lt; RowLength;
+    row++)\n                {\n                    if (CheckFilledRow(row))\n                    {\n
+    \                       continue;\n                    }\n\n                    for
+    (int col = 0; col &lt; ColomnLength; col++)\n                    {\n                        if
+    (CheckFilledColomn(col))\n                        {\n                            continue;\n
+    \                       }\n\n                        foreach (var mino in minos)\n
+    \                       {\n                            if (CanPut(row, col, mino))\n
+    \                           {\n                                Put(row, col, mino,
+    n);\n\n                                if (n != 4)\n                                {\n
+    \                                   Solve(n + 1);\n                                }\n
+    \                               else\n                                {\n                                    Record();\n
+    \                               }\n                                Remove(row,
+    col, mino);\n                            }\n                        }\n\n                        if
+    (GetValue(row, col) == 0)\n                        {\n                            return;\n
+    \                       }\n                    }\n                }\n            }\n\n
+    \           private bool CheckFilledRow(int row)\n            {\n                return
+    Enumerable.Range(0, ColomnLength).All(col =&gt; GetValue(row, col) != 0);\n            }\n
+    \           private bool CheckFilledColomn(int col)\n            {\n                return
+    Enumerable.Range(0, RowLength).All(row =&gt; GetValue(row, col) != 0);\n            }\n
+    \       }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9800'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/9800
+  :user_name: hoge
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/1111/
+  :language: 
+  :time: 2010/01/05 15:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">　しまった。反転パターンを回転させてなかった。\r\n\r\ngeneratePatterns
+    b = concatMap verticalPatterns $ concatMap horizontalPatterns ps\r\n  where ps
+    = nub\r\n             $ (map (\\d -&gt; normalize $ rotate (reverse b) d) [0,
+    90, 180, 270])  -- 反転パターン\r\n             ++ (map (\\d -&gt; normalize $ rotate
+    b d) [0, 90, 180, 270])           -- 回転パターン\r\n\r\n＜実行結果＞\r\nNumber of solutions:
+    117\r\n\r\n　なんか、怪しい数字になってしまった...</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9833'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/9833
+  :user_name: hoge
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/1111/
+  :language: 
+  :time: 2010/01/18 14:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">　解の同一視処理で、面倒なので反転、回転させた集合全体で比較していたのですが、それでは\r\n不十分で漏れがありました。結局、地道に処理することに...。すいません。出直してきます...\r\n\r\nCombinations
+    of Blocks: 12\r\n1111: 1\r\n1122: 2\r\n1144: 2\r\n1244: 4\r\n1334: 2\r\n1445:
+    3\r\n2222: 1\r\n2244: 1\r\n3333: 1\r\n3345: 1\r\n4444: 3\r\n4455: 1\r\n\r\ngeneratePatterns
+    b = (map (f (reverse b)) l) ++ (map (f b) l)\r\n          where l = [0, 90, 180,
+    270]\r\n                f b d = normalizeBlock $ rotateBlock d b\r\n\r\nallPatterns
+    = map ((map unpackBlock) . f) [b1, b2, b3, b4, b5]\r\n  where f = concatMap rotatePattern
+    . concatMap (map transpose . rotatePattern . transpose)\r\n            . nub .
+    generatePatterns\r\n\r\nsolutions = map (\\x -&gt; (patternsToBlocks (head x),
+    x))\r\n...\r\n                    filterPatterns  = map f\r\n                      where
+    f [] = []\r\n                            f (x:xs) = x : (f $ filter g xs)\r\n
+    \                             where g p =  all (/= x) $ h p\r\n                                    h
+    = map sort . transpose . map (map unpackBlock . generatePatterns . packBlock)</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10496'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/10496
+  :user_name: 匿名
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/05/07 11:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Download Free Best Films HD in the World.</p>\n<p>&lt;a href=http://2005-wilson-stock-trailer.zanjatie.pp.ua/&gt;Harry
+    Potter and the Deathly Hallows (2010) HDTV&lt;/a&gt;</p>\n<p>&lt;a href=http://awsome-show.zanjatie.pp.ua/&gt;&lt;img&gt;http://kino-manija.ru/images/stories/films_1/harry-potter-and-the-deathly-hallows%201.jpg&lt;/img&gt;&lt;/a&gt;\n&lt;a
+    href=http://blackberry-video-format.zanjatie.pp.ua/&gt;blackberry video format&lt;/a&gt;
+    cgx download\n&lt;a href=http://free-amatuer-spanking-video.zanjatie.pp.ua/&gt;free
+    amatuer spanking video&lt;/a&gt;  free mandolin gospel tabs\n&lt;a href=http://breathing-clip-art.zanjatie.pp.ua/&gt;breathing
+    clip art&lt;/a&gt; download sound driver for emachines\n&lt;a href=http://amazon-ca-video-catalogs-books.zanjatie.pp.ua/&gt;amazon
+    ca video catalogs books&lt;/a&gt; comedy improv new york classes\n&lt;a href=http://dairy-free-cornbread-recipe.zanjatie.pp.ua/&gt;dairy
+    free cornbread recipe&lt;/a&gt; complaint department direct tv\n<a class=\"reference\"
+    href=\"/web/20110408110725/http://best-virus-free-freware.zanjatie.pp.ua/\">http://best-virus-free-freware.zanjatie.pp.ua/</a>
+    \ 350gt review\n<a class=\"reference\" href=\"/web/20110408110725/http://dvd-stock-sounds.zanjatie.pp.ua/\">http://dvd-stock-sounds.zanjatie.pp.ua/</a>
+    \ free download of ronald jenkees\n<a class=\"reference\" href=\"/web/20110408110725/http://free-bicycle-photos.zanjatie.pp.ua/\">http://free-bicycle-photos.zanjatie.pp.ua/</a>
+    \ amateur mature oral videos\n<a class=\"reference\" href=\"/web/20110408110725/http://corey-stevens-review.zanjatie.pp.ua/\">http://corey-stevens-review.zanjatie.pp.ua/</a>
+    \ canon pixma 780 driver download\n<a class=\"reference\" href=\"/web/20110408110725/http://free-dial-up-software.zanjatie.pp.ua/\">http://free-dial-up-software.zanjatie.pp.ua/</a>
+    \ cleveland browns online greeting cards</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20110408110725/http://cartoon-dragon-free-online.zanjatie.pp.ua/
+    :title: Harry Potter and the Deathly Hallows (2010) HDTV...
+- :id: '11219'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/11219
+  :user_name: 匿名
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/07/01 01:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Download Free Best Films HD in the World.</p>\n<p>&lt;a href=http://free-language-translation-services-online.zanovo.pp.ua/&gt;Harry
+    Potter and the Deathly Hallows (2010) HDTV&lt;/a&gt;</p>\n<p>&lt;a href=http://aerosmith-show-az.zanovo.pp.ua/&gt;&lt;img&gt;http://kino-manija.ru/images/stories/films_1/harry-potter-and-the-deathly-hallows%201.jpg&lt;/img&gt;&lt;/a&gt;\n&lt;a
+    href=http://avi-mantra.zanovo.pp.ua/&gt;avi mantra&lt;/a&gt; corrugated boxes
+    order online\n&lt;a href=http://charlotte-free-legal-advice.zanovo.pp.ua/&gt;charlotte
+    free legal advice&lt;/a&gt; free guyvideo porns\n&lt;a href=http://agony-column-torrent.zanovo.pp.ua/&gt;agony
+    column torrent&lt;/a&gt; dehp free symbol\n&lt;a href=http://free-micro-sd-cards.zanovo.pp.ua/&gt;free
+    micro sd cards&lt;/a&gt; carrot cake clip art\n&lt;a href=http://2006-disciplinary-review-cimmittee.zanovo.pp.ua/&gt;2006
+    disciplinary review cimmittee&lt;/a&gt; arca remax video game\n<a class=\"reference\"
+    href=\"/web/20110408110725/http://free-ms-office-2006-download.zanovo.pp.ua/\">http://free-ms-office-2006-download.zanovo.pp.ua/</a>
+    free grant companies for mortgages\n<a class=\"reference\" href=\"/web/20110408110725/http://boys-to-girls-reality-show.zanovo.pp.ua/\">http://boys-to-girls-reality-show.zanovo.pp.ua/</a>
+    fre fps creator download\n<a class=\"reference\" href=\"/web/20110408110725/http://cctv-online-training.zanovo.pp.ua/\">http://cctv-online-training.zanovo.pp.ua/</a>
+    free gin rummy games online\n<a class=\"reference\" href=\"/web/20110408110725/http://firefox-v20014-download.zanovo.pp.ua/\">http://firefox-v20014-download.zanovo.pp.ua/</a>
+    download free full games sanandreas\n<a class=\"reference\" href=\"/web/20110408110725/http://emerson-tv-parts-and-sevice.zanovo.pp.ua/\">http://emerson-tv-parts-and-sevice.zanovo.pp.ua/</a>
+    download free maker resume software</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20110408110725/http://free-animations-baseball.zanovo.pp.ua/
+    :title: Harry Potter and the Deathly Hallows (2010) HDTV
+- :id: '9806'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/9806
+  :user_name: sumim
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2010/01/09 13:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Squeak Smalltalk で。つめることができる組み合わせを列挙させてみました。ブロックは画素で表現し、４×４の領域を塗りつぶせる配置があるかで判断しています。</p>\n\r\n\t"
+  :code: "| blocks extent rec results |\n\nblocks := {\n  Form extent: 4@1 fromArray:
+    #(2r1111e28) offset: nil.\n  Form extent: 2@2 fromArray: #(2r11e30 2r11e30) offset:
+    nil.\n  Form extent: 3@2 fromArray: #(2r111e29 2r010e29) offset: nil.\n  Form
+    extent: 3@2 fromArray: #(2r111e29 2r100e29) offset: nil.\n  Form extent: 3@2 fromArray:
+    #(2r110e29 2r011e29) offset: nil}.\nextent := 4@4.\n\nblocks := blocks collect:
+    [:ori |\n  | specs |\n  specs := Set new.\n  #(0 90 180 270) do: [:angle |\n    |
+    rot |\n    rot := (ori rotateBy: angle) trimBordersOfColor: Color white.\n    specs
+    add: {rot extent. rot bits}.\n    rot := rot flipBy: #horizontal centerAt: 0@0.\n
+    \   specs add: {rot extent. rot bits}].\n    specs collect: [:spec | Form extent:
+    spec first depth: 1 bits: spec second]].\n\nresults := Set new.\n(1 to: 5) asDigitsToPower:
+    4 do: [:comb |\n  comb isSorted ifTrue: [\n    | box |\n    comb printString displayAt:
+    0@0.\n    box := Form extent: extent.\n    rec := nil.\n    rec := [:prevBox :rest
+    |\n      | trials currBox |\n      rest ifEmpty: [results add: comb copy] ifNotEmpty:
+    [\n        trials := blocks at: rest first.\n        trials do: [:currBlk |\n
+    \       (0 to: 4 - currBlk width) do: [:xx | (0 to: 4 - currBlk height) do: [:yy
+    | \n          currBlk displayOn: (currBox := prevBox deepCopy) at: xx@yy rule:
+    Form paint.\n          currBox primCountBits = (4 * (5 - rest size)) ifTrue: [\n
+    \           rec copy fixTemps value: currBox value: rest allButFirst]]]]]].\n
+    \   rec copy fixTemps value: box value: comb]].\n^results asArray sort: [:a :b
+    | (b - a detect: [:delta | delta abs &gt; 0] ifNone: [0]) &gt;= 0]\n\n\"=&gt;
+    #(\n  #(1 1 1 1)\n  #(1 1 2 2)\n  #(1 1 4 4)\n  #(1 2 4 4)\n  #(1 3 3 4)\n  #(1
+    4 4 5)\n  #(2 2 2 2)\n  #(2 2 4 4)\n  #(3 3 3 3)\n  #(3 3 4 5)\n  #(4 4 4 4)\n
+    \ #(4 4 5 5))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9791'
+  :parent_id: '288'
+  :url: http://ja.doukaku.org/comment/9791
+  :user_name: ' U D '
+  :user_url: /web/20110408110725/http://ja.doukaku.org/user/1085/
+  :language: Ruby
+  :time: 2010/01/04 14:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>最近 Ruby を書いていなかったので、復習がてら。余力は残っていない（汗；）ので、箱にピッタリつめられるかの判定のみ。しかしこのやり方だと、組み合わせ総数を求められるように改造するのは、難しそうな気がする…。</p>\n<ul
+    class=\"simple\">\n<li>[I,I,I,I] #=&gt; true</li>\n<li>[O,O,O,O] #=&gt; true</li>\n<li>[I,O,O,T]
+    #=&gt; false</li>\n<li>[L,Z,L,Z] #=&gt; true</li>\n<li>[I,Z,Z,Z] #=&gt; false</li>\n</ul>\n<p>※1をIミノ、2をOミノ、3をTミノ、4をLミノ、5をZミノと表記しています。</p>\n\r\n\t"
+  :code: "class QuadraticArray &lt; Array\n  def col_size\n    return self[0].length\n
+    \ end\n  def row_size\n    return self.length\n  end\n  def each_elem(&amp;fn)\n
+    \   0.upto(row_size-1) do |i|\n      0.upto(col_size-1) do |j|\n        fn.call(i,j)\n
+    \     end\n    end\n  end\nend\n\nclass Mino &lt; QuadraticArray\n  def rot()\n
+    \   res = Mino.new(col_size){Array.new(row_size, 0)}\n    each_elem {|i, j| res[j][row_size
+    - i - 1] = self[i][j] }\n    return res\n  end\nend\n\nI = Mino[[1,1,1,1]]\nO
+    = Mino[[1,1],[1,1]]\nL = Mino[[1,1,1],[1,0,0]]\nT = Mino[[1,1,1],[0,1,0]]\nZ =
+    Mino[[1,1,0],[0,1,1]]\n\ndef mirrors(*minos)\n  minos.clone.each {|mino| minos
+    &lt;&lt; mino.reverse }\n  return minos\nend\n\ndef rotations(mino)\n  minos =
+    [mino]\n  3.times do minos &lt;&lt; minos[-1].rot end\n  return minos\nend\n\nBasicMinos
+    = Hash[]\nBasicMinos[I] = [I, I.rot]\nBasicMinos[O] = [O]\nBasicMinos[T] = rotations(T)\nBasicMinos[L]
+    = mirrors(*rotations(L)) \nBasicMinos[Z] = mirrors(Z, Z.rot)\n\nclass Plate &lt;
+    QuadraticArray\n  def clone\n    Plate.new(map {|e| e.clone})\n  end\n  def isAbleToArrayMinos(minos)\n
+    \   mino = minos.pop\n    each_elem do |y, x| BasicMinos[mino].each do |m|\n        plate
+    = self.clone\n        if plate.isAbleToPutMino(m, y, x) then\n          if minos.length
+    == 0 then \n            return true if plate.isCompleted\n          elsif plate.isAbleToArrayMinos(minos.clone)
+    then\n            return true \n          end\n        end\n    end end\n    return
+    false\n  end\n  def isAbleToPutMino(mino, i, j)\n    if (mino.row_size + i &gt;
+    row_size) then return false\n    elsif (mino.col_size + j &gt; col_size) then
+    return false end\n    mino.each_elem do |y, x|\n      return false if ((self[i+y][j+x]
+    += mino[y][x]) == 2)\n    end\n    return true\n  end\n  def isCompleted\n    each_elem
+    {|i, j| if not (self[i][j] == 1) then return false end}\n    return true\n  end\nend\n\nEmptyPlate
+    = Plate.new(4){Array.new(4,0)}\n\np EmptyPlate.isAbleToArrayMinos([I,I,I,I])\np
+    EmptyPlate.isAbleToArrayMinos([O,O,O,O])\np EmptyPlate.isAbleToArrayMinos([I,O,O,T])\np
+    EmptyPlate.isAbleToArrayMinos([L,Z,L,Z])\np EmptyPlate.isAbleToArrayMinos([I,Z,Z,Z])\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

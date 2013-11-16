@@ -1,0 +1,1893 @@
+---
+:id: '177'
+:title: METHINKS IT IS A WEASEL
+:comments:
+- :id: '6287'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6287
+  :user_name: ytakenaka
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/35/
+  :language: 
+  :time: 2008/05/17 14:13 GMT
+  :vote_count: '8'
+  :vote_score: '4'
+  :body: "\r\n\t  <p>ランダムな文字からMETHINKS IT IS A WEASELを作るプログラムを作れ。</p>\n<p>簡単に流れを書いてみます。</p>\n<p>１：ランダムな２０文字を持つ文字列をもった３００個作ります。</p>\n<p>２：その文字列が\"METHINKSITISAWEASEL\"に近いものからソートします。</p>\n<p>３：それぞれの文字列のなか1文字を別の文字に変化させたものを３つ用意します。</p>\n<p>４：それを２：のソートをして上位３００個残す。（９００個あるうちで上位３００個残すということです。）</p>\n<p>５：以後３：と４：を繰り返す。</p>\n<p>ランダムな文字変化は大文字だけでいいです。簡単にするために空白文字を外してあります。</p>\n<p>METHINKS
+    IT IS WEASELができたら終了。３と4の間でソートしたもので一番上位のものを毎回表示させると変化が楽しめます。:-)</p>\n<p>Rickard
+    Dawkinsがブラインドウォッチメイカー(現題：盲目の時計職人）の３章で書いていた有名なものです。さらに一般化してもらってもいいです。</p>\n<p>参考</p>\n<ul
+    class=\"simple\">\n<li>\n<a class=\"reference\" href=\"/web/20091017222844/http://home.pacbell.net/s-max/scott/weasel.html\">http://home.pacbell.net/s-max/scott/weasel.html</a>
+    (JAVA アプレット)</li>\n<li><a class=\"reference\" href=\"/web/20091017222844/http://en.wikipedia.org/wiki/Weasel_program\">http://en.wikipedia.org/wiki/Weasel_program</a></li>\n</ul>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6288'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6288
+  :user_name: kozima
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2008/05/18 06:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>近さのうまい定義ってそんなに自明じゃないんですね。下のプログラムではアスキーコードの差を足していますが、もっといい方法がありそうです。</p>\n<p>文字変化のやり方も焼きなまし法を使うとかいろいろ考えられそうです。</p>\n\n\t"
+  :code: |
+    (defun random-char (&amp;optional random-state)
+      (code-char (+ 65 (random 26 random-state))))
+
+    (defun random-string (length &amp;optional random-state)
+      (let ((s (make-string length)))
+        (dotimes (i length)
+          (setf (elt s i) (random-char random-state)))
+        s))
+
+    (defun modify (s &amp;optional random-state)
+      (let ((i (random (length s) random-state))
+            (r (copy-seq s)))
+        (setf (elt r i)
+              (code-char (+ (random 3 random-state)
+                            (char-code (elt s i))
+                            -1)))
+        r))
+
+    (defun weasel (target)
+      (let ((state (make-random-state t)))
+        (flet ((key (s)
+                 (loop for c1 across s and c2 across target
+                   sum (abs (- (char-code c1) (char-code c2))))))
+          (do ((strings (loop repeat 300
+                          as s = (random-string (length target) state)
+                          collect (cons s (key s)))
+                        (sort (mapcan (lambda (p)
+                                        (loop repeat 3
+                                          as s = (modify (car p) state)
+                                          collect (cons s (key s))))
+                                      strings)
+                              #'&lt; :key #'cdr))
+               (i 1 (1+ i)))
+              ((string= target (caar strings))
+               (format t "~D: ~A (~D)~%" i (caar strings) (cdar strings))
+               (format t "Finished after ~D steps.~%" i))
+            (setf (cdr (nthcdr 299 strings)) nil)
+            (format t "~D: ~A (~D)~%" i (caar strings) (cdar strings))))))
+
+    (weasel "METHINKSITISAWEASEL")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6289'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6289
+  :user_name: sekia
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/588/
+  :language: Perl
+  :time: 2008/05/18 06:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>安直な実装。\n派生文字列が3つだとうまく収束しなかったので、10個にしています。</p>\n\n\t"
+  :code: |
+    #!/usr/bin/perl
+
+    use strict;
+    use warnings;
+
+    my @alphabets = "A" .. "Z";
+    my @strings   = ();
+    my $goal      = "METHINKSITISAWEASEL";
+
+    sub random_int($) { int rand shift }
+
+    sub similarity($) {
+        my $str   = shift;
+        my $score = 0;
+
+        for ( 0 .. length($str) - 1 ) {
+            $score++ if substr( $str, $_, 1 ) eq substr( $goal, $_, 1 );
+        }
+        return $score;
+    }
+
+    sub derive_string($) {
+        my $origin_string   = shift;
+        my @derived_strings = ();
+        for ( 1 .. 10 ) {
+            my $derived_string = $origin_string;
+            substr( $derived_string, random_int length $origin_string, 1 ) =
+              $alphabets[ random_int @alphabets ];
+            push @derived_strings, $derived_string;
+        }
+
+        return @derived_strings;
+    }
+
+    for ( 1 .. 300 ) {
+        my $string = "";
+        $string .= $alphabets[ random_int @alphabets ] for 1 .. length $goal;
+        push @strings, $string;
+    }
+
+    my $count = 0;
+    until ( $strings[0] eq $goal ) {
+        my @next_gen = ();
+        print $count++, ": ", $strings[0], "\n";
+        push @next_gen, derive_string $_ for @strings;
+        @strings =
+          ( map { $_-&gt;[1] }
+              sort { $b-&gt;[0] &lt;=&gt; $a-&gt;[0] } map { [ similarity $_, $_ ] } @next_gen )
+          [ 0 .. 299 ];
+    }
+
+    print $count, ": ", $strings[0], "\n";
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6290'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6290
+  :user_name: horiuchi
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/05/18 08:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>距離関数の定義がなかったので、とりあえず一致しない文字数を距離の定義としてみました。</p>\n\n\t"
+  :code: |
+    import java.util.ArrayList;
+    import java.util.Collections;
+    import java.util.Comparator;
+    import java.util.List;
+    import java.util.Random;
+
+
+    public class Sample177 {
+        private static final char[] CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+        private static final int INITIAL_COUNT = 300;
+        private static final int CREATE_COUNT = 3;
+
+
+        private final Random random_ = new Random();
+        private List&lt;String&gt; cache_ = new ArrayList&lt;String&gt;();
+
+        private final String target_;
+        private final Comparator&lt;String&gt; comparator_;
+
+
+        public Sample177(String target) {
+            target_ = target;
+            comparator_ = new StringDistanceComparator(target);
+            init();
+        }
+        private void init() {
+            for (int count = 0; count &lt; INITIAL_COUNT; count++) {
+                cache_.add(createString(target_.length()));
+            }
+            Collections.sort(cache_, comparator_);
+        }
+        private String createString(int length) {
+            StringBuilder builder = new StringBuilder(length);
+            for (int index = 0; index &lt; length; index++) {
+                builder.append(CHARACTERS[random_.nextInt(CHARACTERS.length)]);
+            }
+            return builder.toString();
+        }
+
+        public String getTop() {
+            return cache_.get(0);
+        }
+
+        public void nextStep() {
+            for (String str: cache_.toArray(new String[0])) {
+                for (int index = 0; index &lt; CREATE_COUNT; index++) {
+                    cache_.add(changeCharacter(str));
+                }
+            }
+            Collections.sort(cache_, comparator_);
+            cache_ = cache_.subList(0, INITIAL_COUNT);
+        }
+        public String changeCharacter(String str) {
+            StringBuilder builder = new StringBuilder(str);
+            builder.setCharAt(random_.nextInt(str.length()), CHARACTERS[random_.nextInt(CHARACTERS.length)]);
+            return builder.toString();
+        }
+
+
+        static class StringDistanceComparator implements Comparator&lt;String&gt; {
+            private final String target_;
+            public StringDistanceComparator(String target) {
+                target_ = target;
+            }
+
+            @Override
+            public int compare(String o1, String o2) {
+                return calcDistance(o1) - calcDistance(o2);
+            }
+            private int calcDistance(String other) {
+                int distance = 0;
+                for (int index = 0, len = target_.length(); index &lt; len; index++) {
+                    distance += (target_.charAt(index) == other.charAt(index))? 0 : 1;
+                }
+                return distance;
+            }
+        }
+
+
+        public static void main(String[] args) {
+            String target = "METHINKSITISAWEASEL";
+            Sample177 sample = new Sample177(target);
+
+            int index = 1;
+            String top = sample.getTop();
+            System.out.println(index++ + ":" + top);
+            while (!top.equals(target)) {
+                sample.nextStep();
+                top = sample.getTop();
+                System.out.println(index++ + ":" + top);
+            }
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '6291'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6291
+  :user_name: ytakenaka
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/35/
+  :language: 
+  :time: 2008/05/18 10:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>&gt;近さのうまい定義ってそんなに自明じゃないんですね。下のプログラムではアスキーコードの差を足しています</p>\n<p>そうなんですよね。うまい定義はどうするか？ってありますね。僕も作成した時はアスキーコードの差を利用したように記憶しています。:-)</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6292'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6292
+  :user_name: ところてん
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/166/
+  :language: C
+  :time: 2008/05/18 10:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>お題とは外れますが、せっかくなのでGAで書いてみました。</p>\n\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n#include
+    &lt;time.h&gt;\n\nconst char TargetString[] = \"METHINKSITISAWEASEL\";\nconst
+    int TargetStringLength = 20;\n\nconst char AlphabetTable[] = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\";\nconst
+    int AlphabetNum = strlen(AlphabetTable);\n\n\nint getScore(char *s)\n{\n    //完全マッチで0が帰る。\n
+    \   int score = 0;    \n    for(int i = 0; i &lt; TargetStringLength; ++i) {\n
+    \       int d = TargetString[i] - s[i];\n//        score -= d &gt; 0 ? d : -d;
+    \   //差\n        score -= !!d;                //ハミング距離\n    }\n    return score;
+    \   \n}\n\n\nvoid kousa(char *s1,char *s2)\n{\n    int r = rand() % TargetStringLength;\n
+    \   //rの位置で交差させる\n    for(int i = r; i &lt; TargetStringLength; ++i){\n        char
+    t;\n        t = s1[i];\n        s1[i] = s2[i];\n        s2[i] = t;\n    }\n}\n\nvoid
+    henni(char *s)\n{\n    //1文字を別の文字に変化させる\n    s[rand() % (TargetStringLength -
+    1)] = AlphabetTable[rand() % AlphabetNum];\n}\n\nstruct Gene{\n    char gene[TargetStringLength];\n
+    \   int result;\n};\n\nvoid GeneToResult(Gene *g)\n{\n    g-&gt;result = getScore(g-&gt;gene);\n}\n\n\nint
+    compare(const void *_a,const void *_b)\n{\n    const Gene *a = (Gene*)_a;\n    const
+    Gene *b = (Gene*)_b;\n    \n    if (a-&gt;result &gt; b-&gt;result){\n        return
+    -1;\n    } else if (a-&gt;result &lt; b-&gt;result) {\n        return 1;\n    }\n\n
+    \   return 0;\n}\n\n\nint main()\n{\n    srand((unsigned int)time(NULL));\n\n
+    \   //初期化\n    const int GeneMax = 300;\n    Gene genePool[GeneMax];\n\n    for(int
+    i = 0; i &lt; GeneMax; ++i){\n        //ランダムな文字列で埋め尽くす\n        for(int j = 0;
+    j &lt; TargetStringLength - 1; ++j){\n            genePool[i].gene[j] = AlphabetTable[rand()
+    % AlphabetNum];\n        }\n        genePool[i].gene[TargetStringLength -1] =
+    '\\0';\n        GeneToResult(&amp;genePool[i]);    //スコアの取得\n    }\n\n\n    //進化させる\n
+    \   for(int t = 0; t &lt; 1000; t++) {\n        //sort\n        qsort(genePool,GeneMax,sizeof(Gene),&amp;compare);\n\n
+    \       //上位をprint\n        printf(\"times = %d --------------------\\n\", t);\n
+    \       for(int i = 0; i &lt; 10; ++i){\n            printf(\"Gene = %s, score
+    = %d \\n\", genePool[i].gene, genePool[i].result);\n        }\n        getchar();\n\n
+    \       //交叉、突然変異\n        for(int i = GeneMax/2; i &lt; GeneMax; i+=2){    //スコアの下位半分を捨てる\n
+    \           char g1[TargetStringLength];\n            char g2[TargetStringLength];\n
+    \           strcpy(g1 , genePool[rand()%(GeneMax/2)].gene);    //適当な上位を選択\n            strcpy(g2
+    , genePool[rand()%(GeneMax/2)].gene);\n            kousa(g1, g2);    //交差\n            henni(g1);
+    \       //変異\n            henni(g2);\n            strcpy(genePool[i].gene , g1);\n
+    \           strcpy(genePool[i+1].gene , g2);\n        }\n        //評価\n        for(int
+    i = 0; i &lt; GeneMax; ++i){\n            GeneToResult(&amp;genePool[i]);\n        }\n
+    \   }\n}\n"
+  :tags:
+  - GA
+  :references:
+    :url: 
+    :title: 
+- :id: '6293'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6293
+  :user_name: gandalf
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/780/
+  :language: 
+  :time: 2008/05/18 11:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>お題の通りに実装すると収束しませんね。突然変異の確率が高すぎるのが良くないようです。変異する文字数を1にすれば収束しました。(変異がおこる確率をいじるとさらに早く、80世代ほどで終わります)</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6294'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6294
+  :user_name: ytakenaka
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/35/
+  :language: 
+  :time: 2008/05/18 12:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>すいません。問題の設定が甘くて　お許しください。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6295'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6295
+  :user_name: yattom
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/335/
+  :language: Python
+  :time: 2008/05/18 13:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ごくごく素直にPythonで実装しました。増やす数(MULTIPLY)が3だと収束しなかったので、5にしてあります。\n\t"
+  :code: |
+    import random
+
+    GOAL = "METHINKSITISAWEASEL"
+
+    DOMAIN = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+    SET_SIZE = 300
+    MULTIPLY = 5
+
+    def create_random():
+        s = ""
+        for i in range(len(GOAL)):
+            s += random.choice(DOMAIN)
+        return s
+
+    def initial_set():
+        s = []
+        for i in range(SET_SIZE):
+            s += [create_random()]
+        return s
+
+    def mutate(s):
+        i = random.randrange(0, len(s))
+        result = s[:i] + random.choice(DOMAIN) + s[i+1:]
+        return result
+
+    def mutate_set(s):
+        result = []
+        for e in s:
+            for i in range(MULTIPLY):
+                result.append(mutate(e))
+        return result
+
+    def distance(s):
+        d = 0
+        for c1, c2 in zip(s, GOAL):
+            if c1 != c2:
+                d += 1
+        return d
+
+    def sorted_set(s):
+        work = [(distance(e), e) for e in s]
+
+        def mycmp(e1, e2):
+            return cmp(e1[0], e2[0])
+        work.sort(mycmp)
+        return work
+
+    def main():
+        s = initial_set()
+        i = 0
+
+        while True:
+            new_s = mutate_set(s)
+            s = [e for (d,e) in sorted_set(new_s)[:SET_SIZE]]
+            print "%04d: %2d %s"%(i + 1, distance(s[0]), s[0])
+            if s[0] == GOAL:
+                break
+            i += 1
+
+    if __name__=='__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6296'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6296
+  :user_name: sumim
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/05/18 13:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n<p>ソートの際の比較は、文字とその位置の一致の数を調べる #howManyMatch:
+    を使っています。三つでは収束しないので五つに変えました。</p>\n\n\t"
+  :code: |
+    | ゴール 全英字 文字数 上位群 世代数 |
+    ゴール := 'METHINKSITISWEASEL'.
+    文字数 := ゴール size.
+    全英字 := Character alphabet asUppercase.
+    上位群 := OrderedCollection new.
+    300 timesRepeat: [
+        | 元文字列 |
+        元文字列 := ((1 to: 文字数) collect: [:idx | 全英字 atRandom]) as: String.
+        上位群 add: {元文字列 howManyMatch: ゴール. 元文字列}].
+    世代数 := 0.
+
+    World findATranscript:  nil.
+    [上位群 first last = ゴール] whileFalse: [
+        | 候補群 |
+        候補群 := OrderedCollection new.
+        上位群 do: [:each |
+            5 timesRepeat: [
+                | 変異文字列 |
+                変異文字列 := each last copy.
+                変異文字列 at: 文字数 atRandom put: 全英字 atRandom.
+                候補群 add: {変異文字列 howManyMatch: ゴール. 変異文字列}]].
+        候補群 := 候補群 asArray sort: [:a :b | a first &gt; b first].
+        上位群 := 候補群 first: 300.
+        Transcript cr; show: (世代数 := 世代数 + 1) -&gt; 上位群 first].
+    ^世代数
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '6297'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6297
+  :user_name: taguo
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/806/
+  :language: C
+  :time: 2008/05/18 14:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  3だとなかなか収束しないですね。\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    namespace ConsoleApplication1
+    {
+        public static class MethinksItIsLikeAWeasel
+        {
+            const int CANDIDATE_COUNT = 300;
+            const int VALIDATION_COUNT = 3;
+            const string GOAL = "METHINKSITISAWEASEL";
+            static Random _rnd = new Random();
+
+            internal static void Start()
+            {
+                var strs = CANDIDATE_COUNT
+                    .Make( () =&gt; new string( GOAL.Length.Make( () =&gt; GetChar() ).ToArray() ) )
+                    .ToArray();
+
+                int g = 0;
+                while( strs.First() != GOAL )
+                {
+                    strs = strs
+                        .SelectMany( str =&gt; VALIDATION_COUNT.Make( () =&gt; Replace( str ) ) )
+                        .ToArray()
+                        .OrderByDescending( s =&gt; CalcPoint( s ) )
+                        .Take( CANDIDATE_COUNT )
+                        .ToArray();
+                    Console.WriteLine( "{0} {1} {2}", g, CalcPoint( strs.First() ), strs.First() );
+                    g++;
+                }
+            }
+
+            static int CalcPoint( string str )
+            {
+                return str.Select( ( c, i ) =&gt; c == GOAL[ i ] ? 1 : 0 ).Sum();
+            }
+
+            static string Replace( string str )
+            {
+                int index = _rnd.Next( str.Length );
+                return str.Remove( index, 1 ).Insert( index, GetChar().ToString() );
+            }
+
+            static char GetChar()
+            {
+                return (char)( _rnd.Next( 26 ) + 65 );
+            }
+
+            public static IEnumerable&lt;T&gt; Make&lt;T&gt;( this int count, Func&lt;T&gt; func )
+            {
+                return Enumerable.Range( 0, count ).Select( _ =&gt; func() );
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6298'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6298
+  :user_name: yuin
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/05/18 15:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>3だと収束しないので5で。</p>\n\n\t"
+  :code: "import scala.util.Sorting.stableSort\nclass Weasel(val target:String) {\n
+    \ val rnd = new Random\n  val len = target.size\n  val chars = (65 to 90).map(_.asInstanceOf[char])\n
+    \ def newchar = chars(rnd.nextInt(chars.size))\n\n  def similarity(s:String) =
+    (len /: (0 until len)){(r,i) =&gt; \n    r-(if(target(i) == s(i)){1}else{0})\n
+    \ }\n\n  def sort(lst:Seq[String]) = stableSort(lst, similarity _).toList\n\n
+    \ def mutate(s:String) = (1 to 5).map{x=&gt; \n    var a = s.toArray\n    a(rnd.nextInt(len))
+    = newchar\n    a.mkString(\"\")\n  }\n \n\n  def start = {\n    val lst = sort((1
+    to 300).map(x=&gt;(1 to len).map(y=&gt;newchar).mkString(\"\")))\n    def iter(ss:List[String],
+    generation:int):unit = {\n      printf(\"Generation %d\\n%s\\n%s\\n\\n\", generation,
+    \"-\"*40, ss.take(5).mkString(\"\\n\"))\n      ss match {\n        case head::rest
+    if head == target =&gt; ()\n        case x =&gt; \n          iter(sort(x.flatMap(mutate)).take(300),
+    generation+1)\n      }\n    }\n    iter(lst, 0)\n  }\n}\n\nnew Weasel(\"METHINKSITISAWEASEL\").start\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6299'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6299
+  :user_name: nil
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/483/
+  :language: Perl
+  :time: 2008/05/18 15:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  密かに20文字じゃなくて19文字じゃないかと。。。。\r\n\r\nちょっと無駄なところを省いて動いています。\r\n\r\nperlが入っていれば第一引数の任意の文字列で同じことができます。(コマンドライン|ターミナル)からも動くので遊んでみてください。\r\n\r\n正規表現で最初点数つけていたのですが\r\nまったく速度的に異常なことに....\r\n\r\nいろいろ考えさせてもらって楽しかったですytakenakaさんありがとう!!\n\t"
+  :code: "use strict;\n\nmy $goal = uc(@ARGV[0]) || q{METHINKSITISAWEASEL};\n\nmy
+    @table;\n     # $table[$id]-&gt;[0] 文字列\n     # $table[$id]-&gt;[1] 近似スコア\nmy
+    $total_calc;\n     #キャッシュ数\nmy $cash = 3; \n\n\n$|=1; # 計算途中に結果を見たいのでバッファオフ\n\n\nINIT:
+    \n      #@tableに300個ランダムな文字列を生成\n    for my $id (0..299){\n     my @alpha = (\"A\"..\"Z\");\n
+    \     for(0..(length($goal)-1)){\n        $table[$id]-&gt;[0] .= $alpha[int rand(26)];\n
+    \     }\n    }\n    \nBEGIN:\n    ++$total_calc;\n    \n        #各項目を1文字何かに変えて$cash数分配\n
+    \   for my $cnt (0..$#table){\n     for(1..$cash) {\n     $table[$cnt + $_ * 300]
+    = [one_chr_enig($table[$cnt]-&gt;[0]),undef];\n     }\n    }\n        #各項目を点数化
+    0 -&gt; undef\n    @table = set_score(@table);\n        # 順列にソート\n    @table =
+    sort{$b-&gt;[1]&lt;=&gt;$a-&gt;[1]} @table;\n        #@tabel の299以下の要素を切り捨てる\n
+    \   $#table = 299;\n\n        #結果出力\n    print ($table[0]-&gt;[0]\n              .
+    \ q{ (score) : } . $table[0]-&gt;[1]\n              .  q{ (steps) : } .\" $total_calc
+    \ \\n\"\n          );\n    \nunless($table[0]-&gt;[1] == length($goal))\n {goto
+    BEGIN};\n\n    #計算結果を算出    \nsub set_score {\n   my @table = @_;\n         for
+    (0..$#table){\n              my $str = $table[$_]-&gt;[0];\n              my @pre
+    =split//,$goal;\n              my $score = undef;\n                for (0..(length($goal)-1)){\n
+    \                 if (substr($str, $_, 1) eq $pre[$_]){\n                   ++$score;\n
+    \                 }\n                }\n              $table[$_]-&gt;[1] = $score;\n
+    \        }\n  return @table;\n}\n\n    #与えた文字列をランダムに一文字交換\nsub one_chr_enig {\n
+    \ my @str = split//,shift;\n  my @alpha = (\"A\"..\"Z\");\n  $str[int rand(length($goal))]
+    =  $alpha[int rand(26)];\n  return join(\"\",@str);\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6300'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6300
+  :user_name: nil
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/483/
+  :language: Perl
+  :time: 2008/05/18 16:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  訂正\n\t"
+  :code: |2
+        #与えた文字列をランダムに一文字交換
+    sub one_chr_enig {
+      my @str = split//,shift;
+      my @alpha = ("A".."Z");
+      $str[int rand(length($goal))] =  $alpha[int rand(26)];
+      return join("",@str);
+    }
+
+    よりも下記のほうが俄然早いです。
+
+        #与えた文字列をランダムに一文字交換
+    sub one_chr_enig {
+      my $str = shift;
+      my @alpha = ("A".."Z");
+      substr($str,int rand(length($goal)),1) = $alpha[int rand(26)];
+      return $str;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6301'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6301
+  :user_name: nori
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/59/
+  :language: Python
+  :time: 2008/05/19 02:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">収束しないのでmutationしないものも次世代に持ち越してしまうようしてしまいましたが・・・。\r\n
+    \    ng = ng + list(g.spawn_mutant()) + [g]\r\n</pre>\n\t"
+  :code: |
+    #!/usr/bin/python
+    # -*- encoding=us-ascii -*-
+    #
+    import random
+
+
+    class Gene(object):
+      seed = 0
+      base_alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+      goal = "METHINKSITISAWEASEL"
+      memoize = dict()
+      def generate_rnd_code(self):
+        return ''.join([random.choice(self.base_alpha) for i in range(len(self.goal))])
+
+      def __init__(self, code=None):
+        if code is None:
+          self.code = self.generate_rnd_code()
+        else:
+          self.code = code
+
+      def score(self):
+        def score(goal, target):
+          if goal:
+            diff = ord(goal[0]) - ord(target[0])
+            return diff * diff + score(goal[1:], target[1:])
+            #return abs(diff) + score(goal[1:], target[1:])
+          else:
+            return 0
+        s = score(self.goal, self.code)
+        return s
+      def which_base_to_mutate(self):
+        return random.randint(0, len(self.goal)-1)
+
+      def substitute_candidates(self, base, count):
+        #cand = self.base_alpha.replace(base, '')
+        cand = self.base_alpha[:]
+        cand=list(cand)
+        cand.remove(base)
+        random.shuffle(cand)
+        return cand[:count]
+
+      def spawn_mutant(self, n_children=None):
+        if n_children is None:
+          n_children = 3
+        nth = self.which_base_to_mutate()
+        old_base = self.code[nth]
+        for new_base in self.substitute_candidates(old_base, n_children):
+          yield Gene(code= self.code[:nth] + new_base + self.code[nth+1:])
+
+    class GeneVat(object):
+      def __init__(self, mass, n_children):
+        self.genes = [Gene() for i in range(mass)]
+        self.n_children = n_children
+        self.mass = mass
+
+      def create_ng(self):
+        ng = list()
+        for g in self.genes:
+          ng = ng + list(g.spawn_mutant()) + [g]
+        return ng
+
+      def filter(self, xs):
+        def cmp_by_score(x, y):
+          xs = x.score()
+          ys = y.score()
+          if xs &lt; ys:
+            return -1
+          elif xs &gt; ys:
+            return 1
+          else:
+            assert(xs == ys)
+            return 0
+        xs.sort(cmp_by_score)
+        return xs[:self.mass]
+
+      def evolve(self):
+        self.genes = self.filter(self.create_ng())
+
+      def head(self):
+        for g in self.genes[:5]:
+          print g.score(), g.code
+
+
+    vat = GeneVat(300, 3)
+    vat.head()
+    i = 0
+    while vat.genes[0].score()!= 0:
+      i += 1
+      vat.evolve()
+      print 'generation %i'%i
+      vat.head()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6304'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6304
+  :user_name: sawat
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/322/
+  :language: JavaScript
+  :time: 2008/05/19 13:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>他と同じく、3だと収束しないので5です。\nまた、ブラウザが固まらないようにsetTimeoutを使っています。Rhinoなどで実行する場合は、setTimerのところをwhileループにでもして下さい。</p>\n\n\t"
+  :code: "function test() {\n  var x = \"METHINKSITISAWEASEL\";\n  var data = sort(initialData(300,
+    x.length), x);\n  var mutate = 5;\n  setTimer(x, data, mutate, 0, 100);\n}\nfunction
+    setTimer (x, data, mutateNum, count, interval) {\n  setTimeout(function() {\n
+    \   print(count + \" \" + data[0] + \" \" + data[0].differenceFrom(x));\n    if
+    (data[0].differenceFrom(x) == 0) {\n      return;\n    }\n    data = mutateAndSelect(x,
+    data, mutateNum);\n    setTimer (x, data, mutateNum, count+1, interval);\n  },
+    interval);\n}\n\nfunction mutateAndSelect (x, data, mutateNum) {\n  var ar = new
+    Array(data.length * mutateNum);\n  for (var i=0, n=data.length; i&lt;n; i++) {\n
+    \   for (var j=0; j&lt;mutateNum; j++) {\n      ar[i*mutateNum + j] = data[i].mutate();\n
+    \   }\n  }\n  return sort(ar, x).slice(0, data.length);\n}\n\nfunction sort(data,
+    x) {\n  var cache = {};\n  data.sort(function (a, b) {\n    var da = cache[a]
+    || (cache[a] = a.differenceFrom(x));\n    var db = cache[b] || (cache[b] = b.differenceFrom(x));\n
+    \   return da - db;\n  });\n  return data;\n}\n\nfunction initialData(num, len)
+    {\n  var ar = new Array(num);\n  for (var i = 0; i&lt;num; i++) {\n    ar[i] =
+    randomString(len);\n  }\n  return ar;\n}\nfunction randomString(len) {\n  var
+    chars = new Array(len);\n  for (var i = 0; i&lt;len; i++) {\n   chars[i] = 65
+    + Math.floor(26*Math.random());\n  }\n  return String.fromCharCode.apply(null,
+    chars);\n}\n\nString.prototype.differenceFrom = function (str) {\n  var diff =
+    Math.abs(this.length - str.length);\n  for ( var i=0, n = Math.min(this.length,
+    str.length); i&lt;n; i++) {\n    if( this.charAt(i) != str.charAt(i)) diff++;\n
+    \ }\n  return diff;\n}\n\nString.prototype.mutate = function () {\n  var x = Math.floor(Math.random()
+    * this.length);\n  return this.substr(0, x) + \n    String.fromCharCode(65 + Math.floor(26*Math.random()))\n
+    \        + this.substr(x+1, this.length);\n}\n\nvar infoArea = document.body.appendChild(document.createElement(\"div\"));\ninfoArea.innerHTML
+    = \" \";\nfunction print(str) {\n  infoArea.firstChild.nodeValue = str;\n}\n\ntest();\n"
+  :tags:
+  - Firefox
+  - IE
+  :references:
+    :url: 
+    :title: 
+- :id: '6306'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6306
+  :user_name: syat
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/766/
+  :language: C
+  :time: 2008/05/20 11:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>みんな言ってるけど、３じゃだめですね・・・。\n評価関数を工夫してどうにかしようと奮闘したけどだめでした。</p>\n<p>遺伝子（と呼びたい）に、ムダな領域を追加すると、３でも収束します。実質、変異率を下げたのと同じことですが。</p>\n\n\t"
+  :code: "using System;\nusing System.Text;\nusing System.Collections.Generic;\n\nnamespace
+    Methinks\n{\n    class Program\n    {\n        static String GOAL = \"METHINKSITISAWEASEL\";\n
+    \       static String CHARS = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\";\n\n        public
+    static void Main(string[] args)\n        {\n            Console.WriteLine(\"Hello
+    World!\");\n            \n            int CAPACITY_SMALL = 300;    //容量\n            int
+    CHILDREN = 3;            //子供の数\n            int INTRON = 4;                //ムダ領域\n
+    \           SortedList&lt;int, String&gt;[] pools = new SortedList&lt;int, String&gt;[]
+    {\n                new SortedList&lt;int, String&gt;(),\n                new SortedList&lt;int,
+    String&gt;()\n            };\n            Random rand = new Random();\n            \n
+    \           for (int i = 0; i &lt; CAPACITY_SMALL; i++) {\n                StringBuilder
+    sb = new StringBuilder();\n                for (int n = 0; n &lt; (GOAL.Length
+    + INTRON); n++) {\n                    sb.Append(CHARS[rand.Next(CHARS.Length)]);\n
+    \               }\n                AddMember(pools[0], sb.ToString());\n            }\n\n
+    \           int g = 0;\n            int turn = g % 2;\n            while (pools[turn].Values[0].Substring(0,
+    GOAL.Length) != GOAL) {\n                Console.WriteLine(\"{0}: Top = [{1}],
+    {2}\", g, pools[turn].Values[0], pools[turn].Keys[0]);\n\n                int
+    next = (g + 1) % 2;\n                pools[next].Clear();\n                for
+    (int i = 0; i &lt; CAPACITY_SMALL; i++) {\n                    \n                    for
+    (int c = 0; c &lt; CHILDREN; c++) {\n                        int pos = rand.Next(GOAL.Length
+    + INTRON);\n                        StringBuilder child = new StringBuilder();\n
+    \                       child.Append(pools[turn].Values[i].Substring(0,pos));\n
+    \                       child.Append(CHARS[rand.Next(CHARS.Length)]);\n                        child.Append(pools[turn].Values[i].Substring(pos+1));\n
+    \                       AddMember(pools[next], child.ToString());\n                    }\n
+    \               }\n                g++;\n                turn = g % 2;\n            }\n
+    \               \n            Console.WriteLine(\"{0}: Top = [{1}], {2}\", g,
+    pools[turn].Values[0], pools[turn].Keys[0]);\n            Console.Write(\"Press
+    any key to continue . . . \");\n            Console.ReadKey(true);\n        }\n
+    \       static void AddMember(SortedList&lt;int, String&gt; pool, String member)
+    {\n            int score = GetScore(member);\n            while (pool.ContainsKey(score)){\n
+    \               score++;\n            }\n            pool.Add(score, member);\n
+    \       }\n        static int GetScore(String s) {\n            int score = 0;\n
+    \           for (int i = 0; i &lt; GOAL.Length; i++){\n                if (s[i]
+    == GOAL[i]){\n                    score--;\n                }\n            }\n
+    \           return score * 1000;\n        }\n    }\n}\n"
+  :tags:
+  - C#2.0
+  :references:
+    :url: 
+    :title: 
+- :id: '6309'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6309
+  :user_name: ocean
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/05/20 20:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  お題を次のように変更しました。\r<br><br>1. 目標文字列は \"METHINKS IT IS LIKE A WEASEL\" を使う。\r<br>2. お題では変化させた文字列３通りだけをソートするようになってい（ると思い）ますが、収束を保証できないので、元の文字列も残すようにする。\r<br>3. 変化は３通りでなくて、１通りとする。\r<br><br>手元で一回走らせた限りでは、200回程度で収束しました。\n\t"
+  :code: |
+    import string
+    import random
+    import itertools
+
+    def main():
+        goal = "METHINKS IT IS LIKE A WEASEL"
+        count = 300
+        def char():
+            return random.choice(string.ascii_uppercase + " ")
+        a = ["".join(char() for _ in goal) for _ in xrange(count)]
+        for generation in itertools.count(1):
+            def key(s):
+                return sum(int(c1 != c2) for c1, c2 in itertools.izip(goal, s))
+            a.sort(key=key)
+            del a[count:]
+            print "%4d: %s" % (generation, a[0])
+            if a[0] == goal:
+                break
+            for s in a[:]:
+                i = random.randint(0, len(s) - 1)
+                a.append(s[:i] + char() + s[i+1:])
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6310'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6310
+  :user_name: kh
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2008/05/20 21:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>問題文そのまま。</p>\n\n\t"
+  :code: |
+    private import std.stdio, std.string, std.algorithm, std.random, std.contracts;
+
+    const target = "METHINKSITISAWEASEL";
+    const capacity = 300;
+    const children = 5;
+
+    Random rand;
+    static this() {
+        rand = Random(unpredictableSeed);
+    }
+
+    void main() {
+        auto strings = new string[capacity];
+        foreach(ref s; strings) s = randomString;
+
+        int generation;
+        do {
+            auto temp = new string[strings.length * children];
+            foreach(i, ref s; temp) s = changeChar(strings[i/children]);
+            schwartzSort!(distance)(temp);
+            strings = temp[0..capacity];
+
+            writefln("[%s] %s (%s)", ++generation, strings[0], distance(strings[0]));
+        } while(strings[0] != target);
+        writefln("Now, we have %s!", target);
+    }
+
+    char randomChar() {
+        alias UniformDistribution!(int, "[]") Dist;
+
+        return Dist('A', 'Z').next(rand);
+    }
+
+    string randomString() {
+        auto result = new char[target.length];
+        foreach(ref c; result) c = randomChar;
+        return assumeUnique(result);
+    }
+
+    string changeChar(string str) {
+        alias UniformDistribution!(int) Dist;
+
+        auto result = str.dup;
+        result[Dist(0, result.length).next(rand)] = randomChar;
+        return assumeUnique(result);
+    }
+
+    int distance(string str) {
+        int d;
+        assert(str.length == target.length);
+        foreach(i; 0..target.length) {
+            if(str[i] != target[i]) ++d;
+        }
+        return d;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6311'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6311
+  :user_name: ocean
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/177/
+  :language: C
+  :time: 2008/05/20 23:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>C++に移植してみました。</p>\n\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;iomanip&gt;
+    #include &lt;string&gt;
+    #include &lt;vector&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;cstdlib&gt; // rand, RAND_MAX
+    #include &lt;cassert&gt;
+    #include &lt;ctime&gt;
+
+    const std::string goal = "METHINKS IT IS LIKE A WEASEL";
+
+    size_t random(size_t n) // [0, n)
+    {
+        assert(n &gt; 0);
+
+        return static_cast&lt;size_t&gt;(std::rand() * (n + 1.0) / (RAND_MAX + 1.0));
+    }
+
+    char random_char()
+    {
+        static const char table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+
+        return table[random(sizeof(table))];
+    }
+
+    std::string random_string()
+    {
+        std::string s;
+
+        s.resize(goal.size());
+
+        std::generate(s.begin(), s.end(), random_char);
+
+        return s;
+    }
+
+    class sentence
+    {
+    public:
+        explicit sentence(const std::string&amp; s = random_string());
+
+        const std::string&amp; str() const
+        {
+            return _s;
+        }
+
+        friend bool operator&lt;(const sentence&amp; lhs, const sentence&amp; rhs)
+        {
+            return lhs._diff &lt; rhs._diff;
+        }
+
+    private:
+        std::string _s;
+        size_t _diff;
+    };
+
+    sentence::sentence(const std::string&amp; s) : _s(s), _diff(0)
+    {
+        assert(s.size() == goal.size());
+
+        for (size_t i = 0; i &lt; s.size(); ++i)
+        {
+            if (s[i] != goal[i])
+            {
+                ++_diff;
+            }
+        }
+    }
+
+    int main()
+    {
+        std::srand(std::time(NULL));
+
+        const size_t count = 300;
+
+        std::vector&lt;sentence&gt; v(count);
+
+        for (size_t generation = 1; ; ++generation)
+        {
+            std::sort(v.begin(), v.end());
+
+            v.erase(v.begin() + count, v.end());
+
+            std::cout &lt;&lt; std::setw(4) &lt;&lt; generation &lt;&lt; ": " &lt;&lt; v.front().str() &lt;&lt; std::endl;
+
+            if (v.front().str() == goal)
+            {
+                break;
+            }
+
+            for (size_t i = 0; i &lt; count; ++i)
+            {
+                std::string s = v[i].str();
+
+                s[random(s.size())] = random_char();
+
+                v.push_back(sentence(s));
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: /web/20091017222844/http://homepage3.nifty.com/mmgames/c_guide/21-02.html
+    :title: 乱数の範囲を限定する
+- :id: '6312'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6312
+  :user_name: ocean
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/177/
+  :language: diff
+  :time: 2008/05/21 05:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>本当にこれで高速化するか試してませんが・・・部分ソートというのがあるみたいなので、使ってみました。</p>\n\n\t"
+  :code: "--- main.cpp.old    Wed May 21 13:00:14 2008\n+++ main.cpp.new    Wed May
+    21 19:04:41 2008\n@@ -78,7 +78,7 @@\n \n     for (size_t generation = 1; ; ++generation)\n
+    \    {\n-        std::sort(v.begin(), v.end());\n+        std::partial_sort(v.begin(),
+    v.begin() + count, v.end());\n \n         v.erase(v.begin() + count, v.end());\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6315'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6315
+  :user_name: nil
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/483/
+  :language: 
+  :time: 2008/05/21 23:01 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">全く余談ですが\r\nMETHINKS IT IS A WEASEL は\r\n\r\nハムレットの第三幕第二場のセリフで\r\n\r\nハムレットは彼に、雲を指しながら、「まるでラクダ」、「イタチにも思える」、
+    \r\n「鯨にも見える」と統一性のない事を言うが、それにポローニアスも意見を合わせてくる。 \r\n「みんなして俺をうまくあしらいやがって」とハムレットは呟き
+    ... の部分のセリフみたいです。\r\n\r\nどうも何を意味しているのか分からなかったので。</pre>\n\t"
+  :code: ''
+  :tags:
+  - 日本語
+  :references:
+    :url: 
+    :title: 
+- :id: '6343'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6343
+  :user_name: turugina
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/760/
+  :language: C
+  :time: 2008/05/26 03:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>最終の文字列を\"METHINKS IT IS A WEASEL\"にして、\n２：のソートをシュウォーツ変換っぽく。\nあとやっぱり、派生が3つだと収束しないので5つで。</p>\n\n\t"
+  :code: |
+    #include &lt;algorithm&gt;
+    #include &lt;cstdlib&gt;
+    #include &lt;iomanip&gt;
+    #include &lt;iostream&gt;
+    #include &lt;iterator&gt;
+    #include &lt;string&gt;
+    #include &lt;utility&gt;
+    #include &lt;vector&gt;
+
+    const std::string GOAL("METHINKS IT IS A WEASEL");
+    const std::size_t MULTI_NUM = 5;
+    const std::size_t INIT_SIZE = 300;
+
+    typedef std::vector&lt;std::string&gt; strlist_t;
+    typedef std::pair&lt;std::string, std::string&gt; keyed_t;
+
+    char
+    gen_char()
+    {
+      static const std::string CANDIDATES("ABCDEFGHIJKLMNOPQRSTUVWXYZ ");
+      return CANDIDATES[std::rand()%CANDIDATES.size()];
+    }
+
+    std::string
+    gen_seed()
+    {
+      std::string seed(GOAL.size(), '\0');
+      std::generate(
+          seed.begin(), seed.end(),
+          gen_char);
+      return seed;
+    }
+
+    char
+    diff_char(const char l, const char r)
+    {
+      return l &lt; r ? r - l : l - r;
+    }
+
+    keyed_t
+    make_diff(const std::string&amp; seed)
+    {
+      std::string diff(seed.size(), '\0');
+      std::transform(
+          seed.begin(), seed.end(),
+          GOAL.begin(),
+          diff.begin(),
+          diff_char);
+      return std::make_pair(diff, seed);
+    }
+
+    bool
+    diff_cmp(const keyed_t&amp; lhs, const keyed_t&amp; rhs)
+    {
+      return lhs.first &lt; rhs.first;
+    }
+
+    std::string
+    extract_seed(const keyed_t&amp; dpair)
+    {
+      return dpair.second;
+    }
+
+    void
+    sort_seeds(strlist_t&amp; seeds)
+    {
+      std::vector&lt;keyed_t&gt; difflist;
+      difflist.reserve(seeds.size());
+
+      std::transform(
+          seeds.begin(), seeds.end(),
+          std::back_inserter(difflist),
+          make_diff);
+      std::sort(
+          difflist.begin(), difflist.end(),
+          diff_cmp);
+      std::transform(
+          difflist.begin(), difflist.end(),
+          seeds.begin(),
+          extract_seed);
+    }
+
+    int main()
+    {
+      strlist_t seeds;
+      seeds.reserve(INIT_SIZE);
+      // 1:
+      std::generate_n(
+          std::back_inserter(seeds),
+          INIT_SIZE,
+          gen_seed );
+      // 2:
+      sort_seeds(seeds);
+
+      std::size_t generation = 0;
+      while ( 1 )
+      { // 3:
+        strlist_t new_seeds;
+        new_seeds.reserve(INIT_SIZE*MULTI_NUM);
+        for ( strlist_t::const_iterator it = seeds.begin();
+            it != seeds.end(); ++it )
+          for ( int i = 0; i &lt; MULTI_NUM; ++i )
+            new_seeds.push_back(
+                std::string(*it)
+                  .replace(std::rand()%it-&gt;size(), 1, 1, gen_char()));
+        seeds.swap(new_seeds);
+        // 4:
+        sort_seeds(seeds);
+        seeds.erase(seeds.begin()+INIT_SIZE, seeds.end());
+
+        std::cout &lt;&lt; std::setw(4) &lt;&lt; ++generation &lt;&lt;
+          " : \"" &lt;&lt; seeds.front() &lt;&lt; "\"\n";
+        if ( seeds.front() == GOAL )
+          break;
+      }
+
+      return 0;
+    }
+  :tags: []
+  :references:
+    :url: /web/20091017222844/http://en.wikipedia.org/wiki/Schwartzian_transform
+    :title: Schwartzian transform
+- :id: '6370'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6370
+  :user_name: Otter
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2008/05/29 02:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>変異数：５。変異の仕方が文字列のどこか一文字をほかの文字と置き換える操作なので、スコアは正しい文字が正しい位置に何文字あるかで計算しています。</p>\n<p>乱数生成がIOな関係上、やたらとIOな関数がいっぱい出てくるコードになっちゃいました。</p>\n\n\t"
+  :code: "module Main where\n\nimport System.Random\nimport Data.Array.IArray\nimport
+    Data.List\nimport Data.Function\nimport Data.Ord\n\ngoal    = \"METHINKSITISAWEASEL\"\nscore
+    str = length $ filter (id) $ zipWith (==) str goal\n\nupdateRandom :: (Array Int
+    Char) -&gt; IO (Array Int Char)\nupdateRandom rg = do\n    ch &lt;- randChar\n
+    \   i &lt;- randPos\n    return $ rg // [(i, ch)]\n\ngenRandStr :: IO (Array Int
+    Char)\ngenRandStr = do\n    str &lt;- sequence $ replicate (length goal) (randChar)\n
+    \   return $ listArray (0, length goal - 1) str\n\nrandChar= getStdRandom $ randomR
+    ('A', 'Z')\nrandPos = getStdRandom $ randomR (0, (length goal) - 1)\n\nsortIt
+    :: [Array Int Char] -&gt; [Array Int Char]\nsortIt = sortBy (\\x y -&gt; inverse
+    $ (comparing (score.elems) x y))\n    where \n        inverse GT = LT\n        inverse
+    EQ = EQ\n        inverse LT = GT\n\nmutate :: [Array Int Char] -&gt; IO [Array
+    Int Char]\nmutate strs = do\n    strs' &lt;- mapM (updateRandomN 5) strs\n    return
+    $ concat strs'\n    where\n        updateRandomN :: Int -&gt; Array Int Char -&gt;
+    IO [Array Int Char]\n        updateRandomN n str = mapM (updateRandom) $ replicate
+    n str    \n\ngenMutation :: Int -&gt; [Array Int Char] -&gt; IO [Array Int Char]\ngenMutation
+    i strs = do\n    strs' &lt;- mutate strs    \n    return $ take 300 $ sortIt strs'\n\ndoCycle
+    :: Int -&gt; [Array Int Char] -&gt; IO ()\ndoCycle i strs = do\n    putStrLn $
+    (show i) ++ \"th iteration:\" ++ (elems $ head strs) ++ \" : \" \n        ++ (show
+    $ score $ elems $ head strs)\n    if (elems $ head strs) == goal then print \"goal
+    reached\"\n        else genMutation i strs &gt;&gt;= doCycle (i + 1)\n\nmain ::
+    IO()\nmain = do\n    strs &lt;- sequence $ replicate 300 genRandStr\n    doCycle
+    0 $ sortIt strs\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6374'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6374
+  :user_name: Nemo
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/685/
+  :language: PostScript
+  :time: 2008/05/29 08:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>PostScript で素直に実装してみたのですが、\nなかなか収束しないので皆さんと同様、\n5個のバリエーションを生成、元の文字列も\n残す方向です。</p>\n\n\t"
+  :code: "%!PS\n% ---- Parameters ----------------------------------\n/String (ABCDEFGHIJKLMNOPQRSTUVWXYZ)
+    def\n/Target (METHINKSITISAWEASEL) def\n/NumStrings 300 def\n/NumMutations 5 def\n/Keep
+    true def\n% ---------------------------------------------------\n\n\n/TargetLength
+    Target length def\n/StringLength String length def\n\n\n/RandomLetter {\n    String
+    rand StringLength mod get\n} bind def\n\n/Diff { % (TargetString) (string) Diff
+    \ (TargetString) (string)  integer\n    0\n    0 1 TargetLength 1 sub {\n    %
+    (str) (tar) sum count\n    dup 4 index exch get\n    % (str) (tar) sum count  let\n
+    \   exch 3 index exch get\n    % (str) (tar) sum count  let let2\n%    sub abs
+    add   \n%    sub dup mul add   \n    sub 0 ne { 1 add } if\n    } for\n} bind
+    def\n\n\n/GenStrings { % NumStrings TargetLength GenStrings [(String1) ... (String
+    N)]\n    exch\n    [ 3 1 roll\n    % [ Len Num\n    {\n        % [ Len\n        dup
+    dup string exch\n        % [ Len (Str) Len\n        0 1 3 -1 roll 1 sub {\n        %
+    [ Len (Str) count\n        1 index exch RandomLetter put\n        } for\n        exch\n
+    \   } repeat\n    pop\n    ]\n} bind def\n\n/CalcDistance { % (TargetString) (String)
+    CalcDistance (Target) [dist (str)]\n    Diff exch 2 array astore\n} bind def\n\n/Sort
+    { % [[x y] [x1 y1] Array Data ] Sort [ArrayData]\n    [ exch\n    aload length\n
+    \   % func -mark- [] [] [] [] [] len\n    -1 2 { % func -mark- [] [] [] [] []
+    len2\n    -1 2 {\n        3 1 roll\n        2 copy 0 get exch 0 get sub\n        0
+    gt { exch } if\n        3 -1 roll\n        1 roll\n    } for\n    counttomark
+    1 roll\n    } for\n    counttomark 1 roll\n    ] \n} bind def\n\n/Mutation { %
+    (String)  Mutation  (String')\n    dup dup length rand exch mod RandomLetter put\n}
+    bind def\n\n\n\nNumStrings TargetLength GenStrings\n[ exch Target exch {\n    CalcDistance
+    exch\n} forall pop ]\nSort\n\n{\n[ exch {\n    1 get\n    % (str)\n    NumMutations
+    {\n    % (str) (str') (str') 0\n    dup length string dup 0 3 index putinterval\n
+    \   Mutation\n    } repeat\n    Keep not { NumMutations 1 add -1 roll pop } if\n}
+    forall ]\n[ exch Target exch {\n    CalcDistance exch\n} forall pop ]\nSort\n0
+    NumStrings getinterval\ndup 0 get dup == flush\n0 get 0 eq {quit} if\n} loop\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6383'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6383
+  :user_name: lunlumo
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/813/
+  :language: Ruby
+  :time: 2008/05/30 12:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  　ちょっと遅いですが...。\n\t"
+  :code: "#! /usr/bin/ruby\n    \nclass Text\n    \n    GOAL        = 'METHINKSITISAWEASEL'\n
+    \   CHARACTER_SET = ('A'..'Z').to_a\n    \n    attr_accessor :text\n    \n    def
+    create\n        self.text = (1..GOAL.length).map { |_| CHARACTER_SET[rand(CHARACTER_SET.length)]
+    }.to_s\n        self\n    end\n    \n    def update\n        self.text[rand(GOAL.length)]
+    = CHARACTER_SET[rand(CHARACTER_SET.length)]\n        self\n    end\n    \n    def
+    rank\n        self.text.split('').zip(GOAL.split('')).inject(0) { |r,s| s[0] ==
+    s[1] ? r + 1 : r }\n    end\n    \n    def complete?\n        self.rank == GOAL.length\n
+    \   end\n    \n    def clone\n        copy = super\n        copy.text = self.text.clone\n
+    \       copy\n    end\nend\n\nclass Processor\n    \n    POOL_SIZE    = 300\n
+    \   COPY_SIZE    = 3\n    \n    attr_accessor :text_list\n    \n    def initialize\n
+    \       self.text_list = (1..POOL_SIZE).map { |_| Text.new.create }.sort { |a,b|
+    b.rank &lt;=&gt; a.rank }\n        self\n    end\n    \n    def process\n        self.text_list
+    = self.text_list.map { |t| (1..COPY_SIZE).map { |_| t.clone.update } }.flatten.sort
+    { |a,b| b.rank &lt;=&gt; a.rank }.first(POOL_SIZE)\n        self\n    end\n    \n
+    \   def complete?\n        self.text_list.first.complete?\n    end\nend\n\ni =
+    1\nprocessor = Processor.new\nuntil processor.complete? do\n    puts \"process(#{i}):
+    #{processor.text_list.first.text}(#{processor.text_list.first.rank})\"\n    processor.process\n
+    \   i = i + 1\nend\nputs \"complete(#{i}): #{processor.text_list.first.text}\"\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6394'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6394
+  :user_name: lunlumo
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/813/
+  :language: Erlang
+  :time: 2008/05/31 10:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>　プロセスと乱数の相性が悪い様なのでちょっとべたですが。</p>\n\n\t"
+  :code: |
+    -module(methinks_it_is_a_weasel).
+    -import(io).
+    -import(lists).
+    -import(random).
+    -export([start/0]).
+
+    get_char(CS) -&gt; lists:nth(random:uniform(length(CS)),CS).
+
+    create(T,_,TS) when TS == 0 -&gt; T;
+    create(T,CS,TS) -&gt; create([get_char(CS)|T],CS,TS-1).
+    create(CS,TS) -&gt; create("",CS,TS).
+
+    create_text_list(TL,_,_,S) when S == 0 -&gt; TL;
+    create_text_list(TL,CS,TS,S) -&gt; create_text_list([create(CS,TS)|TL],CS,TS,S-1).
+    create_text_list(CS,TS,S) -&gt; create_text_list([],CS,TS,S).
+
+    rank(T,G) -&gt;
+        lists:foldl(
+            fun({CT,CG},A) -&gt;
+                A +
+                if
+                    CT == CG -&gt; 1;
+                    true -&gt; 0
+                end
+            end,
+            0,
+            lists:zip(T,G)
+        ).
+
+    sort_text_list(TL,G) -&gt; lists:sort(fun(A,B) -&gt; rank(A,G) &gt; rank(B,G) end,TL).
+
+    update_text(T,CS) -&gt;
+        P = random:uniform(length(T)),
+        lists:append(lists:sublist(T,P-1),[get_char(CS)|lists:sublist(T,P+1,length(T)-P)]).
+
+    update_text_list(TL,G,CS,S,N) -&gt;
+        lists:sublist(
+            sort_text_list(
+                lists:foldl(
+                    fun(T,A) -&gt;
+                        lists:append(
+                            A,
+                            lists:map(
+                                fun(_) -&gt;
+                                    update_text(T,CS)
+                                end,
+                                lists:seq(1,N,1)
+                            )
+                        )
+                    end,
+                    [],
+                    TL
+                ),
+                G
+            ),
+            S
+        ).
+
+    process([T|TL],G,CS,S,N,I) -&gt;
+        R = rank(T,G),
+        L = length(G),
+        if
+            R == L -&gt;
+                io:format("goal(~w):~p~n",[I,T]);
+            true -&gt;
+                io:format("process(~w):~p(~w)~n",[I,T,rank(T,G)]),
+                process(update_text_list([T|TL],G,CS,S,N),G, CS, S, N, I+1)
+        end.
+
+    start() -&gt;
+        G = "METHINKSITISAWEASEL",
+        CS = lists:seq($A,$Z,1),
+        S = 300,
+        N = 5,
+        process(sort_text_list(create_text_list(CS,length(G),S),G),G,CS,S,N,1).
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6444'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6444
+  :user_name: keita
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/454/
+  :language: OCaml
+  :time: 2008/06/05 12:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">愚直に実装。収束させるために派生文字列を10個に増やしました。大体50-100世代辺りで目的の文字列が作れるようです。</pre>\n\t"
+  :code: |
+    let target = [
+      'M'; 'E'; 'T'; 'H'; 'I'; 'N'; 'K'; 'S';
+      'I'; 'T'; 'I'; 'S'; 'A'; 'W'; 'E'; 'A'; 'S'; 'E'; 'L';
+    ];;
+
+    let similarity str =
+      List.fold_left2 (fun n target' str' -&gt;
+        n + abs ((Char.code target') - (Char.code str'))
+      ) 0 target str
+    ;;
+
+    let compare' a b = compare (similarity a) (similarity b);;
+
+    let random_char () = Char.chr (65 + (Random.int 26));;
+
+    let rec random_string list = function
+      | 0 -&gt; list
+      | _ as n -&gt; random_string (random_char () :: list) (n-1)
+    ;;
+
+    let rec create_initial_list list = function
+      | 0 -&gt; list
+      | _ as n -&gt; create_initial_list ((random_string [] 19) :: list) (n-1)
+    ;;
+
+    let change str =
+      let i = Random.int 19 and c = random_char () in
+      let _, res = List.fold_left (fun (i', res) c' -&gt;
+        if i = i' then i'+1, c::res else i'+1, c'::res
+      ) (0, []) (List.rev str) in res
+    ;;
+
+    let print_result n str =
+      Printf.printf "G%d: " n;
+      List.iter (fun c -&gt; print_char c) str;
+      Printf.printf " (%d)" (similarity str);
+      print_newline ()
+    ;;
+
+    let rec generation n list =
+      let sorted =
+        List.sort compare' (List.flatten (List.map (fun str -&gt;
+          [change str; change str; change str; change str; change str;
+           change str; change str; change str; change str; change str;]
+        ) list))
+      in
+      let _, res = List.fold_left (fun (i, res) str -&gt;
+        if i &lt; 300 then i+1, res @ [str] else i, res
+      ) (0, []) sorted in
+      print_result n (List.hd res);
+      if (similarity (List.hd res)) &gt; 0 then
+        generation (n+1) res
+      else
+        print_endline "Finished."
+
+    let main =
+      Random.self_init ();
+      let list = create_initial_list [] 300 in
+      generation 0 list
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6717'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6717
+  :user_name: baal
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/827/
+  :language: Scheme
+  :time: 2008/07/11 09:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">派生文字列の生成方法を３パターン作ってみました。\r\nこれなら収束します。\r\n</pre>\n\t"
+  :code: |
+    (use srfi-1)
+    (use srfi-27)
+
+    (define GOAL "METHINKSITISAWEASEL")
+
+    (random-source-randomize! default-random-source)
+
+    (define random-char (lambda ()
+      (let ((str "ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
+        (string-ref str (random-integer (string-length str))))))
+
+    (define make-element (lambda ()
+      (let loop ((n (string-length GOAL)) (ret '()))
+        (if (&lt;= n 0)
+          (list-&gt;string ret)
+          (loop (- n 1) (cons (random-char) ret))))))
+
+    (define make-element-list (lambda ()
+      (let loop ((n 300) (ret '()))
+        (if (&lt;= n 0) ret
+          (loop (- n 1) (cons (make-element) ret))))))
+
+    (define check-element (lambda (e)
+      (fold + 0 (map
+        (lambda (x y) (abs (- (char-&gt;integer x) (char-&gt;integer y))))
+        (string-&gt;list e)
+        (string-&gt;list GOAL)))))
+
+    (define sort-element-list (lambda (ls)
+      (sort ls (lambda (x y) (&lt; (check-element x) (check-element y))))))
+
+    (define make-mutant-1 (lambda (e)
+      (let ((mutant (string-copy e)))
+        (string-set! mutant (random-integer (string-length e)) (random-char)))))
+
+    (define make-mutant-2 (lambda (e)
+      (let* ((mutant (string-copy e))
+             (i (random-integer (string-length e)))
+             (ci (- (char-&gt;integer (string-ref e i)) 1)))
+        (string-set! mutant i
+          (if (&lt; ci (char-&gt;integer #\A)) #\Z (integer-&gt;char ci))))))
+
+    (define make-mutant-3 (lambda (e)
+      (let* ((mutant (string-copy e))
+             (i (random-integer (string-length e)))
+             (ci (+ (char-&gt;integer (string-ref e i)) 1)))
+        (string-set! mutant i
+          (if (&lt; (char-&gt;integer #\Z) ci) #\A (integer-&gt;char ci))))))
+
+    (define main (lambda (args)
+      (let loop ((count 0) (ls (sort-element-list (make-element-list))))
+        (print count ":" (car ls))
+        (if (string=? (car ls) GOAL)
+          (begin (display "OK!") (newline))
+          (loop (+ count 1)
+            (take (sort-element-list
+              (fold
+                (lambda (x ret)
+                  (cons (make-mutant-1 x)
+                  (cons (make-mutant-2 x)
+                  (cons (make-mutant-3 x)
+                    ret))))
+                '() ls)) 300))))
+      0))
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '6739'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6739
+  :user_name: leque
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2008/07/15 21:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Gauche で書きました。他の方も書いていらっしゃるように単純に変異を起こすだけでは n = 3 ではなかなか収束しません。上位のものを交叉するなどの工夫が必要でしょう。</p>\n\n\t"
+  :code: "(use srfi-1)\n(use srfi-27)\n(use srfi-42)\n(use srfi-43)\n\n(define random-upper-alphabet\n
+    \ (let* ((s \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\")\n         (n (string-length s)))\n
+    \   (lambda ()\n      (string-ref s (random-integer n)))))\n\n(define (mutate
+    v)\n  (let ((v* (vector-copy v)))\n    (vector-set! v* (random-integer (vector-length
+    v)) (random-upper-alphabet))\n    v*))\n\n(define (similarity v1 v2)\n  (vector-fold
+    (lambda (_ knil c1 c2)\n                 (+ knil (if (char=? c1 c2) 1 0)))\n               0
+    v1 v2))\n\n(define (sort-by xs f)\n  (map car (sort (map (lambda (x) (cons x (f
+    x))) xs)\n                 (lambda (a b) (negative? (compare (cdr a) (cdr b)))))))\n\n(define
+    (main args)\n  (random-source-randomize! default-random-source)\n  (let ((goal
+    (list-&gt;vector (string-&gt;list \"METHINKSITISAWEASEL\"))))\n    (let search
+    ((candidates\n                  (list-tabulate 300\n                                 (lambda
+    (_) \n                                   (vector-ec (: _ (vector-length goal))\n
+    \                                             (random-upper-alphabet))))))\n      ;#?=(similarity
+    (car candidates) goal)\n      (if (equal? (car candidates) goal)\n          0\n
+    \         (search\n           (take (sort-by\n                  (append-map! (lambda
+    (v)\n                                 (list-ec (: _ 3) (mutate v)))\n                               candidates)\n
+    \                 (lambda (v)\n                    (- (similarity v goal))))\n
+    \                300))))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6801'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/6801
+  :user_name: kkobayashi
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2008/07/22 10:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Rの投稿をしておきながら、実はこういうシミュレーションをRでやったことはなかったのですが・・・面白いですね！</p>\n<p>Windows版Rでは、グラフィカルなコンソール(Rgui)はコンソール出力のオーバーヘッドがものすごく大きいので、テキストベースのコンソール(Rterm)の方で実行するのをお勧めします。</p>\n\n\t"
+  :code: |
+    # initial value
+    target      &lt;- "METHINKSITISAWEASEL"
+    target.char &lt;- unlist(strsplit(target, ""))
+    target.len  &lt;- nchar(target)
+    initial.population &lt;- 300
+    mutation.number    &lt;- 1
+    increase.number    &lt;- 3
+
+    # make mutation
+    mutation &lt;- function(s){
+       l &lt;- unlist(strsplit(s, ""))
+       l[sample(target.len, mutation.number)] &lt;- sample(LETTERS, mutation.number, replace=FALSE)
+       paste(l, collapse="")
+    }
+
+    # calc distance between two strings
+    distance &lt;- function(lhs, rhs=target.char){
+       sum(!(unlist(strsplit(lhs, "")) == rhs))
+    }
+
+    # setup the first population
+    strings &lt;- replicate(initial.population, paste(sample(LETTERS,target.len, replace=FALSE), collapse=""))
+
+    # main routine
+    while(strings[1] != target){
+       strings &lt;- sapply(rep(strings, increase.number), mutation)
+       strings &lt;- head(strings[sort.list(sapply(strings, distance))], initial.population)
+       print(data.frame(str=head(strings), dist=sapply(head(strings), distance)))
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7623'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/7623
+  :user_name: turugina
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/760/
+  :language: Vim
+  :time: 2008/09/10 16:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">やればできる子でした＜Vim</pre>\n\t"
+  :code: |
+    :function! s:Random(n)
+    : if has('win32')
+    :   let r = libcallnr("msvcrt", "rand", 0)
+    : else
+    :   let r = libcallnr("libc", "rand", 0)
+    : endif
+    : return r % a:n
+    :endfunction
+
+    :function! s:MakeRandom()
+    : let res = ''
+    : for i in range(strlen(s:goal))
+    :   let res = res . nr2char(char2nr('A')+s:Random(26))
+    : endfor
+    : return res
+    :endfunction
+
+    :function! s:CheckScore(line, goal)
+    : let score = 0
+    : for i in range(strlen(a:goal))
+    :   let a = char2nr(strpart(s:goal,i,1))
+    :   let b = char2nr(strpart(a:line,i,1))
+    :   let d = a &lt; b ? b - a : a - b
+    :   let score = score + d
+    : endfor
+    : return score
+    :endfunction
+
+    :function! s:SortLines(num)
+    : for i in range(a:num)
+    :   let line = getline(i+1)
+    :   let score = s:CheckScore(line, s:goal)
+    :   let line = printf("%05d:%s", score, line)
+    :   call setline(i+1,line)
+    : endfor
+    ": %!sort
+    : let lines = sort(getline(1,a:num))
+    : for i in range(a:num)
+    :   call setline(i+1,strpart(lines[i],6,strlen(s:goal)))
+    : endfor
+    :endfunction
+
+    :function! s:ChangeLine(line_num, idx_num, var_num)
+    : for i in range(a:line_num)
+    :   let line = getline(i+1)
+    :   for j in range(a:var_num)
+    :     let vline = line
+    :     for k in range(a:idx_num)
+    :       let split_idx = s:Random(strlen(s:goal))
+    :       let head = strpart(vline,0,split_idx)
+    :       let tail = strpart(vline,split_idx+1,strlen(s:goal))
+    :       let vline = head .nr2char(char2nr('A')+s:Random(26)) . tail
+    :     endfor
+    :     call setline(a:line_num*(j+1)+i,vline)
+    :   endfor
+    : endfor
+    :endfunction
+
+    :let s:initial_line_num = 300
+    :let s:change_idx_num = 1
+    :let s:variaty_num = 5
+    :let s:goal = "METHINKSITISAWEASEL"
+
+    :let s:start_time = localtime()
+    :new
+    :for s:i in range(s:initial_line_num)
+    : call setline(s:i+1, s:MakeRandom())
+    :endfor
+    :call s:SortLines(s:initial_line_num)
+
+    :let s:break_flag = 0
+    :while s:break_flag == 0
+    : call s:ChangeLine(s:initial_line_num,s:change_idx_num,s:variaty_num)
+    : call s:SortLines(s:initial_line_num * s:variaty_num)
+    : let s:line = getline(1)
+    : if s:line ==# s:goal
+    :   let s:break_flag = 1
+    : endif
+    : echo getline(1)
+    :endwhile
+    :1
+    :let s:end_time = localtime()
+    :call append(0, (s:end_time - s:start_time) . " seconds elapsed")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9294'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/9294
+  :user_name: ところてん
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/166/
+  :language: PHP
+  :time: 2009/07/06 01:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">PHP練習中。\r\n言語の練習にはいい問題だった。\r\n配列周りのバグが出まくり。</pre>\n\t"
+  :code: "&lt;?php\nprint &lt;&lt;&lt; END_DOC\n&lt;HTML&gt;\n&lt;HEAD&gt;&lt;title&gt;doukaku177&lt;/title&gt;\n&lt;/HEAD&gt;&lt;BODY&gt;\nEND_DOC;\n\n$answer
+    = str_split(\"METHINKS IT IS A WEASEL\");\n$alphabet_table = str_split(\" ABCDEFGHIJKLMNOPQRSTUVWXYZ\");\n\nfunction
+    getLength($targetString)\n{\n    $length = 0;\n    global $answer;\n    \n    for($i
+    = 0; $i &lt; count($answer); $i++){\n        $length += abs(ord($answer[$i]) -
+    ord($targetString[$i]));\n    }\n    \n    return $length;\n}\n\nfunction cmp($a,
+    $b)\n{\n    return $a[\"length\"] - $b[\"length\"];\n}\n\nfunction doukaku177()\n{\n\n
+    \   global $answer;\n    global $alphabet_table;\n    \n    #init        \n    $string_pool
+    = array();\n    $string_pool_max = 900;\n    \n    for($i = 0; $i &lt; $string_pool_max;
+    $i++){\n        $s = array();\n        for($j = 0; $j &lt; count($answer); $j++){\n
+    \           array_push($s, $alphabet_table[mt_rand(0, count($alphabet_table)-1)]);\n
+    \       }        \n\n        $length = getLength($s);\n        $s[\"length\"]
+    = $length;\n        array_push($string_pool, $s);\n    }    \n    \n    #evolve\n
+    \   $i=0;\n    do{        \n        usort($string_pool, \"cmp\");\n        \n
+    \       #show top\n            print \"Generation = $i \";\n            print
+    \"Str = \".join(\"\",$string_pool[0]).\"&lt;BR&gt;\";\n        \n        $string_pool
+    = array_slice($string_pool, 0, $string_pool_max / 3);\n        \n        foreach($string_pool
+    as $item){\n            unset($item[\"length\"]);\n            $item[mt_rand(0,
+    count($item)-1)] = $alphabet_table[mt_rand(0, count($alphabet_table)-1)];\n            $length
+    = getLength($item);\n            $item[\"length\"] = $length;\n            array_push($string_pool,
+    $item);\n        }\n        \n        $i++;\n    }while($string_pool[0][\"length\"]);\n}\n\ndoukaku177();\n\nprint
+    &lt;&lt;&lt; END_DOC\n&lt;/BODY&gt;\n&lt;/HTML&gt;\nEND_DOC;\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9301'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/9301
+  :user_name: konn
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/100/
+  :language: Ruby
+  :time: 2009/07/07 13:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>素朴に書いてみました。</p>\n<p>Ruby-1.8.x系だと滅茶苦茶遅いですが、Ruby-1.9.1だと阿呆みたいに速くなりますね……。</p>\n\n\t"
+  :code: |
+    TARGET = "METHINKSITISAWEASEL".split("")
+
+    class Array
+      def choice
+        self[rand(self.size)]
+      end
+    end
+
+    def rand_char
+      ('A'..'Z').to_a.choice
+    end
+
+    def gen
+      (1..300).map{ (1..TARGET.size).inject(""){|r,s|r+=rand_char()} }
+    end
+
+    def weasel_sort(arr)
+      arr.sort_by{|s| rank = 0;s.each_char.with_index{|c, i|;rank += 1 if c != TARGET[i]};rank}
+    end
+
+    def evolve(arr)
+      arr.map{|word| (1..10).map{ t=word.dup;i = rand(word.size);t[i]=rand_char;t}}.flatten
+    end
+
+    def generate_passage
+      rc = gen
+      i = -1
+      until rc[0].split("") == TARGET
+        i += 1
+        rc = evolve rc
+        rc = weasel_sort rc
+        rc = rc[0..299]
+        puts "generation #{i}: ", "\t" + rc[0..5].join(" ")
+      end
+      return i
+    end
+
+    if $0 == __FILE__
+      TARGET = ARGV.fetch(0, "METHINKSITISAWEASEL").upcase.split("")
+      generate_passage()
+    end
+  :tags:
+  - Ruby1.9はやい
+  :references:
+    :url: 
+    :title: 
+- :id: '9614'
+  :parent_id: '177'
+  :url: http://ja.doukaku.org/comment/9614
+  :user_name: genzou
+  :user_url: /web/20091017222844/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2009/09/28 17:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>作ってはみたものの、metaClassを多用したせいなのかロジックが悪いのか、遅い・・・</p>\n\n\t"
+  :code: |
+    #!/usr/bin/env groovy
+    final RANDOM = new Random()
+    final TARGET = "METHINKSITISAWEASEL"
+    final WORDS_COUNT = 300
+
+    final CHARS = "A".."Z"
+    CHARS.metaClass.random = {
+        delegate[RANDOM.nextInt(delegate.size())]
+    }
+    String.metaClass.define{
+        getDiff{
+            def d = 0
+            for( def i in 0..&lt;delegate.size() ){
+                d += Math.abs(TARGET[i] &lt;=&gt; delegate[i])
+            }
+            d
+        }
+        getNewWord{
+            def clist = delegate.chars as List
+            clist[RANDOM.nextInt(clist.size())] = CHARS.random()
+            clist.join("")
+        }
+    }
+    def words = []
+
+    WORDS_COUNT.times{
+        def chars = []
+        for( def i in 0..&lt;TARGET.size() ){
+            chars &lt;&lt; CHARS.random()
+        }
+        words &lt;&lt; chars.join("")
+    }
+
+    while( words[0] != TARGET ){
+        words = (words * 3)*.newWord.sort{
+            it.diff
+        }[0..&lt;WORDS_COUNT]
+        println words[0]
+    }
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 

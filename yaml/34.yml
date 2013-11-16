@@ -1,0 +1,636 @@
+---
+:id: '34'
+:title: トランプの和と積のパズル
+:comments:
+- :id: '3390'
+  :parent_id: '34'
+  :url: http://ja.doukaku.org/comment/3390
+  :user_name: herumi
+  :user_url: /web/20081202190357/http://ja.doukaku.org/user/564/
+  :language: 
+  :time: 2007/07/29 01:51 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  <pre>\r\nここにトランプが一組あります．\r\n司会者がそこから二枚抜いて，その積をAさんに，その和をBさんに教えました．\r\n\r\n#トランプにジョーカーはなく、1～13までの数字が書かれたカードであると考えて構いません．\r\n#たとえば，二枚のトランプの数字が2と5なら，Aさんには10，Bさんには7を教えます．\r\n#二つの数は同じかもしれません．\r\n\r\n司会者がAさん，Bさんに二つの数字が分かるかと質問しました．\r\nAさん「(この情報だけでは)分かりません」\r\nBさん「私も分かりません．ただ，Aさんが『分かりません』というのは分かっていました」\r\nそれを聞いたAさん「それなら，分かりました」\r\nそれを聞いたBさん「それなら，私も分かりました」\r\n元の二つの数はなんだったのでしょうか．\r\n</pre>\r\nこの「2つの数」を求めるプログラムを作ってください。解が複数個ある場合はすべて求めてください。\r\nこのお題は光成さんの投稿が元になっています。ご投稿ありがとうございます。\r\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3627'
+  :parent_id: '34'
+  :url: http://ja.doukaku.org/comment/3627
+  :user_name: ぴょん
+  :user_url: /web/20081202190357/http://ja.doukaku.org/user/490/
+  :language: Perl
+  :time: 2007/10/31 12:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">Perl が無かったので取り敢えず。\r\nぜんぜんフラットですが。\r\n三番目の四番目の条件を誤った理解をして\r\n悩みました。</pre>\r\n\t"
+  :code: |
+    use strict;
+
+    sub solve {
+        my ($ceil) = @_;
+
+        # 一番目と二番目の条件から組み合わせを絞り込む。
+        my $pairs = [];
+        {
+            # 最初に二人が取り得る組み合わせ。
+            my $la = {};
+            my $lb = {};
+            for (my $i = 1; $i &lt;= $ceil; $i++) {
+                for (my $j = $i; $j &lt;= $ceil; $j++) {
+                    my $p = $i * $j;
+                    if ($la-&gt;{$p}) {
+                        $la-&gt;{$p}[$#{$la-&gt;{$p}} + 1] = [$i, $j];
+                    } else {
+                        $la-&gt;{$p} = [[$i, $j]];
+                    }
+                    my $s = $i + $j;
+                    if ($lb-&gt;{$s}) {
+                        $lb-&gt;{$s}[$#{$lb-&gt;{$s}} + 1] = [$i, $j];
+                    } else {
+                        $lb-&gt;{$s} = [[$i, $j]];
+                    }
+                }
+            }
+
+            # A さんも B さんも教えられた数字(積と和)から
+            # 判定出来ない。
+            foreach my $k (keys(%{$la})) {
+                delete($la-&gt;{$k}) if ($#{$la-&gt;{$k}} == 0);
+            }
+
+            foreach my $k (keys(%{$lb})) {
+                delete($lb-&gt;{$k}) if ($#{$lb-&gt;{$k}} == 0);
+            }
+
+            # B さんは A が判定不能だと云う事を判っていた。
+            # つまり和を分解して得られる組み合わせの全てに於いて、
+            # その積の取り得る組み合わせが複数在ると云う事。
+            foreach my $k (keys(%{$lb})) {
+                foreach my $e (@{$lb-&gt;{$k}}) {
+                    ($la-&gt;{$e-&gt;[0] * $e-&gt;[1]}) || delete($lb-&gt;{$k});
+                }
+            }
+
+            foreach my $k (keys(%{$lb})) {
+                foreach my $e (@{$lb-&gt;{$k}}) {
+                    $pairs-&gt;[$#{$pairs} + 1] = $e;
+                }
+            }
+        }
+
+        # それを聞いた A さんは判ったのであるから、
+        # 残りの組み合わせに積の重複は無い筈。
+        {
+            my $t = {};
+            foreach my $e (@{$pairs}) {
+                my $p = $e-&gt;[0] * $e-&gt;[1];
+                $t-&gt;{$p} &amp;&amp; $t-&gt;{$p}++ || ($t-&gt;{$p} = 1);
+            }
+            my $r = [];
+            foreach my $e (@{$pairs}) {
+                my $p = $e-&gt;[0] * $e-&gt;[1];
+                ($t-&gt;{$p} == 1) &amp;&amp; ($r-&gt;[$#{$r} + 1] = $e);
+            }
+
+            $pairs = $r;
+        }
+
+        # A さんが判ったと聞いた B さんも判つたので、
+        # 残りの組み合わせに和の重複は無い筈。
+        {
+            my $t = {};
+            foreach my $e (@{$pairs}) {
+                my $s = $e-&gt;[0] + $e-&gt;[1];
+                $t-&gt;{$s} &amp;&amp; $t-&gt;{$s}++ || ($t-&gt;{$s} = 1);
+            }
+            my $r = [];
+            foreach my $e (@{$pairs}) {
+                my $s = $e-&gt;[0] + $e-&gt;[1];
+                ($t-&gt;{$s} == 1) &amp;&amp; ($r-&gt;[$#{$r} + 1] = $e);
+            }
+
+            $pairs = $r;
+        }
+
+        return $pairs;
+    }
+
+    foreach my $n (1..100) {
+        printf("%4d: ", $n);
+        my $e = &amp;solve($n);
+        if (! @{$e}) {
+            printf("None");
+        } else {
+            foreach my $f (sort {($a-&gt;[0] &lt;=&gt; $b-&gt;[0]) || ($a-&gt;[1] &lt;=&gt; $b-&gt;[1])} @{$e}) {
+                printf("[%2d, %2d], ", @{$f});
+            }
+        }
+        print("\n");
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3629'
+  :parent_id: '34'
+  :url: http://ja.doukaku.org/comment/3629
+  :user_name: ぴょん
+  :user_url: /web/20081202190357/http://ja.doukaku.org/user/490/
+  :language: Perl
+  :time: 2007/10/31 13:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">汚かったので書き直しました。\r\nこれから他の人の解答をよんで勉強します。</pre>\r\n\t"
+  :code: |
+    use strict;
+
+    sub _p { return $_[0][0] * $_[0][1]; }
+    sub _s { return $_[0][0] + $_[0][1]; }
+    sub _c { return ($a-&gt;[0] &lt;=&gt; $b-&gt;[0]) || ($a-&gt;[1] &lt;=&gt; $b-&gt;[1]); }
+
+    sub solve {
+        my ($ceil) = @_;
+
+        my @pairs; # 組み合わせのリスト。
+        my %pdup;  # 積の重複度。
+        my %sdup;  # 和の重複度。
+
+        # 初期状態。全ての組み合わせと、積・和の重複度を求める。
+        {
+            for (my $i = 1; $i &lt;= $ceil; $i++) {
+                for (my $j = $i; $j &lt;= $ceil; $j++) {
+                    my $e = [$i, $j];
+                    push(@pairs, $e);
+                    $pdup{&amp;_p($e)} = [] if (! $pdup{&amp;_p($e)});
+                    $sdup{&amp;_s($e)} = [] if (! $sdup{&amp;_s($e)});
+                    $pdup{&amp;_p($e)}[$#{$pdup{&amp;_p($e)}}+1] = $e;
+                    $sdup{&amp;_s($e)}[$#{$sdup{&amp;_s($e)}}+1] = $e;
+                }
+            }
+        }
+
+        # (1) A さんも B さんも教えられた数字(積と和)から判定出来ない。
+        {
+            my @tmp;
+            foreach my $e (@pairs) {
+                next if (@{$pdup{&amp;_p($e)}} == 1);
+                next if (@{$sdup{&amp;_s($e)}} == 1);
+                push(@tmp, $e);
+            }
+            @pairs = @tmp;
+        }
+
+        # (2) B さんは A が判定不能だと云う事を判っていた。
+        # つまり和を分解して得られる組み合わせの全てに於いて、
+        # その積の取り得る組み合わせが複数在ると云う事。
+        {
+            my @tmp;
+            foreach my $e (@pairs) {
+                my $is_exclude = 0;
+                foreach my $f (@{$sdup{&amp;_s($e)}}){
+                    if (@{$pdup{&amp;_p($f)}} == 1) {
+                        $is_exclude = 1;
+                        last;
+                    }
+                }
+                push(@tmp, $e) if (! $is_exclude);
+            }
+            @pairs = @tmp;
+        }
+
+        # (3) それを聞いた A さんは判ったのであるから、
+        # 残りの組み合わせに積の重複は無い筈。
+        {
+            my @tmp;
+            my %dup;
+            foreach my $e (@pairs) {
+                $dup{&amp;_p($e)} = 0 if (! $dup{&amp;_p($e)});
+                $dup{&amp;_p($e)}++;
+            }
+            foreach my $e (@pairs) {
+                push(@tmp, $e) if ($dup{&amp;_p($e)} == 1);
+            }
+            @pairs = @tmp;
+        }
+
+        # (4) A さんが判ったと聞いた B さんも判つたので、
+        # 残りの組み合わせに和の重複は無い筈。
+        {
+            my @tmp;
+            my %dup;
+            foreach my $e (@pairs) {
+                $dup{&amp;_s($e)} = 0 if (! $dup{&amp;_s($e)});
+                $dup{&amp;_s($e)}++;
+            }
+            foreach my $e (@pairs) {
+                push(@tmp, $e) if ($dup{&amp;_s($e)} == 1);
+            }
+            @pairs = @tmp;;
+        }
+
+        return @pairs;
+    }
+
+    foreach my $n (1..100) {
+        printf("%4d: ", $n);
+        my @pairs = &amp;solve($n);
+        if (! @pairs) {
+            printf("None");
+        } else {
+            foreach my $e (sort _c @pairs) {
+                printf("[%2d, %2d], ", @{$e});
+            }
+        }
+        print("\n");
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3639'
+  :parent_id: '34'
+  :url: http://ja.doukaku.org/comment/3639
+  :user_name: ぴょん
+  :user_url: /web/20081202190357/http://ja.doukaku.org/user/490/
+  :language: Perl
+  :time: 2007/10/31 20:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">まとめられるループをまとめました。</pre>\r\n\t"
+  :code: |
+    use strict;
+
+    sub _c { return ($a-&gt;[0] &lt;=&gt; $b-&gt;[0]) || ($a-&gt;[1] &lt;=&gt; $b-&gt;[1]); }
+
+    sub solve {
+        my ($ceil) = @_;
+
+        my @pairs; # 組み合わせのリスト。
+        my %pdup;  # 積の重複度。
+        my %sdup;  # 二番目の条件のための判定テーブル。
+
+        {
+            # 積の重複度を求める。
+            foreach my $i (1..$ceil) {
+                foreach my $j ($i..$ceil) {
+                    my $p = $i * $j;
+                    $pdup{$p} = 0 if (! exists($pdup{$p}));
+                    $pdup{$p}++;
+                }
+            }
+            # 初期状態を作成する。その際に条件(1)を考慮する。
+            # (1) A さんも B さんも教えられた数字(積と和)から判定出来ない。
+            # 更に条件(2)のための判定テーブルを作成する。
+            foreach my $i (1..$ceil) {
+                foreach my $j ($i..$ceil) {
+                    my $p = $i * $j;
+                    my $s = $i + $j;
+                    $sdup{$s} = 1 if (! exists($sdup{$s}));
+                    $sdup{$s} = 0 if ($pdup{$p} == 1);
+
+                    next if ($pdup{$p} == 1);
+                    next if ($s == 2);
+                    next if ($s == 3);
+                    next if ($s == (2 * $ceil - 1));
+                    next if ($s == (2 * $ceil));
+                    push(@pairs, [$i, $j]);
+                }
+            }
+        }
+
+        # (2) B さんは A が判定不能だと云う事を判っていた。
+        # つまり和を分解して得られる組み合わせの全てに於いて、
+        # その積の取り得る組み合わせが複数在ると云う事。
+        {
+            my @tmp;
+            foreach my $e (@pairs) {
+                my $s = $e-&gt;[0] + $e-&gt;[1];
+                push(@tmp, $e) if ($sdup{$s});
+            }
+            @pairs = @tmp;
+        }
+
+        # (3) それを聞いた A さんは判ったのであるから、
+        # 残りの組み合わせに積の重複は無い筈。
+        # (4) A さんが判ったと聞いた B さんも判つたので、
+        # 残りの組み合わせに和の重複は無い筈。
+        {
+            my @tmp;
+            my %dup3;
+            my %dup4;
+            # 条件(3)のための重複検査を行う。
+            foreach my $e (@pairs) {
+                my $p = $e-&gt;[0] * $e-&gt;[1];
+                $dup3{$p} = 0 if (! exists($dup3{$p}));
+                $dup3{$p}++;
+            }
+            # 条件(3)の重複を取り除きながら、条件(4)のための
+            # 重複検査を行う。
+            foreach my $e (@pairs) {
+                my $p = $e-&gt;[0] * $e-&gt;[1];
+                next if ($dup3{$p} &gt; 1);
+
+                push(@tmp, $e);
+                my $s = $e-&gt;[0] + $e-&gt;[1];
+                $dup4{$s} = 0 if (! exists($dup4{$s}));
+                $dup4{$s}++;
+            }
+            # 条件(4)の重複を取り除く。
+            @pairs = ();
+            foreach my $e (@tmp) {
+                my $s = $e-&gt;[0] + $e-&gt;[1];
+                next if ($dup4{$s} &gt; 1);
+                push(@pairs, $e);
+            }
+        }
+
+        return @pairs;
+    }
+
+    foreach my $n (1..200) {
+        printf("%4d: ", $n);
+        my @pairs = &amp;solve($n);
+        if (! @pairs) {
+            printf("None");
+        } else {
+            foreach my $e (sort _c @pairs) {
+                printf("[%2d, %2d], ", @{$e});
+            }
+        }
+        print("\n");
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1554'
+  :parent_id: '34'
+  :url: http://ja.doukaku.org/comment/1554
+  :user_name: cats
+  :user_url: /web/20081202190357/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/07/29 03:21 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  答えは、(1,4)ですかね？\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    class Program
+    {
+      static void Main()
+      {
+        Dictionary&lt;int, Dictionary&lt;KeyValuePair&lt;int, int&gt;, object&gt;&gt; A = new Dictionary&lt;int, Dictionary&lt;KeyValuePair&lt;int, int&gt;, object&gt;&gt;();
+        Dictionary&lt;int, Dictionary&lt;KeyValuePair&lt;int, int&gt;, object&gt;&gt; B = new Dictionary&lt;int, Dictionary&lt;KeyValuePair&lt;int, int&gt;, object&gt;&gt;();
+        Dictionary&lt;KeyValuePair&lt;int, int&gt;, object&gt; v;
+        for (int i = 1; i &lt;= 13; ++i)
+        {
+          for (int j = i; j &lt;= 13; ++j)
+          {
+            KeyValuePair&lt;int, int&gt; kv = new KeyValuePair&lt;int, int&gt;(i, j);
+            if (!A.TryGetValue(i * j, out v)) A[i * j] = v = new Dictionary&lt;KeyValuePair&lt;int, int&gt;, object&gt;();
+            v.Add(kv, null);
+            if (!B.TryGetValue(i + j, out v)) B[i + j] = v = new Dictionary&lt;KeyValuePair&lt;int, int&gt;, object&gt;();
+            v.Add(kv, null);
+          }
+        }
+        // Bさん「私も分かりません．ただ，Aさんが『分かりません』というのは分かっていました」
+        foreach (int k in new List&lt;int&gt;(B.Keys))
+        {
+          if (B[k].Count &gt; 1)
+          {
+            bool b = true;
+            foreach (KeyValuePair&lt;int, int&gt; kv in new List&lt;KeyValuePair&lt;int, int&gt;&gt;(B[k].Keys))
+              if (b = A[kv.Key * kv.Value].Count == 1) break;
+            if (!b) continue;
+          }
+          B.Remove(k);
+        }
+        // Aさん「(この情報だけでは)分かりません」
+        foreach (int k in new List&lt;int&gt;(A.Keys))
+          if (A[k].Count == 1) A.Remove(k);
+        // それを聞いたAさん「それなら，分かりました」
+        foreach (int k in new List&lt;int&gt;(A.Keys))
+        {
+          foreach (KeyValuePair&lt;int, int&gt; kv in new List&lt;KeyValuePair&lt;int, int&gt;&gt;(A[k].Keys))
+            if (!B.ContainsKey(kv.Key + kv.Value) || !B[kv.Key + kv.Value].ContainsKey(kv)) A[k].Remove(kv);
+          if (A[k].Count != 1) A.Remove(k);
+        }
+        // それを聞いたBさん「それなら，私も分かりました」  }
+        foreach (int k in new List&lt;int&gt;(B.Keys))
+        {
+          foreach (KeyValuePair&lt;int, int&gt; kv in new List&lt;KeyValuePair&lt;int, int&gt;&gt;(B[k].Keys))
+            if (!A.ContainsKey(kv.Key * kv.Value) || !A[kv.Key * kv.Value].ContainsKey(kv)) B[k].Remove(kv);
+          if (B[k].Count != 1) B.Remove(k);
+        }
+        foreach (KeyValuePair&lt;int, Dictionary&lt;KeyValuePair&lt;int, int&gt;, object&gt;&gt; kvp in B)
+        {
+          foreach (KeyValuePair&lt;int, int&gt; kv in kvp.Value.Keys) Console.Write(kv + ",");
+          Console.WriteLine();
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1555'
+  :parent_id: '34'
+  :url: http://ja.doukaku.org/comment/1555
+  :user_name: shiro
+  :user_url: /web/20081202190357/http://ja.doukaku.org/user/41/
+  :language: Haskell
+  :time: 2007/07/29 03:32 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">うー、一番乗りできなかった。\r\n\r\nというわけで若干一般化して、1からnまでのカードの場合の\r\n解を求めてみました。総当たりなので効率は悪いでしょう。\r\n\r\n1から13までの場合は、(1,4)が唯一の解のようですね。\r\n*Main&gt;
+    solve 13\r\n[(1,4)]\r\n\r\nカードを増やしてゆくと解が複数出るようになりますが、\r\n解の個数が必ずしも単調増加にならないようで\r\nおもしろいです。\r\n\r\n*Main&gt;
+    map (length . solve) [5..50]\r\n[0,0,0,0,0,1,1,1,1,2,2,2,2,2,2,2,2,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,4,4]\r\n\r\n</pre>\n\t"
+  :code: |
+    solve n = answer where
+      numbers = [1..n]
+      picks = [ (a,b) | a &lt;- numbers, b &lt;- numbers, a&lt;=b ]
+      multiplesTo x = [ (a,b) | (a,b) &lt;- picks, a*b == x]
+      sumsTo x      = [ (a,b) | (a,b) &lt;- picks, a+b == x]
+
+      a1 = [m | m &lt;- [1..13*13], length(multiplesTo m) &gt; 1]
+      b1 = [s | s &lt;- [1..13+13], length(sumsTo s) &gt; 1, check s]
+        where check s = all (\ (a,b) -&gt; elem (a*b) a1) $ sumsTo s
+
+      a2 = [m | m &lt;- a1, length (possible m) == 1]
+        where possible m = filter (\ (a,b) -&gt; elem (a+b) b1) $ multiplesTo m
+      b2 = [s | s &lt;- b1, length (possible s) == 1]
+        where possible s = filter (\ (a,b) -&gt; elem (a*b) a2) $ sumsTo s
+
+      answer = [(a,b) | (a,b) &lt;- picks, elem (a+b) b2, elem (a*b) a2]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1556'
+  :parent_id: '34'
+  :url: http://ja.doukaku.org/comment/1556
+  :user_name: 匿名
+  :user_url: /web/20081202190357/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/07/29 03:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  とりあえず構造化もされていませんが……\n\t"
+  :code: "import java.util.HashMap;\n\npublic class Sample {\n    private static final
+    boolean[] prime = {\n        /* 0    1     2     3     4      5     6      7     8
+    \     9      10 */\n        false, true, true, true, false, true, false, true,
+    false, false, false,\n        true, false, true};\n        /*11   12     13 */\n\n
+    \   public static void main(String[] args) {\n        boolean[] primeSum = new
+    boolean[27];\n        HashMap&lt;Integer, Integer&gt; productCount = \n            new
+    HashMap&lt;Integer, Integer&gt;();\n        int[] sumCount = new int[27];\n\n
+    \       for (int i = 1; i &lt;= 13; i++) {\n            for (int j = i; j &lt;=
+    13; j++) {\n                if (prime[i] &amp;&amp; prime[j]) {\n                    primeSum[i
+    + j] = true;\n                }\n            }\n        }\n        for (int i
+    = 1; i &lt;= 13; i++) {\n            for (int j = i; j &lt;= 13; j++) {\n                if
+    (!(prime[i] &amp;&amp; prime[j]) &amp;&amp; !primeSum[i + j]) {\n                    int
+    count = 0;\n                    if (productCount.containsKey(i * j)) {\n                        count
+    = productCount.get(i * j);\n                    }\n                    productCount.put(i
+    * j, count + 1);\n                }\n            }\n        }\n        for (int
+    i = 1; i &lt;= 13; i++) {\n            for (int j = i; j &lt;= 13; j++) {\n                if
+    (!(prime[i] &amp;&amp; prime[j]) &amp;&amp; !primeSum[i + j] &amp;&amp; \n                    productCount.get(i
+    * j) == 1) {\n                        sumCount[i + j]++;\n                }\n
+    \           }\n        }\n        for (int i = 1; i &lt;= 13; i++) {\n            for
+    (int j = i; j &lt;= 13; j++) {\n                if ((!(prime[i] &amp;&amp; prime[j])
+    &amp;&amp; !primeSum[i + j] &amp;&amp;\n                     productCount.get(i
+    * j) == 1 &amp;&amp; sumCount[i + j] == 1)) {\n                    System.out.printf(\"%d,
+    %d (product = %d, sum = %d)%n\", \n                                      i, j,
+    i * j, i + j);\n                }\n            }\n        }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1557'
+  :parent_id: '34'
+  :url: http://ja.doukaku.org/comment/1557
+  :user_name: 匿名
+  :user_url: /web/20081202190357/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/07/29 04:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  冒頭部分が完全に間違っていました。訂正箇所が多すぎるので全体を投稿しなおします。\n\t"
+  :code: "import java.util.HashMap;\n\npublic class Sample {\n    public static void
+    main(String[] args) {\n        boolean[] sumFlag = new boolean[27];\n        HashMap&lt;Integer,
+    Integer&gt; productCount0 =\n            new HashMap&lt;Integer, Integer&gt;();\n
+    \       HashMap&lt;Integer, Integer&gt; productCount = \n            new HashMap&lt;Integer,
+    Integer&gt;();\n        int[] sumCount = new int[27];\n\n        for (int i =
+    1; i &lt;= 13; i++) {\n            for (int j = i; j &lt;= 13; j++) {\n                int
+    count = 0;\n                if (productCount0.containsKey(i * j)) {\n                    count
+    = productCount0.get(i * j);\n                }\n                productCount0.put(i
+    * j, count + 1);\n            }\n        }\n        for (int i = 1; i &lt;= 13;
+    i++) {\n            for (int j = i; j &lt;= 13; j++) {\n                if (productCount0.get(i
+    * j) == 1) {\n                    sumFlag[i + j] = true;\n                }\n
+    \           }\n        }\n        for (int i = 1; i &lt;= 13; i++) {\n            for
+    (int j = i; j &lt;= 13; j++) {\n                if (productCount0.get(i * j) &gt;
+    1 &amp;&amp; !sumFlag[i + j]) {\n                    int count = 0;\n                    if
+    (productCount.containsKey(i * j)) {\n                        count = productCount.get(i
+    * j);\n                    }\n                    productCount.put(i * j, count
+    + 1);\n                }\n            }\n        }\n        for (int i = 1; i
+    &lt;= 13; i++) {\n            for (int j = i; j &lt;= 13; j++) {\n                if
+    (productCount0.get(i * j) &gt; 1 &amp;&amp; !sumFlag[i + j] &amp;&amp; \n                    productCount.get(i
+    * j) == 1) {\n                        sumCount[i + j]++;\n                }\n
+    \           }\n        }\n        for (int i = 1; i &lt;= 13; i++) {\n            for
+    (int j = i; j &lt;= 13; j++) {\n                if (productCount0.get(i * j) &gt;
+    1 &amp;&amp; !sumFlag[i + j] &amp;&amp; \n                    productCount.get(i
+    * j) == 1 &amp;&amp; sumCount[i + j] == 1) {\n                    System.out.printf(\"%d,
+    %d (product = %d, sum = %d)%n\", \n                                      i, j,
+    i * j, i + j);\n                }\n            }\n        }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1558'
+  :parent_id: '34'
+  :url: http://ja.doukaku.org/comment/1558
+  :user_name: shiro
+  :user_url: /web/20081202190357/http://ja.doukaku.org/user/41/
+  :language: Haskell
+  :time: 2007/07/29 05:26 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  うう、13がまだハードコードされてた…\r\n訂正ついでに少し整理。\r\n\n\t"
+  :code: |
+    solve n = answer where
+      picks = [ (a,b) | a &lt;- [1..n], b &lt;- [1..n], a&lt;=b ]
+
+      plural (_:_:_) = True
+      plural _       = False
+      singular [_]   = True
+      singular _     = False
+
+      multiplesTo x = [ (a,b) | (a,b) &lt;- picks, a*b == x]
+      sumsTo x      = [ (a,b) | (a,b) &lt;- picks, a+b == x]
+
+      multipleIn ms (a,b) = elem (a*b) ms
+      sumIn ss (a,b)      = elem (a+b) ss
+
+      a1 = [m | m &lt;- [1..n*n], plural $ multiplesTo m ]
+      b1 = [s | s &lt;- [1..n+n], plural $ sumsTo s, all (multipleIn a1) $ sumsTo s]
+
+      a2 = [m | m &lt;- a1, singular $ filter (sumIn b1) $ multiplesTo m]
+      b2 = [s | s &lt;- b1, singular $ filter (multipleIn a2) $ sumsTo s ]
+
+      answer = [(a,b) | (a,b) &lt;- picks, sumIn b2 (a,b), multipleIn a2 (a,b)]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1560'
+  :parent_id: '34'
+  :url: http://ja.doukaku.org/comment/1560
+  :user_name: ocean
+  :user_url: /web/20081202190357/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/07/29 06:31 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  結構しんどかったです・・・\n\t"
+  :code: |-
+    # coding: shift_jis
+
+    def all(iterable, key):
+        for x in iterable:
+            if not key(x):
+                return False
+        return True
+
+    def main():
+        limit = 13 + 1
+
+        add_table = [[] for _ in xrange(limit + limit)]
+        mul_table = [[] for _ in xrange(limit * limit)]
+        for i in xrange(1, limit):
+            for j in xrange(i, limit):
+                add_table[i + j].append((i, j))
+                mul_table[i * j].append((i, j))
+
+        # すべてのカードの組み合わせを生成
+        pairs = [(i, j) for i in xrange(1, limit) for j in xrange(i + 1, limit)]
+
+        # A�
+
+
+
+
+    <!--
+         FILE ARCHIVED ON 19:03:57 Dec 2, 2008 AND RETRIEVED FROM THE
+         INTERNET ARCHIVE ON 13:52:17 Nov 16, 2013.
+         JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+         ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+         SECTION 108(a)(3)).
+    -->
+  :tags: []
+  :references:
+    :url: 
+    :title: 

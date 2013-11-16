@@ -1,0 +1,960 @@
+---
+:id: '127'
+:title: 指定コマンドを別プロセスで起動
+:comments:
+- :id: '5353'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5353
+  :user_name: todogzm
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/550/
+  :language: 
+  :time: 2008/01/16 08:03 GMT
+  :vote_count: '8'
+  :vote_score: '4'
+  :body: "\r\n\t  <p>与えられた文字列のコマンドを、別プロセスで実行してください。\n異なるPIDのプロセスが立ち上がり、指定したコマンドを実行することが条件です。</p>\n<p>あわせて、実行結果のリターンコードと、別プロセスが出力した標準出力を受け取る方法も記載してください。</p>\n<p>今回投稿する上で、別プロセスとして実行するコマンドの与え方は自由ですが、実行した結果、何らかの損害を与えるようなコマンドは埋め込まないようにお願いします。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5458'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5458
+  :user_name: horiuchi
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/01/26 06:51 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Windowsで、『ipconfig /all』を実行しその結果を受け取ってみました。\n実行結果のリターンコードは、Process#exitValue()で取得できます。Process#waitFor()
+    では終了するのを待ってリターンコードを返します。\n別プロセスが出力した標準出力を受け取る方法は、Process#getInputStream() で標準出力を受け取れます。Process#getErrorStream()
+    で標準エラーを受け取れます。</p>\n\n\t"
+  :code: |
+    public class Sample127 {
+        public static void main(String[] args) {
+            try {
+                ProcessBuilder builder = new ProcessBuilder("ipconfig", "/all");
+                Process process = builder.start();
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                    if (line.length() == 0) continue;
+                    System.out.println(line);
+                }
+
+                int ret = process.waitFor();
+                System.out.println("ExitValue=" + ret);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '5460'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5460
+  :user_name: tenka
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/664/
+  :language: C
+  :time: 2008/01/26 07:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">こんな感じでしょうか？\r\n&gt;ProcessStart\r\nError: ProcessStart
+    &lt;Exe Name&gt;\r\n\r\n&gt;ProcessStart HelloWorldProgram\r\nCurrent PID : 2104\r\nProcess
+    Start PID : 2360\r\n\r\n別コンソール\r\nHelloWorld.\r\n\r\n&gt;ProcessStart HelloWorldProgram
+    Hanako\r\nCurrent PID : 2776\r\nProcess Start PID : 2600\r\n\r\n別コンソール\r\nHelloWorld.\r\nHanako\r\n\r\n&gt;ProcessStart
+    HelloWorldProgram Hanako Tarou\r\nCurrent PID : 2880\r\nProcess Start PID : 2828\r\n\r\n別コンソール\r\nHelloWorld.\r\nHanako\r\nTarou\r\n\r\n&gt;ProcessStart
+    aaa\r\nError: Don't find Process</pre>\n\t"
+  :code: |
+    //ProceccStart.cs
+    using System;
+    using System.Diagnostics;
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            if (args.Length &lt; 1)
+            {
+                Console.WriteLine("Error: ProcessStart &lt;Exe Name&gt;");
+                Environment.Exit(0);
+            }
+
+            try
+            {
+                string exe = args[0];
+                string arg = "";
+                for (int i = 1; i &lt; args.Length; i++)
+                {
+                    arg += args[i] + " ";
+                }
+                Process ps = Process.Start(exe, arg);
+                Console.WriteLine("Current PID : {0}", Process.GetCurrentProcess().Id);
+                Console.WriteLine("Process Start PID : {0}", ps.Id);
+            }
+            catch
+            {
+                Console.WriteLine("Error: Don't find Process");
+                Environment.Exit(0);
+            }
+        }
+    }
+
+    //HelloWorldProgram.cs
+    using System;
+    class HelloWorldProgram
+    {
+        static void Main(String[] args)
+        {
+            Console.WriteLine("HelloWorld.");
+            if (args.Length &gt; 0)
+                foreach (string arg in args)
+                    Console.WriteLine(arg);
+            Console.ReadLine();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5462'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5462
+  :user_name: g000001
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/01/26 07:42 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Common LispでUNIXの外部コマンドを実行する方法は実装依存になります。\r<br>いくつか処理系の差異を吸収するラッパーがありますが、KMRCLの\r<br>command-outputが今回のお題にはぴったりな気がするので紹介してみます。\r<br><br>この関数はコマンドを引数として、実行結果を多値で返します。\r<br>内容は、(1)実行結果の標準出力、(2)エラーの場合、エラー出力、(3)リターンコード\r<br>となっています。\n\t"
+  :code: "(require :kmrcl)\n;kmrcl:command-output実行例\n\n;; 成功\n(multiple-value-bind
+    (out error code)\n    (kmrcl:command-output \"~A\" \"date\")\n  (format t \"OUT:~A
+    ~%ERROR: ~A~%STAT: ~D~%\" out error code))\n;=&gt;\n;OUT:2008年  1月 26日 土曜日 16:40:07
+    JST\n; \n;ERROR: \n;STAT: 0\n\n;; エラー\n(multiple-value-bind (out error code)\n
+    \   (kmrcl:command-output \"~A\" \"foo\")\n  (format t \"OUT:~A ~%ERROR: ~A~%STAT:
+    ~D~%\" out error code))\n;=&gt;\n;OUT: \n;ERROR: /bin/sh: foo: not found\n;\n;STAT:
+    127\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5463'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5463
+  :user_name: Y
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/428/
+  :language: Mathematica
+  :time: 2008/01/26 08:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Cygwinシェル上でmath.exeを実行した結果\r\n\r\nIn[1]:= Run[\"ps\"]\r\n
+    \     PID    PPID    PGID     WINPID  TTY  UID    STIME COMMAND\r\n     4876       1
+    \   4876       4876  con 1003 15:38:24 /usr/bin/bash\r\n     1348    4876    1348
+    \       736  con 1003 17:16:08 /cygdrive/c/Program Files/Wolfram Research/Mathematica/5.2/math\r\n
+    \    2368       1    2368       2368  con 1003 17:16:16 /usr/bin/ps\r\nOut[1]=
+    0\r\n\r\nこれではリターンコードは戻り値として取得できるが、出力は表示されるだけで再利用できない。\r\n\r\n仕方なく、出力を一度ファイルに入れることにする（Windows以外ならもっと簡単なはず）。\r\n結果リストの1番目がリターンコード、2番目が出力\r\n\r\nIn[3]:=
+    exec@\"ps\"\r\n\r\nOut[3]= {0, {      PID    PPID    PGID     WINPID  TTY  UID
+    \   STIME COMMAND,\r\n&gt;          4876       1    4876       4876  con 1003
+    15:38:24 /usr/bin/bash,\r\n&gt;          1348    4876    1348        736  con
+    1003 17:16:08\\\r\n&gt;      /cygdrive/c/Program Files/Wolfram Research/Mathematica/5.2/math,\r\n&gt;
+    \         4768       1    4768       4768  con 1003 17:17:33 /usr/bin/ps}}\r\n</pre>\n\t"
+  :code: |
+    exec[command_] := Module[{
+        code,result,
+        file = First@ReadList["!mktemp",String]
+      },
+      code = Run[command &lt;&gt; " &gt; " &lt;&gt; file];
+      result = ReadList[file,String];
+      Run["rm "&lt;&gt;file];
+      {code,result}]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5464'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5464
+  :user_name: yuin
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/82/
+  :language: Python
+  :time: 2008/01/26 08:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>subprocessモジュールを使います。</p>\n<p>Pythonでは</p>\n<ul class=\"simple\">\n<li>os.system</li>\n<li>os.spawn*</li>\n<li>os.popen*</li>\n<li>popen2.*</li>\n<li>commands.*</li>\n</ul>\n<p>と外部コマンド関連のモジュールがたくさんありますが、subprocessモジュールは最も新しく、上記のような古いモジュールを置き換える目的で導入されています。</p>\n\n\t"
+  :code: |
+    from subprocess import *
+
+    p = Popen(["ipconfig", "/all"], stdout=PIPE)
+    p.wait()
+    print "return code:%d"%p.returncode
+    print "pid: %d"%p.pid
+    print p.stdout.read()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5467'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5467
+  :user_name: tenka
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/664/
+  :language: C
+  :time: 2008/01/26 11:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">上記の方法だとコンソールが2つに分かれるので、一つに統一しました。あと戻り値を持たせなきゃいけないみたいなので、関数で書き直しました。</pre>\n\t"
+  :code: |
+    //ProcessStart.cs
+    using System;
+    using System.Diagnostics;
+
+    class Program
+    {
+        private const string CMD = @"C:\WINDOWS\system32\cmd.exe";
+
+        static void Main(string[] args)
+        {
+            Console.WriteLine(Exec("ping", "127.0.0.1") + "\n");
+            Console.WriteLine(Exec("HelloWorldProgram", "") + "\n");
+            Console.WriteLine(Exec("HelloWorldProgram", @"Yamada") + "\n");
+            Console.WriteLine(Exec("HelloWorldProgram", @"Yamada Hanako") + "\n");
+            Console.WriteLine(Exec("dir", @"C:\Python25") + "\n");
+            Console.WriteLine(Exec("", "") + "\n");
+            Console.WriteLine(Exec("aaa", "") + "\n");
+
+        }
+
+        static bool Exec(string command, string arg)
+        {
+            try
+            {
+                if (command == "")
+                {
+                    Console.Error.WriteLine("コマンド書いてないよ");
+                    return false;
+                }
+                Process ps = new Process();
+                ps.StartInfo.FileName = CMD;
+                ps.StartInfo.Arguments = "/c " + command + " " + arg;
+                ps.StartInfo.UseShellExecute = false;
+                ps.StartInfo.RedirectStandardOutput = true;
+                ps.StartInfo.RedirectStandardError = true;
+                ps.StartInfo.CreateNoWindow = true;
+                ps.StartInfo.WorkingDirectory = System.IO.Directory.GetCurrentDirectory();
+                ps.Start();
+                ps.WaitForExit();
+
+                string output = ps.StandardOutput.ReadToEnd().Replace("\r\r\n", "\r\n");
+                string error = ps.StandardError.ReadToEnd().Replace("\r\r\n", "\r\n");
+
+                if (error.Length &gt; 0)
+                {
+                    Console.Error.WriteLine(error);
+                    return false;
+                }
+
+                Console.WriteLine("Current PID : {0}", Process.GetCurrentProcess().Id);
+                Console.WriteLine("Process Start PID : {0}", ps.Id);
+                Console.WriteLine(output);
+                return true;
+            }
+            catch
+            {
+                Console.WriteLine("Error: Don't find Process");
+                return false;
+            }
+        }
+    }
+
+    //HelloWorldProgram.cs
+    using System;
+    class HelloWorldProgram
+    {
+        static void Main(String[] args)
+        {
+            Console.WriteLine("HelloWorld.");
+            if (args.Length &gt; 0)
+                foreach (string arg in args)
+                    Console.WriteLine(arg);
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5468'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5468
+  :user_name: minke
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/28/
+  :language: Haskell
+  :time: 2008/01/26 11:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>System.Processモジュールの runInteractiveCommand
+    を使用しています。\r</p>\n<p>同モジュールの waitForProcess は System.Exit モジュールの ExitCode型のIOを返します。</p>\n</div>\n\t"
+  :code: |
+    import IO
+    import System.Process
+    import System.Exit
+
+    run :: String -&gt; IO ()
+    run cmd = do (ih, oh, eh, ph) &lt;- runInteractiveCommand cmd
+                 putStrLn =&lt;&lt; hGetContents oh
+                 status &lt;- waitForProcess ph
+                 case status of
+                   ExitSuccess -&gt; putStrLn $ cmd ++ " ok"
+                   ExitFailure code -&gt; putStr "error: " &gt;&gt; print code
+
+    main :: IO ()
+    main = run "ls -la"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5469'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5469
+  :user_name: muscovyduck
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/679/
+  :language: Ruby
+  :time: 2008/01/26 13:43 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <p>POpen4ライブラリを使うと、「別プロセスでコマンドを実行」「プロセスID、標準入出力、標準エラー出力の完全な掌握」「コマンド終了後のリターンコードを得る」がセットでできます。ライブラリ万歳。</p>\n\n\t"
+  :code: |
+    require 'rubygems'
+    require 'open4'
+
+    status = Open4.popen4('sh') do |pid, stdin, stdout, stderr|
+      stdin.puts 'echo 42.out'
+      stdin.puts 'echo 42.err 1&gt;&amp;2'
+      stdin.close
+
+      puts "pid        : #{ pid }"
+      puts "stdout     : #{ stdout.read.strip }"
+      puts "stderr     : #{ stderr.read.strip }"
+    end
+
+    puts "status     : #{ status.inspect }"
+    puts "exitstatus : #{ status.exitstatus }"
+  :tags: []
+  :references:
+    :url: /web/20100617095718/http://popen4.rubyforge.org/
+    :title: http://popen4.rubyforge.org/
+- :id: '5471'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5471
+  :user_name: anekos
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/170/
+  :language: Io
+  :time: 2008/01/26 16:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ls -la を実行。</p>\n\n\t"
+  :code: |
+    sc := SystemCall clone
+    sc command = "ls"
+    sc arguments = list("-la")
+    sc run
+    sc stdout readLines foreach (it, it println) # 標準出力
+    sc returnCode println # リターンコード
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5472'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5472
+  :user_name: naranja
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/448/
+  :language: D
+  :time: 2008/01/27 00:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Tango を使いました。参考ページにある tango.sys.Process のサンプルコードがまさにこの問題の丁寧な答えなんですね。\n\t"
+  :code: |
+    import tango.io.Stdout;
+    import tango.sys.Process;
+
+    void main(char[][] args){
+        auto process = new Process(args[1]);
+        process.execute();
+        auto result = process.wait();
+        Stdout("------&gt;").newline;
+        Stdout.copy(process.stdout).flush;
+        Stdout("&lt;------").newline;
+        Stdout("return code: ")(result.status).newline;
+    }
+  :tags: []
+  :references:
+    :url: /web/20100617095718/http://www.dsource.org/projects/tango/docs/current/tango.sys.Process.html
+    :title: tango.sys.Process
+- :id: '5473'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5473
+  :user_name: sumim
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/01/27 02:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n<p>UNIX 向け（あるいは、動作の確認はしていませんが Windows
+    向け）仮想マシンを使用し、仮想イメージ（Smalltalk 実行環境）に対しては事前に OSProcess および CommandShell というパッケージによる機能拡張が必要です。</p>\n\n\t"
+  :code: |
+    | proc |
+    proc := (CommandShell pipeline: 'date') last.
+    proc output.   "=&gt; 'Sun Jan 27 11:19:39 JST 2008' "
+    proc processProxy exitStatus.   "=&gt; 0 "
+    proc processProxy pid   "=&gt; 5708 "
+  :tags:
+  - CommandShell
+  - OSProcess
+  - Squeak_Smalltalk
+  - Unix_VM
+  :references:
+    :url: /web/20100617095718/http://wiki.squeak.org/squeak/708
+    :title: Squeak Swiki - OSProcess
+- :id: '5488'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5488
+  :user_name: matyr
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2008/01/27 15:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  WSHで。 \n\t"
+  :code: |
+    // usage: cscript 127.js "dir"
+    with(WSH) with(createObject("WScript.Shell").exec(arguments(0))){
+      echo('pid: '+ processID);
+      while(!status) sleep(100);
+      echo('exit code: '+ exitCode);
+      echo('stdout:');
+      with(stdOut) while(!atEndOfStream) echo(readLine());
+    }
+  :tags:
+  - WSH
+  :references:
+    :url: 
+    :title: 
+- :id: '5503'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5503
+  :user_name: 匿名
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/4/
+  :language: VB
+  :time: 2008/01/28 02:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>VBScript です。\n実行環境：Windows 。</p>\n\n\t"
+  :code: |
+    Dim WSH, ExecObj
+    Set WSH = CreateObject("WScript.Shell")
+    Set ExecObj = WSH.Exec("hostname")
+    WScript.Echo "pid:" &amp; ExecObj.processID
+    WScript.Echo "stdout: " &amp; ExecObj.StdOut.ReadAll
+    WScript.Echo "exit: " &amp; ExecObj.exitCode
+    WScript.Quit(ExecObj.exitCode)
+    Set ExecObj = Nothing
+    Set WSH = Nothing
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5535'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5535
+  :user_name: Jlake
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/658/
+  :language: PHP
+  :time: 2008/01/29 01:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    &lt;?
+    exec("hostname; echo $$", $output, $return_cd);
+    $pid = array_pop($output);
+    echo "pid: $pid\n";
+    echo "\noutput: ".join("\n", $output)."\n";
+    echo "\nreturn code: $return_cd\n";
+    ?&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5545'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5545
+  :user_name: dankogai
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2008/01/29 05:35 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n<p>詳しくは\n</p>\n<p> <a href=\"/web/20100617095718/http://search.cpan.org/perldoc?perlipc\">perldoc
+    perlipc</a>\n</p>\n<p>にて。\n</p>\n<p>Dan the Perl Monger\n</p>\n\n\n\n\t"
+  :code: |
+    my @cmd = qw/ps ux/;
+    my $pid = open my $rfh, '-|'
+      or exec @cmd              # pid = 0
+      or die "can't exec:$!"    # $! knows how it failed;
+      while ( my $line = &lt;$rfh&gt; ) {
+        print "[$pid] $line";
+    }
+    warn "exit status:$?";
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5612'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5612
+  :user_name: ryugate
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/674/
+  :language: Scala
+  :time: 2008/02/01 02:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>初投稿です (^o^)\n</p>\n<p>標準出力と標準エラー出力はすべてを読みきる必要があります。\n   その際、それぞれの出力の読み取りおよび、コマンドの終了を待つ部分は\n
+    \  Actor(スレッド)としておかなくてはいけません。\n</p>\n<p>ffmpegはヘルプ表示時も標準出力と標準エラー出力の両方に書き出してきます。\n
+    \  終了コードを表示する部分ですが、場合によってこの例ではヘルプ出力の間にまぎれてしまうかもしれません。(^^;\n</p>\n\n\n\n\t"
+  :code: "import java.io._\nimport scala.actors._\nimport scala.actors.Actor._\n\nobject
+    exec_test extends Application {\n  //------------------------------------\n  val
+    cmdline = \"ffmpeg\"\n\n  //------------------------------------\n  val process
+    = Runtime.getRuntime.exec(cmdline)\n  val br  = new BufferedReader(new InputStreamReader(process.getInputStream))\n
+    \ val ebr = new BufferedReader(new InputStreamReader(process.getErrorStream))\n\n
+    \ //------------------------------------\n  actor { printlines(br ){ line =&gt;
+    println(line) } }\n  actor { printlines(ebr){ line =&gt; println(line) } }\n  actor
+    { println(\"ExitValue=\" + process.waitFor) }\n\n  //------------------------------------\n
+    \ def printlines(br:BufferedReader)(f:String=&gt;Unit):Unit = printlines(br.readLine,
+    br, f)\n  def printlines(line:String, br:BufferedReader, f:String=&gt;Unit):Unit
+    = line match {\n    case null =&gt; ;\n    case _ =&gt; \n      f(line)\n      printlines(br.readLine,
+    br, f)\n  }\n}\n"
+  :tags: []
+  :references:
+    :url: /web/20100617095718/http://www.lingr.com/room/scala-ja
+    :title: Scala-jp at Lingr
+- :id: '5630'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5630
+  :user_name: susu
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/218/
+  :language: OCaml
+  :time: 2008/02/02 03:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">コマンドを実行するだけならSys.commandで。戻り値も得られます。\r\n出力を利用する場合はopen_processがin,out,fullなどと色々用意されています。\r\n終了値はclose_processの時に返ります。\r\n\r\n
+    \ あと標準入力を開いたとき、read_lineのような一行入力モノは\r\n'\\n'を書き込んでflushするまで終わりません。\r\noutput_stringは文字列中に\\nがないと改行されないので、少し注意が必要です。</pre>\n\t"
+  :code: |
+    #load "unix.cma";;
+    let stdout_iter f cmd =
+      let proc = Unix.open_process_in cmd in
+      (try while true do f (input_line proc) done with _ -&gt; ());
+      Unix.close_process_in proc;;
+
+    stdout_iter (Printf.printf "  &gt; %s\n") "ps";;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5655'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5655
+  :user_name: SumiTomohiko
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/614/
+  :language: Scheme
+  :time: 2008/02/02 21:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  標準出力の後に、終了ステータスが表示されます。\n\t"
+  :code: |
+    (use gauche.process)
+
+    (define (main argv)
+      (let ((proc (run-process '("/bin/ls" "-l") :output :pipe :error :pipe :wait #t)))
+        (display (port-&gt;string (process-output proc)))
+        (display (port-&gt;string (process-error proc)))
+        (display (process-exit-status proc))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '5898'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5898
+  :user_name: mtsuyugu
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/481/
+  :language: C
+  :time: 2008/02/29 15:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>FreeBSD 6 で作成しました。fork, pipe, dup2 を使って実現しています。実行するコマンドは date です。</p>\n\n\t"
+  :code: |
+    #include &lt;sys/types.h&gt;
+    #include &lt;sys/wait.h&gt;
+    #include &lt;sys/time.h&gt;
+    #include &lt;sys/resource.h&gt;
+    #include &lt;unistd.h&gt;
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+
+    #define R (0)
+    #define W (1)
+
+    int main( void ){
+       char buf[1024];
+       int status = 0;
+       int pipe_c2p[2];
+       ssize_t read_size;
+       pid_t pid;
+       char command[] = "date";
+
+       if( pipe(pipe_c2p) == -1 ){
+          perror("pipe");
+          exit(1);
+       }
+
+       pid = fork();
+
+       if( pid &lt; 0 ){ /* fail to fork */
+          close( pipe_c2p[W] );
+          close( pipe_c2p[R] );
+          perror("fork");
+          exit(1);
+       }
+       else if( pid == 0 ){ /* child process */
+          close( pipe_c2p[R] );
+          dup2( pipe_c2p[W], 1 );
+          close( pipe_c2p[W] );
+          execlp("/bin/sh", "sh", "-c", command, NULL);
+       }
+       else{ /* parent process */
+          close( pipe_c2p[W] );
+          while( (read_size = read( pipe_c2p[R], buf, sizeof(buf)-1 ) ) &gt; 0 ){
+             buf[read_size] = '\0';
+             printf("%s",buf);
+          }
+          if( read_size == -1 ){
+             perror("read");
+          }
+          close( pipe_c2p[R] );
+          if( waitpid( pid, &amp;status, 0 ) == -1 ){
+             perror("waitpid");
+             exit(1);
+          }
+          if( WIFEXITED(status) ){
+             printf("child process exit with status %d\n", WEXITSTATUS(status) );
+          }
+       }
+
+       return 0;
+    }
+  :tags: []
+  :references:
+    :url: /web/20100617095718/http://www.ncad.co.jp/~komata/c-kouza3.htm
+    :title: http://www.ncad.co.jp/~komata/c-kouza3.htm
+- :id: '5917'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/5917
+  :user_name: howking
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/744/
+  :language: Erlang
+  :time: 2008/03/01 22:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">os:cmdではリターンコード取得ができないので、けっこう面倒らしい。Pidをとるのはさらに面倒？\r\n\r\n実行結果\r\n$erl
+    -noshell -run ext exec \"echo hello\" -s init stop\r\nstdout: hello\r\nexit_status:
+    0\r\n</pre>\n\t"
+  :code: "-module(ext).\n-export([exec/1]).\n\nexec([Cmd]) -&gt;\n    Port = open_port({spawn,
+    Cmd}, [binary,exit_status]),\n    wait(Port).\n\nwait(Port) -&gt;\n    receive
+    \n        {Port, {data, BinData}} -&gt;\n            io:format(\"stdout: ~s\",
+    [BinData]),\n            wait(Port);\n        {Port, {exit_status, Status}} -&gt;\n
+    \           io:format(\"exit_status: ~p~n\", [Status])\n    end.\n"
+  :tags: []
+  :references:
+    :url: /web/20100617095718/http://easyerl.blogspot.com/2007/07/simple-command-execution.html
+    :title: Simple command execution
+- :id: '6045'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/6045
+  :user_name: syat
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/766/
+  :language: Bash
+  :time: 2008/03/22 15:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  やったー。bashがまだいない。\r<br><br>$./run.sh ps\r<br>==実行結果==\r<br>  PID TTY          TIME CMD\r<br> 3102 pts/1    00:00:01 bash\r<br>25115 pts/1    00:00:00 bash\r<br>25116 pts/1    00:00:00 ps\r<br>==終了コード==\r<br>0\r<br>"
+  :code: |
+    #/bin/sh
+    $1 &gt; __OUT__ ; echo $? &gt; __RET__ &amp;
+
+    sleep 3
+    echo ==実行結果==
+    cat __OUT__
+    echo ==終了コード==
+    cat __RET__
+
+    rm __OUT__ __RET__
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6049'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/6049
+  :user_name: silverwire
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/646/
+  :language: 
+  :time: 2008/03/23 06:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">カレントディレクトリに一時ファイルを作成しなくても、サブシェルを利用すればワンラ\r\nイナーでいけますね。\r\n\r\n
+    \ e.g.\r\n    $ (ps); echo $?\r\n       PID    PPID    PGID     WINPID  TTY  UID
+    \   STIME COMMAND\r\n      2440       1    2440       2440  con 1004 15:00:47
+    /usr/bin/bash\r\n      3404    2440    3404       3424  con 1004 15:35:47 /usr/bin/ps\r\n\r\n
+    \   # 手元にCygwinしかなかったので、純粋なUnix環境で実行したとは言えませんが... \r\n\r\nコマンド文字列に複数のコマンドやパイプが含まれている場合はもう少し考えないといけ\r\nませんね。\r\n\r\n#
+    &gt; bashがまだいない。\r\n# 数多の心優しく慎み深いUnix使い達は、敢えて誰かが解くのを静観していたのかも ;-)</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6050'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/6050
+  :user_name: silverwire
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/646/
+  :language: 
+  :time: 2008/03/23 06:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">子プロセスよりも、 #6045の回答のようにバックグラウンドプロセスの方がいいですね。\r\n\r\n
+    \ e.g.\r\n    $ (ps &amp;); echo $?\r\n       PID    PPID    PGID     WINPID  TTY
+    \ UID    STIME COMMAND\r\n      2440       1    2440       2440  con 1004 15:00:47
+    /usr/bin/bash\r\n      3580       1    3588       3540  con 1004 15:45:47 /usr/bin/ps</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6053'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/6053
+  :user_name: syat
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/766/
+  :language: Bash
+  :time: 2008/03/23 11:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ふむふむ。サブシェルは使った経験なかったです。\r<br>こんな感じでしょうか。ループで複数コマンドに対応してみました。パイプはご勘弁を。\r<br><br>$ ./run2.sh date true false\r<br>= date =\r<br>2008年 3月 23日 日曜日 20:14:49 JST\r<br>== 終了コード：0 ==\r<br>= true =\r<br><br>== 終了コード：0 ==\r<br>= false =\r<br><br>== 終了コード：1 ==\r<br>"
+  :code: |
+    #/bin/sh
+    for program in $*
+    do
+        stdout=`($program)` ; status=$?
+        echo = $program =
+        echo $stdout
+        echo == 終了コード：$status ==
+    done
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6056'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/6056
+  :user_name: silverwire
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/646/
+  :language: 
+  :time: 2008/03/23 14:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">bashは環境変数PIPESTATUSがあるので、各コマンドの終了ステータスを参照できますが、\r\nサブシェルと併用するとなると、ちょっとトリッキーな方法になるのかもしれません。\r\n\r\n私はBourne
+    Shellを使うので、以下のような関数を利用しています。\r\n\r\n  e.g.\r\n    tee_() {\r\n      exec 3&gt;&amp;1\r\n
+    \     __=`({ { $1 2&gt;&amp;1 3&gt;&amp;- 4&gt;&amp;-; echo $? 1&gt;&amp;4 3&gt;&amp;-
+    4&gt;&amp;-; } | tee -a $2 1&gt;&amp;3 2&gt;&amp;1 3&gt;&amp;- 4&gt;&amp;-; }
+    4&gt;&amp;1)`\r\n      return $__\r\n    }\r\n\r\n    f() {\r\n      env | grep
+    -q '^LD_LIBRARY_PATH' &amp;&amp; return 0 || return 1\r\n    }\r\n\r\n    $ tee_
+    'f' \"f.log\" || echo '環境変数 LD_LIBRARY_PATH は未定義です。'\r\n\r\n第 1引数にコマンドを、第 2引数にファイル名を指定します。標準出力と標準エラー出力\r\nの内容が画面とファイルに出力され、終了ステータスも参照できます。複数のコマンドを\r\n実行する場合は、関数にまとめてから第
+    1引数に関数名を指定します。内部的にサブシェ\r\nルで実行しているので、お題の条件も満たしているかなと。\r\n\r\n難点はコマンド文字列に引数を含められないこととSQL*Plusと相性が悪いことでしょうか。\r\n特に後者は子プロセスから処理が戻って来ず、親プロセスがパイプ待ちとなってしまいま\r\nす。straceで調べたりもしましたが、原因はわかりませんでした...
+    orz</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100617095718/http://x68000.q-e-d.net/~68user/unix/pickup?%A5%EA%A5%C0%A5%A4%A5%EC%A5%AF%A5%C8
+    :title: 'UNIXの部屋 コマンド検索: リダイレクト'
+- :id: '6596'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/6596
+  :user_name: genzou
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/06/26 09:05 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Stringのexecute()メソッドと\r\nスレッド処理を組み合わせています。</pre>\n\t"
+  :code: |
+    def command = "\"C:\\Program Files\\Groovy\\Groovy-1.5.6\\bin\\groovy.exe\" C:\\test4.groovy"
+
+    new Thread({
+        def process = command.execute()
+        println process.text
+    } as Runnable).start()
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '8752'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/8752
+  :user_name: yyamasak
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/722/
+  :language: Tcl
+  :time: 2009/03/30 10:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>使い方は\ntclsh popen.tcl ipconfig /all</p>\n<p>余計な改行が入る理由が分からない。。。</p>\n\n\t"
+  :code: |
+    # popen.tcl
+    if {[catch {open "|$argv"} ch]} {
+        error $ch
+    } else {
+        while {![eof $ch]} {
+            gets $ch line
+            puts -nonewline $line
+        }
+    }
+  :tags:
+  - popen
+  :references:
+    :url: 
+    :title: 
+- :id: '8757'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/8757
+  :user_name: silverwire
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/646/
+  :language: Batchfile
+  :time: 2009/03/30 19:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">バッチで外部コマンドを利用する場合は、自ずと別プロセスで実行\r\nされます。なので、ビルトインコマンドを実行した場合でも別プロ\r\nセスを生成してから実行するようにしました。実行結果と終了ステ\r\nータスは標準出力に出力します。\r\n\r\n#
+    コマンド文字列にリダイレクトやパイプといった特殊な文字が含\r\n# まれる場合は、 ^(ハット)でエスケープする必要があります。\r\n\r\n以下は、tasklistコマンドでコマンドを実行する前と実行した後の\r\n差分を並べたものです。\r\n\r\n
+    \ e.g.\r\n    実行前\r\n      イメージ名                     PID\r\n      =========================
+    ========\r\n      (中略)\r\n      cmd.exe                       2776\r\n      cmd.exe
+    \                      3236\r\n      tasklist.exe                  3308\r\n      wmiprvse.exe
+    \                 3336\r\n    \r\n    実行後\r\n      イメージ名                     PID\r\n
+    \     ========================= ========\r\n      (中略)\r\n      cmd.exe                       2776\r\n
+    \     cmd.exe                       3236\r\n      wmiprvse.exe                  3336\r\n
+    \     cmd.exe                       3368 ← 別プロセスで実行\r\n      tasklist.exe                  3376\r\n\r\nWindows
+    XPで動作を確認しました。</pre>\n\t"
+  :code: "@echo off\nsetlocal\n  set c=%~1\n  set f=%~fs0.%RANDOM%\n  set ?=0\n  \n
+    \ if \"%c%\" == \"\" (echo usage: %~n0 COMMAND) &amp; exit /b 1\n  \n  cmd /c
+    \"%c%\" &gt; %f% 2&gt;&amp;1\n  set ?=%ERRORLEVEL%\n  \n  echo.\n  echo 実行結果\n
+    \ type %f%\n  echo.\n  echo 終了ステータスは %?% です。\n  \n  del %f%\nendlocal &amp; exit
+    /b 0\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8800'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/8800
+  :user_name: pa
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/943/
+  :language: Other
+  :time: 2009/04/11 10:28 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">LimboではC言語(POSIX)と似たパイプの使い方ができるようです。\r\nただし、closeがないのでパイプのクローズには\r\n工夫がいるようです。\r\n\r\n下記コードはパイプのクローズの方法に悩み\r\n試行錯誤した結果ですので誤りがあるかもしれませんがご容赦ください。\r\n\r\nコマンドライン引数を指定コマンドとして、\r\n子プロセスに渡しています。\r\n</pre>\n\t"
+  :code: |
+    implement d127;
+
+    include "sys.m";
+    sys: Sys;
+    include "draw.m";
+    include "sh.m";
+    sh: Sh;
+
+    d127: module{
+        init: fn(ctx: ref Draw-&gt;Context, argv: list of string);
+    };
+
+    init (ctx: ref Draw-&gt;Context, argv: list of string)
+    {
+        sys = load Sys Sys-&gt;PATH;
+        sh = load Sh Sh-&gt;PATH;
+        buf := array[64] of byte;
+        fds := array[2] of ref Sys-&gt;FD;
+
+        argv = tl argv;
+        if(argv == nil){
+               return;
+        }
+        cmd := hd argv;
+
+        sys-&gt;pipe(fds); # open pipes
+        spawn child(ctx, fds[0], cmd);
+
+        # Read results of child process
+        n: int;
+        fds[0] = nil;
+        fdd := sys-&gt;open("/dev/cons", sys-&gt;OWRITE);
+        for(;;){
+            n = sys-&gt;read(fds[1], buf, len buf);
+            if(n == 0){
+                 break;
+            }
+
+            # print result
+            sys-&gt;fprint(fdd, "%s", string buf[0:n]);
+        }
+    }
+
+    child (ctx: ref Draw-&gt;Context, fd: ref Sys-&gt;FD, cmd: string)
+    {
+        # duplicate stdout to the pipe
+        sys-&gt;dup(fd.fd, 1);
+
+        sh-&gt;system(ctx, cmd);
+
+        # pipe close
+        fdn := sys-&gt;open("/dev/null", sys-&gt;OWRITE);
+        sys-&gt;dup(fdn.fd, 1);
+        fd = nil;
+    }
+  :tags:
+  - Limbo
+  :references:
+    :url: 
+    :title: 
+- :id: '9789'
+  :parent_id: '127'
+  :url: http://ja.doukaku.org/comment/9789
+  :user_name: t2ru
+  :user_url: /web/20100617095718/http://ja.doukaku.org/user/1130/
+  :language: Other
+  :time: 2010/01/04 08:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">clojure-contribパッケージを使うと、1行です。\r\n下記のようなmapが帰って来ます。\r\n{:exit
+    0, :out \".\\n..\\ndoukaku.clj\\n\", :err \"\"}</pre>\n\t"
+  :code: |
+    (use 'clojure.contrib.shell-out)
+    (sh "ls" "-a" "src" :return-map true)
+  :tags:
+  - Clojure
+  :references:
+    :url: 
+    :title: 

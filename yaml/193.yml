@@ -1,0 +1,1212 @@
+---
+:id: '193'
+:title: 2次元ランダムウォーク
+:comments:
+- :id: '6806'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6806
+  :user_name: ytakenaka
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/35/
+  :language: 
+  :time: 2008/07/22 23:20 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  <div class=\"section\">\n<p>２次元ランダムウォークをつくってみてください。\r</p>\n<p>\r</p>\n<p>＊＊＊＊＊＊\r</p>\n<p>元は3本建てにしようかと思ったけど、上の一本に絞りました。おまけとして、3本とも下に補足しておきます。作れるようでしたら作ってみてください。\r</p>\n<p>\r</p>\n<p>1.一次元のランダムウォークを作ってください。\r</p>\n<p>1.1
+    データファイルに残してください。 フォーマット：時間 位置\r</p>\n<p>おまけ）\r</p>\n<p>可視化が簡単な処理系・プログラミング言語でしたら実際に可視化してみてください。フォーマットしたファイルをスプレッドシートやplotutilitiesなどの可視化ソフトを使って、実際に動きをかくにんしてみましょう。:-)\r</p>\n<p>\r</p>\n<p>2.同じように2次元のランダムウォークを作ってください。\r</p>\n<p>2.1
+    1.1と同じようにしてください。\r</p>\n<p>フォーマット：時間　x位置 y位置\r</p>\n<p>\r</p>\n<p>3.凝りたければ、アニメーションにするもよし、3次元の動きをとるもよし、自分の想像力がいかせるところまでやってみてください。\r</p>\n<p>\r</p>\n<p>http://ja.wikipedia.org/wiki/%E3%83%A9%E3%83%B3%E3%83%80%E3%83%A0%E3%82%A6%E3%82%A9%E3%83%BC%E3%82%AF\r</p>\n<p>\r</p>\n<p>分からないというヒトへの分かりにくいヒント：\r</p>\n<p>今の位置から次の時間の位置が決まるのですが、決まりかたが、乱数で一歩後退するか一歩先にいくか?ということをやればよいです。</p>\n</div>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6823'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6823
+  :user_name: だいら
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/468/
+  :language: PHP
+  :time: 2008/07/24 21:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  こんな感じでしょうか。\r\n移動距離は1固定です。\n\t"
+  :code: |
+    &lt;?php
+    //移動回数
+    define('LOOP', 10);
+
+    //初期位置
+    $pos[0] = array('x' =&gt; 0, 'y' =&gt; 0);
+
+    for($time = 1; $time &lt;= LOOP; $time++){
+        $rad = deg2rad(mt_rand()%360);
+        $x = $pos[$time-1]['x'] + cos($rad);
+        $y = $pos[$time-1]['y'] + sin($rad);
+        $pos[$time] = array('x' =&gt; $x, 'y' =&gt; $y);
+    }
+
+    foreach($pos as $key =&gt; $val){
+        echo $key . " " . $val['x'] . " " . $val['y'] . " " . "\n";
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6826'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6826
+  :user_name: turugina
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/760/
+  :language: Perl
+  :time: 2008/07/24 23:13 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">2次元ランダムウォークを描け というお題だと解釈しました。\r\nというわけで、Image::Magickで描いてみました。</pre>\n\t"
+  :code: |
+    use strict;
+    use warnings;
+
+    use List::Util qw/min max/;
+    use Image::Magick;
+
+    # 歩く回数
+    my $count = 10000;
+
+    sub _walk { int(rand(3))-1; }
+
+    # 歩いて範囲を測定
+    my @current = (0,0);
+    my @area = (@current, @current);
+    my @footmarks;
+    for my $fm (map { [_walk, _walk] } 1 .. $count) {
+      $current[0] += $fm-&gt;[0];
+      $current[1] += $fm-&gt;[1];
+      $area[0] = min $area[0], $current[0];
+      $area[1] = min $area[1], $current[1];
+      $area[2] = max $area[2], $current[0];
+      $area[3] = max $area[3], $current[1];
+      push @footmarks, [@current];
+    }
+
+    # 軌跡を書く
+    my $grid = 8;
+    my $lsize = 2;
+    my $img = Image::Magick-&gt;new;
+
+    $img-&gt;Set(
+      size=&gt;join(q/x/, map { ($_+1) * $grid } $area[2]-$area[0], $area[3]-$area[1])
+    );
+    $img-&gt;Read(q/xc:white/);
+    $img-&gt;Draw(primitive =&gt; q/polyline/, stroke =&gt; q/black/, strokewidth =&gt; $lsize,
+      points =&gt; join(q/ /, map { join q/,/, map { $_ * $grid + $grid/2 } @$_ }
+                           map { [$_-&gt;[0]-$area[0],$_-&gt;[1]-$area[1]] }
+                           @footmarks)
+    );
+
+    # start地点にバッテン
+    $img-&gt;Draw(primitive =&gt; q/line/, stroke =&gt; q/red/, strokewidth =&gt; $lsize/2,
+      points =&gt; join(q/ /, map { join q/,/, map { $_ * $grid } @$_ }
+                           map { [$_-$area[0], $_-$area[1]] }
+                           0, 1)
+    );
+    $img-&gt;Draw(primitive =&gt; q/line/, stroke =&gt; q/red/, strokewidth =&gt; $lsize/2,
+      points =&gt; join(q/ /, map { join q/,/, map { $_ * $grid } @$_ }
+                           map { [$_-&gt;[0]-$area[0], $_-&gt;[1]-$area[1]] }
+                           [1,0], [0,1])
+    );
+    $img-&gt;Write(q/rwalk.png/);
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6829'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6829
+  :user_name: pooq
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/606/
+  :language: J
+  :time: 2008/07/25 03:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">特に指定はないようなので、単位時間に上下左右の四方向に一歩ずつ\r\n進む一番簡単そうなものにしました。\r\n\r\n
+    \  random_walk 10\r\n 1  0 _1\r\n 2  0  0\r\n 3 _1  0\r\n 4 _1  1\r\n 5 _2  1\r\n
+    6 _3  1\r\n 7 _2  1\r\n 8 _2  2\r\n 9 _2  3\r\n10 _1  3</pre>\n\t"
+  :code: |
+    random_walk=:3 :'(&gt;:i.y),.+/\&gt;(&lt;:?y#4){0 _1;0 1;_1 0;1 0'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6831'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6831
+  :user_name: syat
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/766/
+  :language: BASIC
+  :time: 2008/07/25 06:09 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>BASICで。グラフィック機能が組み込まれた言語の見せ所だと思って、アニメーション。同時にファイルにも書きます。</p>\n<p>N88互換BASICで動作を確認。Microsoft
+    BASIC系依存なので(仮称)十進BASICでは動きません。</p>\n\n\t"
+  :code: |
+    100 cls 3
+    110 x=320 : y=200 : t=0
+    120 open "c:\RandomWalk.dat" for output as #1
+    130 print #1, t; x; y
+    140 *loop
+    150   circle(x,y),2,0
+    160   if rnd(1)&lt;0.5 then x=x+1 else x=x-1
+    170   if rnd(1)&lt;0.5 then y=y+1 else y=y-1
+    180   t=t+1
+    190   circle(x,y),2,7
+    200   print #1, t; x; y
+    210   if inkey$&lt;&gt;"" then goto *quit
+    220   goto *loop
+    230 *quit
+    240   close #1
+  :tags:
+  - N88互換BASIC
+  :references:
+    :url: 
+    :title: 
+- :id: '6832'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6832
+  :user_name: mattsan
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/833/
+  :language: C
+  :time: 2008/07/25 06:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">まずはシンプルなところで。\r\n   1   0  -1\r\n   2   0   0\r\n
+    \  3   0   1\r\n   4  -1   1\r\n   5  -2   1\r\n   6  -1   1\r\n   7   0   1\r\n
+    \  8  -1   1\r\n   9  -1   0\r\n  10  -1   1</pre>\n\t"
+  :code: |
+    #include &lt;cstdlib&gt;
+    #include &lt;complex&gt;
+    #include &lt;iostream&gt;
+    #include &lt;iomanip&gt;
+
+    int main(int args, char* argv[])
+    {
+        std::complex&lt;int&gt; d[] =
+        {
+            std::complex&lt;int&gt;( 1,  0),
+            std::complex&lt;int&gt;( 0,  1),
+            std::complex&lt;int&gt;(-1,  0),
+            std::complex&lt;int&gt;( 0, -1)
+        };
+
+        std::complex&lt;int&gt; p(0, 0);
+
+        for(int i = 1; i &lt;= 10; ++i)
+        {
+            p += d[std::rand() % 4];
+            std::cout &lt;&lt; std::setw(4) &lt;&lt; i
+                      &lt;&lt; std::setw(4) &lt;&lt; p.real()
+                      &lt;&lt; std::setw(4) &lt;&lt; p.imag()
+                      &lt;&lt; std::endl;
+        }
+
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6833'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6833
+  :user_name: pooq
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/606/
+  :language: Other
+  :time: 2008/07/25 12:17 GMT
+  :vote_count: '5'
+  :vote_score: '5'
+  :body: "\n\t  <pre class=\"compact\">uwsc はマウスとキーボード入力を記録して再生するソフトですが\r\nスクリプト言語を備えています。\r\nこれを使ってランダムウォークをやってみました。出力にはwindows
+    付属の\r\npaint を使いましたが、マウスのドラッグで線が描けるソフトならなんでも\r\nいいと思います。\r\npaint などでマウスのドラッグで線が描ける状態にして、uwsc
+    を起動して\r\nこのスクリプトを読み込みます。マウスを開始したい位置に移動して\r\nALT+F1 で再生、ALT+F2で停止します。</pre>\n\t"
+  :code: |
+    dim dx[4]=-1,1,0,0
+    dim dy[4]=0,0,-1,1
+    t=input("歩数(dot)=",500)
+    w=input("歩幅(dot)=",5)
+    x=G_MOUSE_X
+    y=G_MOUSE_Y
+    btn(left,down,x,y)
+    for i=1 to t
+      r=random(4)
+      x=x+w*dx[r]
+      y=y+w*dy[r]
+      mmv(x,y,10)
+    next
+    btn(left,up)
+  :tags:
+  - uwsc
+  :references:
+    :url: /web/20090103063133/http://www.uwsc.info/
+    :title: uwsc
+- :id: '6835'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6835
+  :user_name: mattsan
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/833/
+  :language: Haskell
+  :time: 2008/07/25 22:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>きっともっと綺麗な書き方があると思うのですが、挑戦の意味を込めて投稿です。</p>\n\n\t"
+  :code: |
+    import System.Random
+    import Text.Printf
+
+    direction = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+
+    printPoint :: (Int, (Int, Int)) -&gt; IO ()
+    printPoint (n, (x, y)) = printf "%4d%4d%4d¥n" n x y
+
+    addPair (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
+
+    main = do
+      gen &lt;- getStdGen
+      mapM_ printPoint $ take 10 $ zip [1..] $ scanl addPair (0, 0) $ map (\x -&gt; direction !! (mod x 4)) $ randoms gen
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6839'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6839
+  :user_name: leque
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2008/07/26 00:56 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>座標の表現に複素数を使ってみました。描画はこの出力を gnuplot なり何なりに食わせてやればよいでしょう。</p>\n\n\t"
+  :code: |
+    (use srfi-27)
+
+    (define wvec '#(+1 -1 +i -i))
+
+    (define (main args)
+      (let ((n (string-&gt;number (cadr args)))
+            (l (vector-length wvec)))
+        (random-source-randomize! default-random-source)
+        (let random-walk ((m 0)
+                          (pos 0))
+          (when (&lt; m n)
+            (format #t "~A ~A ~A~%" m (real-part pos) (imag-part pos))
+            (random-walk (+ m 1) (+ pos (ref wvec (random-integer l))))))
+        0))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '6842'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6842
+  :user_name: 匿名
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/07/26 02:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">適当に。</pre>\n\t"
+  :code: |
+    from random import uniform
+    from itertools import islice
+    from math import sin,cos,pi
+
+    def randomwalk(x = 0,y = 0):
+        while True:
+            rad = uniform(0,2*pi)
+            x, y = x + cos(rad), y + sin(rad)
+            yield (x,y)
+
+    def main():
+        for i,(x,y) in enumerate(islice(randomwalk(),10)):
+            print i,x,y
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6845'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6845
+  :user_name: pooq
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/606/
+  :language: Other
+  :time: 2008/07/26 06:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">動作には直接影響しませんが、いくつか訂正します。\r\nパラメータ入力の文字列の部分が変でした。\r\n\r\nt=input(\"歩数(dot)=\",500)\r\n\r\n歩数の単位は歩幅なので
+    (dot) は間違いでした。\r\nパラメータの入力の順番は歩幅を先にした方が良いのかな。\r\n配列に初期値を設定する場合は、要素数は省略可能でした。</pre>\n\t"
+  :code: |
+    dim dx[]=-1,1,0,0
+    dim dy[]=0,0,-1,1
+    w=input("歩幅(dot)",5)
+    t=input("歩数",500)
+    x=G_MOUSE_X
+    y=G_MOUSE_Y
+    btn(left,down,x,y)
+    for i=1 to t
+      r=random(4)
+      x=x+w*dx[r]
+      y=y+w*dy[r]
+      mmv(x,y,10)
+    next
+    btn(left,up)
+  :tags:
+  - uwsc
+  :references:
+    :url: 
+    :title: 
+- :id: '6846'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6846
+  :user_name: crane
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/458/
+  :language: Other
+  :time: 2008/07/26 08:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Processing は可視化が容易です。とりあえずシンプル版。</p>\n\n\t"
+  :code: |
+    int x, y, t;
+
+    int d = 1;
+
+    void setup() {
+      x = width / 2;
+      y = height / 2;
+      t = 0;
+    //  randomSeed(0);
+    }
+
+    void draw() {
+      t += 1;
+      float r = random(1);
+      if (r &lt; 0.25) {
+        x += d;
+      } else if (r &lt; 0.5) {
+        x -= d;
+      } else if (r &lt; 0.75) {
+        y += d;
+      } else {
+        y -= d;
+      }
+      point(x, y);
+      println(t + " " + x + " " + y);
+    }
+  :tags:
+  - Processing
+  :references:
+    :url: 
+    :title: 
+- :id: '6850'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6850
+  :user_name: crane
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/458/
+  :language: Other
+  :time: 2008/07/26 09:35 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>複数の点を扱いアニメーションにした版。\n点を増やしていくとランダムウォークと拡散が関係していそう、というのが分かりますね。</p>\n\n\t"
+  :code: "int n = 1000;\nint t;\nParticle[] particles = new Particle[n];\n\nint hsb
+    = 16;\n\nvoid setup() {\n  colorMode(HSB, hsb);\n  size(200,200);\n\n  smooth();\n
+    \ for (int i=0; i &lt; n; i++) {\n    Particle p = new Particle(width/2, height/2,
+    1);\n    particles[i] = p;\n  }\n}\n\nvoid draw() {\n  t += 1;\n  float xm = 0;\n
+    \ float ym = 0;\n  for (int i=0; i &lt; n; i++) {\n    Particle p = particles[i];\n
+    \   p.move();\n    xm += p.x;\n    ym += p.y;\n    p.render();\n  }\n\n  println(t
+    + \" \" + xm/n + \" \" + ym/n); \n  \n  rectMode(CORNER);\n  fill(hsb, hsb * 0.25);\n
+    \ rect(0, 0, width, height);\n}\n\nclass Particle {\n  int x;\n  int y;\n  int
+    d;\n  \n  Particle(int x_, int y_, int d_) {\n    x = x_;\n    y = y_;\n    d
+    = d_;\n  }\n  \n  void move() {\n    float r = random(1);\n    if (r &lt; 0.25)
+    {\n       x += d;\n    } else if (r &lt; 0.5) {\n      x -= d;\n    } else if
+    (r &lt; 0.75) {\n      y += d;\n    } else {\n      y -= d;\n    }\n  }\n  \n
+    \ void render() {\n    point(x, y);\n  }\n}\n"
+  :tags:
+  - Processing
+  :references:
+    :url: 
+    :title: 
+- :id: '6852'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6852
+  :user_name: sumim
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/07/26 10:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    | pen origin out time |
+    pen := Pen new defaultNib: 1; color: Color red; place: (origin := Display center).
+    out := FileStream fileNamed: 'out.txt'.
+    time := 0.
+    [(time := time + 1) &lt; 1e3] whileTrue: [
+        out nextPutAll: time printString; tab; nextPutAll: (pen location - origin) printString; cr.
+        pen turn: 360 atRandom; go: 5].
+    out edit
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '6860'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6860
+  :user_name: ytakenaka
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/35/
+  :language: 
+  :time: 2008/07/26 21:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>大変おもしろいと思いました。:-)</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6862'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6862
+  :user_name: あにす
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/07/27 08:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  コマンドライン引数で次元数とログファイルのパスを指定するようにしました。\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+
+    class Program {
+        static void Main(string[] args) {
+            RandomWalk rndwalk = new RandomWalk(int.Parse(args[0]));
+
+            while(true) {
+                if(Console.ReadLine() != "end") {
+                    foreach(int i in rndwalk.Tic()) {
+                        Console.Write(i.ToString() + " ");
+                    }
+                    Console.WriteLine();
+                } else {
+                    break;
+                }
+            }
+
+            rndwalk.WriteLog(Environment.CurrentDirectory + "\\" + args[1]);
+
+            using(StreamReader sr = new StreamReader(Environment.CurrentDirectory + "\\" + args[1])) {
+                while(!sr.EndOfStream) {
+                    Console.WriteLine(sr.ReadLine());
+                }
+            }
+            Console.ReadLine();
+        }
+    }
+
+    class RandomWalk {
+        int rank;
+        List&lt;int[]&gt; log = new List&lt;int[]&gt;();
+        Random rnd = new Random();
+        int[] direction = new int[] { -1, 1 };
+
+        public RandomWalk(int rank) {
+            this.rank = rank;
+            log.Add(new int[rank]);
+        }
+
+        public int[] Tic() {
+            int changeRank = rnd.Next(0, rank);
+            int[] pre = log[log.Count - 1];
+            int[] ticedPoint = new int[rank];
+
+            for(int i = 0; i &lt; rank; i++) {
+                if(i == changeRank) {
+                    ticedPoint[i] = pre[i] + direction[rnd.Next(0, 2)];
+                } else {
+                    ticedPoint[i] = pre[i];
+                }
+            }
+
+            log.Add(ticedPoint);
+
+            return log[log.Count - 1];
+        }
+
+        public void WriteLog(string fileName) {
+            using(StreamWriter sw = new StreamWriter(fileName)) {
+                for(int time = 0; time &lt; log.Count; time++) {
+                    int[] point = log[time];
+                    sw.Write(time + " ");
+                    foreach(int i in point) {
+                        sw.Write(i.ToString() + " ");
+                    }
+                    sw.WriteLine();
+                }
+                sw.Close();
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6863'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6863
+  :user_name: lunlumo
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/813/
+  :language: Ruby
+  :time: 2008/07/27 19:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>貧相ですが，画面上に表示する様にしてみました。</p>\n</div>\n\t"
+  :code: "require 'vr/vruby'\nrequire 'vr/vrcontrol'\n\nclass RandomWalk\n    attr_accessor
+    :x, :y, :trace\n    \n    def self.next(current)\n        rand(2) == 0 ? (current
+    - 1) : (current + 1)\n    end\n    \n    def initialize\n        self.trace =
+    []\n        self.x = 0\n        self.y = 0\n    end\n    \n    def walk(step=10000)\n
+    \       self.trace = (1..step).map { |_| move }\n    end\n    \nprivate\n    def
+    move\n        [:x,:y].map { |p| send(\"#{p.to_s}=\".intern, self.class.next(send(p)))
+    }\n    end\nend\n\nclass RandomWalkPlotter &lt;VRForm\n    \n    include VRDrawable\n
+    \   \n    WIDTH    = 300\n    STEP    = 10000\n    \n    attr_accessor :scale\n
+    \   \n    def construct\n        random_walk\n        addControl VRButton, \"btn_walk\",
+    \"walk\", 10, 310, 40, 30\n        addControl VRButton, \"btn_save\", \"save\",
+    60, 310, 40, 30\n        addControl VRButton, \"btn_quit\", \"quit\", 240, 310,
+    40, 30\n        move 100, 100, 300, 385\n    end\n    \n    def btn_walk_clicked\n
+    \       random_walk\n        refresh\n    end\n    \n    def btn_save_clicked\n
+    \       if (file = SWin::CommonDialog::saveFilename(self))\n            File.open(file,\"w\")
+    { |f| (1..trace.size).zip(trace).each { |d| f.puts(d.flatten.join(\",\")) } }\n
+    \       end\n    end\n    \n    def btn_quit_clicked\n        close\n    end\n
+    \   \n    def self_paint\n        setPen RGB(0, 0, 0)\n        x, y = WIDTH /
+    2, WIDTH / 2\n        trace.each do |p|\n            l = [(p[0] * scale).to_i
+    + WIDTH / 2,WIDTH / 2 - (p[1] * scale).to_i]\n            drawLine x , y , *l\n
+    \           x, y = *l\n        end\n    end\n    \n    def random_walk\n        random_walk
+    = RandomWalk.new\n        random_walk.walk STEP\n        self.trace = random_walk.trace\n
+    \   end\n    \n    def trace=(trace)\n        @trace = trace\n        self.scale
+    = WIDTH.to_f / (trace.flatten.inject(0) { |m,p| (m &lt; p.abs) ? p.abs : m } *
+    2)\n    end\n    \n    def trace\n        @trace\n    end\nend\n\nVRLocalScreen.start
+    RandomWalkPlotter\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6865'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6865
+  :user_name: ika
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2008/07/27 21:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>出力はSVGにしてみました。</p>\n\n\t"
+  :code: |
+    private import std.stdio, std.math, std.random;
+
+    void main() {
+        write(`&lt;?xml version="1.0"?&gt;
+    &lt;!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"&gt;
+    &lt;svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="600" height="600"&gt;
+    &lt;title&gt;ランダムウォーク&lt;/title&gt;
+    &lt;g transform="translate(300,300)"&gt;
+    &lt;circle style="fill:blue" cx="0" cy="0" r="5"/&gt;
+    &lt;path style="fill:none; stroke:black; stroke-width:1" d="M 0 0`);
+
+        auto rgen = Random(unpredictableSeed);
+        auto uniform = UniformDistribution!(real)(0, PI * 2);
+        foreach(_; 0 .. 10000) {
+            auto angle = uniform.next(rgen);
+            auto move = expi(angle) * 10;
+            writef(` l %.2f %.2f`, move.re, move.im);
+        }
+
+        write(`"/&gt;
+    &lt;/g&gt;
+    &lt;/svg&gt;`);
+    }
+  :tags:
+  - SVG
+  :references:
+    :url: 
+    :title: 
+- :id: '6870'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6870
+  :user_name: '186'
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/352/
+  :language: R
+  :time: 2008/07/28 08:50 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>なぜかRで\n1-1と2-1は解いてません\n本職の人はどう書くんでしょう?</p>\n\n\t"
+  :code: "t &lt;- 1000\n#1次元\nplot(cumsum(c(0,2*floor(2*runif(t-1))-1)),type=\"l\")\n#2次元\nx
+    &lt;- 0\ny &lt;- 0\nf.x &lt;- function(t){switch(t,1,-1,0,0)}\nf.y &lt;- function(t){switch(t,0,0,1,-1)}\nw
+    &lt;- floor(4*runif(t)+1)\nmove.x &lt;- unlist(lapply(as.list(w),f.x))\nmove.y
+    &lt;- unlist(lapply(as.list(w),f.y))\nx &lt;- x + cumsum(move.x)\ny &lt;- y +
+    cumsum(move.y)\nplot(x,y,type=\"b\") \n#3次元\nlibrary(scatterplot3d)\nz &lt;- 1:t\nscatterplot3d(x,y,z,pch=20)\n"
+  :tags: []
+  :references:
+    :url: /web/20090103063133/http://cse.naro.affrc.go.jp/takezawa/r-tips/r2.html
+    :title: R-Tips
+- :id: '6871'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6871
+  :user_name: kkobayashi
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2008/07/28 11:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>本職ではありませんが・・・</p>\n<p>simecolというライブラリーに、ランダムウォークを実装するためのフレームワークが用意されています。</p>\n<p>もちろんアニメーションもします。</p>\n\n\t"
+  :code: "library(simecol)\n\nsize &lt;- 50\nobj &lt;- rwalkModel(\n  parms = list(size=size,
+    area=c(0, size, 0, size)),\n  init  = data.frame(time=0, x=size/2, y=size/2),\n
+    \ times = c(from=0, to=100, by=1),\n  main  = function(time, init, parms) {\n
+    \   r &lt;- 2 * pi * runif(1)\n    data.frame(time=time, x=((init$x + cos(r))
+    %% parms$size), \n               y=((init$y + sin(r)) %% parms$size))\n  }\n)\nsim(obj,
+    animate=T)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6889'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6889
+  :user_name: nemo_kaz
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/837/
+  :language: Groovy
+  :time: 2008/07/30 09:16 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  GUIで作ってみました。\r<br>画像が置けないので、画面イメージはBLOGに貼っています。\r<br>\"Run\"ボタンを押すたび100回ずつ動きます。\r<br>\"Groovy in Action\"を参考にしました。\r<br><br>実行結果\r<br>-------------------------\r<br>以下のURLに画面イメージ貼り付け。\r<br>http://d.hatena.ne.jp/nemo_kaz/20080730\r<br><br><br><br>"
+  :code: "import groovy.swing.SwingBuilder\nimport java.awt.Color\nimport java.awt.BorderLayout
+    as BL\nimport javax.swing.WindowConstants as WC\nimport javax.swing.BorderFactory
+    as BF\nimport javax.swing.JOptionPane\nswing = new SwingBuilder()\npaint = swing.action(\n
+    \   name: 'Run',\n    closure: this.&amp;paintGraph,\n    mnemonic: 'R',\n    accelerator:
+    'ctrl R'\n)\nabout = swing.action(\n    name: 'About',\n    closure: this.&amp;showAbout,\n
+    \   mnemonic: 'A',\n    accelerator: 'F1'\n)\nframe = swing.frame(title:'2次元ランダムウォーク',\nlocation:[100,100],
+    size:[300,300],\ndefaultCloseOperation:WC.EXIT_ON_CLOSE) {\n    menuBar (){\n
+    \       menu(mnemonic:'A','Action'){\n        menuItem(action:paint)\n        }\n
+    \       glue()\n        menu(mnemonic:'H','Help'){\n            menuItem(action:about)\n
+    \       }\n    }\n    panel (border:BF.createEmptyBorder(6,6,6,6)) {\n        borderLayout()\n
+    \   \n        vbox(constraints: BL.CENTER,border:BF.createTitledBorder('Runボタンを押すたびに100回動きます'))
+    {\n            panel(id:'canvas')\n        }\n\n        hbox (constraints: BL.SOUTH){\n
+    \           hstrut(width:10)\n            button(action:paint)\n        }\n    }\n}\n\nframe.show()\n\ndef
+    labeledSpinner(label, value){\n    swing.label(label)\n    swing.hstrut()\n    swing.spinner(id:label,
+    stateChanged:this.&amp;paintGraph,\n    model:swing.spinnerNumberModel(value:value))\n}\n
+    \   gfx = swing.canvas.graphics\n    gfx.color = new Color(255, 255, 150)\n    gfx.color
+    = Color.red\n    xpos = 100\n    ypos = 100\ndef paintGraph(event) {\n\n    int
+    width = swing.canvas.size.width\n    int height = swing.canvas.size.height\n    \n
+    \   1.upto(100) {\n        xdir = Math.random()\n        ydir = Math.random()\n
+    \       if (xdir &lt;0.3333 &amp;&amp;  xpos &gt;5)         { xpos-=5 }\n        if
+    (xdir &gt;0.6666 &amp;&amp; (xpos &lt; width-5)) { xpos+=5 }\n        if (ydir
+    &lt;0.3333 &amp;&amp;  ypos &gt;5)         { ypos-=5 }\n        if (ydir &gt;0.6666
+    &amp;&amp; (ypos &lt;height-5)) { ypos+=5 }\n        gfx.fillRect(xpos,ypos,4,4)\n
+    \   }\n}\nvoid showAbout(event) {\n    JOptionPane.showMessageDialog(frame,\n
+    \   '''2次元ランダムウォーク\n赤い四角がランダムに歩きます。''')\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6895'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6895
+  :user_name: horiuchi
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/07/31 23:59 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Java がまだ投稿されていなかったので、Swingで表示するものを作ってみました。</p>\n\n\t"
+  :code: |
+    import java.awt.Color;
+    import java.awt.Dimension;
+    import java.awt.FlowLayout;
+    import java.awt.Graphics;
+    import java.awt.Point;
+    import java.awt.event.ActionEvent;
+    import java.awt.event.ActionListener;
+    import java.util.ArrayList;
+    import java.util.List;
+    import java.util.Random;
+    import java.util.Timer;
+    import java.util.TimerTask;
+
+    import javax.swing.AbstractAction;
+    import javax.swing.Box;
+    import javax.swing.JButton;
+    import javax.swing.JComponent;
+    import javax.swing.JFrame;
+    import javax.swing.JLabel;
+    import javax.swing.JPanel;
+    import javax.swing.JTextField;
+
+    public class RandomWalk extends JFrame {
+        private static final int WIDTH = 640;
+        private static final int HEIGHT = 480;
+        private static final Dimension PLOT_SIZE = new Dimension(WIDTH, HEIGHT);
+
+        private final JTextField countField_ = new JTextField(8);
+        private final JButton startButton_ = new JButton(new AbstractAction("開始") {
+            public void actionPerformed(ActionEvent e) { start(); }
+        });
+        private final JButton stopButton_ = new JButton(new AbstractAction("停止") {
+            public void actionPerformed(ActionEvent e) { stop(); }
+        });
+        private final JButton endButton_ = new JButton(new AbstractAction("終了") {
+            public void actionPerformed(ActionEvent e) { dispose(); }
+        });
+
+        private final Random random_ = new Random();
+
+        private volatile boolean walking_ = false;
+        private final List&lt;Point&gt; points_ = new ArrayList&lt;Point&gt;();
+
+        public RandomWalk() {
+            super("2次元ランダムウォーク");
+            this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            this.setResizable(false);
+
+            configure();
+
+            Box main = Box.createVerticalBox();
+            main.add(createOperationArea());
+            main.add(createPlotArea());
+            this.add(main);
+
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                public void run() {
+                    repaint();
+                };
+            }, 0, 100L);
+        }
+        private void configure() {
+            countField_.setText("1000");
+
+            startButton_.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                }
+            });
+            stopButton_.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                }
+            });
+        }
+
+        private JComponent createPlotArea() {
+            plotArea_.setBackground(Color.WHITE);
+            plotArea_.setPreferredSize(PLOT_SIZE);
+            return plotArea_;
+        }
+        private JComponent createOperationArea() {
+            JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            panel.add(new JLabel("N="));
+            panel.add(countField_);
+            panel.add(Box.createHorizontalGlue());
+            panel.add(startButton_);
+            panel.add(stopButton_);
+            panel.add(endButton_);
+            return panel;
+        }
+
+
+        public void start() {
+            initialize();
+            walking_ = true;
+        }
+        public void stop() {
+            walking_ = false;
+        }
+
+
+        private void initialize() {
+            int count = 1;
+            try {
+                count = Integer.parseInt(countField_.getText());
+            } catch (NumberFormatException e) {
+            }
+            points_.clear();
+            points_.add(new Point(WIDTH / 2, HEIGHT / 2));
+            for (int index = 1; index &lt; count; index++) {
+                points_.add(new Point(random_.nextInt(WIDTH), random_.nextInt(HEIGHT)));
+            }
+        }
+
+        private final JPanel plotArea_ = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+
+                if (walking_) {
+                    for (Point p: points_) {
+                        nextStep(p);
+                        g.drawRect(p.x, p.y, 1, 1);
+                    }
+                }
+            }
+            private void nextStep(Point p) {
+                switch (random_.nextInt(4)) {
+                    case 0:
+                        p.x--;
+                        break;
+                    case 1:
+                        p.x++;
+                        break;
+                    case 2:
+                        p.y--;
+                        break;
+                    case 3:
+                        p.y++;
+                        break;
+                }
+            }
+        };
+
+
+        public static void main(String[] args) {
+            RandomWalk frame = new RandomWalk();
+            frame.pack();
+            frame.setVisible(true);
+        }
+    }
+  :tags:
+  - Java1.5
+  - Swing
+  :references:
+    :url: 
+    :title: 
+- :id: '6896'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6896
+  :user_name: pooq
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/606/
+  :language: R
+  :time: 2008/08/01 00:48 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">2次元も1次元と同じような書き方でいいと思いますが。</pre>\n\t"
+  :code: |
+    w &lt;- floor(4*runif(t)+1)
+    plot(cumsum(c(1,-1,0,0)[w]),cumsum(c(0,0,1,-1)[w]),type="b")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6897'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6897
+  :user_name: kkobayashi
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2008/08/01 16:38 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>もっといえば、1～4の乱数が欲しいようなときはrunif()ではなくsample()を使った方がRっぽいかもです。</p>\n\n\t"
+  :code: |
+    plot(cumsum(data.frame(x=c(1,-1,0,0), y=c(0,0,1,-1))[sample(4, t, replace=T),]), type="b")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6942'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6942
+  :user_name: veleno
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/863/
+  :language: Python
+  :time: 2008/08/03 07:56 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Tkinterを使ってGUIでやってみた。ステップ数はスライダで調節し、incrementボタンで開始してください。</p>\n\n\t"
+  :code: "#!/usr/bin/env python\n\nimport Tkinter\nimport random\nimport math\n        \nclass
+    randomWalkTk2D:\n    def __init__(self):\n        window = Tkinter.Tk()\n        self.width
+    = 800\n        self.height = 600\n        self.canvas = Tkinter.Canvas(window,
+    bg=\"white\",\n                                     width=self.width,\n                                     height=self.height)\n
+    \       self.canvas.pack()\n\n        self.move = Tkinter.Button(window, text=\"increment\",\n
+    \                                  command=self.increment)\n        self.move.pack(side=Tkinter.RIGHT)\n\n
+    \       self.chooser = Tkinter.Scale(window, from_=1, to=10000, orient=Tkinter.HORIZONTAL)\n
+    \       self.chooser.pack(side=Tkinter.LEFT)\n        self.chooser.set(100)\n\n
+    \       self.window = window\n        self.x = float(self.width)/2\n        self.y
+    = float(self.height)/2\n\n        window.mainloop()\n\n    def increment(self,count=-1):\n
+    \       if count==-1:\n            count = self.chooser.get()\n        if count==0:\n
+    \           return\n        rad = random.random() * 2 * math.pi\n        newx
+    = self.x + math.cos(rad)\n        newy = self.y + math.sin(rad)\n        self.canvas.create_line(int(self.x),int(self.y),int(newx),int(newy),\n
+    \                               fill='red',width=1)\n        self.x,self.y = newx,newy\n
+    \       self.window.after(1,self.increment,count-1)\n\n    def clearCanvas(self):\n
+    \       for item in self.objects[:]:\n            self.canvas.delete(item)\n        self.objects
+    = []\n\n\nrandomWalkTk2D()\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6965'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/6965
+  :user_name: ISA
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/845/
+  :language: Ruby
+  :time: 2008/08/03 23:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>n次元ランダムウォーカー。\nとりあえず値のみの変化で、画像出力はまたこんど。</p>\n<p>自己回避を入れてみようとしたけど汚くなったので止めた。</p>\n\n\t"
+  :code: "class RandomWalker\n  WALK = [-1, +1]\n  \n  def initialize dimension =
+    1\n    @dimension = dimension\n    @history = []\n    \n    @position = Array.new(dimension,
+    0)\n    @history &lt;&lt; @position.dup\n  end\n  \n  def walk\n    @position[rand(@dimension)]
+    += WALK[rand(2)]\n    @history &lt;&lt; @position.dup\n  end\n  \n  def to_s\n
+    \   result = \"\"\n    @history.each_with_index do |position, time|\n      result
+    &lt;&lt; \"#{time} #{position.join \" \"}\\n\"\n    end\n    result\n  end\n  \n
+    \ def save filename\n    File.open(filename, \"w\") do |file|\n      file.write
+    to_s\n    end\n  end\nend\n\nrw = RandomWalker.new(2) # 2次元ランダムウォーカーを作成\n100.times
+    do\n  rw.walk\nend\nrw.save \"rw.txt\"\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7012'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/7012
+  :user_name: lunlumo
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/813/
+  :language: Scala
+  :time: 2008/08/06 12:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>　scala+swingで書いてみました。</p>\n</div>\n\t"
+  :code: "import    java.awt.BorderLayout\nimport    java.awt.Color\nimport    java.awt.Dimension\nimport
+    \   java.awt.FlowLayout\nimport    java.awt.Graphics\nimport    java.awt.Point\nimport
+    \   java.awt.event.ActionEvent\nimport    java.awt.event.ActionListener\nimport
+    \   java.io.BufferedWriter\nimport    java.io.File\nimport    java.io.FileOutputStream\nimport
+    \   java.io.OutputStreamWriter\nimport    java.io.PrintWriter\nimport    java.util.Random\nimport
+    \   javax.swing.JButton\nimport    javax.swing.JFileChooser\nimport    javax.swing.JFrame\nimport
+    \   javax.swing.JMenu\nimport    javax.swing.JMenuBar\nimport    javax.swing.JMenuItem\nimport
+    \   javax.swing.JPanel\n\nclass RandomWalk(step:int) {\n    private    var    _trace:List[Point]
+    = null\n    private    val    rand:Random = new Random\n    \n    def walk:RandomWalk
+    = {\n        var    p = new Point(0,0)\n        trace = (new Range(1,step,1)).map[Point]
+    { i =&gt; p = move(p); p }.toList\n        this\n    }\n    \n    private def
+    move(p:Point):Point = rand.nextInt(4) match {\n        case 0 =&gt; new Point(p.x
+    + 1, p.y)\n        case 1 =&gt; new Point(p.x - 1, p.y)\n        case 2 =&gt;
+    new Point(p.x, p.y + 1)\n        case 3 =&gt; new Point(p.x, p.y - 1)\n        case
+    _ =&gt; p\n    }\n    \n    def trace_=(trace:List[Point]) = { _trace = trace
+    }\n    def trace = _trace\n}\n\nclass Button(l:String,c:ActionEvent=&gt;Unit)
+    extends JButton with ActionListener {\n    \n    setText(l)\n    addActionListener(this)\n
+    \   \n    override def actionPerformed(e:ActionEvent) = c(e)\n}\n\nclass MenuItem(l:String,c:ActionEvent=&gt;Unit)
+    extends JMenuItem with ActionListener {\n    \n    setText(l)\n    addActionListener(this)\n
+    \   \n    override def actionPerformed(e:ActionEvent) = c(e)\n}\n\nclass Panel
+    extends JPanel {\n    var    _trace:List[Point] = null\n    \n    def trace_=(trace:List[Point])
+    = { _trace = trace }\n    def trace = _trace\n    \n    override def paint(g:Graphics):Unit
+    = {\n        val    max:int = trace.foldLeft(0) { (m,p) =&gt; List(p.x,p.y).foldLeft(m)
+    { (m,l) =&gt; Math.max(m,Math.abs(l)) } }\n        val    pitch:double = getWidth.asInstanceOf[double]
+    / (max * 2)\n        \n        def drawLine(c:Point,trace:List[Point]):Unit =
+    {\n            trace match {\n                case List() =&gt; ()\n                case
+    (p::rest) =&gt; {\n                    g.drawLine(\n                            (c.x
+    * pitch).asInstanceOf[int] + getWidth / 2,\n                            getWidth
+    / 2 - (c.y * pitch).asInstanceOf[int],\n                            (p.x * pitch).asInstanceOf[int]
+    + getWidth / 2,\n                            getWidth / 2 - (p.y * pitch).asInstanceOf[int]\n
+    \                       )\n                    drawLine(p,rest)\n                }\n
+    \           }\n        }\n        \n        g.clearRect(0,0,getWidth,getHeight)\n
+    \       g.setColor(Color.BLACK)\n        \n        drawLine(new Point(0,0),trace)\n
+    \   }\n}\n\nclass Plotter(title:String,step:int) extends JFrame {\n    \n    var
+    \   walker = (new RandomWalk(step)).walk\n    var    _panel:Panel = null\n    \n
+    \   def panel_=(panel:Panel) = { _panel = panel }\n    def panel = _panel\n    \n
+    \   def walk:Unit = {\n        walker.walk\n        panel.trace = walker.trace\n
+    \   }\n    def walk(e:ActionEvent):Unit = {\n        walk\n        repaint()\n
+    \   }\n    def save(e:ActionEvent):Unit = {\n        val    fc:JFileChooser =
+    new JFileChooser()\n        \n        try {\n            if (fc.showSaveDialog(this)
+    == JFileChooser.APPROVE_OPTION) {\n                val    f:File = fc.getSelectedFile\n
+    \               val    w:PrintWriter = new PrintWriter(new BufferedWriter(new
+    OutputStreamWriter(new FileOutputStream(f))))\n                \n                def
+    writeTrace(trace:List[(int,Point)]):Unit = {\n                    trace match
+    {\n                        case List() =&gt; ()\n                        case
+    (i::rest) =&gt; {\n                            w.printf(\"%d\\t%d\\t%d\\n\",Array(Integer.valueOf(i._1),Integer.valueOf(i._2.x),Integer.valueOf(i._2.y)))\n
+    \                           writeTrace(rest)\n                        }\n                    }\n
+    \               }\n                \n                writeTrace((new Range(1,walker.trace.size,1)).toList.zip(walker.trace))\n
+    \               w.close\n            }\n        } catch {\n            case e
+    =&gt; e.printStackTrace\n        }\n    }\n    def quit(e:ActionEvent):Unit =
+    {\n        System.exit(0)\n    }\n}\n\nobject Main extends Application {\n    var
+    \   p = new Plotter(\"random walk\",10000)\n    val    mb = new JMenuBar\n    val
+    \   fm = new JMenu(\"file\")\n    val    em = new JMenu(\"walk\")\n    val    c
+    = p.getContentPane\n    val    pp = new Panel\n    val    bp = new JPanel\n    \n
+    \   c.setLayout(new BorderLayout)\n    pp.setPreferredSize(new Dimension(300,300))\n
+    \   c.add(pp,BorderLayout.CENTER)\n    p.panel = pp\n    bp.setLayout(new FlowLayout)\n
+    \   bp.add(new Button(\"walk\",p.walk))\n    bp.add(new Button(\"save\",p.save))\n
+    \   c.add(bp,BorderLayout.SOUTH)\n    \n    fm.add(new MenuItem(\"save\",p.save))\n
+    \   fm.add(new MenuItem(\"quit\",p.quit))\n    mb.add(fm)\n    em.add(new MenuItem(\"walk\",p.walk))\n
+    \   mb.add(em)\n    p.setJMenuBar(mb)\n    \n    p.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)\n
+    \   p.setResizable(false)\n    p.pack\n    \n    p.walk\n    \n    p.setVisible(true)\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7140'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/7140
+  :user_name: ytakenaka
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/35/
+  :language: Haskell
+  :time: 2008/08/16 23:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>僕もhaskellの練習で作ってみました。長くなってしまった。乱数の使い方が難しくって強引な事(unsafeを利用している）をしたけど、mattanさんがやってるようなすっきりとした利用方法があるんですね。</p>\n<p>&gt;writeRW2D
+    \"file.name\" 100</p>\n<p>時刻0-99までのxy位置が書かれる。</p>\n\n\t"
+  :code: "import System.IO.Unsafe \nimport System.Random\n\ntype XYPlot a = (a,a)\n\nrandom4::
+    IO Int\nrandom4 = getStdRandom (randomR (0,3))\n\nnextStep::  XYPlot Int -&gt;
+    IO Int -&gt; XYPlot Int \nnextStep (x,y) iorand \n    | rand == 0 = (x+1,y)\n
+    \   | rand == 1 = (x,y+1)\n    | rand == 2 = (x-1,y)\n    | rand == 3 = (x,y-1)\n
+    \   where rand =  unsafePerformIO $ iorand\n\nrandomWalk2D:: XYPlot Int -&gt;
+    [XYPlot Int]\nrandomWalk2D (x,y) = [(x,y)]++randomWalk2D (nextStep (x,y) random4)\n\nformatRW2D::
+    XYPlot Int -&gt; String\nformatRW2D (x,y) = (show x) ++ \" \" ++ (show y) ++ \"\\n\"\n\nrw2DtoStr::
+    Int -&gt; [XYPlot Int]-&gt;String\nrw2DtoStr count (x:xs) = show count ++ \" \"
+    ++\n                         formatRW2D x ++ (rw2DtoStr (1+ count) xs)\nrw2DtoStr
+    count [] = \"\"\n\nwriteRW2D::FilePath -&gt; Int -&gt;IO()\nwriteRW2D fname terminal
+    =      \n    writeFile fname $rw2DtoStr 0 $take terminal $randomWalk2D (0,0)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7572'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/7572
+  :user_name: emasaka
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/09/05 16:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>上下左右のみの単純実装です。</p>\n\n\t"
+  :code: |
+    dx=(1 0 -1 0)
+    dy=(0 1 0 -1)
+    x=0
+    y=0
+    i=0
+    while :;do
+        echo $((i++)) $x $y
+        ((r = RANDOM % 4))
+        ((x += dx[r]))
+        ((y += dy[r]))
+    done
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7909'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/7909
+  :user_name: leque
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/840/
+  :language: Common
+  :time: 2008/10/31 18:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>Common Lisp 手習い。 <a href=\"/web/20090103063133/http://ja.doukaku.org/comment/6839/\">#6839</a>
+    を写経。\n</p>\n\n\n\n\t"
+  :code: |
+    (let ((ms #(#c(+1 0)
+                #c(0 +1)
+                #c(-1 0)
+                #c(0 -1)))
+          (n 10))
+      (do ((p #c(0 0) (+ p (aref ms (random 4))))
+           (i 0 (+ i 1)))
+          ((= i n))
+        (format t "~A ~A ~A~%" i (realpart p) (imagpart p))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8150'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/8150
+  :user_name: taninsw
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/973/
+  :language: Haskell
+  :time: 2008/12/13 06:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>図示はやりかたをしりません。</p>\n\n\t"
+  :code: "--1次元版\nimport Random\nimport IO\n\nrandomWalk :: StdGen -&gt; [Int]\nrandomWalk
+    stdGen = map fst $ take 100 $ iterate f (0,stdGen)\n   where f (x1,ranGen) = let
+    (xp,nextGen) = (randomR(0,1) ranGen)\n                         in  (x1+xp*2-1,nextGen)
+    \n\nmain = do stdRanGen &lt;- newStdGen\n          h         &lt;- openFile \"randomwalk1.dat\"
+    WriteMode\n          hPutStr h $ unlines $ \n             zipWith (\\a b-&gt;show
+    a ++\"\\t\"++ show b) [0..] $ randomWalk stdRanGen\n          hClose h\n\n\n\n\n\n--二次元版\nimport
+    Random\nimport IO\n\nrandomWalk :: StdGen -&gt; [(Int,Int)]\nrandomWalk stdGen
+    = map fst $ take 100 $ iterate f ((0,0),stdGen)\n   where f ((x1,y1),ranGen) =
+    let (xp,middleGen) = (randomR(0,1) ranGen)\n                                  (yp,nextGen)
+    \  = (randomR(0,1) middleGen)\n                              in  ((x1+xp*2-1,y1+yp*2-1),nextGen)
+    \n\nmain = do stdRanGen &lt;- newStdGen\n          h         &lt;- openFile \"randomwalk2.dat\"
+    WriteMode\n          hPutStr h $ unlines $ \n             zipWith (\\a b-&gt;show
+    a ++\"\\t\"++ show b) [0..] $ randomWalk stdRanGen\n          hClose h\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8271'
+  :parent_id: '193'
+  :url: http://ja.doukaku.org/comment/8271
+  :user_name: 割と普通
+  :user_url: /web/20090103063133/http://ja.doukaku.org/user/581/
+  :language: JavaScript
+  :time: 2009/01/02 20:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>div タグを使ってランダムウォークのアニメーションまで実現しました。\r</p>\n<p>\r</p>\n<p>window.onloadに追加はイマイチなのは自覚していますが、その点でのブラウザ互換に凝る必要は無いと思ったので今回は簡単化してます。</p>\n</div>\n\t"
+  :code: |
+    &lt;!DOCTYPE html PUBLIC "-W3CDTD XHTML 1.0 StrictEN"
+    "http:www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+    &lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+    &lt;head&gt;
+        &lt;title&gt;どう書く？ランダムウォーク&lt;/title&gt;
+        &lt;script type="text/javascript"&gt;
+            var RandomWalk = {
+                _msgId: "msg",
+                _boxId: "walkbox",
+                _step: 20,
+                _time: 100,
+                start: function() {
+                    var box = document.getElementById(RandomWalk._boxId);
+                    box.style.top = box.parentNode.offsetHeight / 2 + "px";
+                    box.style.left = box.parentNode.offsetWidth / 2 + "px";
+                    setInterval(RandomWalk.update, RandomWalk._time);
+                },
+                update: function(style) {
+                    var box = document.getElementById(RandomWalk._boxId);
+                    box.style.top = RandomWalk.next_pos(box.offsetTop, box.parentNode.offsetHeight);
+                    box.style.left = RandomWalk.next_pos(box.offsetLeft, box.parentNode.offsetWidth);
+                    RandomWalk.show_message(box);
+                },
+                show_message: function(box) {
+                    document.getElementById(RandomWalk._msgId).innerHTML = "top=" + box.style.top + ", left=" + box.style.left;
+                },
+                next_pos: function(pos, max) {
+                    var val = pos + RandomWalk._step / 2 - Math.random() * RandomWalk._step;
+                    if (val &lt; 0) val = 0;
+                    if (val &gt; max) val = max;
+                    return val + "px";
+                }
+            }
+            window.onload = function(){ RandomWalk.start() };
+        &lt;/script&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;div style="border: 1px solid #0000FF; width: 300px; height: 300px;"&gt;
+            &lt;div id="walkbox" style="width: 5px; height: 5px; position: absolute; background-color: #66FF33;
+                border: 1px solid #DDEEFF;"&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div id="msg"&gt;
+        &lt;/div&gt;
+    &lt;/body&gt;
+    &lt;/html&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 

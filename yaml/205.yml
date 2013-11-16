@@ -1,0 +1,1281 @@
+---
+:id: '205'
+:title: 起動オプションの解析
+:comments:
+- :id: '7405'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7405
+  :user_name: raynstard
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2008/08/27 06:46 GMT
+  :vote_count: '4'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">いわゆる、コマンドライン引数の取得(http://ja.doukaku.org/118/)からの派生です。\r\nやっぱ、自分のコマンドってオプションつけたいですよね(笑\r\nタグに「クックブック」なんてつけてみました\r\n長文なのはご容赦ください^^;;\r\n-----\r\n次の起動インタフェースを持つコマンドを作成してください。\r\n\r\n書式：cmdopt
+    -o [-q] -d{0|1|2} 文字列 [文字列 ...]\r\n\r\n書式を説明すると\r\n- オプション「o」\r\n  必須オプションです。指定されていない場合、異常終了してください。\r\n-
+    オプション「q」\r\n  選択オプションです。\r\n  省略されていても問題有りません。\r\n- オプション「d」\r\n  引数付きオプションです。\r\n
+    \ 「0」「1」「2」のいずかが続いて指定されます。\r\n- 文字列\r\n  パラメータです。\r\n  1つ以上であればいくつでも指定できます。\r\n
+    \ 指定されていなかった場合、異常終了してください。\r\n\r\nオプションの開始が「-」になっていますが\r\n「+」や「/」でもかまいません。\r\n余力があればロングオプションに対応してもよいです。\r\n\r\n起動例：(すべて許容されるのが望ましいです)\r\n1.
+    cmdopt -o AAA\r\n2. cmdopt -o AAA BBB CCC\r\n3. cmdopt -oq AAA\r\n4. cmdopt -o
+    \ -q AAA\r\n5. cmdopt -o -s1 AAA\r\n6. cmdopt -o -s 1 AAA\r\n7. cmdopt -q -s2
+    -o AAA\r\n\r\n出力例：\r\n[オプション情報]\r\no(output)： ON|OFF\r\nq(quote)： ON|OFF\r\nd(debug)：
+    0|1|2 \r\n\r\n[パラメータ情報]\r\n指定数： N\r\n1： 文字列1\r\n2： 文字列2\r\n...\r\nN： 文字列N\r\n</pre>\r\n\t"
+  :code: ''
+  :tags:
+  - クックブック
+  :references:
+    :url: 
+    :title: 
+- :id: '7614'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7614
+  :user_name: raynstard
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2008/09/10 12:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">えーと。何人かの方から指摘されていますが\r\n-sは-dの間違いです。\r\nまた、-dのオプションは省略可能なオプションでした。\r\n\r\nということで書式を訂正すると\r\n書式：cmdopt
+    -o [-q] [-d{0|1|2}] 文字列 [文字列 ...]\r\nです。\r\n\r\nそれと起動例も\r\n1. cmdopt -o AAA\r\n2.
+    cmdopt -o AAA BBB CCC\r\n3. cmdopt -oq AAA\r\n4. cmdopt -o  -q AAA\r\n5. cmdopt
+    -o -d1 AAA\r\n6. cmdopt -o -d 1 AAA\r\n7. cmdopt -q -d2 -o AAA\r\nとなります。\r\n\r\nフォロー遅くなってしまって申し訳ないです。\r\n期末恒例のお祭りが発生しちゃって^^;;\r\n指摘ありがとうございました。</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7599'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7599
+  :user_name: turugina
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/760/
+  :language: C
+  :time: 2008/09/09 03:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ちょうど、今日TwitterでBoost.Program_optionsの話題が出てたとこでした。\r\nなんというタイミング。</pre>\n\t"
+  :code: "#include &lt;iostream&gt;\n#include &lt;vector&gt;\n#include &lt;string&gt;\n#include
+    &lt;exception&gt;\n\n#include &lt;boost/program_options/options_description.hpp&gt;\n#include
+    &lt;boost/program_options/variables_map.hpp&gt;\n#include &lt;boost/program_options/parsers.hpp&gt;\n\nint
+    main(int c, char**v)\n{\n  try {\n    namespace po = boost::program_options;\n\n
+    \   int debug;\n\n    po::options_description desc(\"Options\");\n    desc.add_options()\n
+    \     (\"output,o\", \"output flag [required]\")\n      (\"quote,q\", \"quote
+    flag\")\n      (\"debug,d\", po::value&lt; int &gt;(&amp;debug)-&gt;default_value(0),
+    \"debug level [0|1|2]\")\n      ;\n    po::options_description hidden(\"hidden
+    optionis\");\n    hidden.add_options()\n      (\"input\", po::value&lt; std::vector&lt;
+    std::string &gt; &gt;(), \"input file [at least one required]\")\n      ;\n\n
+    \   po::positional_options_description positional;\n    positional.add(\"input\",
+    -1);\n\n    po::options_description visible(\"Allowed Options\");\n    visible.add(desc);\n\n
+    \   po::options_description full(\"Full Options\");\n    full.add(desc).add(hidden);\n\n
+    \   po::variables_map vm;\n    po::store(po::command_line_parser(c, v).options(full).positional(positional).run(),
+    vm);\n    po::notify(vm);    \n\n    bool error=false;\n    if ( !vm.count(\"output\")
+    ) {\n      std::cerr &lt;&lt; \"*** you must specify -o option\\n\\n\";\n      error
+    = true;\n    }\n    if ( !vm.count(\"input\") ) {\n      std::cerr &lt;&lt; \"***
+    you must specify at least 1 input parameter\\n\\n\";\n      error = true;\n    }\n
+    \   if ( debug &lt; 0 || debug &gt; 2 ) {\n      std::cerr &lt;&lt; \"*** debug
+    level must be 0, 1 or 2\\n\\n\";\n      error = true;\n    }\n    \n    if ( error
+    ) {\n      std::cerr &lt;&lt; visible &lt;&lt; \"\\n\";\n      return 1;\n    }\n\n
+    \   bool output = vm.count(\"output\");\n    bool quote  = vm.count(\"quote\");\n\n
+    \   if ( output ) {\n      std::cout &lt;&lt; \"[オプション情報]\\n\";\n      std::cout
+    &lt;&lt; \"o(output) : \" &lt;&lt; (output ? \"ON\" : \"OFF\") &lt;&lt; \"\\n\";\n
+    \     std::cout &lt;&lt; \"q(quote)  : \" &lt;&lt; (quote  ? \"ON\" : \"OFF\")
+    &lt;&lt; \"\\n\";\n      std::cout &lt;&lt; \"d(debug)  : \" &lt;&lt; debug &lt;&lt;
+    \"\\n\\n\";\n\n      std::cout &lt;&lt; \"[パラメタ情報]\\n\";\n      const std::vector&lt;std::string&gt;&amp;
+    input = vm[\"input\"].as&lt; std::vector&lt;std::string&gt; &gt;();\n      std::cout
+    &lt;&lt; \"指定数 : \" &lt;&lt; input.size() &lt;&lt; \"\\n\";\n      for ( int i
+    = 0; i &lt; input.size(); ++i )\n        std::cout &lt;&lt; i+1 &lt;&lt; \" :
+    \" &lt;&lt; (quote?\"\\\"\":\"\") &lt;&lt; input[i] &lt;&lt; (quote?\"\\\"\":\"\")
+    &lt;&lt; \"\\n\";\n    }\n\n    return 0;\n  } catch (const std::exception&amp;
+    e) {\n    std::cerr &lt;&lt; e.what() &lt;&lt; \"\\n\";\n    return -1;\n  }\n}\n"
+  :tags:
+  - Boost.Program_options
+  - boost
+  :references:
+    :url: /web/20090103041618/http://www.boost.org/doc/libs/1_36_0/doc/html/program_options.html
+    :title: Boost.Program_options
+- :id: '7600'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7600
+  :user_name: 匿名
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/09/09 05:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  許容例の\r\n-s は、-d の間違いだと思われる。\r\n-d は、省略できないオプションのように思われる。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7601'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7601
+  :user_name: 匿名
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/4/
+  :language: Perl
+  :time: 2008/09/09 06:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">-d は、必須オプションとして処理しています。</pre>\n\t"
+  :code: "use strict;\nuse Getopt::Std;\n\n#ex&gt;cmdopt -o [-q] -d{0|1|2} 文字列 [文字列
+    ...]\n\nour( $opt_o, $opt_q, $opt_d );\n\ngetopts('oqd:');\n\ndie \"oオプションが指定されていない\\n\"
+    unless $opt_o;\ndie \"dオプションが指定されていない\\n\" unless defined $opt_d;\ndie \"dオプションの引数は0-2\\n\"
+    unless ($opt_d eq '0' || $opt_d eq '1' || $opt_d eq '2');\ndie \"パラメータが指定されていない\\n\"
+    unless @ARGV;\n\nprint \"[オプション情報]\\n\";\nprint \"o(output): ON\\n\" if $opt_o;
+    \nprint \"q(quote): \" . ($opt_q ? \"ON\" : \"OFF\") . \"\\n\"; \nprint \"d(debug):
+    $opt_d\\n\";\n\nprint \"\\n[パラメータ情報]\\n\";\nprintf(\"指定数: %d\\n\", $#ARGV+1);\n\nmy
+    $c = 0;\nfor my $arg (@ARGV){\n    $c++;\n    print \"$c: $arg\\n\";\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7602'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7602
+  :user_name: こう。
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2008/09/09 07:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">いつも使ってる解析ルーチンをベースにしてみました。</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n\nstruct cmd_opt{\n    int opt_o;\n    int opt_q;\n
+    \   int opt_d;\n    int string_start;\n    int string_num;\n};\n\n\nint cmdline(int
+    argc,char* argv[],struct cmd_opt*o){\n    char* p;\n    int i=1;\n    int opt_flag=0;\n
+    \   \n    //必ず-oと文字列が必要\n    if(argc&lt;3) return -1;\n    \n    o-&gt;opt_o=0;\n
+    \   o-&gt;opt_q=0;\n    o-&gt;opt_d=-1;\n    o-&gt;string_start=0;\n    o-&gt;string_num=0;\n
+    \   \n    p=argv[1];\n    \n    while(i&lt;=argc){\n        switch(*p){\n        case
+    '-':\n        case '+':\n        case '/':\n            p++;\n            opt_flag=1;\n
+    \           break;\n        default:\n            break;\n        }\n        \n
+    \       //オプション解析終了\n        if(opt_flag==0){\n            if(o-&gt;opt_o==0)
+    return -1;\n            if(o-&gt;opt_d==-1) return -1;\n            o-&gt;string_start=i;\n
+    \           o-&gt;string_num=argc-i;\n            if(o-&gt;string_num==0) return
+    -1;\n            else return 0;\n        }\n        \n        switch(*p){\n        case
+    'o':\n        case 'O':\n            o-&gt;opt_o=1;\n            break;\n\n        case
+    'q':\n        case 'Q':\n            o-&gt;opt_q=1;\n            break;\n\n        case
+    'd':\n        case 'D':\n            p++;;\n            if(*p==0){\n                p=argv[++i];\n
+    \           }\n            if('0'&gt;*p||*p&gt;'2')\n                return -1;\n
+    \           o-&gt;opt_d=*p-'0';\n            break;\n        default:\n            return
+    -1;\n            break;\n        }\n        p++;\n        if(*p==0){\n            p=argv[++i];\n
+    \           opt_flag=0;\n        }\n    }\n    return -1;\n}\n\nvoid put_usage(){\n
+    \   printf(\"usage:cmdopt -o [-q] -d{0|1|2} 文字列 [文字列 ...]\\n\");\n}\n\nint main(int
+    argc,char* argv[]){\n    int ret;\n    int i;\n    \n    struct cmd_opt o;\n    \n
+    \   ret=cmdline(argc,argv,&amp;o);\n    \n    if(ret==-1){\n        put_usage();\n
+    \       return -1;\n    }\n    \n    printf(\"[Option Info]\\n\");\n    printf(\"o(output):%s\\n\",o.opt_o?\"ON\":\"OFF\");\n
+    \   printf(\"q(output):%s\\n\",o.opt_q?\"ON\":\"OFF\");\n    printf(\"d(output):%d\\n\",o.opt_d);\n
+    \   \n    printf(\"\\n\");\n    printf(\"[Parameter Info]\\n\");\n    printf(\"String
+    Num:%d\\n\",o.string_num);\n    for(i=1;i&lt;=o.string_num;i++){\n        printf(\"%d:%s\\n\",i,argv[i+o.string_start-1]);\n
+    \   }\n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7603'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7603
+  :user_name: syat
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/766/
+  :language: Batchfile
+  :time: 2008/09/09 08:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  バッチファイル。遅延環境変数展開で。\r<br>お題の起動例にあるパターンはすべて解釈できていると思います。\n\t"
+  :code: |
+    @echo off
+    setlocal enabledelayedexpansion
+
+    set OPT_O=OFF
+    set OPT_Q=OFF
+    set ARGV=
+    set WAIT_OPT_S=0
+    shift
+
+    for %%1 in (%*) do (
+      call :parse_arg %%1
+    )
+    goto parse_end
+
+    rem *** パラメータ解析 ***
+    :parse_arg
+    set PARA=%1
+    if "%PARA:~0,1%"=="-" (
+      set WAIT_OPT_S=0
+      call :parse_opt %PARA:~1%
+    ) else (
+      if "%WAIT_OPT_S%"=="1" set OPT_S=%PARA% &amp; set WAIT_OPT_S=0 &amp; goto :EOF
+      set ARGV=%ARGV% %PARA%
+    )
+    goto :EOF
+
+    rem *** オプション解析 ***
+    :parse_opt
+    set OPT=%1
+    :parse_an_opt
+    if "%OPT%"=="" goto :EOF
+    set OPT2=%OPT:~0,1%
+    if "%OPT2%"=="o" (
+      set OPT_O=ON
+    ) else if "%OPT2%"=="q" (
+      set OPT_Q=ON
+    ) else if "%OPT2%"=="s" (
+      set OPT_S=%OPT:~1,1%
+      set OPT=%OPT:~1%
+      if "!OPT_S!"=="" set WAIT_OPT_S=1
+    )
+    set OPT=%OPT:~1%
+    goto :parse_an_opt
+
+    rem *** 結果出力 ***
+    :parse_end
+    echo [オプション情報]
+    echo o : %OPT_O%
+    echo q : %OPT_Q%
+    echo s : %OPT_S%
+
+    set /A COUNT=0
+    for %%1 in (%ARGV%) do set /A COUNT += 1
+
+    set /A ARGC=1
+    echo [パラメータ情報]
+    echo 指定数：%COUNT%
+    for %%1 in (%ARGV%) do (
+      echo !ARGC! : %%1
+      set /A ARGC += 1
+    )
+
+    endlocal
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7605'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7605
+  :user_name: emasaka
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/09/09 13:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>pure bashで内蔵コマンドgetoptsを使いました。</p>\n<p>起動例の-sはコマンドじゃなくて引数扱い、と解釈したために、その部分がBKっぽくなっています。</p>\n<p>あと、-oは必須ということで、そこの出力は手抜きしています。</p>\n\n\t"
+  :code: |
+    #!/bin/bash
+    OPTERR=0
+
+    args=()
+    nargs=0
+
+    opt_o=OFF
+    opt_q=OFF
+    opt_d=''
+
+    while [ $# != 0 ];do
+        oprind_orig=$OPTIND
+        while getopts 'oqd:*' opt;do
+            case "$opt" in
+            o)  opt_o=ON
+                ;;
+            q)  opt_q=ON
+                ;;
+            d)  opt_d=$OPTARG
+                [[ $opt_d == [012] ]] || exit 1
+                ;;
+            \?) [[ ! ${!OPTIND} == -* ]] &amp;&amp; ((OPTIND--))
+                break
+                ;;
+            esac
+        done
+        shift $((OPTIND - 1))
+        OPTIND=1
+        [ $# != 0 ] &amp;&amp; args[$((nargs++))]=$1
+        shift
+    done
+
+    [ "$opt_o" = OFF ] &amp;&amp; exit 1
+    ((nargs)) || exit 1
+
+    echo "[オプション情報]
+    o(output): ON
+    q(quote):  $opt_q
+    d(debug):  $opt_d
+
+    [パラメータ情報]
+    指定数: $nargs"
+
+    for ((i = 0; i &lt; nargs; i++));do
+        echo "$((i + 1)): ${args[$i]}"
+    done
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7606'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7606
+  :user_name: syat
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/766/
+  :language: Batchfile
+  :time: 2008/09/09 09:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  おっと、異常終了とか忘れてた。\r<br>バッチファイルの異常終了ってこんなんでいいのかな。\r<br>"
+  :code: |
+    46a47,53
+    &gt;
+    &gt; set /A COUNT=0
+    &gt; for %%1 in (%ARGV%) do set /A COUNT += 1
+    &gt;
+    &gt; if not "%OPT_O%"=="ON" echo oオプションは必須です。 &amp; exit /b 1
+    &gt; if "%COUNT%"=="0"  echo パラメータは必須です。 &amp; exit /b 1
+    &gt;
+    52,54d58
+    &lt; set /A COUNT=0
+    &lt; for %%1 in (%ARGV%) do set /A COUNT += 1
+    &lt;
+    63a68
+    &gt; exit /b 0
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7607'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7607
+  :user_name: sumim
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/09/09 10:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で、http://ja.doukaku.org/comment/5013/ の方法で得た引数の配列を解析するものを書いてみました。</p>\n\n\t"
+  :code: |
+    | cmdopt |
+
+    cmdopt := [:args |
+        | output quote debug strings argsStream |
+        output := false.
+        quote := false.
+        debug := 0.
+        strings := OrderedCollection new.
+        argsStream := args readStream.
+        [argsStream atEnd] whileFalse: [
+            | opt |
+            opt := argsStream next.
+            (opt first = $-) ifFalse: [strings add: opt] ifTrue: [
+                | optStream nextOpt |
+                optStream := opt allButFirst readStream.
+                [(nextOpt := optStream next) notNil] whileTrue: [
+                    nextOpt caseOf: {
+                        [$o] -&gt; [output := true].
+                        [$q] -&gt; [quote := true].
+                        [$d] -&gt; [debug := Integer readFrom: (optStream atEnd
+                            ifFalse: [optStream] ifTrue: [argsStream next readStream])]
+                    } otherwise: [^self error: 'unknown option']]]].
+        output ifFalse: [^self error: 'no output option'].
+        strings ifEmpty: [^self error: 'no string option'].
+        {#output-&gt;output. #quote-&gt;quote. #debug-&gt;debug. #strings-&gt;strings asArray}].
+
+    World findATranscript: nil.
+    #(
+        ('-o' 'AAA')
+        ('-o' 'AAA' 'BBB' 'CCC')
+        ('-oq' 'AAA')
+        ('-o' '-q' 'AAA')
+        ('-o' '-d1' 'AAA')
+        ('-o' '-d' '1' 'AAA')
+        ('-q' '-d2' '-o' 'AAA')
+    ) do: [:args |
+        Transcript cr; show: (cmdopt value: args)]
+
+    "=&gt;
+        {#output-&gt;true . #quote-&gt;false . #debug-&gt;0 . #strings-&gt;#('AAA')}
+        {#output-&gt;true . #quote-&gt;false . #debug-&gt;0 . #strings-&gt;#('AAA' 'BBB' 'CCC')}
+        {#output-&gt;true . #quote-&gt;true . #debug-&gt;0 . #strings-&gt;#('AAA')}
+        {#output-&gt;true . #quote-&gt;true . #debug-&gt;0 . #strings-&gt;#('AAA')}
+        {#output-&gt;true . #quote-&gt;false . #debug-&gt;1 . #strings-&gt;#('AAA')}
+        {#output-&gt;true . #quote-&gt;false . #debug-&gt;1 . #strings-&gt;#('AAA')}
+        {#output-&gt;true . #quote-&gt;true . #debug-&gt;2 . #strings-&gt;#('AAA')}
+    "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '7608'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7608
+  :user_name: 匿名
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/09/10 00:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>optparse</p>\n\n\t"
+  :code: |
+    #!/usr/bin/env python
+    # -*- coding: cp932 -*-
+
+    from optparse import OptionParser
+    def main():
+        usage = u'usage: cmdopt -o [-q] -d{0|1|2} 文字列 [文字列 ...]'
+        parser = OptionParser(usage)
+        parser.add_option('-o', '--output', action='store_true')
+        parser.add_option('-q', '--quote', action='store_true')
+        parser.add_option('-d', '--debug', type='int',default=0)
+        (option, args) = parser.parse_args()
+        if not option.output: parser.error('output option error')
+        if option.debug not in [0,1,2]: parser.error('debug option error')
+        if not len(args): parser.error('parameter error')
+
+        print u'[オプション情報]'
+        print u'o(output)： ON'
+        print u'q(quote)： %s' % ('ON' if option.quote else 'OFF')
+        print u'd(debug)： %d' % option.debug
+        print u'\n[パラメーター情報]'
+        print u'指定数： %d' % len(args)
+        for i, param in enumerate(args):
+            print u'%d: %s' % (i+1, param)
+
+    if __name__ == "__main__":
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7609'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7609
+  :user_name: leque
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2008/09/10 01:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>SRFI-37 や SLIB を使う方法もありますが、とりあえずは gauche.parseopt 版。 -oq のような指定や
+    -d1, -d2 のような指定には対応していないようです。</p>\n<p>ところで起動例にある -s オプションは -d ですよね？</p>\n<p>;;
+    エラー処理で悩んでしまった。</p>\n\n\t"
+  :code: |
+    (use gauche.parseopt)
+    (use gauche.sequence)
+
+    (define (main args)
+      (let-args (cdr args)
+          ((output "o|output" #f)
+           (quiet  "q|quiet"  #f)
+           (debug  "d|debug=i" 0)
+           . argv)
+        (cond
+         ((not output)
+          (format (current-error-port)
+                  "output option is not supplied.~%"))
+         ((not (memv debug '(0 1 2)))
+          (format (current-error-port)
+                  "debug option's value must be 0, 1, or 2: ~A~%" debug))
+         ((null? argv)
+          (format (current-error-port)
+                  "no arguments are supplied.~%"))
+         (else
+          (format #t "[options]~%o(output): ON~%q(quote): ~A~%d(debug): ~A~%~%"
+                  (if quiet 'ON 'OFF)
+                  debug)
+          (format #t "[parameters]~%# of pamameters: ~A~%" (length argv))
+          (for-each-with-index (lambda (i x) (format #t "~A: ~A~%" (+ i 1) x))
+                               argv)
+          (exit 0)))
+        1))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '7611'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7611
+  :user_name: leque
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2008/09/10 06:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>args-fold 版。ロングオプション対応。起動例のすべてのパターンを受け付けます（-s を -d にした場合）。</p>\n\n\t"
+  :code: |
+    (use srfi-37)
+    (use gauche.sequence)
+
+    (define (main args)
+      (receive (debug output quiet rargv)
+          (args-fold (cdr args)
+                     (list
+                      (option '(#\d "debug") #t #f
+                              (lambda (option name arg debug output quiet argv)
+                                (values (string-&gt;number arg) output quiet argv)))
+                      (option '(#\o "output") #f #f
+                              (lambda (option name arg debug output quiet argv)
+                                (values debug #t quiet argv)))
+                      (option '(#\q "quiet") #f #f
+                              (lambda (option name arg debug output quiet argv)
+                                (values debug output #t argv)))
+                      )
+                     (lambda (option name arg . _)
+                       (error "Unrecognized option: " name))
+                     (lambda (op debug output quiet argv)
+                       (values debug output quiet (cons op argv)))
+                     0 #f #f '())
+        (cond
+         ((not output)
+          (format (current-error-port)
+                  "output option is not supplied.~%"))
+         ((not (memv debug '(0 1 2)))
+          (format (current-error-port)
+                  "debug option's value must be 0, 1, or 2: ~A~%" debug))
+         ((null? rargv)
+          (format (current-error-port)
+                  "no arguments are supplied.~%"))
+         (else
+          (format #t "[options]~%o(output): ON~%q(quiet): ~A~%d(debug): ~A~%~%"
+                  (if quiet 'ON 'OFF)
+                  debug)
+          (format #t "[parameters]~%# of pamameters: ~A~%" (length rargv))
+          (for-each-with-index (lambda (i x) (format #t "~A: ~A~%" (+ i 1) x))
+                               (reverse rargv))
+          (exit 0)))
+        1))
+  :tags:
+  - gauche
+  :references:
+    :url: /web/20090103041618/http://srfi.schemers.org/srfi-37/
+    :title: SRFI 37
+- :id: '7613'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7613
+  :user_name: M.Suzuki
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/771/
+  :language: Haskell
+  :time: 2008/09/10 08:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">少々無理矢理な感じです。。。Parsecが使えたらもっと楽なのでしょうね(^^;</pre>\n\t"
+  :code: |
+    data Args = Args {
+        outputFlag :: Bool,
+        quoteFlag :: Bool,
+        debugLevel :: Int,
+        names :: [String]
+    } deriving (Show)
+
+    newArgs =   Args {
+            outputFlag = False,
+            quoteFlag = False,
+            debugLevel = 0,
+            names = []
+        }
+
+    parse [] result = result
+
+    parse (arg:args) result
+        | arg == "-d"       = parse (tail args) result{ debugLevel = read $ head args }
+        | opt == "-d"       = parse args result{ debugLevel = read num }
+        | (head arg) == '-' = parse args $ parse' (tail arg) result
+        | otherwise         = parse args result{ names = (names result) ++ [arg] }
+        where
+            (opt,num) = splitAt 2 arg
+            parse' [] res = res
+            parse' ('o':xs) res = parse' xs res{ outputFlag = True }
+            parse' ('q':xs) res = parse' xs res{ quoteFlag = True }
+            parse' _ _ =    error $ arg ++ " is unknown option."
+
+    optParse :: [String] -&gt; Args
+    optParse args
+        | (outputFlag result) == False  =   error "-o is need option."
+        | (names result) == []  =   error "need file name."
+        | otherwise     =   result
+        where
+            result = parse args newArgs
+
+    dump args = do
+        putStrLn "[Option information]"
+        putStrLn $ "o(output) : " ++ (onoff $ outputFlag args)
+        putStrLn $ "q(quote) : " ++ (onoff $ quoteFlag args)
+        putStrLn $ "d(debug) : " ++ (show $ debugLevel args)
+        putStrLn ""
+        putStrLn "[Paramater information]"
+        putStrLn $ "count : " ++ (show $ length $ names args)
+        mapM (\(no,name)-&gt;putStrLn $ (show no) ++ " : " ++ name) $ zip [1,2..] $ names args
+        putStrLn ""
+        where
+            onoff True = "ON"
+            onoff _ = "OFF"
+
+    main = do
+        args &lt;- getArgs
+        dump $ optParse args
+    {--
+        mapM_ test testData
+        mapM_ dumps testData
+        where
+            dumps arg = dump $ optParse arg
+            test arg = putStrLn $ show $ optParse arg
+            testData = map words ["-o AAA",
+                        "-o AAA BBB CCC",
+                        "-oq AAA",
+                        "-o -q AAA",
+                        "-o -d1 AAA",
+                        "-o -d 1 AAA",
+                        "-q -d2 -o AAA"]
+    --}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7614'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7614
+  :user_name: raynstard
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2008/09/10 12:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">えーと。何人かの方から指摘されていますが\r\n-sは-dの間違いです。\r\nまた、-dのオプションは省略可能なオプションでした。\r\n\r\nということで書式を訂正すると\r\n書式：cmdopt
+    -o [-q] [-d{0|1|2}] 文字列 [文字列 ...]\r\nです。\r\n\r\nそれと起動例も\r\n1. cmdopt -o AAA\r\n2.
+    cmdopt -o AAA BBB CCC\r\n3. cmdopt -oq AAA\r\n4. cmdopt -o  -q AAA\r\n5. cmdopt
+    -o -d1 AAA\r\n6. cmdopt -o -d 1 AAA\r\n7. cmdopt -q -d2 -o AAA\r\nとなります。\r\n\r\nフォロー遅くなってしまって申し訳ないです。\r\n期末恒例のお祭りが発生しちゃって^^;;\r\n指摘ありがとうございました。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7615'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7615
+  :user_name: raynstard
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/127/
+  :language: C
+  :time: 2008/09/10 08:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">とりあえず getopt()を利用したものです。\r\nコンパイラによってはgetopt()が
+    unistd.hにはいっているかもしれません。\r\n\r\n僕はいつも起動情報を保持する構造体を作って保持しています。\r\nhas～()という関数作ってしまえばあんまり関係ないですけど。。\r\n//
+    gcc -Wall -std=c99 doukaku205.c\r\n</pre>\n\t"
+  :code: "#include &lt;stdbool.h&gt;\n#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n//#include
+    &lt;unistd.h&gt;\n#include &lt;getopt.h&gt;\n\n#define OPTION_OUTPUT 'o'\n#define
+    OPTION_QUOTE  'q'\n#define OPTION_DEBUG  'd'\n\nstatic char options[] = { ':',
+    \n                     OPTION_OUTPUT\n                     , OPTION_QUOTE\n                     ,
+    OPTION_DEBUG, ':'\n                    , '\\0' };\n\nstruct tagParamInfo\n{\n
+    \   bool output;\n    bool quote;\n    int  debug;\n    int  num;\n    char *argv0;\n
+    \   char **argv;\n} info = { false, false, 0, 0, NULL, NULL};\n\nint main(int
+    argc, char *argv[])\n{\n    int opt;\n\n    /* デフォル値 設定 */\n\n    /* オプション解析 */\n
+    \   opterr = 0;\n    while( (opt = getopt(argc, argv, options)) != EOF )\n    {\n
+    \       switch( opt )\n        {\n            case OPTION_OUTPUT:\n                info.output
+    = true;\n                break;\n            case OPTION_QUOTE:\n                info.quote
+    = true;\n                break;\n            case OPTION_DEBUG:\n                info.debug
+    = strtol(optarg, NULL,10);\n                if( 0 &lt;= info.debug &amp;&amp;
+    info.debug &lt;= 2 )\n                {\n                    break;\n                }\n
+    \           case '?':\n            case ':':\n            default:\n                printf(\"変なオプション[%c]\\n\",
+    opt);\n                printf(\"書式：cmdopt -o [-q] [-d{0|1|2}] 文字列 [文字列 ...]\\n\");\n
+    \               return 1;\n        }\n    }\n\n    /* パラメータ設定 */\n    info.argv0
+    = argv[0];\n    info.argv  = &amp;argv[optind];\n    info.num = argc - optind;\n
+    \   if( info.num &lt; 1 )\n    {\n        printf(\"文字列がない\\n\");\n        printf(\"書式：cmdopt
+    -o [-q] [-d{0|1|2}] 文字列 [文字列 ...]\\n\");\n        return 1;\n    }\n\n    /* 解析結果の出力
+    */\n    printf(\"[オプション情報]\\n\");\n    printf(\"%-10s：%3s\\n\", \"o(output)\",
+    ((info.output==true)?\"ON\":\"OFF\"));\n    printf(\"%-10s：%3s\\n\", \"q(quote)\",
+    ((info.quote==true)?\"ON\":\"OFF\"));\n    printf(\"%-10s：%3d\\n\", \"d(debug)\",
+    info.debug);\n    printf(\"\\n\");\n    printf(\"[パラメータ情報]\\n\");\n    printf(\"%-10s：%3d\\n\",
+    \"指定数\", info.num);\n    for( int n=0; n&lt;info.num; n++)\n    {\n        printf(\"%2d：%s\\n\",
+    n, info.argv[n]);\n    }\n    return 0;\n}\n"
+  :tags:
+  - C99
+  :references:
+    :url: 
+    :title: 
+- :id: '7616'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7616
+  :user_name: raynstard
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/127/
+  :language: Other
+  :time: 2008/09/10 08:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">もう一つPOSIX-shのものを投稿\r\nevalって便利ですよね。</pre>\n\t"
+  :code: "#!/usr/bin/sh\n\nOPT_o='OFF'\nOPT_q='OFF'\nOPT_d='0'\nOPTERR=0\nwhile getopts
+    \":oqd:\" name\ndo\n    case $name in\n        [oq])\n            eval \"OPT_$name='ON'\"\n
+    \           ;;\n        d)\n            OPT_d=$OPTARG\n            echo \"$OPTARG\"
+    | grep -e '[012]' &gt;/dev/null 2&gt;&amp;1\n            if [ $? -ne 0 ] ; then\n
+    \               echo '変な値: ' \"[$OPT_d]\"\n                echo '書式：cmdopt -o
+    [-q] [-d{0|1|2}] 文字列 [文字列 ...]'\n                exit 1\n            fi\n            ;;\n
+    \       [:?])\n            echo '変なオプション: ' \"[$name]\"\n            echo '書式：cmdopt
+    -o [-q] [-d{0|1|2}] 文字列 [文字列 ...]'\n            exit 1\n            ;;\n    esac\ndone\nshift
+    $(($OPTIND-1))\nif [ $# -eq 0 ]; then\n    echo '文字列がない'\n    echo '書式：cmdopt
+    -o [-q] [-d{0|1|2}] 文字列 [文字列 ...]'\n    exit 1\nfi\nif [ $OPT_o = \"OFF\" ]; then\n
+    \   echo '-oがない'\n    echo '書式：cmdopt -o [-q] [-d{0|1|2}] 文字列 [文字列 ...]'\n    exit
+    1\nfi\necho '[オプション情報]'\necho 'o(output)：' \"$OPT_o\"\necho 'q(quote)：'  \"$OPT_q\"\necho
+    'd(debug)：'  \"$OPT_d\"\necho ''\necho '[パラメータ情報]'\necho '指定数：' \"$(($#-1))\"\nC=0\nwhile
+    [ $C -lt $# ];\ndo\n    let C=C+1\n    echo \"$C:$1\" \n    shift\ndone\n#EOF\n"
+  :tags:
+  - POSIX
+  :references:
+    :url: 
+    :title: 
+- :id: '7617'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7617
+  :user_name: raynstard
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/127/
+  :language: diff
+  :time: 2008/09/10 08:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">sh版作っていて-oオプションのチェックが抜けていたことに気づくorz</pre>\n\t"
+  :code: |
+    --- doukaku205.c        2008-09-10 22:23:39.953125000 +0900
+    +++ doukaku205.c.new    2008-09-10 22:43:58.656250000 +0900
+    @@ -61,6 +61,14 @@
+         info.argv0 = argv[0];
+         info.argv  = &amp;argv[optind];
+         info.num = argc - optind;
+    +
+    +    /* 必須チェック */
+    +    if( info.output != true )
+    +    {
+    +        printf("必須オプションがたりない\n");
+    +        printf("書式：cmdopt -o [-q] [-d{0|1|2}] 文字列 [文字列 ...]\n");
+    +        return 1;
+    +    }
+         if( info.num &lt; 1 )
+         {
+             printf("文字列がない\n");
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7618'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7618
+  :user_name: emasaka
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/09/10 13:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>#7614の訂正にしたがって簡略化してみます。</p>\n\n\t"
+  :code: |
+    #!/bin/bash
+    while getopts 'oqd:*' opt;do
+        case "$opt" in
+        o)  opt_o=ON ;;
+        q)  opt_q=ON ;;
+        d)  opt_d=$OPTARG
+            [[ $opt_d == [012] ]] || exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    [ -z "$opt_o" ] &amp;&amp; exit 1
+    [ $# = 0 ] &amp;&amp; exit 1
+
+    echo "[オプション情報]
+    o(output): ON
+    q(quote):  ${opt_q:-OFF}
+    d(debug):  ${opt_d:-}
+
+    [パラメータ情報]
+    指定数: $#"
+
+    i=0
+    for e in "$@";do
+        echo "$((++i)): $e"
+        shift
+    done
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7619'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7619
+  :user_name: lunlumo
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/813/
+  :language: Ruby
+  :time: 2008/09/10 14:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>　OptionParserを使って書いてみました。</p>\n</div>\n\t"
+  :code: |
+    require "optparse"
+
+    conf = Hash.new
+    opts = OptionParser.new
+    opts.on("-o","--output","set output") { |v| conf[:o] = v }
+    opts.on("-q","--quote","set quote") { |v| conf[:q] = v }
+    opts.on("-d DEBUG","--debug=DEBUG",["0","1","2"],"set debug level") { |v| conf[:d] = v }
+
+    begin
+        opts.parse!
+        if ARGV.size == 0 || !conf.key?(:o)
+            raise OptionParser::InvalidArgument.new
+        else
+            puts "[オプション情報]"
+            puts "o(output):\t#{conf[:o] ? "ON" : "OFF"}"
+            puts "q(quote):\t#{(conf[:q] || false) ? "ON" : "OFF"}"
+            puts "d(debug):\t#{conf[:d] || 0}"
+            puts ""
+            puts "[パラメータ情報]"
+            puts "指定数:\t#{ARGV.size}"
+            ARGV.zip((1..ARGV.size).to_a) do |a,i|
+                puts "#{i}:\t#{a}"
+            end
+        end
+    rescue OptionParser::InvalidArgument =&gt; ex
+        puts opts.help
+    rescue =&gt; ex
+        puts ex.message
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7620'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7620
+  :user_name: lunlumo
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/813/
+  :language: Java
+  :time: 2008/09/10 14:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>　ApacheCommonsCLIを使って書いてみました。</p>\n</div>\n\t"
+  :code: |
+    import    org.apache.commons.cli.CommandLine;
+    import    org.apache.commons.cli.CommandLineParser;
+    import    org.apache.commons.cli.HelpFormatter;
+    import    org.apache.commons.cli.MissingArgumentException;
+    import    org.apache.commons.cli.Options;
+    import    org.apache.commons.cli.OptionBuilder;
+    import    org.apache.commons.cli.ParseException;
+    import    org.apache.commons.cli.PosixParser;
+
+    class cmdopt {
+        public static void main(String[] args) {
+            CommandLineParser    parser = new PosixParser();
+            Options    options = new Options();
+            options.addOption(OptionBuilder.withArgName("o").withLongOpt("output").isRequired(true).withDescription("set output").create("o"));
+            options.addOption("q","quote",false,"set quote");
+            options.addOption("d","debug",true,"set debug level");
+            try {
+                CommandLine    command = parser.parse(options,args);
+                if (    (command.hasOption("d") &amp;&amp;
+                            (    Integer.parseInt(command.getOptionValue("d")) &lt; 0 ||
+                                Integer.parseInt(command.getOptionValue("d")) &gt; 2)) ||
+                        command.getArgs().length == 0)
+                    throw new MissingArgumentException("invalid argument.");
+                System.out.println("[オプション情報]");
+                System.out.println("o(output):\t"+(command.hasOption("o") ? "ON" : "OFF"));
+                System.out.println("q(quote):\t"+(command.hasOption("q") ? "ON" : "OFF"));
+                System.out.println("d(debug):\t"+(command.hasOption("d") ? command.getOptionValue("d") : "2"));
+                System.out.println();
+                System.out.println("[パラメータ情報]");
+                System.out.printf("指定数:\t%d\n",command.getArgs().length);
+                for (int i=0;i&lt;command.getArgs().length;i++)
+                    System.out.printf("%d:\t%s\n",i+1,command.getArgs()[i]);
+            } catch(ParseException ex) {
+                HelpFormatter    formatter = new HelpFormatter();
+                formatter.printHelp("cmdopt",options);
+            } catch(Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: /web/20090103041618/http://commons.apache.org/cli/
+    :title: Apache commons CLI
+- :id: '7625'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7625
+  :user_name: nobsun
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/09/11 02:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>System.Console.GetOpt を使う方法もあります。\nロングオプションにも対応しています。</p>\n<p>でもあんまりすっきりとはいかない感じです。:&lt;</p>\n\n\t"
+  :code: "module Main where\n\nimport System.Console.GetOpt\nimport System.Environment\n\nmain
+    :: IO ()\nmain = getArgs &gt;&gt;= compilerOpts &gt;&gt;= cmdopt\n\ndata Options
+    = Options \n    { optOutput :: Bool\n    , optQuote  :: Bool\n    , optDebug  ::
+    Int\n    }\n\ndefaultOptions = Options\n    { optOutput = False\n    , optQuote
+    \ = False\n    , optDebug  = 0\n    }\n\noptions :: [OptDescr (Options -&gt; Options)]\noptions
+    =\n [ Option ['o'] [\"output\"]\n   (NoArg (\\ opts -&gt; opts { optOutput = True
+    }))\n   \"Output option\"\n , Option ['q'] [\"quote\"]\n   (NoArg (\\ opts -&gt;
+    opts { optQuote  = True }))\n   \"Quote option\"\n , Option ['d'] [\"debug\"]\n
+    \  (ReqArg (\\ d opts -&gt; opts { optDebug = read d }) \"LEVEL\")\n   \"debug
+    LEVEL\"\n ]\n\ncompilerOpts :: [String] -&gt; IO (Options, [String])\ncompilerOpts
+    argv\n = case getOpt Permute options argv of\n     (o,n,[])  -&gt; return (foldl
+    (flip id) defaultOptions o, n)\n     (_,_,ers) -&gt; ioError (userError (concat
+    ers ++ usageInfo usageHeader options))\n\nusageHeader = \"Usage: cmdopt -o [-q]
+    [-d {0|1|2}] STR [STR ...]\"\n\ncmdopt :: (Options,[String]) -&gt; IO ()\ncmdopt
+    (o,xs@(_:_))\n | optOutput o = putStr $ unlines \n               $ [\"[Option
+    Info]\"\n                 ,\"o(output): \"++\"ON\"\n                 ,\"q(quote)
+    : \"++if optQuote o then \"ON\" else \"OFF\"\n                 ,\"d(debug) : \"++show
+    (optDebug o)\n                 ,\"[Parameter Info]\"\n                 ,show len
+    ++ \" parameter\"++if len &gt;1 then \"s \" else \" \" ++\"specified\"\n                 ]
+    \n               ++ map showParam (zip [1..] xs)\n    where len = length xs\ncmdopt
+    _       = ioError (userError (usageInfo usageHeader options))\n\nshowParam ::
+    (Int,String) -&gt; String\nshowParam (n,s) = show n ++\": \"++s\n"
+  :tags:
+  - System.Console.GetOpt
+  :references:
+    :url: 
+    :title: 
+- :id: '7627'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7627
+  :user_name: mtsuyugu
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/481/
+  :language: C
+  :time: 2008/09/11 10:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>gflags を使ってみました。\n-oq や -d1 のような連続して指定する形式には対応していません。</p>\n\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;google/gflags.h&gt;
+
+    DEFINE_bool( o, false, "(required)" );
+    DEFINE_bool( q, false, "quote(optional)" );
+    DEFINE_int32( d, 0, "debug(required) {0|1|2}" );
+
+    using namespace std;
+
+    int main ( int argc, char *argv[] ){
+
+       google::SetUsageMessage("-o [-q] [-d{0|1|2}] str1 [str2 ...] ");
+       google::ParseCommandLineFlags(&amp;argc, &amp;argv, true);
+
+       if( !FLAGS_o || FLAGS_d &lt; 0 || FLAGS_d &gt; 2 || argc &lt; 2 ){
+          google::ShowUsageWithFlags(argv[0]);
+          return 1;
+       }
+
+       cout &lt;&lt; "[option]" &lt;&lt; endl
+            &lt;&lt; "o(output): " &lt;&lt; (FLAGS_o ? "ON" : "OFF") &lt;&lt; endl
+            &lt;&lt; "q(quote): " &lt;&lt; (FLAGS_q ? "ON" : "OFF") &lt;&lt; endl
+            &lt;&lt; "d(debug): " &lt;&lt; FLAGS_d  &lt;&lt; endl
+            &lt;&lt; endl
+            &lt;&lt; "[parameter]" &lt;&lt; endl
+            &lt;&lt; "given " &lt;&lt; (argc-1)  &lt;&lt; endl;
+
+       for( int i = 1; i &lt; argc; i++ ){
+          cout &lt;&lt; i &lt;&lt; ": " &lt;&lt; argv[i] &lt;&lt; endl;
+       }
+
+       return 0;
+    }
+  :tags: []
+  :references:
+    :url: /web/20090103041618/http://code.google.com/p/google-gflags/
+    :title: google-gflags
+- :id: '7628'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7628
+  :user_name: silverwire
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/646/
+  :language: Batchfile
+  :time: 2008/09/11 13:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">以下の書籍を参考にバッチで。\r\n\r\n  多治見寿和 『プログラミングテクニック』
+    (アスキー, 2003年, p5)</pre>\n\t"
+  :code: "@echo off\n  setlocal enabledelayedexpansion\n    set #=0\n    set c=0\n
+    \   set d=\n    set i=0\n    set o=0\n    set p=\n    set q=0\n\n    for %%v in
+    (%*) do (\n      set p_!#!=%%v\n      set /a #+=1\n    )\n    if %#% equ 0 (call
+    :usage &amp; exit /b 1)\n\n    set c=%#%\n    :_S\n      if %c% equ 0 goto _E\n
+    \     if not \"!p_%i%:~0,1!\" == \"-\" goto _E\n      \n      :__S\n        set
+    p=!p_%i%:-=!\n        if \"%p:~0,1%\" == \"d\" (\n          if !c! equ 1 (call
+    :usage &amp; exit /b 1)\n          if \"%p:~1,1%\" == \"\" (\n            set
+    /a c-=1,i+=1\n            for /f \"tokens=2 delims==\" %%d in ('set p_!i!') do
+    set d=%%d\n          ) else (\n            set d=%p:~1,1%\n          )\n          goto
+    __E\n        )\n        if \"%p%\" == \"o\"  (set o=1) &amp; goto __E\n        if
+    \"%p%\" == \"q\"  (set q=1) &amp; goto __E\n        if \"%p%\" == \"oq\" (set
+    o=1) &amp; (set q=1) &amp; goto __E\n        set /a i+=1\n      if not \"!p_%i%!\"
+    == \"\" goto __S\n      :__E\n      \n      set /a c-=1,i+=1\n    goto _S\n    :_E\n\n
+    \   if %o% equ 0   (call :usage &amp; exit /b 1)\n    if %i% equ %#% (call :usage
+    &amp; exit /b 1)\n    if not \"%d%\" == \"\" echo %d% | findstr /r \"[0-2]\" &gt;
+    NUL || (call :usage &amp; exit /b 1)\n\n    echo.\n    echo オプション\n    if %o%
+    equ 1 (echo   -o  指定)\n    if %q% equ 1 (echo   -q  指定) else (echo   -q  未指定)\n
+    \   if not \"%d%\" == \"\" (\n      echo   -d  指定^(値 = %d%^)\n    ) else (\n      echo
+    \  -d  未指定\n    )\n    echo.\n    echo パラメータ\n    for /f \"\" %%n in ('set /a
+    %#%-%i%') do echo   指定数 = %%n\n    set /a #-=1\n    for /l %%i in (%i%,1,%#%)
+    do echo   !p_%%i!\n  endlocal &amp; exit /b 0\ngoto :EOF\n\n:usage\n  echo Usage:
+    %~n0 -o [-q] [-d {0^|1^|2}] 文字列 [文字列 ...]\ngoto :EOF\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7651'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7651
+  :user_name: matarillo
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/136/
+  :language: C
+  :time: 2008/09/17 03:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+
+    class P
+    {
+      static void Main(string[] args)
+      {
+        bool o = false, q =false, d = false;
+        int? dn = null;
+        List&lt;string&gt; l = new List&lt;string&gt;();
+        try
+        {
+          foreach (string s in args)
+          {
+            if (d &amp;&amp; (dn == null))
+            {
+              if (s.Length != 1) throw new Exception();
+              dn = s[0] - '0';
+              continue;
+            }
+            if (l.Count &gt; 0 || s[0] != '-')
+            {
+              l.Add(s);
+              continue;
+            }
+            for (int i = 1; i &lt; s.Length; i++)
+            {
+              switch (s[i])
+              {
+                case 'o':
+                  o = true;
+                  break;
+                case 'q':
+                  q = true;
+                  break;
+                case 'd':
+                  d = true;
+                  if (i &lt; s.Length - 1)
+                    dn = s[++i] - '0';
+                  break;
+                default:
+                  throw new Exception(s);
+              }
+            }
+          }
+          if (!o) throw new Exception();
+          if (d &amp;&amp; !(0 &lt;= dn &amp;&amp; dn &lt;= 2)) throw new Exception();
+          if (l.Count == 0) throw new Exception();
+          Console.WriteLine("o(output): {0}", o ? "ON" : "OFF");
+          Console.WriteLine("q(quote): {0}", q ? "ON" : "OFF");
+          if (d) Console.WriteLine("d(debug): {0}", dn);
+          for (int i = 0; i &lt; l.Count; i++)
+            Console.WriteLine("{0}: {1}", i, l[i]);
+        }
+        catch
+        {
+          Console.WriteLine
+            ("usage: cmdopt -o [-q] [-d{0|1|2}] string [string ...]");
+          Environment.Exit(-1);
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7689'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7689
+  :user_name: szktty
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/648/
+  :language: Other
+  :time: 2008/09/20 09:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>LLVMアセンブリ（32bit向け）で。-oqd2 のようなケースも受け付けてしまいますが、一応起動例は満たしています。分岐が多くてあまりスマートではなさそうです。</p>\n\n\t"
+  :code: "declare i32 @puts(i8 *)\n\n@usage_msg          = internal constant [53 x
+    i8] c\"Usage: cmdopt -o [-q] [-d{0|1|2}] string [string...]\\00\"\n@opt_error_msg
+    \     = internal constant [23 x i8] c\"cmdopt: unknown option\\00\"\n@opt_d_error_msg
+    \   = internal constant [26 x i8] c\"cmdopt: -d: invalid value\\00\"\n@opt_title_msg
+    \     = internal constant [10 x i8] c\"[options]\\00\"\n@opt_o_on_msg       =
+    internal constant [14 x i8] c\"o(output): ON\\00\"\n@opt_o_off_msg      = internal
+    constant [15 x i8] c\"o(output): OFF\\00\"\n@opt_q_on_msg       = internal constant
+    [13 x i8] c\"q(quote): ON\\00\"\n@opt_q_off_msg      = internal constant [14 x
+    i8] c\"q(quote): OFF\\00\"\n@opt_d_0_msg        = internal constant [12 x i8]
+    c\"d(debug): 0\\00\"\n@opt_d_1_msg        = internal constant [12 x i8] c\"d(debug):
+    1\\00\"\n@opt_d_2_msg        = internal constant [12 x i8] c\"d(debug): 2\\00\"\n@param_title_msg
+    \   = internal constant [9 x i8] c\"[params]\\00\"\n\ndefine i32 @main(i32 %argc,
+    i8** %argv) {\n    %param   = alloca i1\n    %nparams = alloca i32\n    %opt_o
+    \  = alloca i1  ; -o\n    %opt_q   = alloca i1  ; -q\n    %opt_d   = alloca i32
+    \ ; -d\n    store i1 false, i1* %param\n    store i32 0, i32* %nparams\n    store
+    i1 false, i1* %opt_o\n    store i1 false, i1* %opt_q\n    store i32 0, i32* %opt_d\n\n
+    \   ; 引数の数のチェック\n    %has_args = icmp sgt i32 %argc, 1\n    br i1 %has_args, label
+    %parse_init, label %print_usage\n\nparse_init:\n    ; 残りの繰り返し回数\n    %rest = alloca
+    i32\n    store i32 %argc, i32* %rest\n\n    ; 引数の先頭アドレス\n    %head = alloca i8**\n
+    \   %head_addr = ptrtoint i8** %argv to i32\n    %head_addr2 = add i32 %head_addr,
+    4\n    %head2 = inttoptr i32 %head_addr2 to i8**\n    store i8** %head2, i8***
+    %head\n\n    %next_opt_d = alloca i1\n    store i1 false, i1* %next_opt_d\n    br
+    label %parse_begin\n\nparse_begin:\n    ; 終了条件\n    %rest_val = load i32* %rest\n
+    \   %cont = icmp sgt i32 %rest_val, 1\n    %rest_val_prev = sub i32 %rest_val,
+    1\n    store i32 %rest_val_prev, i32* %rest\n    br i1 %cont, label %parse, label
+    %return\n\nparse:\n    %rest_args = load i8*** %head\n    %arg = load i8** %rest_args\n\n
+    \   ; 次の引数の準備\n    %next_addr = ptrtoint i8** %rest_args to i32\n    %next_addr2
+    = add i32 %next_addr, 4\n    %next_head = inttoptr i32 %next_addr2 to i8**\n    store
+    i8** %next_head, i8*** %head\n\n    %c = load i8* %arg\n    %param_val = load
+    i1* %param\n    br i1 %param_val, label %print_param, label %_parse\n\n_parse:\n
+    \   %next_opt_d_val = load i1* %next_opt_d\n    br i1 %next_opt_d_val, label %parse_opt_d_value,
+    label %parse_continue\n\nparse_continue:\n    ; オプションの判断\n    %is_opt = icmp eq
+    i8 %c, 45 ; '-'\n\n    ; オプション文字列の走査の準備\n    %cpp = alloca i8* \n    %arg_addr
+    = ptrtoint i8* %arg to i32\n    %next_cp_addr = add i32 %arg_addr, 1\n    %next_cp
+    = inttoptr i32 %next_cp_addr to i8*\n    store i8* %next_cp, i8** %cpp\n    br
+    i1 %is_opt, label %parse_opt, label %parse_param\n\nparse_opt:\n    %cp = load
+    i8** %cpp\n    %opt_char = load i8* %cp\n    switch i8 %opt_char, label %opt_error
+    [i8 0, label %parse_begin\n                                           i8 111,
+    label %parse_opt_o\n                                           i8 113, label %parse_opt_q\n
+    \                                          i8 100, label %parse_opt_d]\n\nopt_error:\n
+    \   %opt_error_addr = getelementptr [23 x i8]* @opt_error_msg, i32 0, i32 0\n
+    \   call i32 @puts(i8* %opt_error_addr)\n    ret i32 1\n\nparse_opt_o:\n    store
+    i1 true, i1* %opt_o\n    br label %next_parse_opt\n\nparse_opt_q:\n    store i1
+    true, i1* %opt_q\n    br label %next_parse_opt\n\nnext_parse_opt:\n    ; オプションの次の文字の準備\n
+    \   %cp_addr = ptrtoint i8* %cp to i32\n    %next_cp_addr2 = add i32 %cp_addr,
+    1\n    %next_cp2 = inttoptr i32 %next_cp_addr2 to i8*\n    store i8* %next_cp2,
+    i8** %cpp\n    br label %parse_opt\n\nparse_opt_d:\n    ; 次の文字を調べる\n    %next_d_addr
+    = ptrtoint i8* %cp to i32\n    %next_d_addr_i32 = add i32 %next_d_addr, 1\n    %next_d
+    = inttoptr i32 %next_d_addr_i32 to i8*\n    %next_dc = load i8* %next_d\n    switch
+    i8 %next_dc, label %opt_d_error [i8 0, label %parse_opt_d_next\n                                            i8
+    48, label %parse_opt_d_0\n                                            i8 49, label
+    %parse_opt_d_1\n                                            i8 50, label %parse_opt_d_2]\n\nopt_d_error:\n
+    \   %opt_d_error_addr = getelementptr [26 x i8]* @opt_d_error_msg, i32 0, i32
+    0\n    call i32 @puts(i8* %opt_d_error_addr)\n    ret i32 1\n\nparse_opt_d_next:\n
+    \   store i1 true, i1* %next_opt_d\n    br label %parse_begin\n\nparse_opt_d_0:\n
+    \   store i32 0, i32* %opt_d\n    br label %parse_begin\n\nparse_opt_d_1:\n    store
+    i32 1, i32* %opt_d\n    br label %parse_begin\n\nparse_opt_d_2:\n    store i32
+    2, i32* %opt_d\n    br label %parse_begin\n\nparse_opt_d_value:\n    store i1
+    0, i1* %next_opt_d\n    switch i8 %c, label %opt_d_error [i8 48, label %parse_opt_d_0\n
+    \                                     i8 49, label %parse_opt_d_1\n                                      i8
+    50, label %parse_opt_d_2]\n\nparse_param:\n    br i1 %param_val, label %print_param,
+    label %print_info\n\nprint_param:\n    %nparams_val = load i32* %nparams\n    %nparams_next
+    = add i32 %nparams_val, 1\n    store i32 %nparams_next, i32* %nparams\n    call
+    i32 @puts(i8* %arg)\n    br label %parse_begin\n\nprint_info:\n    store i1 true,
+    i1* %param\n    %opt_title_addr = getelementptr [10 x i8]* @opt_title_msg, i32
+    0, i32 0\n    call i32 @puts(i8* %opt_title_addr)\n    %has_opt_o = load i1* %opt_o\n
+    \   br i1 %has_opt_o, label %print_opt_o_on, label %print_opt_o_off\n\nprint_opt_o_on:\n
+    \   %opt_o_on_addr = getelementptr [14 x i8]* @opt_o_on_msg, i32 0, i32 0\n    call
+    i32 @puts(i8* %opt_o_on_addr)\n    br label %print_opt_q\n\nprint_opt_o_off:\n
+    \   %opt_o_off_addr = getelementptr [15 x i8]* @opt_o_off_msg, i32 0, i32 0\n
+    \   call i32 @puts(i8* %opt_o_off_addr)\n    br label %print_opt_q\n\nprint_opt_q:\n
+    \   %has_opt_q = load i1* %opt_q\n    br i1 %has_opt_q, label %print_opt_q_on,
+    label %print_opt_q_off\n\nprint_opt_q_on:\n    %opt_q_on_addr = getelementptr
+    [13 x i8]* @opt_q_on_msg, i32 0, i32 0\n    call i32 @puts(i8* %opt_q_on_addr)\n
+    \   br label %print_opt_d\n\nprint_opt_q_off:\n    %opt_q_off_addr = getelementptr
+    [14 x i8]* @opt_q_off_msg, i32 0, i32 0\n    call i32 @puts(i8* %opt_q_off_addr)\n
+    \   br label %print_opt_d\n\nprint_opt_d:\n    %opt_d_val = load i32* %opt_d\n
+    \   switch i32 %opt_d_val, label %print_param [i32 0, label %print_opt_d_0\n                                               i32
+    1, label %print_opt_d_1\n                                               i32 2,
+    label %print_opt_d_2]\n\nprint_opt_d_0:\n    %opt_d_0_addr = getelementptr [12
+    x i8]* @opt_d_0_msg, i32 0, i32 0\n    call i32 @puts(i8* %opt_d_0_addr)\n    br
+    label %print_param\n\nprint_opt_d_1:\n    %opt_d_1_addr = getelementptr [12 x
+    i8]* @opt_d_1_msg, i32 0, i32 0\n    call i32 @puts(i8* %opt_d_1_addr)\n    br
+    label %print_param\n\nprint_opt_d_2:\n    %opt_d_2_addr = getelementptr [12 x
+    i8]* @opt_d_2_msg, i32 0, i32 0\n    call i32 @puts(i8* %opt_d_2_addr)\n    br
+    label %print_param\n\nreturn:\n    %ret_opt_o = load i1* %opt_o\n    %ret_flag1
+    = xor i1 %ret_opt_o, 1\n    %ret_nparams = load i32* %nparams\n    %ret_param
+    = icmp slt i32 %ret_nparams, 1\n    %ret_flag2 = xor i1 %ret_flag1, %ret_param\n
+    \   %retval = zext i1 %ret_flag2 to i32\n    ret i32 %retval\n\nprint_usage:\n
+    \   %usage_addr = getelementptr [53 x i8]* @usage_msg, i32 0, i32 0\n    call
+    i32 @puts(i8* %usage_addr)\n    ret i32 0\n}\n"
+  :tags:
+  - Assembly
+  - LLVM
+  :references:
+    :url: 
+    :title: 
+- :id: '7702'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7702
+  :user_name: susu
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/218/
+  :language: OCaml
+  :time: 2008/09/24 14:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  OCamlはまだ文字コードがeuc-jpでないと日本語がコンパイルできません。\r<br>それと、実行結果が文字化けしたらコンソールをeucで起動してください。\r<br>"
+  :code: "(* lv -Oej xx.ml &gt; xx-ej.ml  euc-jpでない場合の変換\n   xterm -en euc-jp &amp;
+    \n   ocaml -I +extlib extLib.cma xx-ej.ml\n*)(*\n  スクリプト用途時\n  #!/usr/bin/env
+    ocaml\n  #directory \"+extlib\";;\n  #load \"extLib.cma\";;\n*)\n\nlet get = OptParse.Opt.get\nlet
+    opt = OptParse.Opt.opt\nlet switch t = if t then \"ON\" else \"OFF\"\nlet debug
+    = function\n  | Some (0 | 1 | 2 as n) -&gt; string_of_int n\n  | _ -&gt; \"-\";;\n\nlet
+    t = OptParse.OptParser.make ~usage:\n  \"cmdopt -o [-q] [-d{0|1|2}] 文字列 [文字列 ...]\"
+    ()\nand o = OptParse.StdOpt.store_true () \nand q = OptParse.StdOpt.store_true
+    () \nand d = OptParse.StdOpt.int_option ();;\nOptParse.OptParser.add ~short_name:'o'
+    t o;\nOptParse.OptParser.add ~short_name:'q' t q;\nOptParse.OptParser.add ~short_name:'d'
+    t d;;\n\nlet opts_form = format_of_string \"\\\n  [オプション情報] \\n\\\n  o(output)
+    : %s \\n\\\n  q(quote) : %s \\n\\\n  d(debug) : %2s \\n\\n\"\n\nlet opts_info
+    () =\n  if not (get o) then \n    (print_string \"-o オプションがありません。\\n\"; exit 0)
+    \n  else\n    Printf.printf opts_form\n     (switch (get o)) (switch (get q))
+    (debug (opt d))\n\nlet params_info l = \n  Printf.printf \n    \"[パラメータ情報]\\n指定数
+    : %d \\n\" (List.length l);\n  ExtList.List.iteri (fun i s -&gt;\n    Printf.printf
+    \"%d : %s \\n\" (i+1) s) l;;\n\nlet _ = \n  if !Sys.interactive then () else\n
+    \ let rest = OptParse.OptParser.parse_argv t in\n  (opts_info (); params_info
+    rest);;\n"
+  :tags:
+  - ExtLib
+  :references:
+    :url: 
+    :title: 
+- :id: '7709'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7709
+  :user_name: susu
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/218/
+  :language: OCaml
+  :time: 2008/09/27 07:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>資料としてArg版も。3,5,7には非対応です。</p>\n\n\t"
+  :code: "let switch t = if t then \"ON\" else \"OFF\"\n\nlet cmdopt arr = \n  let
+    o = ref false \n  and q = ref false\n  and d = ref \"-\"\n  and args = Queue.create
+    () in\n\n  Arg.parse_argv ~current:(ref 0) arr\n    [ \"-o\", Arg.Set o, \"\";\n
+    \     \"-q\", Arg.Set q, \"\";\n      \"-d\", Arg.Symbol ([\"0\";\"1\";\"2\";],
+    fun s -&gt; d:=s),\"\";] \n    (fun anon -&gt; Queue.push anon args) \"\";\n\n
+    \ if not !o then raise Exit ;\n\n  let len = Queue.length args in\n\n  Printf.printf
+    \"\\\n    [オプション情報]\\n\\\n    o(output)： %s\\n\\\n    q(quote)： %s\\n\\\n    d(debug)：
+    %s\\n\\\n    \\n[パラメータ情報]\\n指定数：%d \\n\"\n    (switch !o) (switch !q) !d len;\n\n
+    \ for i = 1 to len do \n    Printf.printf \"%2d : %s \\n\" i (Queue.pop args);\n
+    \ done;;\n\n(* cmdopt [| \"prog_name\"; \"-q\"; \"-o\"; \"aa\"; \"bb\"|];; *)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7720'
+  :parent_id: '205'
+  :url: http://ja.doukaku.org/comment/7720
+  :user_name: ksky
+  :user_url: /web/20090103041618/http://ja.doukaku.org/user/918/
+  :language: Groovy
+  :time: 2008/09/29 14:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>CliBuilderを使って書いてみました。longOptは期待通りに動きませんが...</p>\n\n\t"
+  :code: "cli = new CliBuilder(usage:'cmdopt -o [-q] [-d{0|1|2}] 文字列 [文字列 ...]')\ncli.o(longOpt:'output',
+    required:true, 'set output') \ncli.q(longOpt:'quote', 'set quote') \ncli.d(longOpt:'debug',
+    args:1, argName:'level', 'set debug level') \n\nopt = cli.parse(args)\nif (!opt)
+    System.exit 1\nparams = opt.arguments()\nif (params.size() &lt; 1) die 'parameter
+    must be specified'\nlevel = opt.d ? opt.d.toInteger() : 0\nif (!(level in 0..2))
+    die 'debug level must be in 0-2'\n\nprintln '[オプション情報]'\nprintln \"o(output):
+    ${opt.o ? 'ON' : 'OFF'}\"\nprintln \"q(quote): ${opt.q ? 'ON' : 'OFF'}\"\nprintln
+    \"d(debug): $level\"\nprintln '\\n[パラメータ情報]'\nprintln \"指定数: ${params.size()}\"\ni
+    = 1\nparams.each { println \"${i++}: $it\" }\n\ndef die(msg) {\n  cli.writer.println
+    \"error: $msg\"\n  cli.usage()\n  System.exit 1\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

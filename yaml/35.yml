@@ -1,0 +1,991 @@
+---
+:id: '35'
+:title: ローカル変数の一覧を取得
+:comments:
+- :id: '3391'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/3391
+  :user_name: にしお
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/30 15:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  リフレクション系のお題の続編です。\r\nローカル変数の内容を取得して連想配列(ハッシュ、辞書など)に詰める\r\nコードを書いてください。\r\n<p>\r\nPythonで表現すると、下のコードの???部分を埋めることになります。\r\n</p>\n<pre>\r\n&gt;&gt;&gt;
+    def foo():\r\n\tx = 1\r\n\ty = \"hello\"\r\n\t???\r\n\treturn result\r\n\r\n&gt;&gt;&gt;
+    foo()\r\n{'y': 'hello', 'x': 1}\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1597'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1597
+  :user_name: yuin
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/82/
+  :language: Python
+  :time: 2007/07/30 15:47 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  これはpythonからの挑戦状かな？\n\t"
+  :code: |
+    def foo():
+      x = 1
+      y = "hello"
+      result = locals()
+      return result
+    print foo()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1598'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1598
+  :user_name: kkobayashi
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2007/07/30 16:17 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">&gt; foo()\r\n      x       y \r\n    \"1\"
+    \"hello\" </pre>\n\t"
+  :code: |
+    foo &lt;- function(){
+        x = 1
+        y = "hello"
+        result &lt;- sapply(ls(), function(s) eval(as.symbol(s)))
+        return(result)
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1599'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1599
+  :user_name: rubikitch
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/105/
+  :language: Ruby
+  :time: 2007/07/30 16:26 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  \n\t"
+  :code: |
+    def foo
+      x = 1
+      y = "hello"
+      Hash[*local_variables.map{|v| [v,eval(v)]}.flatten]
+    end
+    foo()                           # =&gt; {"x"=&gt;1, "y"=&gt;"hello"}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1600'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1600
+  :user_name: yuin
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/82/
+  :language: Ruby
+  :time: 2007/07/30 16:39 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: |
+    def foo
+      x = 1
+      y = "hello"
+      local_variables.inject({}) {|result, name|
+        result[name] = eval(name)
+        result
+      }
+    end
+
+    puts "{"+foo.map{|k,v| "'#{k}' : #{v}'"}.join(",")+"}"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1601'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1601
+  :user_name: shiro
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/07/30 18:55 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">これはキツイ…\r\nGaucheでは最適化によって、定数で初期化されて一度も\r\n変更されないローカル変数とかは実行時には消えてしまいますし、\r\n逆にマクロ展開によってプログラム上には無いローカル変数が\r\n挿入される場合もあります。\r\n\r\nやるとしたらマクロで処理系そのものを置き換えるしか\r\nなさそうです。ここではletだけ再定義していますが、\r\nちゃんと動かすにはdefine,
+    lambda, let*, letrec,\r\nあたりの束縛系を全部再定義しないと…\r\n</pre>\n\t"
+  :code: |
+    (use util.match)
+
+    (define-macro (let binds . body)
+      (match binds
+        [((var init) ...)
+         `((lambda (local-vars) (apply (lambda ,var ,@body) (map cdr local-vars)))
+           (list ,@(map (lambda (v i) `(cons ',v ,i)) var init)))]))
+
+    ;;;
+
+    (define (foo)
+      (let ((x 1)
+            (y "hello"))
+        local-vars))
+    ;; =&gt; ((x . 1) (y . "hello"))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '1603'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1603
+  :user_name: sumim
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/07/31 01:19 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  Squeak Smalltalk で。\n\t"
+  :code: |
+    thisContext tempsAndValues
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '1605'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1605
+  :user_name: sumim
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2007/07/31 01:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  すみません。タグを付け間違えていました(^_^;)。\r\nお手数をおかけし恐縮ですが可能でしたら、Squeak_Smalltalk
+    への変更を、お願いいたします。あわせて、#82 のタグも Squeak_Smalltalk に変えて、元のタグの Squeak は（今回の s といっしょに）削除していただければ幸いです。不注意でもうしわけありません。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1606'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1606
+  :user_name: にしお
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/31 02:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  修正しました。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1607'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1607
+  :user_name: にしお
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/31 02:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">他の言語からの挑戦状があまりたくさん届かないので\r\nどうしても僕の得意なPythonからの挑戦状が増えます…\r\nRubyのuniqとかPerlのマジカルインクリメントとか\r\nいろいろ手を出してはいるんですけどね…</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1611'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1611
+  :user_name: ether
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/96/
+  :language: Lua
+  :time: 2007/07/31 03:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "function locals()\n   local i = 1\n   local t = {}\n   while true do\n     local
+    k, v = debug.getlocal(2, i)\n     if k == nil then break end\n     t[k] = v\n
+    \    i =  i + 1\n   end\n   return t\nend\n\nfunction foo()\n  local x = 1\n  local
+    y = \"hello\"\n  return locals(), nil\nend\n\nfor k, v in pairs(foo()) do print(k,
+    v) end \n--&gt; y       hello\n--&gt; x       1\n"
+  :tags:
+  - Lua5.1
+  :references:
+    :url: 
+    :title: 
+- :id: '1615'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1615
+  :user_name: cats
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/07/31 05:02 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">正直、C#では厳しいので、静的な情報出力でお茶を濁している。\r\n変数の名前も内容も出力していない。\r\nできるとすれば、以下のような感じかな。デバッガ作るようなもんですね。\r\n・コンパイルしてアセンブリにする。\r\n・ホスティングプロセスでアセンブリを読込んで実行する。\r\n・ProgramDebugDatabaseを読みこんでシンボルを取得。\r\n・LocalVariablesを取得して表示。</pre>\n\t"
+  :code: |
+    using System;
+    using System.Reflection;
+    using System.Diagnostics;
+    class Program
+    {
+      static void Main()
+      {
+        int x = 1;
+        string y = "abc";
+        ShowLocalVariables(new StackFrame(true));
+        // System.Int32 (0)
+        // System.String (1)
+      }
+      static void ShowLocalVariables(StackFrame sf)
+      {
+        foreach (LocalVariableInfo lv in sf.GetMethod().GetMethodBody().LocalVariables)
+          Console.WriteLine(lv);
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1617'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1617
+  :user_name: noeta
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/60/
+  :language: PHP
+  :time: 2007/07/31 05:24 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">それ、get_defined_vars() で</pre>\n\t"
+  :code: |
+    &lt;?php
+    function foo(){
+        $x = 1;
+        $y = 'hello';
+        return get_defined_vars();
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1623'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1623
+  :user_name: 匿名
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/4/
+  :language: Perl
+  :time: 2007/07/31 08:02 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  Perlでは局所変数を扱うためにはPadWalkerモジュールを使います。\n\t"
+  :code: |
+    use PadWalker qw(peek_my);
+    use Data::Dumper;
+
+    sub foo {
+        my $x = 1;
+        my $y = 'hello';
+        my $result = peek_my(0);
+        return $result;
+    }
+
+    warn Dumper foo;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1626'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1626
+  :user_name: yuin
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/07/31 09:43 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  ひたすら厳しい・・・。\r\n\r\nとりあえずJDIで無理やり。\r\nJAVA_OPTSに\r\n\r\n-Xrunjdwp:transport=dt_socket,address=5056,server=y,suspend=n\r\n\r\nと設定して実行します。なにかいい方法があったら是非教えてほしいです。\n\t"
+  :code: |
+    import com.sun.jdi._
+    import com.sun.jdi.connect._
+    import com.sun.jdi.connect.Connector._
+    import scala.collection.mutable.JavaMapAdaptor
+    import scala.collection.mutable.HashMap
+
+    class _localVariables(threadName:String) extends Thread {
+     var result:HashMap[String, AnyRef] = null
+     override def run = {
+       val vmm = Bootstrap.virtualMachineManager
+       val acs = vmm.attachingConnectors().toArray.map(_.asInstanceOf[AttachingConnector])
+       val ac = acs.find(_.name == "com.sun.jdi.SocketAttach").get
+       val args = ac.defaultArguments
+       val portNumber = args.get("port").asInstanceOf[IntegerArgument]
+       portNumber.setValue(5056)
+       val hostname   = args.get("hostname").asInstanceOf[StringArgument]
+       hostname.setValue("localhost")
+
+       val vm = ac.attach(args)
+       val threads = vm.allThreads.toArray.map(_.asInstanceOf[ThreadReference])
+       val mainthread = threads.find(_.name==threadName).get
+       mainthread.suspend
+
+       val f = mainthread.frame(4).asInstanceOf[StackFrame]
+       val result = new
+    JavaMapAdaptor[LocalVariable,Value](f.getValues(f.visibleVariables))
+       this.result = result.foldLeft(new HashMap[String, AnyRef]){(r, p) =&gt;
+         r(p._1.name) = p._2
+         r
+       }
+       mainthread.resume
+     }
+    }
+
+    def localVariables = {
+     val th = new _localVariables(currentThread.getName)
+     th.start
+     th.join
+     th.result
+    }
+
+    def foo = {
+     val x = 1
+     val y = "hoge"
+     localVariables
+    }
+    println(foo)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1629'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1629
+  :user_name: ApplePedlar
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/320/
+  :language: Java
+  :time: 2007/07/31 11:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  コンパイルオプションで -g を指定することでクラスファイルにローカル変数名を入れることができるのですが、それを認識するAPIはありません。\r\nクラスパスからクラスファイルを取得・解析してローカル変数名を取得することも多分可能ですが、変数名に対応する値を取得する方法がありません。\r\nどうしようもないので内部クラスを使って似たようなことをやってみました。\n\t"
+  :code: "import java.util.HashMap;\nimport java.util.Map;\n\nimport java.lang.reflect.Field;\n\npublic
+    class Test {\n\tpublic static void main(String[] args) {\n\t\tMap map = foo();\n\t\tSystem.out.println(map);\n\t}\n\tstatic
+    Map foo() {\n\t\tMap map = new HashMap();\n\t\tclass Hoge {\n\t\t\tint x = 1;\n\t\t\tString
+    y = \"hello\";\n\t\t\t\n\t\t\tHoge() {\n\t\t\t}\n\t\t}\n\t\t\n\t\tHoge hoge =
+    new Hoge();\n\t\tField[] fields = hoge.getClass().getDeclaredFields();\n\t\tfor
+    (int i = 0; i &lt; fields.length; i++) {\n\t\t\ttry {\n\t\t\t\tmap.put(fields[i].getName(),
+    fields[i].get(hoge));\n\t\t\t} catch (Exception e) {\n\t\t\t\te.printStackTrace();\n\t\t\t}\n\t\t}\n\t\treturn
+    map;\n\t}\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1631'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1631
+  :user_name: raynstard
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2007/07/31 13:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ふと、自分自身(orソースコード)をgrepとかしてしまってもいいんじゃないかと思ってしまった今日この頃。\r\n宣言と同時でも良ければそれで十分できそうな予感。\r\nでもやらない(笑\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1654'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1654
+  :user_name: sawat
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/322/
+  :language: JavaScript
+  :time: 2007/08/01 11:51 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  関数のソースを解析して、変数名を抽出し、evalで値を求めています。\r\nソース解析処理がすごく適当なので、一つのvarに複数の変数が定義されている場合に対応していないです。\n\t"
+  :code: |
+    Function.prototype.listLocalVariableNames = function() {
+      var regexp = /var\s+(\w+)/g;
+      var source = this.toString();
+      var match = null;
+      var variables = [];
+      while(match = regexp.exec(source)) {
+        variables.push(match[1]);
+      }
+      return variables;
+    }
+
+    Array.prototype.toHash= function(iter) {
+      var hash = {};
+      for(var i=0; i&lt;this.length; i++) {
+        try {
+          hash[this[i]] = iter(this[i]);
+        } catch(e) {
+          // エラーはパス
+        }
+      }
+      return hash;
+    };
+
+    function func() {
+      var x = 1;
+      var y = "hello";
+
+      return arguments.callee.listLocalVariableNames().toHash(function(p) {
+        return eval(p);
+      });
+    }
+
+    var variablesMap = func();
+    for(var prop in variablesMap) {
+      alert(prop + " =&gt; " + variablesMap[prop]);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1656'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1656
+  :user_name: rubikitch
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/105/
+  :language: Common
+  :time: 2007/08/01 13:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ネストできない＞＜\n\t"
+  :code: |
+    (defmacro let-inspect (spec &amp;body body)
+      (let* ((vars (mapcar (lambda (x) (if (consp x) (car x) x)) spec))
+             (expr (loop for v in vars collect `(list ',v (eval ,v)))))
+
+      `(let ,spec
+         (symbol-macrolet ((inspect (list ,@expr)))
+         ,@body))))
+
+    (defparameter *gvar* 1)
+    (defun foo ()
+      (let-inspect ((x 1)
+                    (y "hello")
+                    z)
+        inspect))
+
+    (foo)                                   ; =&gt; ((X 1) (Y "hello") (Z NIL))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1657'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1657
+  :user_name: hamano
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/25/
+  :language: C
+  :time: 2007/08/01 15:05 GMT
+  :vote_count: '11'
+  :vote_score: '11'
+  :body: "\n\t  <pre class=\"compact\">C 言語の場合ローカル変数名はデバッグ情報にしか含まれませんので gcc の -g オプションが必須です。\r\nデバッグ情報を得るために
+    libelf, libdwarf と、ハッシュテーブルを使うために glib を使用しました。\r\nコンパイルこんな感じです。\r\n\r\n% gcc
+    -g `pkg-config glib --cflags` locals.c -o locals `pkg-config glib --libs` -lelf
+    -ldwarf\r\n\r\n実行結果\r\n\r\n% ./locals\r\nx=hello\r\ny=1\r\n\r\nスタックフレームにある変数を得るのに複数の種類の型が混在していると厄介だったのでローカル変数は文字列(char*)のみとなってしまいました。\r\nあと、X86
+    32bit 環境でしか動作しないと思います。\r\n</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n#include
+    &lt;sys/types.h&gt;\n#include &lt;sys/stat.h&gt;\n#include &lt;fcntl.h&gt;\n#include
+    &lt;unistd.h&gt;\n#include &lt;libelf.h&gt;\n#include &lt;libdwarf/libdwarf.h&gt;\n#include
+    &lt;libdwarf/dwarf.h&gt;\n#include &lt;glib.h&gt;\n\nGHashTable *locals();\n\nGHashTable
+    *foo(){\n    char *x = \"1\";\n    char *y = \"hello\";\n    return locals();\n}\n\nGHashTable
+    *locals(){\n    GHashTable *hash;\n    int fd;\n    Elf *elf;\n    int ret;\n
+    \   Dwarf_Debug dbg;\n    Dwarf_Die cu_die;\n    Dwarf_Die func_die;\n    Dwarf_Die
+    var_die;\n    Dwarf_Die var_die_tmp;\n    Dwarf_Error err;\n    Dwarf_Unsigned
+    cu_header_length = 0;\n    Dwarf_Unsigned abbrev_offset = 0;\n    Dwarf_Half version_stamp
+    = 0;\n    Dwarf_Half address_size = 0;\n    Dwarf_Unsigned next_cu_offset = 0;\n
+    \   Dwarf_Half tag;\n    Dwarf_Attribute attr;\n    char *name;\n    Dwarf_Addr
+    high_pc;\n    Dwarf_Addr low_pc;\n    int i;\n    void *frame = __builtin_frame_address(1);\n
+    \   unsigned long retaddr = (unsigned long)__builtin_return_address(0);\n\n    hash
+    = g_hash_table_new((GHashFunc)g_str_hash, (GCompareFunc)g_str_equal);\n    elf_version(EV_CURRENT);\n
+    \   fd = open(\"/proc/self/exe\", O_RDONLY);\n    elf = elf_begin(fd, ELF_C_READ,
+    (Elf*)0);\n    ret = dwarf_elf_init(elf, DW_DLC_READ, NULL, NULL, &amp;dbg, &amp;err);\n
+    \   while ((ret = dwarf_next_cu_header(\n                dbg, &amp;cu_header_length,
+    &amp;version_stamp, &amp;abbrev_offset,\n                &amp;address_size, &amp;next_cu_offset,
+    &amp;err)) == DW_DLV_OK){\n        cu_die = NULL;\n        while(dwarf_siblingof(dbg,
+    cu_die, &amp;cu_die, &amp;err) != DW_DLV_NO_ENTRY){\n            dwarf_tag(cu_die,
+    &amp;tag, &amp;err);\n            if(tag != DW_TAG_compile_unit) continue;\n            ret
+    = dwarf_child(cu_die, &amp;func_die, &amp;err);\n            if(ret != DW_DLV_OK)
+    continue;\n            do{ \n                dwarf_tag(func_die, &amp;tag, &amp;err);\n
+    \               if(tag != DW_TAG_subprogram) continue;\n                dwarf_attr(func_die,
+    DW_AT_high_pc, &amp;attr, &amp;err);\n                dwarf_formaddr(attr, &amp;high_pc,
+    &amp;err);\n                dwarf_attr(func_die, DW_AT_low_pc, &amp;attr, &amp;err);\n
+    \               dwarf_formaddr(attr, &amp;low_pc, &amp;err);\n                if(low_pc
+    &gt; retaddr || retaddr &gt; high_pc) continue;\n                ret = dwarf_child(func_die,
+    &amp;var_die, &amp;err);\n                if(ret != DW_DLV_OK) continue;\n                i=0;\n
+    \               var_die_tmp = var_die;\n                while(dwarf_siblingof(dbg,
+    var_die, &amp;var_die, &amp;err) != DW_DLV_NO_ENTRY) i++;\n                var_die
+    = var_die_tmp;\n                do{ \n                    dwarf_tag(var_die, &amp;tag,
+    &amp;err);\n                    if(tag != DW_TAG_variable) continue;\n                    dwarf_attr(var_die,
+    DW_AT_name, &amp;attr, &amp;err);                                                 \n
+    \                   dwarf_formstring(attr, &amp;name, &amp;err);                                                          \n
+    \                   g_hash_table_insert(hash, strdup(name),\n                                        strdup((frame
+    - 4 - (4 * i--))));\n                }while(dwarf_siblingof(dbg, var_die, &amp;var_die,
+    &amp;err) != DW_DLV_NO_ENTRY);\n\n            }while(dwarf_siblingof(dbg, func_die,
+    &amp;func_die, &amp;err) != DW_DLV_NO_ENTRY);\n        }\n    }\n    dwarf_finish(dbg,
+    &amp;err);\n    elf_end(elf);\n    close(fd);\n    return hash;\n}\n\nint main(int
+    argc, char *argv[]){\n    GHashTable *hash = foo();\n    printf(\"x=%s\\n\", *(char**)g_hash_table_lookup(hash,
+    \"x\"));\n    printf(\"y=%s\\n\", *(char**)g_hash_table_lookup(hash, \"y\"));\n
+    \   g_hash_table_destroy(hash);\n    return EXIT_SUCCESS;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1666'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1666
+  :user_name: 匿名
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/08/01 16:24 GMT
+  :vote_count: '8'
+  :vote_score: '8'
+  :body: "\n\t  <pre class=\"compact\">ローカル変数の取得はリフレクションというよりはデバッグ用という感じがします。\r\nそこで、Java
+    Debug Interface を使ってみました。\r\n\r\npublic class Sample {\r\n    public static void
+    main(String[] args) {\r\n        int x = 1;\r\n        String y = \"hello\";\r\n
+    \   }\r\n}\r\n\r\nというサンプルの場合は、-g オプションつきで Sample をコンパイルした後に、\r\n    java TinyDB
+    Sample\r\nで起動すると、mainメソッドのローカル変数（引数つき）が出力されます。</pre>\n\t"
+  :code: |
+    import com.sun.jdi.*;
+    import com.sun.jdi.connect.LaunchingConnector;
+    import com.sun.jdi.connect.Connector;
+    import com.sun.jdi.event.*;
+    import com.sun.jdi.request.*;
+    import java.util.Map;
+
+    public class TinyDB {
+        public static void main(String[] args) throws Exception {
+            LaunchingConnector lc = Bootstrap.virtualMachineManager().
+                defaultConnector();
+            Map&lt;String, Connector.Argument&gt; arg = lc.defaultArguments();
+            arg.get("main").setValue(args[0]);
+
+            VirtualMachine vm = lc.launch(arg);
+            EventQueue q = vm.eventQueue();
+            EventSet e = q.remove(); // get VMStartEvent
+            EventRequestManager mgr = vm.eventRequestManager();
+            MethodExitRequest exitReq = mgr.createMethodExitRequest();
+            exitReq.addClassFilter(args[0]);
+            exitReq.enable();
+            e.resume();
+            e = q.remove(); // MethodExitEvent
+            LocatableEvent ev = (LocatableEvent)e.eventIterator().nextEvent();
+            ThreadReference tr = ev.thread();
+            StackFrame frame = tr.frame(0);
+            for (LocalVariable var : frame.visibleVariables()) {
+                System.out.print(var.name() + ": ");
+                Value val = frame.getValue(var);
+                if (val instanceof PrimitiveValue) {
+                    System.out.println(((PrimitiveValue)val).doubleValue());
+                } else if (val instanceof StringReference) {
+                    System.out.println(((StringReference)val).value());
+                } else if (val instanceof ObjectReference) {
+                    System.out.println(val.type().name());
+                }
+            }
+
+            e.resume();
+            e = q.remove(); // get VMDisconnectEvent
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1668'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1668
+  :user_name: onjo
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/235/
+  :language: Common
+  :time: 2007/08/01 16:38 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  (list 'x (eval x)) だと x が二回評価されちゃいます。\r\nネストも扱うならこんな感じでしょうか。\n\t"
+  :code: |
+    (defpackage :doukaku-lisp (:use :cl) (:shadow #:let))
+    (in-package :doukaku-lisp)
+
+    (define-symbol-macro local-variables nil)
+    (defmacro let (binding &amp;body body)
+      `(cl:let ,binding
+         (cl:let ((local-variables (append
+                                    (list ,@(mapcar (lambda (e)
+                                                      (if (consp e)
+                                                         `(cons ',(car e) ,(car e))
+                                                         `(cons ',e nil)))
+                                                     binding))
+                                     local-variables)))
+           ,@body)))
+
+    (defun test ()
+      (let ((x 1)
+            (y "hello"))
+        local-variables))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1726'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1726
+  :user_name: tomatsu
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/323/
+  :language: Pnuts
+  :time: 2007/08/02 12:51 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">この技は pnuts -pure で起動したときだけ使えます。</pre>\n\t"
+  :code: |
+    import pnuts.tools.StackFrameInspector
+    function f(){
+      x=1
+      y=2
+      StackFrameInspector.localSymbols(getContext())
+    }
+    println(f())
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1728'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1728
+  :user_name: rihi
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/256/
+  :language: Haskell
+  :time: 2007/08/02 13:01 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  Haskellでは実行時に変数を操作する手段がないので、Template Haskellでコンパイル時にコードを挿入することで対処します。力ずくです。\n\t"
+  :code: |
+    {-# OPTIONS_GHC -fth #-}
+
+    module LocalVariables(localVariables, withLocalVariables) where
+
+    import Control.Monad
+    import Data.Dynamic
+    import Language.Haskell.TH
+    import qualified Data.Map as Map
+
+    localVariables :: Map.Map String Dynamic
+    localVariables = error "localVariables outside withLocalVariables"
+
+    localVariablesName :: Name
+    localVariablesName = 'localVariables
+
+    withLocalVariables :: Q [Dec] -&gt; Q [Dec]
+    withLocalVariables = (&gt;&gt;=trDecs)
+      where
+        trDecs decs = mapM (trDec []) decs
+
+        trDec vars dec = case dec of
+          FunD name cls -&gt; liftM (FunD name) $ mapM (trClause vars) cls
+          ValD pat body decs -&gt; do
+            decs' &lt;- mapM (trDec vars) decs
+            body' &lt;- trBody (vars ++ concatMap decVars decs) body
+            return $ ValD pat body' decs'
+          _ -&gt; return dec
+
+        trClause vars (Clause pats body decs) = do
+          decs' &lt;- mapM (trDec vars) decs
+          body' &lt;- trBody (vars ++ concatMap patVars pats ++ concatMap decVars decs) body
+          return $ Clause pats body' decs'
+
+        trBody vars (GuardedB ges) = liftM GuardedB $ mapM trGuarded ges
+          where
+            trGuarded (guard, exp) = do
+              exp' &lt;- trExp vars exp
+              return (guard, exp')
+        trBody vars (NormalB exp) = liftM NormalB $ trExp vars exp
+
+        trExp :: [Name] -&gt; Exp -&gt; Q Exp
+        trExp vars exp = case exp of
+          VarE name
+            | name == localVariablesName -&gt; replacement vars
+            | otherwise -&gt; return exp
+          AppE x y -&gt; liftM2 AppE (rec x) (rec y)
+          InfixE x op y -&gt; liftM3 InfixE (maybeMapM rec x) (rec op) (maybeMapM rec y)
+          LamE pats e -&gt; liftM (LamE pats) $ trExp (vars ++ concatMap patVars pats) e
+          TupE es -&gt; liftM TupE $ mapM rec es
+          CondE c t f -&gt; liftM3 CondE (rec c) (rec t) (rec f)
+          LetE decs e -&gt; do
+            decs' &lt;- mapM (trDec vars) decs
+            e' &lt;- trExp (vars ++ concatMap decVars decs) e
+            return $ LetE decs' e'
+          CaseE e matches -&gt; liftM2 CaseE (rec e) (mapM (trMatch vars) matches)
+          DoE ss -&gt; liftM DoE $ trStmts vars ss
+          CompE ss -&gt; liftM CompE $ trStmts vars ss
+          ArithSeqE rng -&gt; liftM ArithSeqE $ trRange vars rng
+          ListE es -&gt; liftM ListE $ mapM rec es
+          SigE e tp -&gt; liftM2 SigE (rec e) (return tp)
+          RecConE name fexps -&gt; liftM (RecConE name) $ mapM (trFexp vars) fexps
+          RecUpdE e fexps -&gt; liftM2 RecUpdE (rec e) (mapM (trFexp vars) fexps)
+          _ -&gt; return exp
+          where
+            rec e = trExp vars e
+            maybeMapM f Nothing = return Nothing
+            maybeMapM f (Just v) = liftM Just $ f v
+
+        trFexp vars (name, e) = do
+          e' &lt;- trExp vars e
+          return (name, e')
+
+        trRange vars rng = case rng of
+          FromR x -&gt; liftM FromR $ tr x
+          FromThenR x y -&gt; liftM2 FromThenR (tr x) (tr y)
+          FromToR x y -&gt; liftM2 FromToR (tr x) (tr y)
+          FromThenToR x y z -&gt; liftM3 FromThenToR (tr x) (tr y) (tr z)
+          where
+            tr e = trExp vars e
+
+        trStmts :: [Name] -&gt; [Stmt] -&gt; Q [Stmt]
+        trStmts vars [] = return []
+        trStmts vars (stmt:rest) = case stmt of
+          BindS pat exp -&gt; let vars' = vars ++ patVars pat
+            in liftM2 (:) (liftM (BindS pat) (trExp vars' exp)) (trStmts vars' rest)
+          LetS decs -&gt; liftM2 (:) (liftM LetS $ mapM (trDec vars) decs) (trStmts (vars ++ concatMap decVars decs) rest)
+          NoBindS exp -&gt; liftM2 (:) (liftM NoBindS $ trExp vars exp) (trStmts vars rest)
+          ParS _ -&gt; error "ParS: what's this?"
+
+        trMatch vars (Match pat body decs) = do
+          decs' &lt;- mapM (trDec vars) decs
+          body' &lt;- trBody (vars ++ patVars pat ++ concatMap decVars decs) body
+          return $ Match pat body' decs'
+
+        decVars dec = case dec of
+          FunD name _ -&gt; [name]
+          ValD pat _ _ -&gt; patVars pat
+          _ -&gt; []
+
+        patVars pat = case pat of
+          VarP name -&gt; [name]
+          TupP pats -&gt; concatMap patVars pats
+          ConP name pats -&gt; concatMap patVars pats
+          InfixP p0 _ p1 -&gt; patVars p0 ++ patVars p1
+          TildeP p -&gt; patVars p
+          AsP name p -&gt; name : patVars p
+          RecP _ fps -&gt; concatMap fpatVars fps
+          ListP pats -&gt; concatMap patVars pats
+          _ -&gt; []
+
+        fpatVars (_, pat) = patVars pat
+
+        replacement vars = [| Map.fromList $(list) |]
+          where
+            list = listE $ map entry vars
+            entry name = [| ($(str), toDyn $(obj)) |]
+              where
+                str = return $ LitE $ StringL $ show name
+                obj = return $ VarE name
+
+    {-
+      使い方：
+        別モジュールで
+
+        import LocalVariables
+
+        $(withLocalVariables [d|
+
+          foo :: IO (Map.Map String Dynamic)
+          foo = do
+            let x = 1 :: Int
+            let y = "hello"
+            return localVariables
+
+          |])
+
+        のようにすると、localVariablesの出現を置換した上でfooが定義される
+    -}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1989'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/1989
+  :user_name: ether
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/96/
+  :language: Tcl
+  :time: 2007/08/07 13:37 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Tcl にも info locals というずばりなコマンドがありますが Python と違って返されるのは名前のリストのみなので記述量は若干増えます。\n\t"
+  :code: |
+    proc foo {} {
+      set x 1
+      set y hello
+
+      set locals [info locals]
+      set result {}
+      foreach k $locals { lappend result $k [set $k] }
+      return $result
+    }
+
+    # % foo
+    # x 1 y hello
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2056'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/2056
+  :user_name: tsekine
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/124/
+  :language: Bash
+  :time: 2007/08/10 06:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  BASHには連想配列がないのですが、表示がそのまま連想配列になってるように見えるというところでかんべんしてください。\n\t"
+  :code: |
+    foo () {
+      local -i x=1
+      local y="Hello"
+      local
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2692'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/2692
+  :user_name: 130R
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/409/
+  :language: PowerShell
+  :time: 2007/08/30 11:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">-scopeは規定値でLocalだけど、ローカルと言い張るために付けておきました。</pre>\n\t"
+  :code: |
+    Get-Variable  -scope Local | %{$h=@{}} {$h[$_.name]=$_.value}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3935'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/3935
+  :user_name: 匿名
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/11/13 08:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">若干力技ですが。</pre>\n\t"
+  :code: |
+    mとはハッシュ
+
+    ●foo
+    　　xとは整数= 1
+    　　yとは文字列= "hello"
+    　　
+    　　"ローカル"の変数列挙を反復
+    　　　　tmp=対象を" +"で正規表現区切る
+    　　　　m＠(切り取る(tmp,"="))=tmp[1]
+    　　mで戻る
+
+    fooを表示
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4875'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/4875
+  :user_name: 匿名
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/4/
+  :language: PostScript
+  :time: 2007/12/18 18:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>PostScript です。</p>\n\n\t"
+  :code: |
+    /foo{
+        2 dict             % 2 個要素が入る辞書をオペランドスタックに置く
+        begin              % スタックトップの辞書を辞書スタックに置く
+            /x 1 def       % 辞書スタックのトップの辞書に、キー x 値 1 を登録する
+                      % ここで x とすると、辞書スタックのトップからキー x を探し
+                      % その値 (今の場合 1) をオペランドスタックに置く
+                      % つまり、x を変数として扱える
+            /y (hello) def
+            currentdict    % 辞書スタックのトップの辞書をオペランドスタックに置く
+        end                % 辞書スタックから辞書を1個除く
+    }def
+
+    foo        % 辞書がオペランドスタックに置かれる
+    % オペランドスタックの辞書の中身を表示
+    {
+        exch
+        (name: )print ==
+        (value: )print ==
+        (\n)print
+    }forall
+
+    % 以下は出力
+    name: /y
+    value: (hello)
+
+    name: /x
+    value: 1
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5559'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/5559
+  :user_name: queck
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/681/
+  :language: Other
+  :time: 2008/01/29 16:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Factor では with-scope で変数のスコープを限定しないと、その変数のスコープは関数（ワード）をまたいでしまいます。</p>\n<p>スタックベースの言語では関数ローカル変数はあまり需要がありませんし、Factor
+    では変数は通常関数をまたいで情報を受け渡しするために使うためでしょう。</p>\n<p>ということで with-scope で囲めばそのスコープ内の変数を
+    namespace で取得できます。</p>\n\n\t"
+  :code: |
+    USE: namespaces
+    : foo
+        [ 1 "x" set
+          "hello" "y" set
+          namespace ] with-scope ;
+
+    USE: prettyprint
+    foo . ! =&gt; H{ { "x" 1 } { "y" "hello" } }
+  :tags:
+  - Factor
+  :references:
+    :url: 
+    :title: 
+- :id: '5929'
+  :parent_id: '35'
+  :url: http://ja.doukaku.org/comment/5929
+  :user_name: 匿名
+  :user_url: /web/20080513064854/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/03/04 08:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>それだとglobalも含まれている気が・・。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 

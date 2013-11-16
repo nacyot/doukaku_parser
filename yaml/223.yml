@@ -1,0 +1,1497 @@
+---
+:id: '223'
+:title: 麻雀ゲーム1
+:comments:
+- :id: '8258'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/8258
+  :user_name: saws
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/642/
+  :language: 
+  :time: 2008/12/26 01:42 GMT
+  :vote_count: '11'
+  :vote_score: '-9'
+  :body: "\r\n\t  <p>麻雀ゲームの部分的な作成がお題になります.\n以下のメソッド/関数を組み込んで下さい.</p>\n<ol class=\"arabic
+    simple\">\n<li>n人のプレーヤでゲームをする機能; n = 2--4.</li>\n<li>牌をかき混ぜてから山を作成する機能.</li>\n<li>手牌を理牌する機能.</li>\n<li>山から牌を取る操作.</li>\n<li>手配を切る操作
+    \ (ツモ切りで構いません).</li>\n<li>河を保存する機能.</li>\n<li>3--5を繰り返す機能.</li>\n</ol>\n<p>ルールとしては,</p>\n<ol
+    class=\"loweralpha simple\">\n<li>配牌は親は14枚, 子は13枚.</li>\n<li>親から順に手牌を切る.</li>\n<li>自分の手番で始めにツモり,
+    その後手牌を切る.</li>\n<li>手牌の数は最大14枚.</li>\n<li>山の牌が残り14枚になったら終了.</li>\n<li>牌全体としては,
+    (3人プレーヤでも) 日本で通常用いられている34種類136枚を使用.</li>\n</ol>\n<p>と考えていただければ結構です.</p>\n<p>鳴き,
+    あがり, 自風, 場風などは考慮していただかなくて結構です.</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8263'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/8263
+  :user_name: saws
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/12/30 03:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>こんな感じで.\nPlayerクラスは拡張性を与えるために追加してみました.</p>\n\r\n\t"
+  :code: |
+    class Mahjang
+      Tu, Num = :t, 14
+      Hai, Tuhai = [:m, :s, :p, Tu], [:wt, :sh, :et, :nh, :hk, :ht, :tu]
+      module WisePlayer
+        def think
+          unless @tumo
+            puts [*1..Num].map{|c| format("% 3d", c)}.join(?,) + ' 0=tumo', self
+            true until (0..Num).include?(i = gets.to_i)
+            @tumo = true if i.zero?
+          end
+          @tumo ? Num : i
+        end
+      end
+      class Player
+        def initialize
+          @hai, @ho = [], []
+          @tumo = nil
+        end
+        attr_reader :ho
+        def to_s
+          @hai.map{|p| [p.name, p.num]}.
+            map{|n,m| n != Tu ? " #{n}#{m+1}" : " #{TuHai[m]}"}.join(",")
+        end
+        def repai()   @hai = @hai.sort_by{|h| [h.name, h.num]}  end
+        def size()    @hai.size  end
+        def get(a)    @hai &lt;&lt; a  end
+        def think()   Num end
+        def set()     @ho &lt;&lt; @hai.delete_at(think-1)  end
+      end
+      def initialize
+        pi = Struct.new("Pi", :name, :num)
+        @players = Array.new(4){Player.new}
+        @players[0].extend(WisePlayer)
+        @hi = Hai.map{|s| Array.new(4){Array.new(9){|i|
+              pi.new(s,i) unless s == Tu &amp;&amp; i &gt;= 7}}}.
+          flatten.compact.shuffle
+        init_set
+      end
+      def init_set
+        cycle{@players.last.size &gt;= Num-1}
+        @players[0].get(@hi.delete_at(3))
+      end
+      def play
+        cycle(true){@hi.size &lt;= Num}
+        @players.each{|p| puts p}
+      end
+      private
+      def cycle(play=nil)
+        @players.cycle{|p|
+          p.get(@hi.shift) if p.size &lt; Num
+          p.set            if play
+          p.repai
+          break if yield}
+      end
+    end
+    if __FILE__ == $0
+      m = Mahjang.new
+      m.play
+    end
+  :tags:
+  - 1.9.0
+  :references:
+    :url: 
+    :title: 
+- :id: '8263'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/8263
+  :user_name: saws
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/12/30 03:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>こんな感じで.\nPlayerクラスは拡張性を与えるために追加してみました.</p>\n\n\t"
+  :code: |
+    class Mahjang
+      Tu, Num = :t, 14
+      Hai, Tuhai = [:m, :s, :p, Tu], [:wt, :sh, :et, :nh, :hk, :ht, :tu]
+      module WisePlayer
+        def think
+          unless @tumo
+            puts [*1..Num].map{|c| format("% 3d", c)}.join(?,) + ' 0=tumo', self
+            true until (0..Num).include?(i = gets.to_i)
+            @tumo = true if i.zero?
+          end
+          @tumo ? Num : i
+        end
+      end
+      class Player
+        def initialize
+          @hai, @ho = [], []
+          @tumo = nil
+        end
+        attr_reader :ho
+        def to_s
+          @hai.map{|p| [p.name, p.num]}.
+            map{|n,m| n != Tu ? " #{n}#{m+1}" : " #{TuHai[m]}"}.join(",")
+        end
+        def repai()   @hai = @hai.sort_by{|h| [h.name, h.num]}  end
+        def size()    @hai.size  end
+        def get(a)    @hai &lt;&lt; a  end
+        def think()   Num end
+        def set()     @ho &lt;&lt; @hai.delete_at(think-1)  end
+      end
+      def initialize
+        pi = Struct.new("Pi", :name, :num)
+        @players = Array.new(4){Player.new}
+        @players[0].extend(WisePlayer)
+        @hi = Hai.map{|s| Array.new(4){Array.new(9){|i|
+              pi.new(s,i) unless s == Tu &amp;&amp; i &gt;= 7}}}.
+          flatten.compact.shuffle
+        init_set
+      end
+      def init_set
+        cycle{@players.last.size &gt;= Num-1}
+        @players[0].get(@hi.delete_at(3))
+      end
+      def play
+        cycle(true){@hi.size &lt;= Num}
+        @players.each{|p| puts p}
+      end
+      private
+      def cycle(play=nil)
+        @players.cycle{|p|
+          p.get(@hi.shift) if p.size &lt; Num
+          p.set            if play
+          p.repai
+          break if yield}
+      end
+    end
+    if __FILE__ == $0
+      m = Mahjang.new
+      m.play
+    end
+  :tags:
+  - 1.9.0
+  :references:
+    :url: 
+    :title: 
+- :id: '8264'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/8264
+  :user_name: syat
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/766/
+  :language: C
+  :time: 2008/12/31 00:16 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>C#で書いてみました。</p>\n\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using 牌 = System.String;
+
+    class 卓 {
+        static 牌[] 数s = { "一", "二", "三", "四", "伍", "六", "七", "八", "九" };
+        static 牌[] 字s = { "白", "發", "中", "東", "南", "西", "北" };
+        static 牌[] 子s = { "索", "筒", "萬" };
+        int 人数;
+        public List&lt;家&gt; 家s = new List&lt;家&gt; { };
+        public List&lt;牌&gt; 山 = new List&lt;牌&gt;();
+        public List&lt;List&lt;牌&gt;&gt; 河s = new List&lt;List&lt;牌&gt;&gt;();
+        public 卓(int 人数) {
+            this.人数 = 人数;
+            山.AddRange((
+                from 数 in 数s
+                from 子 in 子s
+                from 枚数 in Enumerable.Range(0, 4)
+                select 子 + 数).ToList());
+            山.AddRange((
+                from 字 in 字s
+                from 枚数 in Enumerable.Range(0, 4)
+                select 字 + "　").ToList());
+
+            Random rand = new Random();
+            for (int i = 0; i &lt; 山.Count; i++) {
+                int r1 = rand.Next(山.Count);
+                int r2 = rand.Next(山.Count);
+                牌 tmp = 山[r1];
+                山[r1] = 山[r2];
+                山[r2] = tmp;
+            }
+
+            for (int i = 0; i &lt; 人数; i++) {
+                河s.Add(new List&lt;string&gt;());
+            }
+        }
+        public void 配牌() {
+            for (int i = 0; i &lt; 人数; i++) {
+                家s.Add(new 家(i));
+                for (int j = 0; j &lt; 13; j++) {
+                    家s[i].摸打(山);
+                }
+                家s[i].手s.Sort();
+            }
+        }
+        public void 局() {
+            int 番 = 0;
+            while (山.Count &gt; 14) {
+                家s[番].摸打(山);
+                河s[番].Add(家s[番].打牌());
+                番 = (番 + 1) % 人数;
+            }
+        }
+    }
+    class 家 {
+        int id;
+        string name { get { return "東南西北"[id]+"家"; } }
+        public 家(int id) {
+            this.id = id;
+        }
+        public List&lt;string&gt; 手s = new List&lt;string&gt;();
+        public void 摸打(List&lt;string&gt; 山) {
+            Console.WriteLine("{0}は牌を引きました。{1}", name, 山[0]);
+            手s.Add(山[0]);
+            山.RemoveAt(0);
+        }
+        public string 打牌() {
+            var 捨て牌 = 手s[手s.Count-1];
+            手s.RemoveAt(手s.Count - 1);
+            Console.WriteLine("{0}は牌を捨てました。{1}", name, 捨て牌);
+            return 捨て牌;
+        }
+    }
+    class 麻雀 {
+        static void Main(string[] args) {
+            Console.Write("プレイヤーは何人？：");
+            int 人数 = int.Parse(Console.ReadLine());
+            var 卓 = new 卓(人数);
+            卓.配牌();
+            卓.局();
+            Console.ReadKey();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8268'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/8268
+  :user_name: syat
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2008/12/31 07:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>s/摸打/自摸/ だった。。。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8277'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/8277
+  :user_name: sumim
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/01/04 10:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。最低限の動きだけ。</p>\n\n\t"
+  :code: |
+    | 人数 全牌 山 全プレイヤ 順番 |
+    人数 := 4.
+    全牌 := OrderedCollection new.
+    #('索' '筒' '萬') do: [:各子 |
+        #('１' '２' '３' '４' '５' '６' '７' '８' '９') do: [:各数 |
+            全牌 add: 各数, 各子]].
+    全牌 addAll: #('白' '發' '中' '東' '南' '西' '北').
+    全牌 := 全牌, 全牌, 全牌, 全牌.
+    World findATranscript: nil.
+
+    山 := 全牌 shuffled.
+    全プレイヤ := OrderedCollection new.
+    人数 timesRepeat: [
+        全プレイヤ add: ({
+            #手牌 -&gt; (SortedCollection sortBlock: [:a :b | a reversed &lt; b reversed]).
+            #河 -&gt; OrderedCollection new} as: Dictionary)].
+
+    13 timesRepeat: [
+        全プレイヤ do: [:プレイヤ |
+            (プレイヤ at: #手牌) add: 山 removeFirst]].
+    全プレイヤ do: [:プレイヤ | Transcript cr; show: (プレイヤ at: #手牌) asArray].
+
+    順番 := 0.
+    [山 size &gt; 14] whileTrue: [
+        | 打手 |
+        打手 := 全プレイヤ atWrap: (順番 := 順番 + 1).
+        (打手 at: #手牌) add: 山 removeFirst.
+        (打手 at: #河) add: (打手 at: #手牌) removeLast].
+    全プレイヤ do: [:プレイヤ | Transcript cr; show: (プレイヤ at: #河) asArray]
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '10092'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10092
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/03 21:23 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-Nexium-online/\">http://nature-meds-drugs.zainkhan.info/buy-Nexium-online/</a>\"&gt;nexium
+    without prescription&lt;/a&gt; long term nexium use\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/Viagra-Jelly/\">http://nature-meds-drugs.zainkhan.info/Viagra-Jelly/</a>\"&gt;buy
+    viagra jelly online&lt;/a&gt; generic buy viagra jelly online\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-Lipitor-online/\">http://nature-meds-drugs.zainkhan.info/buy-Lipitor-online/</a>\"&gt;lipitor
+    price&lt;/a&gt; lipitor cough\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-cheap-Celebrex\">http://nature-meds-drugs.zainkhan.info/buy-cheap-Celebrex</a>
+    -online/\"&gt;celebrex&lt;/a&gt; pain relief meds with celebrex\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-cheap-Bupropion-online-drugs/\">http://nature-meds-drugs.zainkhan.info/buy-cheap-Bupropion-online-drugs/</a>\"&gt;bupropion
+    online&lt;/a&gt; Bupropion 60 pills x 150 mg pill\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-cheap-Lamisil-drugs/\">http://nature-meds-drugs.zainkhan.info/buy-cheap-Lamisil-drugs/</a>\"&gt;lamisil&lt;/a&gt;
+    Lamisil 30 pills x 250 mg price\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/cheap-Lasix-buy/\">http://nature-meds-drugs.zainkhan.info/cheap-Lasix-buy/</a>\"&gt;no
+    prescription lasix&lt;/a&gt; lasix surgery physicians atlanta\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/cheap-Zyrtec-online/\">http://nature-meds-drugs.zainkhan.info/cheap-Zyrtec-online/</a>\"&gt;zyrtec&lt;/a&gt;
+    zyrtec side\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-cheap-Valtrex-online/\">http://nature-meds-drugs.zainkhan.info/buy-cheap-Valtrex-online/</a>\"&gt;buy
+    valtrex online&lt;/a&gt; buy Valtrex 90 pills x 1000 mg online pharmacy\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-cheap-Zyban-online/\">http://nature-meds-drugs.zainkhan.info/buy-cheap-Zyban-online/</a>\"&gt;cheap
+    zyban&lt;/a&gt; zyban bupropion 150 mg 90 tablets\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-cheap-Metformin/\">http://nature-meds-drugs.zainkhan.info/buy-cheap-Metformin/</a>\"&gt;metformin
+    online&lt;/a&gt; buy Metformin 90 pills x 850 mg online without prescription\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-cheap-Proventil-online/\">http://nature-meds-drugs.zainkhan.info/buy-cheap-Proventil-online/</a>\"&gt;buy
+    proventil online&lt;/a&gt; proventil hfa compare price proair hfa\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-Fosamax-online/\">http://nature-meds-drugs.zainkhan.info/buy-Fosamax-online/</a>\"&gt;buy
+    fosamax&lt;/a&gt; does fosamax cause deadbone disease\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-Differin-online/\">http://nature-meds-drugs.zainkhan.info/buy-Differin-online/</a>\"&gt;cheap
+    differin&lt;/a&gt; generic brands of buy Differin 5 tubes x 15 gr (0.01% gel)
+    online\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-Medrol-cheap-online/\">http://nature-meds-drugs.zainkhan.info/buy-Medrol-cheap-online/</a>\"&gt;buy
+    depo-medrol&lt;/a&gt; buy Depo-Medrol 60 pills x 16 mg now online\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-Requip-online/\">http://nature-meds-drugs.zainkhan.info/buy-Requip-online/</a>\"&gt;requip
+    online&lt;/a&gt; requip litigation\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-Ventolin-online/\">http://nature-meds-drugs.zainkhan.info/buy-Ventolin-online/</a>\"&gt;ventolin
+    online&lt;/a&gt; buy a ventolin inhaler\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-femara-online/\">http://nature-meds-drugs.zainkhan.info/buy-femara-online/</a>\"&gt;femara
+    2.5mg&lt;/a&gt; side effects of femara\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-Allegra-online/\">http://nature-meds-drugs.zainkhan.info/buy-Allegra-online/</a>\"&gt;allegra
+    online&lt;/a&gt; allegra generic reditab\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-Maxaman-online/\">http://nature-meds-drugs.zainkhan.info/buy-Maxaman-online/</a>\"&gt;generic
+    maxaman&lt;/a&gt; Maxaman 3 bottles x 60 caps online purchase\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-Acomplia-online/\">http://nature-meds-drugs.zainkhan.info/buy-Acomplia-online/</a>\"&gt;order
+    acomplia&lt;/a&gt; cheap Acomplia 270 pills x 20 mg next day delivery\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-Sublingual\">http://nature-meds-drugs.zainkhan.info/buy-Sublingual</a>
+    Cialis-online/\"&gt;sublingual cialis&lt;/a&gt; pill Sublingual Cialis 30 pills
+    x 20 mg\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-Viagra-Professional-online/\">http://nature-meds-drugs.zainkhan.info/buy-Viagra-Professional-online/</a>\"&gt;no
+    prescription viagra professional&lt;/a&gt; buy cheap discount online Viagra Professional
+    60 pills x 100 mg\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/cheap-Zelnorm-online/\">http://nature-meds-drugs.zainkhan.info/cheap-Zelnorm-online/</a>\"&gt;cheap
+    zelnorm&lt;/a&gt; permax and zelnorm lawyers\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://nature-meds-drugs.zainkhan.info/buy-cheap-Sarafem-online/\">http://nature-meds-drugs.zainkhan.info/buy-cheap-Sarafem-online/</a>\"&gt;sarafem
+    price&lt;/a&gt; how to buy Sarafem 60 pills x 20 mg online\ndsghtfjyfgf224tfcw43yfd222ws</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10114'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10114
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/08 11:19 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>drgsdrg555555h5fffgyhxxioei &lt;a href = \"<a class=\"reference\"
+    href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48542\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48542</a>\"&gt;buy
+    plavix 75mg without prescription&lt;/a&gt; wqjdgz &lt;a href = \"<a class=\"reference\"
+    href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48571\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48571</a>\"&gt;generic
+    nexium 40mg&lt;/a&gt; ipirhj &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48582\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48582</a>\"&gt;buy
+    claritin 10mg&lt;/a&gt; auhdbo &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48541\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48541</a>\"&gt;buy
+    citalopram 20mg without prescriptioncitalopram 40mg&lt;/a&gt; xdikox &lt;a href
+    = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48579\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48579</a>\"&gt;bupropion
+    generic&lt;/a&gt; obaaym &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48552\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48552</a>\"&gt;green
+    tea&lt;/a&gt; iqalpx &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48561\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48561</a>\"&gt;ranitidine
+    online&lt;/a&gt; nihydp &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48513\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48513</a>\"&gt;generic
+    fluoxetine&lt;/a&gt; lhvlvv &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48583\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48583</a>\"&gt;breast
+    augmentation 90caps online&lt;/a&gt; akdkpt &lt;a href = \"<a class=\"reference\"
+    href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48567\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48567</a>\"&gt;no
+    prescription provera 2.5mg&lt;/a&gt; ofsnee &lt;a href = \"<a class=\"reference\"
+    href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48538\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48538</a>\"&gt;buy
+    lipitor 20mg online&lt;/a&gt; vkpgpr &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48569\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48569</a>\"&gt;yasmin
+    online&lt;/a&gt; ayojce &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48516\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48516</a>\"&gt;buy
+    valtrex 1000mg online&lt;/a&gt; cfgywj &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48572\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48572</a>\"&gt;buy
+    paroxetine 20mg&lt;/a&gt; bidmpu &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48510\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48510</a>\"&gt;generic
+    hyaluronic acid 60caps&lt;/a&gt; hvcxba &lt;a href = \"<a class=\"reference\"
+    href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48585\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48585</a>\"&gt;cheap
+    zantac&lt;/a&gt; acyffr &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48557\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48557</a>\"&gt;buy
+    lasix 40mg&lt;/a&gt; ohliez &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48578\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48578</a>\"&gt;propecia
+    1mg generic&lt;/a&gt; kschwm &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48533\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48533</a>\"&gt;cheap
+    topamax 100mg&lt;/a&gt; kikeum &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48534\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48534</a>\"&gt;generic
+    neurontin 600mg&lt;/a&gt; fzlagq &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48518\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48518</a>\"&gt;buy
+    depakote online&lt;/a&gt; bdswao &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48551\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48551</a>\"&gt;cheap
+    celexa 40mg&lt;/a&gt; nsctrl &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48547\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48547</a>\"&gt;no
+    prescription viagra&lt;/a&gt; beodoj &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48573\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48573</a>\"&gt;generic
+    norvasc 5mg&lt;/a&gt; vmnnge &lt;a href = \"<a class=\"reference\" href=\"/web/20100419192923/http://educa.miempresa.gob.pe/elearning/user/view.php?id=48566\">http://educa.miempresa.gob.pe/elearning/user/view.php?id=48566</a>\"&gt;evista
+    60mg online&lt;/a&gt; cnkpuw</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10275'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10275
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/17 15:49 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>zp5er5m5e6jh2fdfg &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://fluoxetine.bestespressoesmakers.info/\">http://fluoxetine.bestespressoesmakers.info/</a>\"&gt;fluoxetine&lt;/a&gt;
+    uhlwho &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://norvasc.bestespressoesmakers.info/\">http://norvasc.bestespressoesmakers.info/</a>\"&gt;norvasc&lt;/a&gt;
+    vceoty &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://coumadin.bestespressoesmakers.info/\">http://coumadin.bestespressoesmakers.info/</a>\"&gt;coumadin&lt;/a&gt;
+    swmmxx &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://viagra-without-prescription1.bestespressoesmakers.info/\">http://viagra-without-prescription1.bestespressoesmakers.info/</a>\"&gt;buy
+    viagra&lt;/a&gt; oxxnpf &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://generic-cialis1.bestespressoesmakers.info/\">http://generic-cialis1.bestespressoesmakers.info/</a>\"&gt;generic
+    cialis&lt;/a&gt; zsauyv &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cheapest-cialis1.bestespressoesmakers.info/\">http://cheapest-cialis1.bestespressoesmakers.info/</a>\"&gt;cheapest
+    cialis&lt;/a&gt; ishhdy &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zyrtec.bestespressoesmakers.info/\">http://zyrtec.bestespressoesmakers.info/</a>\"&gt;zyrtec&lt;/a&gt;
+    xztzrl &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://singulair.bestespressoesmakers.info/\">http://singulair.bestespressoesmakers.info/</a>\"&gt;singulair&lt;/a&gt;
+    qkwywy &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://benadryl.bestespressoesmakers.info/\">http://benadryl.bestespressoesmakers.info/</a>\"&gt;benadryl&lt;/a&gt;
+    jfivvh &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://amitriptyline.bestespressoesmakers.info/\">http://amitriptyline.bestespressoesmakers.info/</a>\"&gt;amitriptyline&lt;/a&gt;
+    egfqgx &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://synthroid.bestespressoesmakers.info/\">http://synthroid.bestespressoesmakers.info/</a>\"&gt;synthroid&lt;/a&gt;
+    pwmeuq &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lamictal.bestespressoesmakers.info/\">http://lamictal.bestespressoesmakers.info/</a>\"&gt;lamictal&lt;/a&gt;
+    wgarhi &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://valtrex.bestespressoesmakers.info/\">http://valtrex.bestespressoesmakers.info/</a>\"&gt;order
+    valtrex&lt;/a&gt; uomhhm &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://hydrochlorothiazide.bestespressoesmakers.info/\">http://hydrochlorothiazide.bestespressoesmakers.info/</a>\"&gt;hydrochlorothiazide&lt;/a&gt;
+    rbmciw &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://prilosec.bestespressoesmakers.info/\">http://prilosec.bestespressoesmakers.info/</a>\"&gt;prilosec&lt;/a&gt;
+    wvtdef &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://protonix.bestespressoesmakers.info/\">http://protonix.bestespressoesmakers.info/</a>\"&gt;protonix&lt;/a&gt;
+    joqouy &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://trazodone.bestespressoesmakers.info/\">http://trazodone.bestespressoesmakers.info/</a>\"&gt;trazodone&lt;/a&gt;
+    oidasu &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-viagra1.bestespressoesmakers.info/\">http://buy-viagra1.bestespressoesmakers.info/</a>\"&gt;buy
+    viagra&lt;/a&gt; swkvcy &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://accutane.bestespressoesmakers.info/\">http://accutane.bestespressoesmakers.info/</a>\"&gt;accutane&lt;/a&gt;
+    sahwih &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cheap-viagra1.bestespressoesmakers.info/\">http://cheap-viagra1.bestespressoesmakers.info/</a>\"&gt;cheap
+    viagra&lt;/a&gt; zlajnx &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cipro.bestespressoesmakers.info/\">http://cipro.bestespressoesmakers.info/</a>\"&gt;cipro&lt;/a&gt;
+    npciul &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-viagra-online1.bestespressoesmakers.info/\">http://buy-viagra-online1.bestespressoesmakers.info/</a>\"&gt;viagra
+    100mg&lt;/a&gt; ybjges &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://coq10.bestespressoesmakers.info/\">http://coq10.bestespressoesmakers.info/</a>\"&gt;coq10&lt;/a&gt;
+    cvitjf &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://diclofenac.bestespressoesmakers.info/\">http://diclofenac.bestespressoesmakers.info/</a>\"&gt;diclofenac&lt;/a&gt;
+    dvnyag &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://viagra-online1.bestespressoesmakers.info/\">http://viagra-online1.bestespressoesmakers.info/</a>\"&gt;viagra
+    online&lt;/a&gt; fnvfmh</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10282'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10282
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/19 11:09 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>j5e5m5c5ik5uj5dg &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://aspirin.vclord.com/\">http://aspirin.vclord.com/</a>\"&gt;aspirin&lt;/a&gt;
+    thjjcw &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zofran.vclord.com/\">http://zofran.vclord.com/</a>\"&gt;zofran&lt;/a&gt;
+    pdmbtv &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://aricept.vclord.com/\">http://aricept.vclord.com/</a>\"&gt;aricept&lt;/a&gt;
+    qejgrn &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://ginseng.vclord.com/\">http://ginseng.vclord.com/</a>\"&gt;ginseng&lt;/a&gt;
+    zjhszk &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://furosemide.vclord.com/\">http://furosemide.vclord.com/</a>\"&gt;furosemide&lt;/a&gt;
+    qzuwxh &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://depakote.vclord.com/\">http://depakote.vclord.com/</a>\"&gt;depakote&lt;/a&gt;
+    ycevwz &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://mobic.vclord.com/\">http://mobic.vclord.com/</a>\"&gt;mobic&lt;/a&gt;
+    yijirw &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://propecia.vclord.com/\">http://propecia.vclord.com/</a>\"&gt;propecia&lt;/a&gt;
+    fvarsz &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://clonidine.vclord.com/\">http://clonidine.vclord.com/</a>\"&gt;clonidine&lt;/a&gt;
+    nkgthf &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://aleve.vclord.com/\">http://aleve.vclord.com/</a>\"&gt;aleve&lt;/a&gt;
+    ktzyic &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://baclofen.vclord.com/\">http://baclofen.vclord.com/</a>\"&gt;baclofen&lt;/a&gt;
+    nicshr &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://generic-viagra.vclord.com/\">http://generic-viagra.vclord.com/</a>\"&gt;generic
+    viagra&lt;/a&gt; wjnzix &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cialis-online.vclord.com/\">http://cialis-online.vclord.com/</a>\"&gt;cialis
+    online&lt;/a&gt; wlraqh &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://ranitidine.vclord.com/\">http://ranitidine.vclord.com/</a>\"&gt;generic
+    ranitidine&lt;/a&gt; spbuaf &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://methotrexate.vclord.com/\">http://methotrexate.vclord.com/</a>\"&gt;methotrexate&lt;/a&gt;
+    adfhlf &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://acyclovir.vclord.com/\">http://acyclovir.vclord.com/</a>\"&gt;acyclovir&lt;/a&gt;
+    jrcglk &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://reglan.vclord.com/\">http://reglan.vclord.com/</a>\"&gt;reglan&lt;/a&gt;
+    ixqopo &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-cialis-online.vclord.com/\">http://buy-cialis-online.vclord.com/</a>\"&gt;cialis&lt;/a&gt;
+    dybmqc &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://generic-lipitor.vclord.com/\">http://generic-lipitor.vclord.com/</a>\"&gt;cheap
+    lipitor&lt;/a&gt; lzleha &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://augmentin.vclord.com/\">http://augmentin.vclord.com/</a>\"&gt;augmentin&lt;/a&gt;
+    fsqosj &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://benicar.vclord.com/\">http://benicar.vclord.com/</a>\"&gt;benicar&lt;/a&gt;
+    hdujmz &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://skelaxin.vclord.com/\">http://skelaxin.vclord.com/</a>\"&gt;skelaxin
+    400mg&lt;/a&gt; ljsrbb &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://prevacid.vclord.com/\">http://prevacid.vclord.com/</a>\"&gt;prevacid&lt;/a&gt;
+    ykzyjw &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zyprexa.vclord.com/\">http://zyprexa.vclord.com/</a>\"&gt;zyprexa&lt;/a&gt;
+    gzrnkm &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://vytorin.vclord.com/\">http://vytorin.vclord.com/</a>\"&gt;vytorin&lt;/a&gt;
+    qflgdw</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10286'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10286
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/21 08:25 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>i9d3k7tf1k6f5h8 &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lamisil.airlinescreditcard.info/\">http://lamisil.airlinescreditcard.info/</a>\"&gt;lamisil&lt;/a&gt;
+    tslgfp &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://meclizine.airlinescreditcard.info/\">http://meclizine.airlinescreditcard.info/</a>\"&gt;meclizine&lt;/a&gt;
+    xwxarc &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://voltaren.airlinescreditcard.info/\">http://voltaren.airlinescreditcard.info/</a>\"&gt;voltaren&lt;/a&gt;
+    zhsxmu &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://avodart.airlinescreditcard.info/\">http://avodart.airlinescreditcard.info/</a>\"&gt;no
+    prescription avodart&lt;/a&gt; wevpyd &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://januvia.airlinescreditcard.info/\">http://januvia.airlinescreditcard.info/</a>\"&gt;januvia&lt;/a&gt;
+    dbzygg &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://purim.airlinescreditcard.info/\">http://purim.airlinescreditcard.info/</a>\"&gt;purim&lt;/a&gt;
+    hogbfk &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://claritin.airlinescreditcard.info/\">http://claritin.airlinescreditcard.info/</a>\"&gt;claritin&lt;/a&gt;
+    vdiudm &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://premarin.airlinescreditcard.info/\">http://premarin.airlinescreditcard.info/</a>\"&gt;premarin
+    0.625mg&lt;/a&gt; qxskht &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://bystolic.airlinescreditcard.info/\">http://bystolic.airlinescreditcard.info/</a>\"&gt;bystolic&lt;/a&gt;
+    xceair &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://keppra.airlinescreditcard.info/\">http://keppra.airlinescreditcard.info/</a>\"&gt;keppra&lt;/a&gt;
+    ptmylh &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://aciphex.airlinescreditcard.info/\">http://aciphex.airlinescreditcard.info/</a>\"&gt;aciphex&lt;/a&gt;
+    qvtpci &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://echinacea.airlinescreditcard.info/\">http://echinacea.airlinescreditcard.info/</a>\"&gt;echinacea&lt;/a&gt;
+    irzmbs &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://tricor.airlinescreditcard.info/\">http://tricor.airlinescreditcard.info/</a>\"&gt;tricor&lt;/a&gt;
+    ogvhja &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zantac.airlinescreditcard.info/\">http://zantac.airlinescreditcard.info/</a>\"&gt;zantac&lt;/a&gt;
+    hesnaq &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://actonel.airlinescreditcard.info/\">http://actonel.airlinescreditcard.info/</a>\"&gt;buy
+    actonel online&lt;/a&gt; hyslgm &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://remeron.airlinescreditcard.info/\">http://remeron.airlinescreditcard.info/</a>\"&gt;remeron&lt;/a&gt;
+    igndnx &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buspar.airlinescreditcard.info/\">http://buspar.airlinescreditcard.info/</a>\"&gt;no
+    prescription buspar&lt;/a&gt; rouuys &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://actos.airlinescreditcard.info/\">http://actos.airlinescreditcard.info/</a>\"&gt;buy
+    actos online&lt;/a&gt; gdxnbk &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://diflucan.airlinescreditcard.info/\">http://diflucan.airlinescreditcard.info/</a>\"&gt;order
+    diflucan&lt;/a&gt; mmklfx &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://allegra.airlinescreditcard.info/\">http://allegra.airlinescreditcard.info/</a>\"&gt;allegra&lt;/a&gt;
+    jcmxea &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://clomid.airlinescreditcard.info/\">http://clomid.airlinescreditcard.info/</a>\"&gt;clomid&lt;/a&gt;
+    mdjhux &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://risperdal.airlinescreditcard.info/\">http://risperdal.airlinescreditcard.info/</a>\"&gt;risperdal
+    2mg&lt;/a&gt; owtjgz &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://viagra-for-women.airlinescreditcard.info/\">http://viagra-for-women.airlinescreditcard.info/</a>\"&gt;viagra
+    online&lt;/a&gt; zfyhaj &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://bactrim.airlinescreditcard.info/\">http://bactrim.airlinescreditcard.info/</a>\"&gt;bactrim&lt;/a&gt;
+    gvdfia &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://bupropion.airlinescreditcard.info/\">http://bupropion.airlinescreditcard.info/</a>\"&gt;bupropion&lt;/a&gt;
+    rktwyn</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10289'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10289
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/22 02:25 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>56575654225777557 &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://digoxin.vclord.com/\">http://digoxin.vclord.com/</a>\"&gt;digoxin&lt;/a&gt;
+    mtgxab &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://colchicine.vclord.com/\">http://colchicine.vclord.com/</a>\"&gt;generic
+    colchicine&lt;/a&gt; gvkuyf &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://toradol.vclord.com/\">http://toradol.vclord.com/</a>\"&gt;toradol&lt;/a&gt;
+    inmwcm &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://coreg.vclord.com/\">http://coreg.vclord.com/</a>\"&gt;coreg
+    12.5mg&lt;/a&gt; bqmzrr &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zithromax.vclord.com/\">http://zithromax.vclord.com/</a>\"&gt;zithromax
+    250mg&lt;/a&gt; kzqobd &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://xenical.vclord.com/\">http://xenical.vclord.com/</a>\"&gt;xenical&lt;/a&gt;
+    wsemnx &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://robaxin.vclord.com/\">http://robaxin.vclord.com/</a>\"&gt;robaxin&lt;/a&gt;
+    woicdr &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://allopurinol.vclord.com/\">http://allopurinol.vclord.com/</a>\"&gt;allopurinol&lt;/a&gt;
+    evuwja &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://yasmin.vclord.com/\">http://yasmin.vclord.com/</a>\"&gt;yasmin
+    3.03mg&lt;/a&gt; ljpkkq &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://tetracycline.vclord.com/\">http://tetracycline.vclord.com/</a>\"&gt;buy
+    tetracycline online&lt;/a&gt; gtskfl &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://yasmin-lee.vclord.com/\">http://yasmin-lee.vclord.com/</a>\"&gt;yasmin
+    lee&lt;/a&gt; jbqrlk &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cozaar.vclord.com/\">http://cozaar.vclord.com/</a>\"&gt;cozaar&lt;/a&gt;
+    rdytrf &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://exelon.vclord.com/\">http://exelon.vclord.com/</a>\"&gt;exelon&lt;/a&gt;
+    ecnkmy &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://fosamax.vclord.com/\">http://fosamax.vclord.com/</a>\"&gt;fosamax&lt;/a&gt;
+    frjopz &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://metoclopramide.vclord.com/\">http://metoclopramide.vclord.com/</a>\"&gt;metoclopramide&lt;/a&gt;
+    nxcfcq &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://elavil.vclord.com/\">http://elavil.vclord.com/</a>\"&gt;elavil&lt;/a&gt;
+    yvygdv &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://propranolol.vclord.com/\">http://propranolol.vclord.com/</a>\"&gt;order
+    propranolol&lt;/a&gt; ilxqwa &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://avapro.vclord.com/\">http://avapro.vclord.com/</a>\"&gt;avapro&lt;/a&gt;
+    pepdyo &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-cialis.vclord.com/\">http://buy-cialis.vclord.com/</a>\"&gt;buy
+    cialis&lt;/a&gt; upcfcd &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cla.vclord.com/\">http://cla.vclord.com/</a>\"&gt;cla&lt;/a&gt;
+    fiarjc &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://atarax.vclord.com/\">http://atarax.vclord.com/</a>\"&gt;atarax&lt;/a&gt;
+    fqhghy &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zyban.vclord.com/\">http://zyban.vclord.com/</a>\"&gt;order
+    zyban&lt;/a&gt; cpfebz &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://paroxetine.vclord.com/\">http://paroxetine.vclord.com/</a>\"&gt;paroxetine&lt;/a&gt;
+    lbpzdu &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://etodolac.vclord.com/\">http://etodolac.vclord.com/</a>\"&gt;etodolac&lt;/a&gt;
+    sjmdhr &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://voltaren-gel.vclord.com/\">http://voltaren-gel.vclord.com/</a>\"&gt;voltaren
+    gel&lt;/a&gt; khbwfa</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10291'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10291
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/23 10:05 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>45454202002595548457 &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://astelin.vclord.com/\">http://astelin.vclord.com/</a>\"&gt;no
+    prescription astelin&lt;/a&gt; jyjylq &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://antabuse.vclord.com/\">http://antabuse.vclord.com/</a>\"&gt;antabuse&lt;/a&gt;
+    xzhtmq &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://estrace.vclord.com/\">http://estrace.vclord.com/</a>\"&gt;buy
+    estrace&lt;/a&gt; fygjsx &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://imuran.vclord.com/\">http://imuran.vclord.com/</a>\"&gt;no
+    prescription imuran&lt;/a&gt; zlegyq &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nolvadex.vclord.com/\">http://nolvadex.vclord.com/</a>\"&gt;nolvadex
+    without prescription&lt;/a&gt; jkjgbb &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://l-tryptophan.vclord.com/\">http://l-tryptophan.vclord.com/</a>\"&gt;l-tryptophan&lt;/a&gt;
+    kyrcqw &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://triphala.vclord.com/\">http://triphala.vclord.com/</a>\"&gt;triphala
+    online&lt;/a&gt; qnbcyi &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://tenormin.vclord.com/\">http://tenormin.vclord.com/</a>\"&gt;order
+    tenormin&lt;/a&gt; thvexw &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://acomplia.vclord.com/\">http://acomplia.vclord.com/</a>\"&gt;buy
+    acomplia&lt;/a&gt; cbwrcg &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cytoxan.vclord.com/\">http://cytoxan.vclord.com/</a>\"&gt;cytoxan
+    online&lt;/a&gt; zexezn &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://reminyl.vclord.com/\">http://reminyl.vclord.com/</a>\"&gt;cheap
+    reminyl&lt;/a&gt; szymxb &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://indocin.vclord.com/\">http://indocin.vclord.com/</a>\"&gt;buy
+    indocin&lt;/a&gt; iqxwtj &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://proventil.vclord.com/\">http://proventil.vclord.com/</a>\"&gt;buy
+    proventil online&lt;/a&gt; wwhnnf &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://antivert.vclord.com/\">http://antivert.vclord.com/</a>\"&gt;cheap
+    antivert&lt;/a&gt; ukbjzs &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://detrol.vclord.com/\">http://detrol.vclord.com/</a>\"&gt;order
+    detrol&lt;/a&gt; zyexwo &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zestril.vclord.com/\">http://zestril.vclord.com/</a>\"&gt;order
+    zestril&lt;/a&gt; spxqpe &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://bactroban.vclord.com/\">http://bactroban.vclord.com/</a>\"&gt;no
+    prescription bactroban&lt;/a&gt; ktexqy</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10294'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10294
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/23 12:55 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-lopid-online.zainkhan.info/\">http://buy-Lopid-online.zainkhan.info</a>\"&gt;lopid&lt;/a&gt;
+    twnvc\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-motilium-online.zainkhan.info/\">http://buy-Motilium-online.zainkhan.info</a>\"&gt;cheap
+    motilium&lt;/a&gt; yzmwz\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-tetracycline-online.zainkhan.info/\">http://buy-Tetracycline-online.zainkhan.info</a>\"&gt;tetracycline
+    without prescription&lt;/a&gt; hbrxc\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-aciphex.zainkhan.info/\">http://buy-Aciphex.zainkhan.info</a>\"&gt;aciphex&lt;/a&gt;
+    kagdn\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://norvasc-buy.zainkhan.info/\">http://Norvasc-buy.zainkhan.info</a>\"&gt;buy
+    norvasc online&lt;/a&gt; qnkow\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-metformin.zainkhan.info/\">http://buy-Metformin.zainkhan.info</a>\"&gt;metformin
+    without prescription&lt;/a&gt; dkecc\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nicotinell.zainkhan.info/\">http://Nicotinell.zainkhan.info</a>\"&gt;nicotinell
+    35mg&lt;/a&gt; zpaec\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://gasex.zainkhan.info/\">http://Gasex.zainkhan.info</a>\"&gt;gasex&lt;/a&gt;
+    angtx\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-meclizine.zainkhan.info/\">http://buy-Meclizine.zainkhan.info</a>\"&gt;cheap
+    meclizine&lt;/a&gt; kaynn\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-voltaren-online.zainkhan.info/\">http://buy-Voltaren-online.zainkhan.info</a>\"&gt;generic
+    voltaren&lt;/a&gt; fukac\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://testosterone-booster-patch.zainkhan.info/\">http://Testosterone-Booster-Patch.zainkhan.info</a>\"&gt;buy
+    testosterone booster patch&lt;/a&gt; pydby\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://buy-celebrex.zainkhan.info/\">http://buy-Celebrex.zainkhan.info</a>\"&gt;celebrex
+    online&lt;/a&gt; tobbr\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-lipitor-online.zainkhan.info/\">http://buy-Lipitor-online.zainkhan.info</a>\"&gt;generic
+    lipitor&lt;/a&gt; qcivp\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-nexium.zainkhan.info/\">http://buy-Nexium.zainkhan.info</a>\"&gt;nexium&lt;/a&gt;
+    lgnjd\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-singulair-online.zainkhan.info/\">http://buy-Singulair-online.zainkhan.info</a>\"&gt;buy
+    singulair&lt;/a&gt; osdzd\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cleocin-gel.zainkhan.info/\">http://Cleocin-gel.zainkhan.info</a>\"&gt;order
+    cleocin gel&lt;/a&gt; ikxae\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://ampicillin.zainkhan.info/\">http://Ampicillin.zainkhan.info</a>\"&gt;buy
+    ampicillin&lt;/a&gt; uakaj\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-allopurinol-online.zainkhan.info/\">http://buy-Allopurinol-online.zainkhan.info</a>\"&gt;buy
+    allopurinol&lt;/a&gt; qefdo\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://vermox.zainkhan.info/\">http://Vermox.zainkhan.info</a>\"&gt;vermox
+    100mg&lt;/a&gt; yinjj\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://aleve.zainkhan.info/\">http://Aleve.zainkhan.info</a>\"&gt;no
+    prescription aleve&lt;/a&gt; zaxqo\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lynoral.zainkhan.info/\">http://Lynoral.zainkhan.info</a>\"&gt;buy
+    lynoral online&lt;/a&gt; vsslq\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://chloramphenicol.zainkhan.info/\">http://Chloramphenicol.zainkhan.info</a>\"&gt;chloramphenicol
+    without prescription&lt;/a&gt; urgwo\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-rocaltrol.zainkhan.info/\">http://buy-Rocaltrol.zainkhan.info</a>\"&gt;order
+    rocaltrol&lt;/a&gt; kebjh\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-augmentin-online.zainkhan.info/\">http://buy-Augmentin-online.zainkhan.info</a>\"&gt;augmentin
+    635mg&lt;/a&gt; rkygl\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cheap-lioresal-online.zainkhan.info/\">http://cheap-Lioresal-online.zainkhan.info</a>\"&gt;order
+    lioresal&lt;/a&gt; rqduq\ndsgdgdgh23234tgeg325232dg2s2</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10303'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10303
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/26 09:55 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>ffsdr55ertsdrgdrg545e4r &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://female-viagra.crmasocal.org/\">http://female-viagra.crmasocal.org/</a>\"&gt;cheap
+    viagra&lt;/a&gt; fgjeaf &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lisinopril.crmasocal.org/\">http://lisinopril.crmasocal.org/</a>\"&gt;no
+    prescription lisinopril&lt;/a&gt; jxfdgm &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://metformin.crmasocal.org/\">http://metformin.crmasocal.org/</a>\"&gt;metformin
+    online&lt;/a&gt; mvzoyo &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://mevacor.crmasocal.org/\">http://mevacor.crmasocal.org/</a>\"&gt;no
+    prescription mevacor&lt;/a&gt; ypapza &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://singulair.crmasocal.org/\">http://singulair.crmasocal.org/</a>\"&gt;no
+    prescription singulair&lt;/a&gt; cugcna &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://clomid.crmasocal.org/\">http://clomid.crmasocal.org/</a>\"&gt;buy
+    clomid online&lt;/a&gt; kluwwg &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://aldactone.crmasocal.org/\">http://aldactone.crmasocal.org/</a>\"&gt;aldactone
+    100mg&lt;/a&gt; xwhybw &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://evista.crmasocal.org/\">http://evista.crmasocal.org/</a>\"&gt;evista
+    without prescription&lt;/a&gt; krrvga &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://levaquin.crmasocal.org/\">http://levaquin.crmasocal.org/</a>\"&gt;levaquin
+    750mg&lt;/a&gt; mctzje &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zyban.crmasocal.org/\">http://zyban.crmasocal.org/</a>\"&gt;zyban&lt;/a&gt;
+    moybuv &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://rimonabant.crmasocal.org/\">http://rimonabant.crmasocal.org/</a>\"&gt;rimonabant
+    20mg&lt;/a&gt; jhqotn &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://premarin.crmasocal.org/\">http://premarin.crmasocal.org/</a>\"&gt;buy
+    premarin online&lt;/a&gt; zphuet &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://norvasc.crmasocal.org/\">http://norvasc.crmasocal.org/</a>\"&gt;norvasc
+    without prescription&lt;/a&gt; ehztys &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://doxycycline.crmasocal.org/\">http://doxycycline.crmasocal.org/</a>\"&gt;doxycycline
+    100mg&lt;/a&gt; ytbker &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://valtrex.crmasocal.org/\">http://valtrex.crmasocal.org/</a>\"&gt;valtrex&lt;/a&gt;
+    nouvka &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://imitrex.crmasocal.org/\">http://imitrex.crmasocal.org/</a>\"&gt;imitrex
+    50mg&lt;/a&gt; mhzqiu &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zyrtec.crmasocal.org/\">http://zyrtec.crmasocal.org/</a>\"&gt;zyrtec
+    without prescription&lt;/a&gt; uurrxt &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zyloprim.crmasocal.org/\">http://zyloprim.crmasocal.org/</a>\"&gt;order
+    zyloprim&lt;/a&gt; tlaxja</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10304'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10304
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/02/26 10:54 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://tetracycline.nikon-d200.info/\">http://tetracycline.nikon-d200.info</a>\"&gt;cheap
+    tetracycline&lt;/a&gt; jfxls\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-amoxil-online.nikon-d200.info/\">http://buy-amoxil-online.nikon-d200.info</a>\"&gt;generic
+    amoxil&lt;/a&gt; mpykj\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-buspar.nikon-d200.info/\">http://buy-buspar.nikon-d200.info</a>\"&gt;buspar
+    5mg&lt;/a&gt; oqmni\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zocor-buy-generic.nikon-d200.info/\">http://zocor-buy-generic.nikon-d200.info</a>\"&gt;zocor
+    online&lt;/a&gt; oiqus\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-cymbalta.nikon-d200.info/\">http://buy-Cymbalta.nikon-d200.info</a>\"&gt;cheap
+    cymbalta&lt;/a&gt; yiqew\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-inderal-online.nikon-d200.info/\">http://buy-Inderal-online.nikon-d200.info</a>\"&gt;order
+    inderal&lt;/a&gt; iicbb\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://augmentin.nikon-d200.info/\">http://augmentin.nikon-d200.info</a>\"&gt;generic
+    augmentin&lt;/a&gt; bspne\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://aciphex-online.nikon-d200.info/\">http://aciphex-online.nikon-d200.info</a>\"&gt;buy
+    aciphex online&lt;/a&gt; wkirr\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://topamax-side-effects.nikon-d200.info/\">http://topamax-side-effects.nikon-d200.info</a>\"&gt;topamax&lt;/a&gt;
+    hplwp\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-mevacor-cheap.nikon-d200.info/\">http://buy-mevacor-cheap.nikon-d200.info</a>\"&gt;generic
+    mevacor&lt;/a&gt; hlmfz\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-singulair.nikon-d200.info/\">http://buy-singulair.nikon-d200.info</a>\"&gt;cheap
+    singulair&lt;/a&gt; evtzu\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://doxycycline.nikon-d200.info/\">http://doxycycline.nikon-d200.info</a>\"&gt;generic
+    doxycycline&lt;/a&gt; drgnw\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zyloprim-online.nikon-d200.info/\">http://zyloprim-online.nikon-d200.info</a>\"&gt;cheap
+    zyloprim&lt;/a&gt; ieuyt\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-lisinopril-online.nikon-d200.info/\">http://buy-lisinopril-online.nikon-d200.info</a>\"&gt;buy
+    lisinopril&lt;/a&gt; tilev\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-imitrex-cheap.nikon-d200.info/\">http://buy-imitrex-cheap.nikon-d200.info</a>\"&gt;buy
+    imitrex&lt;/a&gt; vthue\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-lipitor.nikon-d200.info/\">http://buy-lipitor.nikon-d200.info</a>\"&gt;buy
+    lipitor online&lt;/a&gt; yizrt\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lexapro-online.nikon-d200.info/\">http://lexapro-online.nikon-d200.info</a>\"&gt;lexapro
+    20mg&lt;/a&gt; imnmm\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nexium-buy.nikon-d200.info/\">http://nexium-buy.nikon-d200.info</a>\"&gt;nexium&lt;/a&gt;
+    lzcet\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://levitra-professional.nikon-d200.info/\">http://levitra-professional.nikon-d200.info</a>\"&gt;levitra&lt;/a&gt;
+    utqog\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-levitra-plus-online.nikon-d200.info/\">http://buy-Levitra-Plus-online.nikon-d200.info</a>\"&gt;levitra
+    online&lt;/a&gt; jcbmz\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-acyclovir.nikon-d200.info/\">http://buy-acyclovir.nikon-d200.info</a>\"&gt;aciclovir
+    without prescription&lt;/a&gt; bydzn\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buy-cipro-online.nikon-d200.info/\">http://buy-cipro-online.nikon-d200.info</a>\"&gt;cipro
+    500mg&lt;/a&gt; augbr\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://wellbutrin-sr.nikon-d200.info/\">http://wellbutrin-sr.nikon-d200.info</a>\"&gt;no
+    prescription wellbutrin sr&lt;/a&gt; ldjnk\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://buy-retin-a-sale.nikon-d200.info/\">http://buy-retin-a-sale.nikon-d200.info</a>\"&gt;no
+    prescription retin-a 0.025%&lt;/a&gt; tzjbj\nfdsgrthtyjtdsw34fe32ws</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10315'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10315
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/02 16:03 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>gegdf6g75a87g\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://chromonexin.oz-media.info/\">http://chromonexin.oz-media.info/</a>\"&gt;generic
+    chromonexin&lt;/a&gt; yrnbvy &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://beconase-aq.segapokemon.info/\">http://beconase-aq.segapokemon.info/</a>\"&gt;beconase
+    aq&lt;/a&gt; mlnuka &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://quibron-t.voteantiwar.info/\">http://quibron-t.voteantiwar.info/</a>\"&gt;order
+    quibron-t&lt;/a&gt; yqpigl &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://didronel.villabahceterashavuzu.info/\">http://didronel.villabahceterashavuzu.info/</a>\"&gt;buy
+    didronel online&lt;/a&gt; ckhdve &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://calcium-carbonate.mayna.info/\">http://calcium-carbonate.mayna.info/</a>\"&gt;cheap
+    calcium carbonate&lt;/a&gt; gomauc &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://french-red-wine.villabahceterashavuzu.info/\">http://french-red-wine.villabahceterashavuzu.info/</a>\"&gt;generic
+    french red wine&lt;/a&gt; taowbs &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://colostrum-800.oz-media.info/\">http://colostrum-800.oz-media.info/</a>\"&gt;no
+    prescription colostrum-800&lt;/a&gt; fkmpfj &lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://penis-extender-deluxe-girth.voteantiwar.info/\">http://penis-extender-deluxe-girth.voteantiwar.info/</a>\"&gt;order
+    penis extender deluxe girth&lt;/a&gt; bimcth &lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://kamasutra-dotted-condoms.west-virginia-crime-scene-cleanup.info/\">http://kamasutra-dotted-condoms.west-virginia-crime-scene-cleanup.info/</a>\"&gt;cheap
+    kamasutra dotted condoms&lt;/a&gt; dhtgzr &lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://benfotiamine.mayna.info/\">http://benfotiamine.mayna.info/</a>\"&gt;benfotiamine
+    without prescription&lt;/a&gt; tnjoxz &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://chloromint.oz-media.info/\">http://chloromint.oz-media.info/</a>\"&gt;no
+    prescription chloromint&lt;/a&gt; akxyfx &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://etodolac.villabahceterashavuzu.info/\">http://etodolac.villabahceterashavuzu.info/</a>\"&gt;etodolac
+    300mg&lt;/a&gt; pqpcjg &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://ortho-tri-cyclen.spamblocking.info/\">http://ortho-tri-cyclen.spamblocking.info/</a>\"&gt;buy
+    ortho tri-cyclen&lt;/a&gt; xmatmf &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://male-sexual-tonic.spamblocking.info/\">http://male-sexual-tonic.spamblocking.info/</a>\"&gt;no
+    prescription male sexual tonic&lt;/a&gt; qbikur &lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://brafix.segapokemon.info/\">http://brafix.segapokemon.info/</a>\"&gt;cheap
+    brafix&lt;/a&gt; igtzeh &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://colon-clean-supreme.mayna.info/\">http://colon-clean-supreme.mayna.info/</a>\"&gt;order
+    colon clean supreme&lt;/a&gt; ncyogv &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://female-sexual-oil.villabahceterashavuzu.info/\">http://female-sexual-oil.villabahceterashavuzu.info/</a>\"&gt;female
+    sexual oil online&lt;/a&gt; lrwrbx &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://metabo-extreme.voteantiwar.info/\">http://metabo-extreme.voteantiwar.info/</a>\"&gt;buy
+    metabo extreme online&lt;/a&gt; gcqlmm &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://emsam.villabahceterashavuzu.info/\">http://emsam.villabahceterashavuzu.info/</a>\"&gt;emsam
+    5mg&lt;/a&gt; hkamgr &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://januvia.yenamarre.info/\">http://januvia.yenamarre.info/</a>\"&gt;cheap
+    januvia&lt;/a&gt; macyjx &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://betnovate.segapokemon.info/\">http://betnovate.segapokemon.info/</a>\"&gt;betnovate
+    without prescription&lt;/a&gt; pkwxaz &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://femcare.villabahceterashavuzu.info/\">http://femcare.villabahceterashavuzu.info/</a>\"&gt;cheap
+    femcare&lt;/a&gt; azzmls &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://penis-extender-standard.voteantiwar.info/\">http://penis-extender-standard.voteantiwar.info/</a>\"&gt;penis
+    extender standard 1pc&lt;/a&gt; chuury &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://kamasutra-intensity-condoms.west-virginia-crime-scene-cleanup.info/\">http://kamasutra-intensity-condoms.west-virginia-crime-scene-cleanup.info/</a>\"&gt;kamasutra
+    intensity condoms 1bottle&lt;/a&gt; yvzvhb &lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://alli.segapokemon.info/\">http://alli.segapokemon.info/</a>\"&gt;alli&lt;/a&gt;
+    umkdvs</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10317'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10317
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/03 14:05 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>389h4gi3hg\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cee-extreme.noicq.info/\">http://cee-extreme.noicq.info/</a>\"&gt;cee
+    extreme 1200mg&lt;/a&gt; rydgzv &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://penis-growth-patch.noicq.info/\">http://penis-growth-patch.noicq.info/</a>\"&gt;generic
+    penis growth patch&lt;/a&gt; yzydxe &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://mr-long.newconceptproperties.info/\">http://mr-long.newconceptproperties.info/</a>\"&gt;mr.long&lt;/a&gt;
+    ppilqg &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://maxaman.oice.info/\">http://maxaman.oice.info/</a>\"&gt;maxaman
+    online&lt;/a&gt; ocukzo &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://duetact.oz-media.info/\">http://duetact.oz-media.info/</a>\"&gt;cheap
+    duetact&lt;/a&gt; ozwcrb &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://smok-ox.noicq.info/\">http://smok-ox.noicq.info/</a>\"&gt;order
+    smok-ox&lt;/a&gt; ihldbf &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://male-enhancement-pills.noicq.info/\">http://male-enhancement-pills.noicq.info/</a>\"&gt;buy
+    male enhancement pills online&lt;/a&gt; epameq &lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://shallaki.newconceptproperties.info/\">http://shallaki.newconceptproperties.info/</a>\"&gt;no
+    prescription shallaki&lt;/a&gt; izivez &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cyklokapron.yborgrille.info/\">http://cyklokapron.yborgrille.info/</a>\"&gt;buy
+    cyklokapron&lt;/a&gt; wiyjbf &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://liposafe.oice.info/\">http://liposafe.oice.info/</a>\"&gt;liposafe
+    without prescription&lt;/a&gt; usfjma &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://energy-patch.oz-media.info/\">http://energy-patch.oz-media.info/</a>\"&gt;energy
+    patch&lt;/a&gt; iamqep &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://terramycin.nicolamexx.info/\">http://terramycin.nicolamexx.info/</a>\"&gt;generic
+    terramycin&lt;/a&gt; ojlqjh &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://earwash-dogs.oz-media.info/\">http://earwash-dogs.oz-media.info/</a>\"&gt;earwash
+    dogs&lt;/a&gt; ekzdds &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://male-sexual-tonic.mdhorsepark.info/\">http://male-sexual-tonic.mdhorsepark.info/</a>\"&gt;male
+    sexual tonic online&lt;/a&gt; gjvoct &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://extendaquin.portailcine.info/\">http://extendaquin.portailcine.info/</a>\"&gt;cheap
+    extendaquin&lt;/a&gt; bitlcb &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://purim.mdhorsepark.info/\">http://purim.mdhorsepark.info/</a>\"&gt;purim
+    online&lt;/a&gt; lgufne &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://triphala.yborgrille.info/\">http://triphala.yborgrille.info/</a>\"&gt;triphala
+    1pc&lt;/a&gt; hwhuoq &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://benfotiamine.yborgrille.info/\">http://benfotiamine.yborgrille.info/</a>\"&gt;benfotiamine
+    without prescription&lt;/a&gt; ceemdu &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://vitaliq.nicolamexx.info/\">http://vitaliq.nicolamexx.info/</a>\"&gt;buy
+    vitaliq online&lt;/a&gt; nlgqsi &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://himcolin.yborgrille.info/\">http://himcolin.yborgrille.info/</a>\"&gt;order
+    himcolin&lt;/a&gt; xxcchv &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://fast-asleep-strips.noicq.info/\">http://fast-asleep-strips.noicq.info/</a>\"&gt;buy
+    fast asleep strips&lt;/a&gt; uwndqz &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://quick-relief-cats.mdhorsepark.info/\">http://quick-relief-cats.mdhorsepark.info/</a>\"&gt;cheap
+    quick relief cats&lt;/a&gt; pxuiyy &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cree-1200.oz-media.info/\">http://cree-1200.oz-media.info/</a>\"&gt;cree-1200&lt;/a&gt;
+    zojwng &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://thyroid-booster.nicolamexx.info/\">http://thyroid-booster.nicolamexx.info/</a>\"&gt;thyroid
+    booster&lt;/a&gt; vjuiqq &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://saw-palmetto.mdhorsepark.info/\">http://saw-palmetto.mdhorsepark.info/</a>\"&gt;saw
+    palmetto online&lt;/a&gt; tashvj</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10322'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10322
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/04 11:44 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>jnfu43vvv\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://erexin-v.cosmeticmakeupbeauty.info/\">http://erexin-v.cosmeticmakeupbeauty.info/</a>\"&gt;no
+    prescription erexin-v&lt;/a&gt; altrsc &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://male-potency-patch.creditcover.info/\">http://male-potency-patch.creditcover.info/</a>\"&gt;male
+    potency patch without prescription&lt;/a&gt; hutwqk &lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://maximum-lipotropics.creditcover.info/\">http://maximum-lipotropics.creditcover.info/</a>\"&gt;order
+    maximum lipotropics&lt;/a&gt; gkkrms &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://liposafe.create-a-cookbook.info/\">http://liposafe.create-a-cookbook.info/</a>\"&gt;no
+    prescription liposafe&lt;/a&gt; epkjsw &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://bcaa.corporategreetingcards.info/\">http://bcaa.corporategreetingcards.info/</a>\"&gt;bcaa
+    without prescription&lt;/a&gt; cuiodh &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://max-gentlemen.creditcover.info/\">http://max-gentlemen.creditcover.info/</a>\"&gt;max
+    gentlemen online&lt;/a&gt; yxmoui &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://menosan.creditcover.info/\">http://menosan.creditcover.info/</a>\"&gt;buy
+    menosan&lt;/a&gt; ydkgeb &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://kamasutra-longlast-condoms.controlhertoy.info/\">http://kamasutra-longlast-condoms.controlhertoy.info/</a>\"&gt;kamasutra
+    longlast condoms 1bottle&lt;/a&gt; zgcojd &lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://vanadyl.confraternite.info/\">http://vanadyl.confraternite.info/</a>\"&gt;vanadyl
+    90caps&lt;/a&gt; afxeub &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://colon-clean-supreme.compboy.info/\">http://colon-clean-supreme.compboy.info/</a>\"&gt;generic
+    colon clean supreme&lt;/a&gt; tkdllk &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://entocort.compboy.info/\">http://entocort.compboy.info/</a>\"&gt;entocort
+    online&lt;/a&gt; qatwne &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lipothin.create-a-cookbook.info/\">http://lipothin.create-a-cookbook.info/</a>\"&gt;buy
+    lipothin online&lt;/a&gt; rytomp &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://erexor.cosmeticmakeupbeauty.info/\">http://erexor.cosmeticmakeupbeauty.info/</a>\"&gt;erexor&lt;/a&gt;
+    lnymtx &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://unisom.corporategreetingcards.info/\">http://unisom.corporategreetingcards.info/</a>\"&gt;unisom&lt;/a&gt;
+    odkwse &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://quibron-t.confraternite.info/\">http://quibron-t.confraternite.info/</a>\"&gt;quibron-t
+    400mg&lt;/a&gt; huhjst &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://styplon.confraternite.info/\">http://styplon.confraternite.info/</a>\"&gt;order
+    styplon&lt;/a&gt; nshyvm &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://head-strong.create-a-cookbook.info/\">http://head-strong.create-a-cookbook.info/</a>\"&gt;head
+    strong without prescription&lt;/a&gt; okxqyn &lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://breast-sculptor.compboy.info/\">http://breast-sculptor.compboy.info/</a>\"&gt;buy
+    breast sculptor&lt;/a&gt; ebxyym &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://emsam.compboy.info/\">http://emsam.compboy.info/</a>\"&gt;no
+    prescription emsam&lt;/a&gt; gpiirx &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://carbozyne.corporate-culture.info/\">http://carbozyne.corporate-culture.info/</a>\"&gt;no
+    prescription carbozyne&lt;/a&gt; hazybb &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://fatblast-extreme.cosmeticmakeupbeauty.info/\">http://fatblast-extreme.cosmeticmakeupbeauty.info/</a>\"&gt;fatblast
+    extreme without prescription&lt;/a&gt; fheoev &lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://l-arginine-patch.controlhertoy.info/\">http://l-arginine-patch.controlhertoy.info/</a>\"&gt;no
+    prescription l-arginine patch&lt;/a&gt; tvasce &lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://antiox-cats.corporategreetingcards.info/\">http://antiox-cats.corporategreetingcards.info/</a>\"&gt;no
+    prescription antiox cats&lt;/a&gt; iqpjgq &lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://bust-enhancer.corporate-culture.info/\">http://bust-enhancer.corporate-culture.info/</a>\"&gt;bust
+    enhancer 90caps&lt;/a&gt; uqidvg &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://herbolax.create-a-cookbook.info/\">http://herbolax.create-a-cookbook.info/</a>\"&gt;herbolax
+    100caps&lt;/a&gt; wpptzj</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10327'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10327
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/06 18:36 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>ghgjgjdd444\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://l-carnitine.voteantiwar.info/\">http://l-carnitine.voteantiwar.info/</a>\"&gt;cheap
+    l-carnitine&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://purinethol.west-virginia-crime-scene-cleanup.info/\">http://purinethol.west-virginia-crime-scene-cleanup.info/</a>\"&gt;cheap
+    purinethol&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://viamax-maximizer.villabahceterashavuzu.info/\">http://viamax-maximizer.villabahceterashavuzu.info/</a>\"&gt;order
+    viamax maximizer&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://k-9-slim-down-dogs.mayna.info/\">http://k-9-slim-down-dogs.mayna.info/</a>\"&gt;order
+    k-9 slim down dogs&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://glyset.voteantiwar.info/\">http://glyset.voteantiwar.info/</a>\"&gt;glyset
+    online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://aspirin.villabahceterashavuzu.info/\">http://aspirin.villabahceterashavuzu.info/</a>\"&gt;order
+    aspirin&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://l-arginine.mayna.info/\">http://l-arginine.mayna.info/</a>\"&gt;l-arginine
+    online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://eulexin.voteantiwar.info/\">http://eulexin.voteantiwar.info/</a>\"&gt;cheap
+    eulexin&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zestoretic.mayna.info/\">http://zestoretic.mayna.info/</a>\"&gt;cheap
+    zestoretic&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://stress-relief.segapokemon.info/\">http://stress-relief.segapokemon.info/</a>\"&gt;stress
+    relief online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nitroglycerin.yenamarre.info/\">http://nitroglycerin.yenamarre.info/</a>\"&gt;buy
+    nitroglycerin&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://snoroff.spamblocking.info/\">http://snoroff.spamblocking.info/</a>\"&gt;snoroff
+    without prescription&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://awake-patch.segapokemon.info/\">http://awake-patch.segapokemon.info/</a>\"&gt;no
+    prescription awake patch&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://midamor.west-virginia-crime-scene-cleanup.info/\">http://midamor.west-virginia-crime-scene-cleanup.info/</a>\"&gt;no
+    prescription midamor&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lasuna.yenamarre.info/\">http://lasuna.yenamarre.info/</a>\"&gt;cheap
+    lasuna&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://metabo-extreme.yenamarre.info/\">http://metabo-extreme.yenamarre.info/</a>\"&gt;generic
+    metabo extreme&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://rocaltrol.spamblocking.info/\">http://rocaltrol.spamblocking.info/</a>\"&gt;generic
+    rocaltrol&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lincocin.yenamarre.info/\">http://lincocin.yenamarre.info/</a>\"&gt;lincocin&lt;/a&gt;
+    &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://entocort.voteantiwar.info/\">http://entocort.voteantiwar.info/</a>\"&gt;cheap
+    entocort&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nicotinell.spamblocking.info/\">http://nicotinell.spamblocking.info/</a>\"&gt;nicotinell
+    17.5mg&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://vanadyl.segapokemon.info/\">http://vanadyl.segapokemon.info/</a>\"&gt;order
+    vanadyl&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cystone.villabahceterashavuzu.info/\">http://cystone.villabahceterashavuzu.info/</a>\"&gt;cystone&lt;/a&gt;
+    &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://penis-extender-deluxe-gold.yenamarre.info/\">http://penis-extender-deluxe-gold.yenamarre.info/</a>\"&gt;cheap
+    penis extender deluxe gold&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://triphala.villabahceterashavuzu.info/\">http://triphala.villabahceterashavuzu.info/</a>\"&gt;order
+    triphala&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://penis-growth-oil.spamblocking.info/\">http://penis-growth-oil.spamblocking.info/</a>\"&gt;buy
+    penis growth oil online&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10328'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10328
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/07 05:40 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>asdsfgsg332\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://trental.noicq.info/\">http://trental.noicq.info/</a>\"&gt;trental
+    400mg&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://terramycin.noicq.info/\">http://terramycin.noicq.info/</a>\"&gt;terramycin
+    without prescription&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://gluta-pep.oice.info/\">http://gluta-pep.oice.info/</a>\"&gt;generic
+    gluta-pep&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://speman.noicq.info/\">http://speman.noicq.info/</a>\"&gt;speman
+    1tabs&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://corticyn-trimplex.portailcine.info/\">http://corticyn-trimplex.portailcine.info/</a>\"&gt;no
+    prescription corticyn trimplex&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://geriforte.oice.info/\">http://geriforte.oice.info/</a>\"&gt;geriforte
+    1caps&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://ginkgo-biloba-patch.yborgrille.info/\">http://ginkgo-biloba-patch.yborgrille.info/</a>\"&gt;order
+    ginkgo biloba patch&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://vasodilan.yborgrille.info/\">http://vasodilan.yborgrille.info/</a>\"&gt;no
+    prescription vasodilan&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://male-enhancement-pills.mdhorsepark.info/\">http://male-enhancement-pills.mdhorsepark.info/</a>\"&gt;male
+    enhancement pills&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://maxaman.newconceptproperties.info/\">http://maxaman.newconceptproperties.info/</a>\"&gt;maxaman
+    online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://erexin-v.oice.info/\">http://erexin-v.oice.info/</a>\"&gt;buy
+    erexin-v online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://k-9-slim-down-dogs.yborgrille.info/\">http://k-9-slim-down-dogs.yborgrille.info/</a>\"&gt;k-9
+    slim down dogs 500mg&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://gaba-hgh-booster.yborgrille.info/\">http://gaba-hgh-booster.yborgrille.info/</a>\"&gt;gaba
+    (hgh booster) online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://maximum-lipotropics.newconceptproperties.info/\">http://maximum-lipotropics.newconceptproperties.info/</a>\"&gt;cheap
+    maximum lipotropics&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://mental-booster.newconceptproperties.info/\">http://mental-booster.newconceptproperties.info/</a>\"&gt;cheap
+    mental booster&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://confido.portailcine.info/\">http://confido.portailcine.info/</a>\"&gt;confido&lt;/a&gt;
+    &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://prosolution.yborgrille.info/\">http://prosolution.yborgrille.info/</a>\"&gt;buy
+    prosolution online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://msm.newconceptproperties.info/\">http://msm.newconceptproperties.info/</a>\"&gt;buy
+    msm&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://simplicef.nicolamexx.info/\">http://simplicef.nicolamexx.info/</a>\"&gt;simplicef&lt;/a&gt;
+    &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zestoretic.yborgrille.info/\">http://zestoretic.yborgrille.info/</a>\"&gt;zestoretic&lt;/a&gt;
+    &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://energy-patch.portailcine.info/\">http://energy-patch.portailcine.info/</a>\"&gt;energy
+    patch online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://carboxactin.oz-media.info/\">http://carboxactin.oz-media.info/</a>\"&gt;carboxactin
+    without prescription&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://ophthacare.nicolamexx.info/\">http://ophthacare.nicolamexx.info/</a>\"&gt;cheap
+    ophthacare&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://penis-growth-patch.mdhorsepark.info/\">http://penis-growth-patch.mdhorsepark.info/</a>\"&gt;penis
+    growth patch 10patches&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://clozaril.portailcine.info/\">http://clozaril.portailcine.info/</a>\"&gt;buy
+    clozaril online&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10329'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10329
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/07 13:53 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>9gf3gerg0b\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://midamor.confraternite.info/\">http://midamor.confraternite.info/</a>\"&gt;buy
+    midamor online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://penis-extender-deluxe.corporategreetingcards.info/\">http://penis-extender-deluxe.corporategreetingcards.info/</a>\"&gt;generic
+    penis extender deluxe&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://metabo-extreme.confraternite.info/\">http://metabo-extreme.confraternite.info/</a>\"&gt;buy
+    metabo extreme online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://didronel.controlhertoy.info/\">http://didronel.controlhertoy.info/</a>\"&gt;buy
+    didronel online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://duetact.create-a-cookbook.info/\">http://duetact.create-a-cookbook.info/</a>\"&gt;duetact
+    16mg&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://quibron-t.corporategreetingcards.info/\">http://quibron-t.corporategreetingcards.info/</a>\"&gt;quibron-t
+    online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://antiox-dogs.corporate-culture.info/\">http://antiox-dogs.corporate-culture.info/</a>\"&gt;antiox
+    dogs without prescription&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://bust-enhancer.cosmeticmakeupbeauty.info/\">http://bust-enhancer.cosmeticmakeupbeauty.info/</a>\"&gt;buy
+    bust enhancer&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://triamterene.corporategreetingcards.info/\">http://triamterene.corporategreetingcards.info/</a>\"&gt;triamterene
+    online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://diamox.controlhertoy.info/\">http://diamox.controlhertoy.info/</a>\"&gt;no
+    prescription diamox&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://evecare.controlhertoy.info/\">http://evecare.controlhertoy.info/</a>\"&gt;evecare
+    30ml&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://entocort.controlhertoy.info/\">http://entocort.controlhertoy.info/</a>\"&gt;buy
+    entocort&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://vigrx.corporate-culture.info/\">http://vigrx.corporate-culture.info/</a>\"&gt;vigrx
+    online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://femcare.controlhertoy.info/\">http://femcare.controlhertoy.info/</a>\"&gt;order
+    femcare&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://ed-strips.create-a-cookbook.info/\">http://ed-strips.create-a-cookbook.info/</a>\"&gt;ed
+    strips without prescription&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://hyaluronic-acid.confraternite.info/\">http://hyaluronic-acid.confraternite.info/</a>\"&gt;hyaluronic
+    acid 60caps&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://betnovate.cosmeticmakeupbeauty.info/\">http://betnovate.cosmeticmakeupbeauty.info/</a>\"&gt;generic
+    betnovate&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://medrol.confraternite.info/\">http://medrol.confraternite.info/</a>\"&gt;medrol&lt;/a&gt;
+    &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://brafix.cosmeticmakeupbeauty.info/\">http://brafix.cosmeticmakeupbeauty.info/</a>\"&gt;brafix
+    60caps&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://penis-extender-starter.corporategreetingcards.info/\">http://penis-extender-starter.corporategreetingcards.info/</a>\"&gt;generic
+    penis extender starter&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://extendaquin.create-a-cookbook.info/\">http://extendaquin.create-a-cookbook.info/</a>\"&gt;extendaquin
+    without prescription&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://breast-sculptor.controlhertoy.info/\">http://breast-sculptor.controlhertoy.info/</a>\"&gt;breast
+    sculptor online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://unisom.corporate-culture.info/\">http://unisom.corporate-culture.info/</a>\"&gt;buy
+    unisom online&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://chromonexin.cosmeticmakeupbeauty.info/\">http://chromonexin.cosmeticmakeupbeauty.info/</a>\"&gt;generic
+    chromonexin&lt;/a&gt; &lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://purinethol.corporategreetingcards.info/\">http://purinethol.corporategreetingcards.info/</a>\"&gt;buy
+    purinethol&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10330'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10330
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/07 16:57 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://vasotec.nikon-d200.info/\">http://vasotec.nikon-d200.info</a>\"&gt;vasotec
+    without prescription&lt;/a&gt; dfmaw\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://proscar.nikon-d200.info/\">http://proscar.nikon-d200.info</a>\"&gt;proscar&lt;/a&gt;
+    nwazv\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lioresal.nikon-d200.info/\">http://lioresal.nikon-d200.info</a>\"&gt;order
+    lioresal&lt;/a&gt; crnqy\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://hyzaar.nikon-d200.info/\">http://hyzaar.nikon-d200.info</a>\"&gt;hyzaar
+    online&lt;/a&gt; fwwsm\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cozaar.nikon-d200.info/\">http://cozaar.nikon-d200.info</a>\"&gt;order
+    cozaar&lt;/a&gt; faybo\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://casodex.nikon-d200.info/\">http://casodex.nikon-d200.info</a>\"&gt;order
+    casodex&lt;/a&gt; rwybz\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://bactrim.nikon-d200.info/\">http://bactrim.nikon-d200.info</a>\"&gt;generic
+    bactrim&lt;/a&gt; jpsoi\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://aricept.nikon-d200.info/\">http://aricept.nikon-d200.info</a>\"&gt;aricept
+    online&lt;/a&gt; uquig\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zestril.nikon-d200.info/\">http://zestril.nikon-d200.info</a>\"&gt;zestril
+    10mg&lt;/a&gt; spscz\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zerit.nikon-d200.info/\">http://zerit.nikon-d200.info</a>\"&gt;zerit
+    without prescription&lt;/a&gt; rzbda\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://tenormin.nikon-d200.info/\">http://tenormin.nikon-d200.info</a>\"&gt;cheap
+    tenormin&lt;/a&gt; orvag\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://sumycin.nikon-d200.info/\">http://sumycin.nikon-d200.info</a>\"&gt;sumycin
+    online&lt;/a&gt; mmyiw\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nolvadex.nikon-d200.info/\">http://nolvadex.nikon-d200.info</a>\"&gt;nolvadex
+    10mg&lt;/a&gt; inixh\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nizoral.nikon-d200.info/\">http://nizoral.nikon-d200.info</a>\"&gt;nizoral&lt;/a&gt;
+    ejesd\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://neurontin.nikon-d200.info/\">http://neurontin.nikon-d200.info</a>\"&gt;neurontin
+    300mg&lt;/a&gt; bzgqx\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://glucophage.nikon-d200.info/\">http://glucophage.nikon-d200.info</a>\"&gt;glucophage&lt;/a&gt;
+    wazcu\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://flomax.nikon-d200.info/\">http://flomax.nikon-d200.info</a>\"&gt;flomax
+    online&lt;/a&gt; mxtrs\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://claritin.nikon-d200.info/\">http://claritin.nikon-d200.info</a>\"&gt;cla
+    without prescription&lt;/a&gt; rwkjr\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://avandia.nikon-d200.info/\">http://avandia.nikon-d200.info</a>\"&gt;order
+    avandia&lt;/a&gt; auhwk\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://amaryl.nikon-d200.info/\">http://amaryl.nikon-d200.info</a>\"&gt;amaryl
+    2mg&lt;/a&gt; ziril\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://adalat.nikon-d200.info/\">http://adalat.nikon-d200.info</a>\"&gt;adalat
+    online&lt;/a&gt; hjdlj\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://actos.nikon-d200.info/\">http://actos.nikon-d200.info</a>\"&gt;order
+    actos&lt;/a&gt; xyqcp\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://accutane.nikon-d200.info/\">http://accutane.nikon-d200.info</a>\"&gt;no
+    prescription accutane&lt;/a&gt; cjolu\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://risperdal.nikon-d200.info/\">http://risperdal.nikon-d200.info</a>\"&gt;generic
+    risperdal&lt;/a&gt; mtfiv\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://prednisone.nikon-d200.info/\">http://prednisone.nikon-d200.info</a>\"&gt;prednisone&lt;/a&gt;
+    xbtao</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10332'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10332
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/09 16:45 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zanaflex.nikon-d200.info/\">http://zanaflex.nikon-d200.info</a>\"&gt;zanaflex
+    2mg&lt;/a&gt; mgsmr\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://flagyl-er.nikon-d200.info/\">http://flagyl-er.nikon-d200.info</a>\"&gt;no
+    prescription flagyl er&lt;/a&gt; sizhp\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://synthroid.nikon-d200.info/\">http://synthroid.nikon-d200.info</a>\"&gt;synthroid
+    without prescription&lt;/a&gt; iisnd\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://prilosec.nikon-d200.info/\">http://prilosec.nikon-d200.info</a>\"&gt;prilosec
+    40mg&lt;/a&gt; umrsc\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://prevacid.nikon-d200.info/\">http://prevacid.nikon-d200.info</a>\"&gt;prevacid&lt;/a&gt;
+    zobxj\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://famvir.nikon-d200.info/\">http://famvir.nikon-d200.info</a>\"&gt;famvir&lt;/a&gt;
+    vomed\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://clarinex.nikon-d200.info/\">http://clarinex.nikon-d200.info</a>\"&gt;cla
+    without prescription&lt;/a&gt; ozded\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://biaxin.nikon-d200.info/\">http://biaxin.nikon-d200.info</a>\"&gt;no
+    prescription biaxin&lt;/a&gt; qkcdo\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://avodart.nikon-d200.info/\">http://avodart.nikon-d200.info</a>\"&gt;avodart
+    without prescription&lt;/a&gt; ibtul\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cephalexin.nikon-d200.info/\">http://cephalexin.nikon-d200.info</a>\"&gt;cephalexin
+    online&lt;/a&gt; hqiqt\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://allegra.nikon-d200.info/\">http://allegra.nikon-d200.info</a>\"&gt;no
+    prescription allegra&lt;/a&gt; qxvzh\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://fluoxetine.nikon-d200.info/\">http://fluoxetine.nikon-d200.info</a>\"&gt;no
+    prescription fluoxetine&lt;/a&gt; jnpld\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lioresal.nikon-d200.info/\">http://lioresal.nikon-d200.info</a>\"&gt;lioresal
+    10mg&lt;/a&gt; bzwdw\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://xenical.nikon-d200.info/\">http://xenical.nikon-d200.info</a>\"&gt;order
+    xenical&lt;/a&gt; rlsid\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://retin-a-0-05.nikon-d200.info/\">http://retin-a-0-05.nikon-d200.info</a>\"&gt;retin-a
+    0.025% 20gm&lt;/a&gt; oqgux\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://retin-a-0-025.nikon-d200.info/\">http://retin-a-0-025.nikon-d200.info</a>\"&gt;retin-a
+    0.025% without prescription&lt;/a&gt; fqojw\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://amoxil.nikon-d200.info/\">http://amoxil.nikon-d200.info</a>\"&gt;buy
+    amoxil&lt;/a&gt; cpgnh\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://fosamax.nikon-d200.info/\">http://fosamax.nikon-d200.info</a>\"&gt;fosamax
+    without prescription&lt;/a&gt; yzoal\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buspar.nikon-d200.info/\">http://buspar.nikon-d200.info</a>\"&gt;buy
+    buspar&lt;/a&gt; lvuhd\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zocor.nikon-d200.info/\">http://zocor.nikon-d200.info</a>\"&gt;zocor
+    5mg&lt;/a&gt; tvlts\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cymbalta.nikon-d200.info/\">http://cymbalta.nikon-d200.info</a>\"&gt;buy
+    cymbalta online&lt;/a&gt; yqjcp\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://inderal.nikon-d200.info/\">http://inderal.nikon-d200.info</a>\"&gt;cheap
+    inderal&lt;/a&gt; xcwjc\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://augmentin.nikon-d200.info/\">http://augmentin.nikon-d200.info</a>\"&gt;buy
+    augmentin&lt;/a&gt; mledq\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://aciphex.nikon-d200.info/\">http://aciphex.nikon-d200.info</a>\"&gt;aciphex
+    online&lt;/a&gt; ownvp\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://topamax.nikon-d200.info/\">http://topamax.nikon-d200.info</a>\"&gt;topamax&lt;/a&gt;
+    anzmy</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10342'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10342
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/19 10:22 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://amoxil.honki.info/\">http://amoxil.honki.info</a>\"&gt;buy
+    amoxil online&lt;/a&gt; wiuoe\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://xenical.honki.info/\">http://xenical.honki.info</a>\"&gt;no
+    prescription xenical&lt;/a&gt; vtjdb\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://tetracycline.honki.info/\">http://tetracycline.honki.info</a>\"&gt;generic
+    tetracycline&lt;/a&gt; bicny\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lioresal.honki.info/\">http://lioresal.honki.info</a>\"&gt;cheap
+    lioresal&lt;/a&gt; xqayt\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://fluoxetine.honki.info/\">http://fluoxetine.honki.info</a>\"&gt;fluoxetine
+    20mg&lt;/a&gt; xuktr\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://allegra.honki.info/\">http://allegra.honki.info</a>\"&gt;allegra
+    180mg&lt;/a&gt; eqebn\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cephalexin.honki.info/\">http://cephalexin.honki.info</a>\"&gt;no
+    prescription cephalexin&lt;/a&gt; wpkwi\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://avodart.honki.info/\">http://avodart.honki.info</a>\"&gt;cheap
+    avodart&lt;/a&gt; zjujf\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://biaxin.honki.info/\">http://biaxin.honki.info</a>\"&gt;buy
+    biaxin&lt;/a&gt; dftru\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://clarinex.honki.info/\">http://clarinex.honki.info</a>\"&gt;cla
+    without prescription&lt;/a&gt; pymtd\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://famvir.honki.info/\">http://famvir.honki.info</a>\"&gt;order
+    famvir&lt;/a&gt; tovpg\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://prevacid.honki.info/\">http://prevacid.honki.info</a>\"&gt;order
+    prevacid&lt;/a&gt; kodsf\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://prilosec.honki.info/\">http://prilosec.honki.info</a>\"&gt;prilosec
+    10mg&lt;/a&gt; iyvih\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://synthroid.honki.info/\">http://synthroid.honki.info</a>\"&gt;synthroid&lt;/a&gt;
+    blpdo\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zanaflex.honki.info/\">http://zanaflex.honki.info</a>\"&gt;no
+    prescription zanaflex&lt;/a&gt; rhqnb\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://prednisone.honki.info/\">http://prednisone.honki.info</a>\"&gt;prednisone
+    20mg&lt;/a&gt; wojwm\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://risperdal.honki.info/\">http://risperdal.honki.info</a>\"&gt;risperdal
+    4mg&lt;/a&gt; ywyij\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://accutane.honki.info/\">http://accutane.honki.info</a>\"&gt;order
+    accutane&lt;/a&gt; coxhl\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://actos.honki.info/\">http://actos.honki.info</a>\"&gt;actos
+    online&lt;/a&gt; eetnm\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://adalat.honki.info/\">http://adalat.honki.info</a>\"&gt;buy
+    adalat online&lt;/a&gt; iaivd\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://amaryl.honki.info/\">http://amaryl.honki.info</a>\"&gt;amaryl&lt;/a&gt;
+    eeova\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://avandia.honki.info/\">http://avandia.honki.info</a>\"&gt;avandia
+    4mg&lt;/a&gt; efbcc\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://flagyl-er.honki.info/\">http://flagyl-er.honki.info</a>\"&gt;flagyl
+    er 400mg&lt;/a&gt; ucbxd\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://retin-a-0-025.honki.info/\">http://retin-a-0-025.honki.info</a>\"&gt;retin-a
+    0.025% online&lt;/a&gt; nkgty</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10345'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10345
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/21 23:13 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://claritin.honki.info/\">http://claritin.honki.info</a>\"&gt;no
+    prescription cla&lt;/a&gt; fempj\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://flomax.honki.info/\">http://flomax.honki.info</a>\"&gt;flomax
+    without prescription&lt;/a&gt; yneht\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://glucophage.honki.info/\">http://glucophage.honki.info</a>\"&gt;glucophage
+    online&lt;/a&gt; gurpy\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://neurontin.honki.info/\">http://neurontin.honki.info</a>\"&gt;generic
+    neurontin&lt;/a&gt; xttzg\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nizoral.honki.info/\">http://nizoral.honki.info</a>\"&gt;nizoral
+    200mg&lt;/a&gt; upnrm\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nolvadex.honki.info/\">http://nolvadex.honki.info</a>\"&gt;nolvadex&lt;/a&gt;
+    okwit\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://sumycin.honki.info/\">http://sumycin.honki.info</a>\"&gt;buy
+    sumycin online&lt;/a&gt; adiii\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://tenormin.honki.info/\">http://tenormin.honki.info</a>\"&gt;tenormin
+    without prescription&lt;/a&gt; cgmvz\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zerit.honki.info/\">http://zerit.honki.info</a>\"&gt;order
+    zerit&lt;/a&gt; dgaum\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zestril.honki.info/\">http://zestril.honki.info</a>\"&gt;zestril
+    5mg&lt;/a&gt; cnfyt\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://aricept.honki.info/\">http://aricept.honki.info</a>\"&gt;buy
+    aricept&lt;/a&gt; xwlyq\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://bactrim.honki.info/\">http://bactrim.honki.info</a>\"&gt;order
+    bactrim&lt;/a&gt; dnugr\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://casodex.honki.info/\">http://casodex.honki.info</a>\"&gt;buy
+    casodex&lt;/a&gt; rsioh\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cozaar.honki.info/\">http://cozaar.honki.info</a>\"&gt;buy
+    cozaar online&lt;/a&gt; jffpd\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://hyzaar.honki.info/\">http://hyzaar.honki.info</a>\"&gt;hyzaar
+    without prescription&lt;/a&gt; tfwnv\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lioresal.honki.info/\">http://lioresal.honki.info</a>\"&gt;order
+    lioresal&lt;/a&gt; ortgo\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://proscar.honki.info/\">http://proscar.honki.info</a>\"&gt;proscar
+    without prescription&lt;/a&gt; jfhgh\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://vasotec.honki.info/\">http://vasotec.honki.info</a>\"&gt;vasotec
+    10mg&lt;/a&gt; rqjgn\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://coreg.honki.info/\">http://coreg.honki.info</a>\"&gt;coreg
+    online&lt;/a&gt; zttll\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://deltasone.honki.info/\">http://deltasone.honki.info</a>\"&gt;deltasone
+    10mg&lt;/a&gt; lmjfr\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lopressor.honki.info/\">http://lopressor.honki.info</a>\"&gt;lopressor
+    online&lt;/a&gt; wsezf\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://naprosyn.honki.info/\">http://naprosyn.honki.info</a>\"&gt;buy
+    naprosyn&lt;/a&gt; blgvm\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://protonix.honki.info/\">http://protonix.honki.info</a>\"&gt;protonix
+    without prescription&lt;/a&gt; zcmfh\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zantac.honki.info/\">http://zantac.honki.info</a>\"&gt;zantac
+    150mg&lt;/a&gt; upecd\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zelnorm.honki.info/\">http://zelnorm.honki.info</a>\"&gt;buy
+    zelnorm online&lt;/a&gt; ievnb</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10347'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10347
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/24 01:38 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zantac.honki.info/\">http://zantac.honki.info/</a>\"&gt;buy
+    zantac&lt;/a&gt; tgvcj\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://hytrin.honki.info/\">http://hytrin.honki.info/</a>\"&gt;hytrin&lt;/a&gt;
+    tbvss\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zetia.honki.info/\">http://zetia.honki.info/</a>\"&gt;no
+    prescription zetia&lt;/a&gt; gqraz\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://altace.honki.info/\">http://altace.honki.info/</a>\"&gt;altace
+    without prescription&lt;/a&gt; ymqfp\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://dilantin.honki.info/\">http://dilantin.honki.info/</a>\"&gt;dilantin
+    without prescription&lt;/a&gt; vbyws\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://furosemide.honki.info/\">http://furosemide.honki.info/</a>\"&gt;furosemide
+    40mg&lt;/a&gt; dqspb\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://mobic.honki.info/\">http://mobic.honki.info/</a>\"&gt;mobic
+    without prescription&lt;/a&gt; zghuc\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://parlodel.honki.info/\">http://parlodel.honki.info/</a>\"&gt;parlodel
+    without prescription&lt;/a&gt; tefxf\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://arava.honki.info/\">http://arava.honki.info/</a>\"&gt;arava
+    10mg&lt;/a&gt; ydqtg\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://avapro.honki.info/\">http://avapro.honki.info/</a>\"&gt;buy
+    avapro online&lt;/a&gt; qmkqn\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://calan.honki.info/\">http://calan.honki.info/</a>\"&gt;order
+    calan&lt;/a&gt; wjfoz\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://estrace.honki.info/\">http://estrace.honki.info/</a>\"&gt;no
+    prescription estrace&lt;/a&gt; xbzip\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cardura.honki.info/\">http://cardura.honki.info/</a>\"&gt;buy
+    cardura online&lt;/a&gt; wxucc\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://glucotrol-xl.honki.info/\">http://glucotrol-xl.honki.info/</a>\"&gt;generic
+    glucotrol xl&lt;/a&gt; ododr\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lopid.honki.info/\">http://lopid.honki.info/</a>\"&gt;buy
+    lopid online&lt;/a&gt; lricc\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://plendil.honki.info/\">http://plendil.honki.info/</a>\"&gt;buy
+    plendil&lt;/a&gt; yytnp\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cialis-soft-tabs.honki.info/\">http://cialis-soft-tabs.honki.info/</a>\"&gt;no
+    prescription cialis soft tabs&lt;/a&gt; aiteb\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://cleocin.honki.info/\">http://cleocin.honki.info/</a>\"&gt;buy
+    cleocin online&lt;/a&gt; osjfu\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://phenergan.honki.info/\">http://phenergan.honki.info/</a>\"&gt;cheap
+    phenergan&lt;/a&gt; gthwk\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cleocin-gel.honki.info/\">http://cleocin-gel.honki.info/</a>\"&gt;no
+    prescription cleocin gel&lt;/a&gt; wzkon\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://kamagra.honki.info/\">http://kamagra.honki.info/</a>\"&gt;order
+    kamagra jelly&lt;/a&gt; yjjbx\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://pravachol.honki.info/\">http://pravachol.honki.info/</a>\"&gt;cheap
+    pravachol&lt;/a&gt; sovvi\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://prednisolone.honki.info/\">http://prednisolone.honki.info/</a>\"&gt;prednisolone&lt;/a&gt;
+    lakgb\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://trimox.honki.info/\">http://trimox.honki.info/</a>\"&gt;buy
+    trimox online&lt;/a&gt; qayay\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://prandin.honki.info/\">http://prandin.honki.info/</a>\"&gt;no
+    prescription prandin&lt;/a&gt; omquv\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://tricor.honki.info/\">http://tricor.honki.info/</a>\"&gt;no
+    prescription tricor&lt;/a&gt; izggb</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10355'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10355
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/26 10:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://insect-repellant-patch.honki.info/\">http://insect-repellant-patch.honki.info/</a>\"&gt;insect
+    repellant patch 30patches&lt;/a&gt;\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://valtrex.honki.info/\">http://valtrex.honki.info/</a>\"&gt;cheap
+    valtrex&lt;/a&gt; buy online cheap Valtrex 90 pills x 500 mg\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://zyban.honki.info/\">http://zyban.honki.info/</a>\"&gt;zyban&lt;/a&gt;
+    bupropion sustainedrelease zyban online\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://metformin.honki.info/\">http://metformin.honki.info/</a>\"&gt;metformin
+    500mg&lt;/a&gt; cash on delivery Metformin 60 pills x 850 mg no rx\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://levaquin.honki.info/\">http://levaquin.honki.info/</a>\"&gt;levaquin
+    without prescription&lt;/a&gt; levaquin fatigue weight loss\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://female-viagra.honki.info/\">http://female-viagra.honki.info/</a>\"&gt;no
+    prescription viagra&lt;/a&gt; c-pill buy viagra\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://norvasc.honki.info/\">http://norvasc.honki.info/</a>\"&gt;norvasc
+    without prescription&lt;/a&gt; norvasc and prostatitis\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://aldactone.honki.info/\">http://aldactone.honki.info/</a>\"&gt;order
+    aldactone&lt;/a&gt; aldactone tablet in cirrhosis of liver\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://clomid.honki.info/\">http://clomid.honki.info/</a>\"&gt;buy
+    clomid online&lt;/a&gt; clomid implantation\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://premarin.honki.info/\">http://premarin.honki.info/</a>\"&gt;premarin
+    0.625mg&lt;/a&gt; purchase Premarin 270 pills x 0.625 mg cod\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://rimonabant.honki.info/\">http://rimonabant.honki.info/</a>\"&gt;generic
+    rimonabant&lt;/a&gt; combining rimonabant and phentermine\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://evista.honki.info/\">http://evista.honki.info/</a>\"&gt;evista
+    60mg&lt;/a&gt; cheap online evista\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://imitrex.honki.info/\">http://imitrex.honki.info/</a>\"&gt;order
+    imitrex&lt;/a&gt; cut imitrex pill in half\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://lisinopril.honki.info/\">http://lisinopril.honki.info/</a>\"&gt;generic
+    lisinopril&lt;/a&gt; inactive ingrediants in lisinopril\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://zyloprim.honki.info/\">http://zyloprim.honki.info/</a>\"&gt;zyloprim
+    100mg&lt;/a&gt; buy Zyloprim 90 pills x 100 mg and other drug online\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://doxycycline.honki.info/\">http://doxycycline.honki.info/</a>\"&gt;doxycycline
+    without prescription&lt;/a&gt; Doxycycline 90 pills x 100 mg price\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://singulair.honki.info/\">http://singulair.honki.info/</a>\"&gt;order
+    singulair&lt;/a&gt; generic singulair\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://mevacor.honki.info/\">http://mevacor.honki.info/</a>\"&gt;mevacor
+    20mg&lt;/a&gt; buy Mevacor 90 pills x 10 mg online order\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://topamax.honki.info/\">http://topamax.honki.info/</a>\"&gt;topamax
+    200mg&lt;/a&gt; when does patent for topamax expire\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://aciphex.honki.info/\">http://aciphex.honki.info/</a>\"&gt;aciphex&lt;/a&gt;
+    buy Aciphex 120 pills x 10 mg online uk\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://augmentin.honki.info/\">http://augmentin.honki.info/</a>\"&gt;buy
+    augmentin online&lt;/a&gt; cod pay Augmentin 180 pills x 375 mg\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://inderal.honki.info/\">http://inderal.honki.info/</a>\"&gt;inderal
+    without prescription&lt;/a&gt; inderal generic\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://cymbalta.honki.info/\">http://cymbalta.honki.info/</a>\"&gt;buy
+    cymbalta online&lt;/a&gt; cymbalta 30 mg for add\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://zocor.honki.info/\">http://zocor.honki.info/</a>\"&gt;order
+    zocor&lt;/a&gt; zocor and diabetes\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://buspar.honki.info/\">http://buspar.honki.info/</a>\"&gt;no
+    prescription buspar&lt;/a&gt; anxiety and buspar effexor\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://fosamax.honki.info/\">http://fosamax.honki.info/</a>\"&gt;fosamax
+    5mg&lt;/a&gt; fosamax drug prices\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lipitor.honki.info/\">http://lipitor.honki.info/</a>\"&gt;lipitor
+    5mg&lt;/a&gt; lipitor ingredients</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10359'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10359
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/27 19:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://propecia.honki.info/\">http://propecia.honki.info/</a>\"&gt;no
+    prescription propecia&lt;/a&gt; buy Propecia 120 pills x 1 mg discount online\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zithromax.honki.info/\">http://zithromax.honki.info/</a>\"&gt;zithromax
+    250mg&lt;/a&gt; Zithromax 270 pills x 250 mg pill\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://paxil.honki.info/\">http://paxil.honki.info/</a>\"&gt;generic
+    paxil&lt;/a&gt; b paxil b\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://soma.honki.info/\">http://soma.honki.info/</a>\"&gt;generic
+    soma&lt;/a&gt; generic soma 150 tablets\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://acyclovir.honki.info/\">http://acyclovir.honki.info/</a>\"&gt;buy
+    aciclovir online&lt;/a&gt;\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://levitra-plus.honki.info/\">http://levitra-plus.honki.info/</a>\"&gt;buy
+    levitra&lt;/a&gt; levitra alpha blockers\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://levitra-professional.honki.info/\">http://levitra-professional.honki.info/</a>\"&gt;no
+    prescription levitra&lt;/a&gt; levitra bachelorette parties in boston\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://levitra-super-active.honki.info/\">http://levitra-super-active.honki.info/</a>\"&gt;cheap
+    levitra&lt;/a&gt; levitra ordinare\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zovirax.honki.info/\">http://zovirax.honki.info/</a>\"&gt;zovirax
+    online&lt;/a&gt; ordering buy Zovirax 180 pills x 400 mg online\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://nexium.honki.info/\">http://nexium.honki.info/</a>\"&gt;nexium
+    40mg&lt;/a&gt; nexium erectile dysfunction\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://effexor.honki.info/\">http://effexor.honki.info/</a>\"&gt;effexor
+    xr without prescription&lt;/a&gt;\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zoloft.honki.info/\">http://zoloft.honki.info/</a>\"&gt;zoloft
+    without prescription&lt;/a&gt; buy Zoloft 180 pills x 25 mg online no prescription\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lexapro.honki.info/\">http://lexapro.honki.info/</a>\"&gt;lexapro
+    20mg&lt;/a&gt; lexapro and risk\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cipro.honki.info/\">http://cipro.honki.info/</a>\"&gt;cipro&lt;/a&gt;
+    sibby cipro\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://plavix.honki.info/\">http://plavix.honki.info/</a>\"&gt;order
+    plavix&lt;/a&gt; buy Plavix 90 pills x 75 mg online uk\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://elavil.honki.info/\">http://elavil.honki.info/</a>\"&gt;buy
+    elavil online&lt;/a&gt; buy Elavil 90 pills x 25 mg cheap online us pharmacy\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://celebrex.honki.info/\">http://celebrex.honki.info/</a>\"&gt;cheap
+    celebrex&lt;/a&gt; kentucky lawyer celebrex\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://bupropion.honki.info/\">http://bupropion.honki.info/</a>\"&gt;buy
+    bupropion online&lt;/a&gt; cheapest Bupropion 60 pills x 150 mg\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://lamisil.honki.info/\">http://lamisil.honki.info/</a>\"&gt;lamisil
+    250mg&lt;/a&gt; lamisil spray\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lasix.honki.info/\">http://lasix.honki.info/</a>\"&gt;lasix
+    online&lt;/a&gt; lasix surgery portland oregon\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://celexa.honki.info/\">http://celexa.honki.info/</a>\"&gt;celexa&lt;/a&gt;
+    side affects celexa lamictal combination\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://wellbutrin-sr.honki.info/\">http://wellbutrin-sr.honki.info/</a>\"&gt;generic
+    wellbutrin sr&lt;/a&gt;\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://diflucan.honki.info/\">http://diflucan.honki.info/</a>\"&gt;order
+    diflucan&lt;/a&gt; diflucan use during pregnancy\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://zyrtec.honki.info/\">http://zyrtec.honki.info/</a>\"&gt;zyrtec&lt;/a&gt;
+    buy Zyrtec 90 pills x 5 mg online store</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10366'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10366
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/29 13:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://propecia.honki.info/\">http://propecia.honki.info/</a>\"&gt;propecia&lt;/a&gt;
+    buy Propecia 90 pills x 5 mg pill online\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://zithromax.honki.info/\">http://zithromax.honki.info/</a>\"&gt;zithromax
+    500mg&lt;/a&gt; gardnerella zithromax treatment\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://diovan.honki.info/\">http://diovan.honki.info/</a>\"&gt;diovan&lt;/a&gt;
+    diovan side effects impotence\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cardizem.honki.info/\">http://cardizem.honki.info/</a>\"&gt;buy
+    cardizem online&lt;/a&gt; free online buy Cardizem 180 pills x 120 mg\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://lamictal.honki.info/\">http://lamictal.honki.info/</a>\"&gt;lamictal
+    50mg&lt;/a&gt; thought control lamictal\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://desyrel.honki.info/\">http://desyrel.honki.info/</a>\"&gt;desyrel
+    without prescription&lt;/a&gt; buy cheap Desyrel 90 pills x 100 mg\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://provera.honki.info/\">http://provera.honki.info/</a>\"&gt;cheap
+    provera&lt;/a&gt; buy cheap Provera 90 pills x 5 mg\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://crestor.honki.info/\">http://crestor.honki.info/</a>\"&gt;generic
+    crestor&lt;/a&gt; Crestor 60 pills x 10 mg online purchase saturday delivery\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://maxalt.honki.info/\">http://maxalt.honki.info/</a>\"&gt;buy
+    maxalt online&lt;/a&gt; Maxalt 12 pills x 10 mg order\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://capoten.honki.info/\">http://capoten.honki.info/</a>\"&gt;order
+    capoten&lt;/a&gt; insurance online buy Capoten 90 pills x 50 mg\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://paroxetine.honki.info/\">http://paroxetine.honki.info/</a>\"&gt;paroxetine
+    without prescription&lt;/a&gt; cheap Paroxetine 60 pills x 10 mg cod delivery\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://aygestin.honki.info/\">http://aygestin.honki.info/</a>\"&gt;aygestin
+    5mg&lt;/a&gt; buy Aygestin 30 pills x 5 mg prescriptions online\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://coumadin.honki.info/\">http://coumadin.honki.info/</a>\"&gt;buy
+    coumadin online&lt;/a&gt; cheap buy Coumadin 90 pills x 5 mg online\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://danazol.honki.info/\">http://danazol.honki.info/</a>\"&gt;danazol
+    without prescription&lt;/a&gt; online buy Danazol 30 pills x 50 mg prescriptions\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://floxin.honki.info/\">http://floxin.honki.info/</a>\"&gt;generic
+    floxin&lt;/a&gt; buy Floxin 30 pills x 400 mg prescriptions\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://lanoxin.honki.info/\">http://lanoxin.honki.info/</a>\"&gt;lanoxin
+    0.25mg&lt;/a&gt; lanoxin coumadin\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://leukeran.honki.info/\">http://leukeran.honki.info/</a>\"&gt;leukeran
+    online&lt;/a&gt; buy cheap discount online Leukeran 60 pills x 2 mg\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://levothroid.honki.info/\">http://levothroid.honki.info/</a>\"&gt;no
+    prescription levothroid&lt;/a&gt; cheap Levothroid 90 pills x 100 mcg buy cod\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lotensin.honki.info/\">http://lotensin.honki.info/</a>\"&gt;buy
+    lotensin online&lt;/a&gt; dog lotensin dose\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://lozol.honki.info/\">http://lozol.honki.info/</a>\"&gt;lozol&lt;/a&gt;
+    online ordering Lozol 30 pills x 2.5 mg\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://mexitil.honki.info/\">http://mexitil.honki.info/</a>\"&gt;no
+    prescription mexitil&lt;/a&gt; Mexitil 90 pills x 150 mg online\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://motilium.honki.info/\">http://motilium.honki.info/</a>\"&gt;generic
+    motilium&lt;/a&gt; buy Motilium 90 pills x 10 mg online order\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://motrin.honki.info/\">http://motrin.honki.info/</a>\"&gt;motrin
+    600mg&lt;/a&gt; motrin dangers\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://nimotop.honki.info/\">http://nimotop.honki.info/</a>\"&gt;no
+    prescription nimotop&lt;/a&gt; Nimotop 90 pills x 30 mg sale\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://pamelor.honki.info/\">http://pamelor.honki.info/</a>\"&gt;order
+    pamelor&lt;/a&gt; online orderable buy Pamelor 90 pills x 25 mg\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://periactin.honki.info/\">http://periactin.honki.info/</a>\"&gt;periactin
+    without prescription&lt;/a&gt; buy Periactin 60 pills x 4 mg no prescription online
+    doctor\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://prograf.honki.info/\">http://prograf.honki.info/</a>\"&gt;buy
+    prograf online&lt;/a&gt; Prograf 40 pills x 5 mg pharmacy\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://zebeta.honki.info/\">http://zebeta.honki.info/</a>\"&gt;zebeta
+    without prescription&lt;/a&gt; buy Zebeta 60 pills x 5 mg and other drug online</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10371'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10371
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/31 16:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zebeta.honki.info/\">http://zebeta.honki.info/</a>\"&gt;buy
+    zebeta&lt;/a&gt; free online buy Zebeta 90 pills x 10 mg\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://pamelor.honki.info/\">http://pamelor.honki.info/</a>\"&gt;pamelor
+    without prescription&lt;/a&gt; order buy Pamelor 60 pills x 25 mg online clinic
+    uk\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://amitriptyline.honki.info/\">http://amitriptyline.honki.info/</a>\"&gt;no
+    prescription amitriptyline&lt;/a&gt; buy Amitriptyline 60 pills x 50 mg cheapest\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://diclofenac-gel.honki.info/\">http://diclofenac-gel.honki.info/</a>\"&gt;generic
+    diclofenac&lt;/a&gt; buy Diclofenac Gel 6 1% Gels x 20 gm prescriptions online\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://noroxin.honki.info/\">http://noroxin.honki.info/</a>\"&gt;generic
+    noroxin&lt;/a&gt; Noroxin 60 pills x 400 mg online pharmacy\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://strattera.honki.info/\">http://strattera.honki.info/</a>\"&gt;strattera&lt;/a&gt;
+    Strattera 30 pills x 25 mg order\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://flonase.honki.info/\">http://flonase.honki.info/</a>\"&gt;flonase
+    50mcg&lt;/a&gt; buy Flonase 9 inhalers x 50 mcg online\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://zyprexa.honki.info/\">http://zyprexa.honki.info/</a>\"&gt;order
+    zyprexa&lt;/a&gt; zyprexa and hallucinations\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://ranitidine.honki.info/\">http://ranitidine.honki.info/</a>\"&gt;cheap
+    ranitidine&lt;/a&gt; buy generic buy Ranitidine 90 pills x 150 mg online\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://hydrochlorothiazide.honki.info/\">http://hydrochlorothiazide.honki.info/</a>\"&gt;no
+    prescription hydrochlorothiazide&lt;/a&gt; buy Hydrochlorothiazide 90 pills x
+    12.5 mg generico online\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://depakote.honki.info/\">http://depakote.honki.info/</a>\"&gt;depakote
+    online&lt;/a&gt; ptsd depakote dpd\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://serophene.honki.info/\">http://serophene.honki.info/</a>\"&gt;no
+    prescription serophene&lt;/a&gt; buy Serophene 30 pills x 50 mg cheap cod no rx\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://ampicillin.honki.info/\">http://ampicillin.honki.info/</a>\"&gt;buy
+    ampicillin&lt;/a&gt; mens health forum buy Ampicillin 180 pills x 250 mg online\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://arimidex.honki.info/\">http://arimidex.honki.info/</a>\"&gt;generic
+    arimidex&lt;/a&gt; Arimidex 60 pills x 1 mg warning\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://diclofenac.honki.info/\">http://diclofenac.honki.info/</a>\"&gt;order
+    diclofenac&lt;/a&gt; buy cod Diclofenac Gel 4 1% Gels x 20 gm\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://feldene.honki.info/\">http://feldene.honki.info/</a>\"&gt;generic
+    feldene&lt;/a&gt; anti-inflammation medication feldene\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://hoodia.honki.info/\">http://hoodia.honki.info/</a>\"&gt;hoodia
+    1mg&lt;/a&gt; hoodia bakersfield\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://ceftin.honki.info/\">http://ceftin.honki.info/</a>\"&gt;ceftin
+    without prescription&lt;/a&gt; Ceftin 60 pills x 125 mg free overnight fedex delivery\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://citalopram.honki.info/\">http://citalopram.honki.info/</a>\"&gt;generic
+    citalopram&lt;/a&gt; by buy Citalopram 90 pills x 40 mg online\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://hoodia-weight-loss-gum.honki.info/\">http://hoodia-weight-loss-gum.honki.info/</a>\"&gt;hoodia
+    online&lt;/a&gt; hoodia gordonii diet pill\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://seroquel.honki.info/\">http://seroquel.honki.info/</a>\"&gt;cheap
+    seroquel&lt;/a&gt; buy Seroquel 30 pills x 100 mg buying online\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://sublingual-viagra.honki.info/\">http://sublingual-viagra.honki.info/</a>\"&gt;viagra
+    50mg&lt;/a&gt; cyprus viagra\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://tretinoin-cream-0-025.honki.info/\">http://tretinoin-cream-0-025.honki.info/</a>\"&gt;tretinoin
+    cream 0.025% without prescription&lt;/a&gt;\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://tretinoin-cream-0-05.honki.info/\">http://tretinoin-cream-0-05.honki.info/</a>\"&gt;tretinoin
+    cream 0.025% without prescription&lt;/a&gt;\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://differin.honki.info/\">http://differin.honki.info/</a>\"&gt;differin
+    15gr &lt;/a&gt; Differin 40 tubes x 15 gr (0.01% gel) without perscription</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10377'
+  :parent_id: '223'
+  :url: http://ja.doukaku.org/comment/10377
+  :user_name: 匿名
+  :user_url: /web/20100419192923/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/04/02 00:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://viagra-professional.bendable.info/\">http://viagra-professional.bendable.info/</a>\"&gt;viagra
+    online&lt;/a&gt; buy levitra viagra online\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://propecia.bendable.info/\">http://propecia.bendable.info/</a>\"&gt;order
+    propecia&lt;/a&gt; is generic propecia safe\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://zithromax.bendable.info/\">http://zithromax.bendable.info/</a>\"&gt;buy
+    zithromax online&lt;/a&gt; zithromax for infants\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://paxil.bendable.info/\">http://paxil.bendable.info/</a>\"&gt;paxil
+    40mg&lt;/a&gt; paxil longer sex\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://soma.bendable.info/\">http://soma.bendable.info/</a>\"&gt;buy
+    soma&lt;/a&gt; buy soma pay by cod\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://acyclovir.bendable.info/\">http://acyclovir.bendable.info/</a>\"&gt;aciclovir
+    400mg&lt;/a&gt;\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://levitra-plus.bendable.info/\">http://levitra-plus.bendable.info/</a>\"&gt;order
+    levitra&lt;/a&gt; levitra funny video bob\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://levitra-professional.bendable.info/\">http://levitra-professional.bendable.info/</a>\"&gt;cheap
+    levitra&lt;/a&gt; bayer cross 10 levitra\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://levitra-super-active.bendable.info/\">http://levitra-super-active.bendable.info/</a>\"&gt;levitra
+    without prescription&lt;/a&gt; viagra levitra cialis pharmacist prescription drug\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zovirax.bendable.info/\">http://zovirax.bendable.info/</a>\"&gt;zovirax&lt;/a&gt;
+    ordering buy Zovirax 180 pills x 400 mg online\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://nexium.bendable.info/\">http://nexium.bendable.info/</a>\"&gt;cheap
+    nexium&lt;/a&gt; nexium photo\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://effexor.bendable.info/\">http://effexor.bendable.info/</a>\"&gt;cheap
+    effexor xr&lt;/a&gt;\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://zoloft.bendable.info/\">http://zoloft.bendable.info/</a>\"&gt;buy
+    zoloft&lt;/a&gt; discontinuing zoloft use\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://lexapro.bendable.info/\">http://lexapro.bendable.info/</a>\"&gt;lexapro
+    online&lt;/a&gt; lexapro and menopausal symptoms\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://lipitor.bendable.info/\">http://lipitor.bendable.info/</a>\"&gt;lipitor
+    10mg&lt;/a&gt; glucosamine and lipitor\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://cipro.bendable.info/\">http://cipro.bendable.info/</a>\"&gt;cipro&lt;/a&gt;
+    buy and purchase buy Cipro 270 pills x 250 mg online\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://plavix.bendable.info/\">http://plavix.bendable.info/</a>\"&gt;generic
+    plavix&lt;/a&gt; buy plavix sale online\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://elavil.bendable.info/\">http://elavil.bendable.info/</a>\"&gt;elavil
+    without prescription&lt;/a&gt; Elavil 60 pills x 10 mg fast delivery\n&lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100419192923/http://celebrex.bendable.info/\">http://celebrex.bendable.info/</a>\"&gt;cheap
+    celebrex&lt;/a&gt; rheumatoid athritis celebrex\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://bupropion.bendable.info/\">http://bupropion.bendable.info/</a>\"&gt;bupropion
+    without prescription&lt;/a&gt; buy Bupropion 60 pills x 150 mg canada online pharmacy\n&lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lamisil.bendable.info/\">http://lamisil.bendable.info/</a>\"&gt;lamisil&lt;/a&gt;
+    lamisil gel printable coupons\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://lasix.bendable.info/\">http://lasix.bendable.info/</a>\"&gt;cheap
+    lasix&lt;/a&gt; nuclear renal scan with lasix washout\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://celexa.bendable.info/\">http://celexa.bendable.info/</a>\"&gt;celexa
+    20mg&lt;/a&gt; celexa withdrawal symptom\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://wellbutrin-sr.bendable.info/\">http://wellbutrin-sr.bendable.info/</a>\"&gt;wellbutrin
+    sr&lt;/a&gt;\n&lt;a href=\"<a class=\"reference\" href=\"/web/20100419192923/http://diflucan.bendable.info/\">http://diflucan.bendable.info/</a>\"&gt;diflucan
+    50mg&lt;/a&gt; buy Diflucan 90 pills x 200 mg o online\n&lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100419192923/http://zyrtec.bendable.info/\">http://zyrtec.bendable.info/</a>\"&gt;zyrtec&lt;/a&gt;
+    buy cod cheap Zyrtec 30 pills x 10 mg</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 

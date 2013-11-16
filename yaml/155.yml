@@ -1,0 +1,56 @@
+---
+:id: '155'
+:title: 情報オリンピック2007年度世界大会「坑夫」
+:comments:
+- :id: '5756'
+  :parent_id: '155'
+  :url: http://ja.doukaku.org/comment/5756
+  :user_name: yukoba
+  :user_url: /web/20081122155312/http://ja.doukaku.org/user/689/
+  :language: 
+  :time: 2008/02/15 04:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>中高生向けの情報オリンピックの世界大会2007年度の第2日目「坑夫」です。コンテストは2日間にて行われます。クロアチアにて開催されました。</p>\n<ul
+    class=\"simple\">\n<li>問題文： <a class=\"reference\" href=\"/web/20081122155312/http://www.ioi-jp.org/ioi/2007/problem/day2/miners-prob-j.pdf\">http://www.ioi-jp.org/ioi/2007/problem/day2/miners-prob-j.pdf</a>\n</li>\n<li>テストデータ：
+    <a class=\"reference\" href=\"/web/20081122155312/http://www.hsin.hr/ioi2007/index.php?page=tasks\">http://www.hsin.hr/ioi2007/index.php?page=tasks</a>\n</li>\n<li>問題一覧：
+    <a class=\"reference\" href=\"/web/20081122155312/http://www.ioi-jp.org/ioi/2007/problem/index.html\">http://www.ioi-jp.org/ioi/2007/problem/index.html</a>\n</li>\n<li>コンテスト概要：
+    <a class=\"reference\" href=\"/web/20081122155312/http://www.ioi-jp.org/ioi/2007/index.html\">http://www.ioi-jp.org/ioi/2007/index.html</a>\n</li>\n</ul>\n<p>「問題ごとに、プログラムの実行時間（や使用メモリ量）に制限が設定されています。」にご注意ください。本問では、制限時間1.5秒、メモリ制限16MBとなっています。</p>\n<p>入出力は標準入出力にて行います。</p>\n<p>採点は、テストデータにおいて正しい結果が返ってくるかで採点されます。出題時はテストデータの一部のみが公開されており、全てのデータは出題時には公開されていません。</p>\n\r\n\t"
+  :code: ''
+  :tags:
+  - 情報オリンピック
+  :references:
+    :url: 
+    :title: 
+- :id: '5782'
+  :parent_id: '155'
+  :url: http://ja.doukaku.org/comment/5782
+  :user_name: yukoba
+  :user_url: /web/20081122155312/http://ja.doukaku.org/user/689/
+  :language: Scala
+  :time: 2008/02/19 04:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  疑似コート、動的計画法の漸化式は以下の通りです。\r<br><br>-------------------------------------------------\r<br><br>動的計画法の漸化式\r<br>  list1(i) = i -&gt; i-iまでに炭坑1に届いた最後の品物２つ 1+3+9通り\r<br>  list2(i) = i -&gt; i-iまでに炭坑2に届いた最後の品物２つ\r<br>  sum(i, list1(i), list2(i)) = i～N-1の石炭の合計量の最大値\r<br>  漸化式\r<br>    sum(i, list1(i), list2(i)) = \r<br>      max(\r<br>        sum(i + 1, list1(i) :: goods(i), list2(i)) + value(goods(i), list1(i)),\r<br>        sum(i + 1, list1(i), list2(i) :: goods(i)) + value(goods(i), list2(i)))\r<br>    sum(N, any, any) = 0\r<br>  求める物 = sum(0, [], [])\r<br><br>-------------------------------------------------\r<br><br>擬似コード\r<br>  i &lt;- (N-1) to 1\r<br>    l1 &lt;- 13パターン\r<br>      l2 &lt;- 13パターン\r<br>        sum(i, l1, l2) を更新\r<br><br>-------------------------------------------------\r<br>"
+  :code: "object Miners extends Application {\n  val N = readInt\n  val foods = new
+    Array[byte](N)\n  for(i &lt;- 0 until N) {\n    def toNum(v:int):byte = {\n      if(v
+    == 'M') 1\n      else if(v == 'F') 2\n      else if(v == 'B') 3\n      else error(\"ありえない\")\n
+    \   }\n    foods(i) = toNum(System.in.read)\n  }\n  \n  var sum = new Array[int](256)\n
+    \ var sumNext = new Array[int](256)\n  val kouho = List(0, 1, 2, 3, 5, 6, 7, 9,
+    10, 11, 13, 14, 15)\n  for(i &lt;- (0 until N).reverse) {\n    val f = foods(i)\n
+    \   for(l1 &lt;- kouho) {\n      for(l2 &lt;- kouho) {\n        def value(f:int,
+    prev:int):int = {\n          val p1 = prev % 4\n          val p2 = prev / 4\n
+    \         if(p1 == 0 &amp;&amp; p2 == 0) {\n            return 1\n          }
+    else if(p2 == 0) {\n            if(p1 == f) return 1\n            else return
+    2\n          } else {\n            //println(\"p1 = \" + p1 + \", p2 = \" + p2
+    + \", f = \" + f)\n            if(p1 == p2 &amp;&amp; p2 == f) return 1\n            else
+    if(p1 != p2 &amp;&amp; p2 != f &amp;&amp; p1 != f) return 3\n            else
+    return 2\n          }\n        }\n        val v1 = sum(((l1 % 4)*4 + f) * 16 +
+    l2) + value(f, l1)\n        val v2 = sum(l1 * 16 + ((l2 % 4)*4 + f)) + value(f,
+    l2)\n        sumNext(l1 * 16 + l2) = Math.max(v1, v2)\n      }\n    }\n    val
+    temp = sum\n    sum = sumNext\n    sumNext = temp\n    //println(sum.toList)\n
+    \ }\n  println(sum(0))\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

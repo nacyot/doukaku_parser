@@ -1,0 +1,1700 @@
+---
+:id: '163'
+:title: データの整列
+:comments:
+- :id: '5839'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5839
+  :user_name: odz
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/212/
+  :language: 
+  :time: 2008/02/24 17:00 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>(x, y) の座標情報を以下の2種類の方法で整列する機能を実現してください。</p>\n<ul class=\"simple\">\n<li>(x,
+    y) の辞書順(まず x で昇順に整列して、x が同じデータに対して y で昇順に整列する)</li>\n<li>(0, 0) からの距離の昇順</li>\n</ul>\n<p>データの表現方法はタプルなり構造体/オブジェクトなり各自で適当に選んで下さい。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5878'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5878
+  :user_name: takuya_1st
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/725/
+  :language: JavaScript
+  :time: 2008/02/27 08:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \r\n\t"
+  :code: |
+    var _arr = [[1,2],[2,2],[3,2],[14,1],[2,1]];
+    WScript.Echo(  _arr.sort().join(" ") );
+    WScript.Echo(  _arr.sort( function(a,b){ return (a[0]* a[0]+ a[1]*a[1] )&gt;(b[0]* b[0]*+ b[1]*b[1]);} ).join(" ") );
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5862'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5862
+  :user_name: takatoh
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/189/
+  :language: OCaml
+  :time: 2008/02/27 05:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>OCamlで書いてみた。こんなんでいいのかな。</p>\n\r\n\t"
+  :code: |
+    type point = Poiont of float * float
+
+
+    let compare_point a b =
+      match (a, b) with
+        (Point (x1, y2), Point (x2, y2)) -&gt; if x1 = x2 then compare y1 y2
+                                                       else compare x1 x2
+
+    let distance = function
+        Point (x, y) -&gt; sqrt (x *. x +. y *. y)
+
+
+    let sort_by_dic = List.sort compare_point
+
+
+    let sort_by_dis = List.sort (fun a b -&gt; compare (distance a) (distance b))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6042'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/6042
+  :user_name: 匿名
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/4/
+  :language: SQL
+  :time: 2008/03/22 10:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  #5889 の答えとほとんど変わらないけど。\r<br>"
+  :code: |
+    --テーブル：POINTS
+    create table POINTS (
+      X number(10),
+      Y number(10)
+    );
+    --データ
+    insert into POINTS values (-2, 2);
+    insert into POINTS values (3, 2);
+    insert into POINTS values (1, -5);
+    insert into POINTS values (4, 5);
+    insert into POINTS values (1, -2);
+    --辞書順
+    select * from POINTS order by X, Y;
+    --距離順
+    select * from POINTS order by x*x + y*y;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5889'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5889
+  :user_name: 割と普通
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/581/
+  :language: C
+  :time: 2008/02/28 02:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>LINQ使って判定してます</p>\n\r\n\t"
+  :code: |
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    class MyPoint
+    {
+        public int x { get; set; }
+        public int y { get; set; }
+        public int dist { get; set; }
+        public override string ToString() { return "(" + x + "," + y + ")"; }
+    }
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            ArrayList list = new ArrayList();
+            Random rand = new Random();
+            int x = 0, y = 0;
+            for (int i = 0; i &lt;= 5; i++)
+            {
+                x = rand.Next(10);
+                y = rand.Next(10);
+                list.Add(new MyPoint { x = x, y = y, dist = x * x + y * y });
+            }
+
+            Console.WriteLine("----------元データ");
+            foreach (var point in list)
+            {
+                Console.WriteLine(point);
+            }
+
+            Console.WriteLine("----------辞書順ソート");
+            var query = from MyPoint point in list
+                        orderby point.x ascending, point.y ascending
+                        select point;
+            foreach (var point in query)
+            {
+                Console.WriteLine( point );
+            }
+
+            Console.WriteLine("----------距離順ソート");
+            query = from MyPoint point in list
+                        orderby point.dist ascending
+                        select point;
+            foreach (var point in query)
+            {
+                Console.WriteLine(point);
+            }
+
+            Console.ReadLine();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5891'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5891
+  :user_name: Jlake
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/658/
+  :language: PHP
+  :time: 2008/02/28 09:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\"># php test.php \r\n(x, y) 昇順：\r\n(0, 0)\r\n(1,
+    0)\r\n(1, 1)\r\n(2, 1)\r\n(2, 2)\r\n(2, 9)\r\n(3, 1)\r\n(3, 2)\r\n(3, 3)\r\n\r\n(0,
+    0) からの距離の昇順：\r\n(0, 0) distance=0\r\n(1, 0) distance=1\r\n(1, 1) distance=1.41\r\n(2,
+    1) distance=2.24\r\n(2, 2) distance=2.83\r\n(3, 1) distance=3.16\r\n(3, 2) distance=3.61\r\n(3,
+    3) distance=4.24\r\n(2, 9) distance=9.22</pre>\r\n\t"
+  :code: |
+    &lt;?php
+    function sortXY($arrXY, $byDistance = false) {
+        $arrSort = array();
+        foreach ( $arrXY as $XY ) {
+            $key = $byDistance ? $XY[0]*$XY[0] + $XY[1]*$XY[1] : $XY[0];
+            if(!isset($arrSort[$key])) {
+                $arrSort[$key] = array($XY);
+            } else {
+                $pos = count($arrSort[$key]);
+                foreach ( $arrSort[$key] as $i=&gt;$sameX ) {
+                    if($XY[1] &lt; $sameX[1]) {
+                        $pos = $i;
+                        break;
+                    }
+                }
+                array_splice($arrSort[$key], $pos, 0, array($XY));
+            }
+        }
+
+        ksort($arrSort);
+
+        $arrResult = array();
+        foreach ( $arrSort as $arrTmp ) {
+            foreach ( $arrTmp as $XY ) {
+                $arrResult[] = $XY;
+            }
+        }
+
+        return $arrResult;
+    }
+
+
+    $arrXY = array(
+        array(0, 0),
+        array(3, 1),
+        array(2, 9),
+        array(2, 1),
+        array(2, 2),
+        array(1, 0),
+        array(1, 1),
+        array(3, 3),
+        array(3, 2),
+    );
+
+    $arrAscXY = sortXY($arrXY);
+    echo "(x, y) 昇順：\n";
+    foreach($arrAscXY as $XY) {
+        list($X, $Y) = $XY;
+        echo "($X, $Y)\n";
+    }
+    echo "\n(0, 0) からの距離の昇順：\n";
+    $arrAscDist = sortXY($arrXY, true);
+    foreach($arrAscDist as $XY) {
+        list($X, $Y) = $XY;
+        echo "($X, $Y) distance=". round(sqrt($X*$X + $Y*$Y), 2). "\n";
+    }
+    ?&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5903'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5903
+  :user_name: nobsun
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/03/01 06:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <div class=\"section\">\n<p>複素数のライブラリを利用する\r</p>\n<p>sort3 はおまけで、(0,0)からの距離が等しいときはx軸との偏角(-π＜θ≦π)で昇順でソート\r</p>\n</div>\r\n\t"
+  :code: |
+    import Control.Arrow
+    import Data.Complex
+    import Data.Function
+    import Data.List
+
+    sort1,sort2,sort3 :: RealFloat a =&gt; [(a,a)] -&gt; [(a,a)]
+    sort1 = sort
+    sort2 = sortBy (compare `on` magnitude . uncurry (:+))
+    sort3 = sortBy (compare `on` (magnitude &amp;&amp;&amp; phase) . uncurry (:+))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5867'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5867
+  :user_name: 匿名
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/4/
+  :language: JavaScript
+  :time: 2008/02/27 06:17 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\"></pre>\r\n\t"
+  :code: |
+    function Point(x, y){
+        this.x=x;
+        this.y=y;
+        this.size=Math.sqrt(x*x+y*y);
+        this.toString=function(){ return "(" + this.x + "," + this.y + ")" }
+    }
+
+    var data = new Array(
+        new Point(0,0),
+        new Point(1,0),
+        new Point(2,0),
+        new Point(0,1),
+        new Point(1,1),
+        new Point(2,1),
+        new Point(0,2),
+        new Point(1,2),
+        new Point(2,2)
+    );
+
+    data.sort(function(a,b){ return(a.size - b.size) });
+    print(data.join());
+    data.sort(function(a,b){ return (a.x == b.x) ? a.y - b.y :a.x - b.x });
+    print(data.join());
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5890'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5890
+  :user_name: Jlake
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/658/
+  :language: PHP
+  :time: 2008/02/28 08:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\"># php test.php \r\n(0, 0)\r\n(1, 1)\r\n(2,
+    0)\r\n(2, 1)\r\n(3, 1)\r\n(3, 2)\r\n(3, 3)</pre>\r\n\t"
+  :code: |
+    &lt;?php
+    function sortXY($arrXY) {
+        $arrSort = array();
+        foreach ( $arrXY as $XY ) {
+            $key = $XY[0];
+            if(!isset($arrSort[$key])) {
+                $arrSort[$key] = array($XY);
+            } else {
+                $pos = count($arrSort[$key]);
+                foreach ( $arrSort[$key] as $i=&gt;$sameX ) {
+                    if($XY[1] &lt; $sameX[1]) {
+                        $pos = $i;
+                        break;
+                    }
+                }
+                array_splice($arrSort[$key], $pos, 0, array($XY));
+            }
+        }
+
+        ksort($arrSort);
+
+        $arrResult = array();
+        foreach ( $arrSort as $arrTmp ) {
+            foreach ( $arrTmp as $XY ) {
+                $arrResult[] = $XY;
+            }
+        }
+
+        return $arrResult;
+    }
+
+    $arrXY = array(
+        array(0, 0),
+        array(3, 1),
+        array(2, 1),
+        array(2, 0),
+        array(1, 1),
+        array(3, 3),
+        array(3, 2),
+    );
+
+    $arrAscXY = sortXY($arrXY);
+    foreach($arrAscXY as $XY) {
+        echo '('.join($XY, ', ').")\n";
+    }
+    ?&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5859'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5859
+  :user_name: yasuhito
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/738/
+  :language: Ruby
+  :time: 2008/02/27 05:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">Ruby です。\r\n\r\nset = [ [ 1, 2 ], [ 1, 3
+    ], [ 2, 8 ], [ 9, 5 ], [ 6, 8 ], [ 0, 2 ] ]\r\ninclude Coord\r\np sort_lexical(
+    set )\r\np sort_distance( set )\r\n</pre>\r\n\t"
+  :code: |
+    module Coord
+      def sort_lexical coords
+        coords.sort do | a, b |
+          if a[ 0 ] == b[ 0 ]
+            a[ 1 ] &lt;=&gt; b[ 1 ]
+          else
+            a[ 0 ] &lt;=&gt; b[ 0 ]
+          end
+        end
+      end
+
+
+      def sort_distance coords
+        coords.sort do | a, b |
+          a[ 0 ] * a[ 0 ] + a[ 1 ] * a[ 1 ] &lt;=&gt; b[ 0 ] * b[ 0 ] + b[ 1 ] * b[ 1 ]
+        end
+      end
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5860'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5860
+  :user_name: 匿名
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/4/
+  :language: Haskell
+  :time: 2008/02/27 05:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \r\n\t"
+  :code: "import Data.List\n\nlexicalOrder (x1, y1) (x2, y2)\n  | x1 &lt; x2   = LT\n
+    \ | x1 &gt; x2   = GT\n  | y1 &lt; y2   = LT\n  | y1 &gt; y2   = GT\n  | otherwise
+    = EQ\n\nlengthOrder (x1, y1) (x2, y2) = \n  let length x y = sqrt $ x**2 + y**2
+    in\n    compare (length x1 y1) (length x2 y2)\n\nsample = [(1,1), (3,3), (0,0),
+    (0,3), (4,0)]\n\nmain = do\n  print $ sortBy lexicalOrder sample\n  print $ sortBy
+    lengthOrder  sample\n\n-- [(0.0,0.0),(0.0,3.0),(1.0,1.0),(3.0,3.0),(4.0,0.0)]\n--
+    [(0.0,0.0),(1.0,1.0),(0.0,3.0),(4.0,0.0),(3.0,3.0)]\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5877'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5877
+  :user_name: yohei
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/415/
+  :language: Prolog
+  :time: 2008/02/27 07:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>辞書順の方は，組み込みで．\n距離の方は，距離-(X,Y)　のペアを作ってソート．</p>\n\r\n\t"
+  :code: "distance((X,Y), D) :- D is X * X + Y * Y.\n\ndistance_sort(L, S) :-\n    map_list_to_pairs(distance,
+    L, P),\n    keysort(P, SP), pairs_values(SP, S).\n    \n:-  L = [(1,2), (3,4),
+    (1,3), (2,4), (1,8)],\n    msort(L, S1), writeln(S1),\n    distance_sort(L, S2),
+    writeln(S2).\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6143'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/6143
+  :user_name: syat
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/766/
+  :language: BASIC
+  :time: 2008/04/04 23:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>バブルソートってこんな感じだったかな。</p>\n\r\n\t"
+  :code: |
+    100   DATANUM = 5  ' データ個数
+    110 'データX、データY、並び替え配列
+    120   dim x(DATANUM), y(DATANUM), idx(DATANUM)
+    130 '関数：データ０と１が辞書順に整列してない場合に真
+    140   def fnNoSort0(x0,y0,x1,y1) = (x0 &gt; x1) or ((x0 &lt;= x1) and (y0 &gt; y1))
+    150 '関数：データ０と１が距離順に整列してない場合に真
+    160   def fnNoSort1(x0,y0,x1,y1) = (x0 * x0 + y0 * y0 ) &gt; (x1 * x1 + y1 * y1)
+    170 '関数：整列後のX, Y を取得する
+    180   def fnX(n) = dx(idx(n))
+    190   def fnY(n) = dy(idx(n))
+    200 'メイン
+    210   gosub *DataLoad
+    220   mode = 0 : gosub *Sort : print "辞書順" : gosub *PrintData
+    230   mode = 1 : gosub *Sort : print "距離順" : gosub *PrintData
+    240   end
+    250 'データロード
+    260 *DataLoad
+    270   for i = 1 to DATANUM
+    280     read dx(i), dy(i)
+    290     idx(i) = i
+    300   next i
+    310   return
+    320 'データ表示
+    330 *PrintData
+    340   for i = 1 to DATANUM
+    350     print fnX(i), fnY(i)
+    360   next i
+    370   return
+    380 'ソート
+    390 *Sort
+    400   for i = 1 to DATANUM - 1
+    410     for j = i + 1 to DATANUM
+    420       if mode = 0 and fnNoSort0(fnX(i),fnY(i),fnX(j),fnY(j)) then *doSwap
+    430       if mode = 1 and fnNoSort1(fnX(i),fnY(i),fnX(j),fnY(j)) then *doSwap
+    440       goto *goNext
+    450      *doSwap
+    460       swap idx(i), idx(j)
+    470      *goNext
+    480     next j
+    490   next i
+    500   return
+    510 'データ
+    520 data 1,2, 3,4, 1,3, 2,4, 1,8
+  :tags: []
+  :references:
+    :url: /web/20101203115625/http://ja.wikipedia.org/wiki/%E3%83%90%E3%83%96%E3%83%AB%E3%82%BD%E3%83%BC%E3%83%88
+    :title: バブルソート - Wikipedia
+- :id: '5866'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5866
+  :user_name: 匿名
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/02/27 05:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \r\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;vector&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;iterator&gt;
+    #include &lt;cmath&gt;
+
+    struct Pos
+    {
+        double x;
+        double y;
+        Pos() : x(0), y(0) {}
+        Pos(double x, double y) : x(x), y(y) {}
+        double length() const { return std::sqrt(x*x + y*y); }
+    };
+
+    bool lexicalOrder(const Pos&amp; lhs, const Pos&amp; rhs)
+    {
+        return (lhs.x  &lt; rhs.x) ||((lhs.x == rhs.x) &amp;&amp; (lhs.y &lt; rhs.y));
+    }
+
+    bool lengthOrder(const Pos&amp; lhs, const Pos&amp; rhs)
+    {
+        return lhs.length() &lt; rhs.length();
+    }
+
+    std::ostream&amp; operator &lt;&lt; (std::ostream&amp; out, const Pos&amp; pos)
+    {
+        return out &lt;&lt; '(' &lt;&lt; pos.x &lt;&lt;',' &lt;&lt; pos.y &lt;&lt; ')';
+    }
+
+    int main(int, char* [])
+    {
+        std::vector&lt;Pos&gt; a;
+        a.push_back(Pos(1, 1));
+        a.push_back(Pos(3, 3));
+        a.push_back(Pos(0, 0));
+        a.push_back(Pos(0, 3));
+        a.push_back(Pos(4, 0));
+
+        std::sort(a.begin(), a.end(), lexicalOrder);
+        std::copy(a.begin(), a.end(), std::ostream_iterator&lt;Pos&gt;(std::cout, " "));
+        std::cout &lt;&lt; "\n";
+        // (0,0) (0,3) (1,1) (3,3) (4,0)
+
+        std::sort(a.begin(), a.end(), lengthOrder);
+        std::copy(a.begin(), a.end(), std::ostream_iterator&lt;Pos&gt;(std::cout, " "));
+        std::cout &lt;&lt; "\n";
+        // (0,0) (1,1) (0,3) (4,0) (3,3)
+
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5880'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5880
+  :user_name: '[1..100]&amp;gt;&amp;gt;=pen'
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2008/02/27 09:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\"></pre>\r\n\t"
+  :code: |
+    import List
+
+    sortByMagnitude ps = map snd $ sort $ map (\z@(x,y) -&gt; (x*x+y*y, z)) ps
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5856'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5856
+  :user_name: yuin
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/02/27 04:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">Scalaで。\r\n\r\n    CoordSort.lexical(List((1,2),
+    (3,4), (1,3), (2,4), (1,8))).toList\r\n    // =&gt; List((1,2), (1,3), (1,8),
+    (2,4), (3,4))\r\n\r\n    CoordSort.fromOrigin(List((1,2), (3,4), (1,3), (2,4),
+    (1,8))).toList\r\n    // =&gt; List((1,2), (1,3), (2,4), (3,4), (1,8))\r\n</pre>\r\n\t"
+  :code: "object CoordSort {\n  import scala.util.Sorting.stableSort\n  type Coord
+    = Pair[int,int]\n\n  def sort(f:(int, int, int, int) =&gt; boolean, lst:Seq[Coord])
+    = {\n    stableSort(lst, (a:Coord, b:Coord) =&gt; f(a._1, a._2, b._1, b._2))\n
+    \ }\n\n  val lexical = Function.curried(sort _)((ax, ay, bx, by) =&gt; \n                  if(ax
+    == bx) { ay &lt; by } else { ax &lt; bx }\n                )\n\n  val fromOrigin
+    = Function.curried(sort _)((ax, ay, bx, by) =&gt; \n                     (ax*ax
+    + ay*ay) &lt; (bx*bx + by*by)\n                   )\n\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5857'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5857
+  :user_name: heita
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/713/
+  :language: Ruby
+  :time: 2008/02/27 04:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">別に面白いことは何もありませんが、普通に。\r\n   pairlist = []\r\n
+    \  10.times { pairlist.push(LexicalPair.new(rand(10), rand(10))) }\r\n   puts
+    pairlist.sort\r\nとかして遊びます。\r\n</pre>\r\n\t"
+  :code: |
+    class Pair
+      attr_reader :x, :y
+      def initialize(x,y)
+        @x, @y = x, y
+      end
+      def to_s
+        "(#{@x},#{@y})"
+      end
+    end
+
+    class LexicalPair &lt; Pair
+      include Comparable
+      def &lt;=&gt;(p)
+        @x == p.x ? @y &lt;=&gt; p.y : @x &lt;=&gt; p.x
+      end
+    end
+
+    class PolarPair &lt; Pair
+      include Comparable
+      def &lt;=&gt;(p)
+        (@x**2 + @y**2) &lt;=&gt; (p.x**2 + p.y**2)
+      end
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5870'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5870
+  :user_name: Sixeight
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/710/
+  :language: Haskell
+  :time: 2008/02/27 06:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>括弧多めで。</p>\n\r\n\t"
+  :code: "import Data.List\n\nsample = [(1, 1), (3, 3), (0, 0), (0, 3), (4, 0)]\n
+    \ \nmain = do (print . sort) sample\n          (print . sortBy (\\(a, b) (c, d)
+    -&gt; compare (a**2+b**2) (c**2+d**2))) sample\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5872'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5872
+  :user_name: いげ太
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/399/
+  :language: OCaml
+  :time: 2008/02/27 06:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>やっつけコード。</p>\n\r\n\t"
+  :code: |
+    let dict_sort = List.sort (fun (x1,x2) (y1,y2) -&gt; match x1 - y1 with 0 -&gt; x2 - y2 | d -&gt; d);;
+    let dist_sort = List.sort (fun (x1,x2) (y1,y2) -&gt; (x1*x1 + x2*x2) - (y1*y1 + y2*y2));;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5875'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5875
+  :user_name: horiuchi
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/02/27 07:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Javaらしく、Comparatorを実装しました。</p>\n\r\n\t"
+  :code: |
+    import java.util.ArrayList;
+    import java.util.Collections;
+    import java.util.Comparator;
+    import java.util.List;
+    import java.util.Random;
+
+    public class Sample163 {
+        public static void main(String[] args) {
+            Random random = new Random();
+            List&lt;Point&gt; list = new ArrayList&lt;Point&gt;();
+            for (int index = 0, count = 10; index &lt; count; index++) {
+                list.add(new Point(random.nextInt(10), random.nextInt(10)));
+            }
+
+            System.out.print("original  : ");
+            System.out.println(list.toString());
+
+            Collections.sort(list, new DictionaryComparator());
+            System.out.print("dictionary: ");
+            System.out.println(list.toString());
+
+            Collections.sort(list, new DistanceComparator());
+            System.out.print("distance  : ");
+            System.out.println(list.toString());
+        }
+    }
+
+    class Point {
+        public final int x;
+        public final int y;
+
+        public Point(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        @Override public String toString() {
+            return "(" + x + "," + y + ")";
+        }
+    }
+
+    class DictionaryComparator implements Comparator&lt;Point&gt; {
+        @Override
+        public int compare(Point o1, Point o2) {
+            int result = Integer.valueOf(o1.x).compareTo(o2.x);
+            if (result == 0) {
+                result = Integer.valueOf(o1.y).compareTo(o2.y);
+            }
+            return result;
+        }
+    }
+
+    class DistanceComparator implements Comparator&lt;Point&gt; {
+        @Override
+        public int compare(Point o1, Point o2) {
+            return Integer.valueOf(o1.x * o1.x + o1.y * o1.y).compareTo(o2.x * o2.x + o2.y * o2.y);
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5863'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5863
+  :user_name: lieutar
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/618/
+  :language: Perl
+  :time: 2008/02/27 05:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>どないだ</p>\n\r\n\t"
+  :code: |
+    #! /bin/perl
+    use warnings;
+    use strict;
+    use Data::Dumper;
+    my @data = ( [1,2],[5,8],[-2,5] ,[1,6],[4,7]);
+
+    print "辞書順\n";
+    print Dumper [ sort { $a-&gt;[0] &lt;=&gt; $b-&gt;[0] || $a-&gt;[1] &lt;=&gt; $b-&gt;[1] } @data ];
+    print "距離順\n";
+    print Dumper [sort { $a-&gt;[0] ** 2 + $a-&gt;[1] ** 2 &lt;=&gt; $b-&gt;[0] ** 2 + $b-&gt;[1] ** 2} @data];
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5885'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5885
+  :user_name: pooq
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/606/
+  :language: J
+  :time: 2008/02/27 13:32 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">そのつもりはなかったけど、ペアのデータだけでなく\r\n複数個のデータの組でも使えた。\r\n\r\n
+    \  data1=.5 2$?#~10\r\n   ('data1';'dic';'dis'),: data1; (dic ; dis) data1 \r\n+-----+---+---+\r\n|data1|dic|dis|\r\n+-----+---+---+\r\n|
+    6 1 |0 8|6 1|\r\n| 0 8 |0 9|5 4|\r\n| 8 7 |5 4|0 8|\r\n| 0 9 |6 1|0 9|\r\n| 5
+    4 |8 7|8 7|\r\n+-----+---+---+\r\n\r\n   data2=.5 3$?#~15\r\n   ('data2';'dic';'dis'),:
+    data2; (dic ; dis) data2 \r\n+--------+--------+--------+\r\n| data2  |  dic   |
+    \ dis   |\r\n+--------+--------+--------+\r\n| 2  4  5| 1  4  6| 2  4  5|\r\n|14
+    \ 1  8| 2  4  5| 1  4  6|\r\n|11 10 13| 4  7  1| 4  7  1|\r\n| 1  4  6|11 10 13|14
+    \ 1  8|\r\n| 4  7  1|14  1  8|11 10 13|\r\n+--------+--------+--------+\r\n</pre>\r\n\t"
+  :code: |
+    dic =: /:~
+    dis =: 3 :'y /: +/|:*: y'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6800'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/6800
+  :user_name: kkobayashi
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2008/07/22 10:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>「辞書順」の別解として、シンプルにorder()を使った2項目のソートではどうでしょう。</p>\n<p>あと、個人的好みですが、自分ならこういう場合はsort.list()使っちゃいますね。</p>\n\r\n\t"
+  :code: |
+    df[order(df$x, df$y),]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5876'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5876
+  :user_name: まさぽん
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/711/
+  :language: Scheme
+  :time: 2008/02/27 07:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">実行例:\r\ngosh&gt; (sort-c '((1 . 2) (3 . 5)
+    (4 . 2) (3 . 1) (2 . 7)) 'dic)\r\n((1 . 2) (2 . 7) (3 . 1) (3 . 5) (4 . 2))\r\n\r\ngosh&gt;
+    (sort-c '((1 . 2) (3 . 5) (4 . 2) (3 . 1) (2 . 7)) 'dist)\r\n((1 . 2) (3 . 1)
+    (4 . 2) (3 . 5) (2 . 7))</pre>\r\n\t"
+  :code: |
+    (define (sort-c ls sym)
+      (cond ((eq? sym 'dic)
+             (sort ls (lambda (x y) (if (= (car x) (car y)) (&lt; (cdr x) (cdr y)) (&lt; (car x) (car y))))))
+            ((eq? sym 'dist)
+             (sort ls (lambda (x y) (&lt; (sqrt (+ (expt (car x) 2) (expt (cdr x) 2)))
+                                       (sqrt (+ (expt (car y) 2) (expt (cdr y) 2)))))))
+            (else (error "ソートのしかたを指定してください。"))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5904'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5904
+  :user_name: xor
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/707/
+  :language: Perl
+  :time: 2008/03/01 08:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  Data::Dumperを使わないversionです。\r\nサンプルデータはhttp://ja.doukaku.org/comment/5863/から拝借致しました。\r\n\t"
+  :code: |
+    #!/usr/bin/env perl
+
+    use strict;
+    use warnings;
+    use Carp;
+
+    my @aoDatas = ([1,2],[5,8],[-2,5] ,[1,6],[4,7]);
+    &amp;out('DICTIONARY:',sort{$a-&gt;[0] &lt;=&gt; $b-&gt;[0] || $a-&gt;[1] &lt;=&gt; $b-&gt;[1]}@aoDatas);
+    &amp;out('DISTANCE:',sort{$a-&gt;[0]**2+$a-&gt;[1]**2 &lt;=&gt; $b-&gt;[0]**2+$b-&gt;[1]**2}@aoDatas);
+    exit;
+
+    sub out{
+      print shift;
+      print "\n".join(',',map{'('.$_-&gt;[0].','.$_-&gt;[1].')'}@_)."\n";
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5905'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5905
+  :user_name: schrodin
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/743/
+  :language: Java
+  :time: 2008/03/01 08:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">使う時の手軽さを考えるとこのくらいかなと思っています．\r\n一般によく使われる大小関係があるならば，\r\nComparable
+    の実装も加えたほうがいいかもしれません．\r\n\r\n13, 20行目はオーバーフローなどが起こるかも知れないので，\r\nもう少しまじめに書いたほうがよさそうです．\r\n\r\n\r\n$
+    javac Point.java\r\n$ java Point\r\n[(0,1), (1,1), (1,0), (1,2), (2,0), (0,0),
+    (2,1), (0,2), (2,2)]\r\n[(0,0), (0,1), (0,2), (1,0), (1,1), (1,2), (2,0), (2,1),
+    (2,2)]\r\n[(0,0), (0,1), (1,0), (1,1), (0,2), (2,0), (1,2), (2,1), (2,2)]\r\n</pre>\r\n\t"
+  :code: "// Point.java\n\nimport java.util.*;\n\nclass Point {\n    public int x,
+    y;\n    \n    public Point(int x, int y){\n        this.x = x;  this.y = y;\n
+    \   }\n    \n    public static final Comparator&lt;Point&gt; CMP_LEXICO = \n        new
+    Comparator&lt;Point&gt;(){\n            public int compare(Point p, Point q){\n
+    \               return p.x == q.x ? p.y - q.y : p.x - q.x;\n            }\n        };\n
+    \   \n    public static final Comparator&lt;Point&gt; CMP_DIST =\n        new
+    Comparator&lt;Point&gt;(){\n            public int compare(Point p, Point q){\n
+    \               return (p.x * p.x + p.y * p.y) - (q.x * q.x + q.y * q.y);\n            }\n
+    \       };\n    \n    public String toString(){\n        return \"(\" + x + \",\"
+    + y + \")\";\n    }\n    \n    // for test\n    public static void main(String
+    argv[]){\n        List&lt;Point&gt; points = new ArrayList&lt;Point&gt;();\n        \n
+    \       for(int i=0; i&lt;3; i++){\n            for(int j=0; j&lt;3; j++){\n                Point
+    pt = new Point(i,j);\n                points.add(pt);\n            }\n        }\n
+    \       \n        Collections.shuffle(points);\n        System.out.println(points);\n
+    \       \n        Collections.sort(points, Point.CMP_LEXICO);\n        System.out.println(points);\n
+    \       \n        Collections.sort(points, Point.CMP_DIST);\n        System.out.println(points);\n
+    \   }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5873'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5873
+  :user_name: Sixeight
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/710/
+  :language: Other
+  :time: 2008/02/27 07:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>２値の配列で座標を表現して、その配列をソートします。</p>\n\r\n\t"
+  :code: |
+    coordinates = Array.new(10) { [rand(10), rand(10)]}
+
+    # by dictionary
+    p coordinates.sort
+    # by distance
+    p coordinates.sort {|(x1, y1), (x2, y2)| (x1**2 + y1**2) &lt;=&gt; (x2**2 + y2**2) }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5879'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5879
+  :user_name: sumim
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/02/27 08:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Squeak Smalltalk では、#asSortedCollection: をコールすることで、レシーバであるコレクションをソート済みコレクション（a
+    SortedCollection）に変換できます。並び替えの条件は、引数として添えるブロック（無名関数）で与えます。</p>\n<p>#r は、レシーバであるポイント（座標オブジェクト。x@y
+    で生成）の原点（0@0）からの距離を返すメソッドです。</p>\n\r\n\t"
+  :code: |
+    | points |
+    points := (1 to: 10) collect: [:each | 10 atRandom @ 10 atRandom].
+    ^{  points asSortedCollection: [:a :b | a x &lt; b x or: [a x = b x and: [a y &lt; b y]]].
+        points asSortedCollection: [:a :b | a r &lt; b r]}
+
+    "=&gt; an Array(
+        a SortedCollection(2@4 2@8 3@2 3@6 4@9 6@10 8@1 8@1 10@6 10@10)
+        a SortedCollection(3@2 2@4 3@6 8@1 8@1 2@8 4@9 10@6 6@10 10@10)) "
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5883'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5883
+  :user_name: 匿名
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/4/
+  :language: Lua
+  :time: 2008/02/27 10:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">昨日から使い始めたLuaで投稿</pre>\r\n\t"
+  :code: |
+    printt = function(t)
+      for k, v in pairs(t) do print(string.format('{%d, %d}', v[1], v[2])) end
+      print()
+    end
+
+    a = {{1,2}, {3,4}, {1,3}, {2,4}, {1,8}}
+    printt(a)
+    table.sort(a, function(b, c) return b[1] &lt; c[1] or (b[1] == c[1] and b[2] &lt; c[2]) end)
+    printt(a)
+    table.sort(a, function(b, c) return b[1]^2 + b[2]^2 &lt; c[1]^2 + c[2]^2 end)
+    printt(a)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6472'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/6472
+  :user_name: genzou
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/06/12 14:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>もともとgroovyには\nソート用の拡張メソッドがいくつかあるので、\n簡単にソートできます。\n（いずれも１行でした。）</p>\n\r\n\t"
+  :code: |
+    // 準備
+    def output(comment, list){
+        println "■${comment}■"
+        def i = 1
+        list.each{
+            println "${i++}".padLeft(2) + " --- ${it}"
+        }
+    }
+
+    def list = []
+    for( i in 1..10 ){
+        list &lt;&lt; [(int)(Math.random()*100), (int)(Math.random()*100)]
+    }
+    output("初期データ", list)
+
+    // 本題（２行だけｗ）
+    output("辞書順ソート", list.sort())
+    output("距離ソート", list.sort{ it[0]*it[0] + it[1]*it[1] })
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5882'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5882
+  :user_name: mootoh
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/718/
+  :language: C
+  :time: 2008/02/27 10:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>座標の値が不変なら、長さをキャッシュして毎回計算しないようにしますよね。(蛇足か...)</p>\n\r\n\t"
+  :code: "% diff -u 5866.cpp.orig 5866.cpp\n--- 5866.cpp.orig    2008-02-27 19:06:45.000000000
+    +0900\n+++ 5866.cpp    2008-02-27 19:10:30.000000000 +0900\n@@ -8,9 +8,8 @@\n
+    {\n     double x;\n     double y;\n-    Pos() : x(0), y(0) {}\n-    Pos(double
+    x, double y) : x(x), y(y) {}\n-    double length() const { return std::sqrt(x*x
+    + y*y); }\n+    double length;\n+    Pos(double x, double y) : x(x), y(y), length(std::sqrt(x*x
+    + y*y)) {}\n };\n \n bool lexicalOrder(const Pos&amp; lhs, const Pos&amp; rhs)\n@@
+    -20,7 +19,7 @@\n \n bool lengthOrder(const Pos&amp; lhs, const Pos&amp; rhs)\n
+    {\n-    return lhs.length() &lt; rhs.length();\n+    return lhs.length &lt; rhs.length;\n
+    }\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5997'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5997
+  :user_name: Nemo
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/685/
+  :language: PostScript
+  :time: 2008/03/10 16:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  PostScript で。\r\n比較手続の定義を変えれば他の順で並べるのも可。バブルソートですが、スタックがぐるぐるまわります...\r\n\t"
+  :code: |
+    %!PS
+
+    /CompareXY { % [x1 y1] [x2 y2] CompareXY x2-x1 (or y2-y1)
+        2 copy 0 get exch 0 get sub % [x1 y1] [x2 y2] x2-x1
+        dup 0 eq {
+            pop 1 get exch 1 get sub % y2-y1
+        } {
+            exch pop exch pop
+        } ifelse
+    } bind def
+
+    /CompareDistance { % [x1 y1] [x2 y2] CompareDistance r2^2-r1^2
+        dup 0 get dup mul exch 1 get dup mul add exch
+        dup 0 get dup mul exch 1 get dup mul add sub
+    } bind def
+
+    /Sort { % [[x y] [x1 y1] Array Data ] {CompareFunction}  Sort [ArrayData]
+        cvx [ 3 -1 roll
+        aload length
+        % func -mark- [] [] ... [] len
+        -1 2 { % func -mark- [] [] ... [] len2
+            -1 2 {
+                3 1 roll
+                2 copy counttomark 1 add index exec  %% Compare
+                0 gt { exch } if
+                3 -1 roll
+                1 roll
+            } for
+            counttomark 1 roll
+        } for
+        counttomark 1 roll
+        ] exch pop
+    } bind def
+
+    % ------------ Test Code ---------------
+    /TestSample [
+        [1 3]
+        [2 4]
+        [3 1]
+        [2 2]
+        [0 2]
+        [2 0]
+    ] def
+
+    TestSample /CompareXY Sort ==
+
+    TestSample /CompareDistance Sort ==
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5871'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5871
+  :user_name: 匿名
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/02/27 06:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>PHPをOtherとして投稿してしまいました。すいません。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5864'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5864
+  :user_name: こう。
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2008/02/27 05:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">シンプルにクイックソートで。</pre>\r\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+
+    typedef struct {
+        int x;
+        int y;
+    } point;
+
+    int compare_val(const point *a, const point *b){
+        if (a-&gt;x==b-&gt;x){
+            return a-&gt;y-b-&gt;y;
+        }else{
+            return a-&gt;x-b-&gt;x;
+        }
+    }
+
+    int compare_dist(const point *a, const point *b){
+        long dist_a,dist_b;
+        dist_a=a-&gt;x*a-&gt;x+a-&gt;y*a-&gt;y;
+        dist_b=b-&gt;x*b-&gt;x+b-&gt;y*b-&gt;y;
+
+        if(dist_a==dist_b){
+            return compare_val(a,b);
+        }else{
+            return dist_a-dist_b;
+        }
+    }
+
+    int main(){
+        point data1[]={
+            {0,0},
+            {1,0},
+            {2,0},
+            {0,1},
+            {1,1},
+            {2,1},
+            {0,2},
+            {1,2},
+            {2,2},
+        };
+        point data2[]={
+            {0,0},
+            {1,0},
+            {2,0},
+            {0,1},
+            {1,1},
+            {2,1},
+            {0,2},
+            {1,2},
+            {2,2},
+        };
+        qsort(data1, sizeof(data1)/sizeof(point), sizeof(point), (int (*)(const void*, const void*))compare_val);
+        qsort(data2, sizeof(data2)/sizeof(point), sizeof(point), (int (*)(const void*, const void*))compare_dist);
+
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5869'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5869
+  :user_name: 匿名
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/4/
+  :language: Other
+  :time: 2008/02/27 06:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \r\n\t"
+  :code: |
+    &lt;?php
+    #元データ
+    $list = array(
+        array( "x"=&gt;3,"y"=&gt;3)
+        ,array( "x"=&gt;2,"y"=&gt;10)
+        ,array( "x"=&gt;2,"y"=&gt;1)
+        ,array( "x"=&gt;1,"y"=&gt;2)
+        ,array( "x"=&gt;1,"y"=&gt;1)
+        ,array( "x"=&gt;3,"y"=&gt;1)
+        ,array( "x"=&gt;1,"y"=&gt;10)
+    );
+
+    #辞書順
+    usort(
+        $list,
+        create_function(
+            '$a,$b',
+            'return ($a["x"] == $b["x"]) ? ($a["y"] &gt; $b["y"]) : ($a["x"] &gt; $b["x"] );'
+        )
+    );
+    var_dump($list);
+    #距離順
+    usort(
+        $list,
+        create_function(
+            '$a,$b',
+            'return pow($a["x"],2)+pow($a["y"],2) &gt; pow($b["x"],2)+pow($b["y"],2);'
+        )
+    );
+    var_dump($list);
+    ?&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5853'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5853
+  :user_name: SiroKuro
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/540/
+  :language: C
+  :time: 2008/02/27 03:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  こんなかんじでいいのかな？\r\n\t"
+  :code: "using System;\nusing System.Collections.Generic;\nstatic class Program {\n
+    \   static void Main(String[] args) {\n        List&lt;Pair&gt; plist = new List&lt;Pair&gt;();\n
+    \       Random rand = new Random();\n        for(int i = 0; i &lt; 10; i++) plist.Add(new
+    Pair(rand.Next(5), rand.Next(5)));\n        Console.WriteLine(\"----- 元データ\");\n
+    \       foreach(Pair p in plist) Console.WriteLine(p);\n        \n        Console.WriteLine(\"-----
+    辞書順でソート\");\n        plist.Sort(delegate(Pair p1, Pair p2) {\n            return
+    p1.x != p2.x ? p1.x.CompareTo(p2.x) : p1.y.CompareTo(p2.y);\n        });\n        foreach(Pair
+    p in plist) Console.WriteLine(p);\n        \n        Console.WriteLine(\"-----
+    距離順でソート\");\n        plist.Sort(delegate(Pair p1, Pair p2) {\n            return
+    (p1.x * p1.x + p1.y * p1.y).CompareTo(p2.x * p2.x + p2.y * p2.y);\n        });\n
+    \       foreach(Pair p in plist) Console.WriteLine(p);\n    }\n}\nclass Pair {\n
+    \   public readonly int x, y;\n    public Pair(int x, int y) {\n        this.x
+    = x; this.y = y;\n    }\n    public override string ToString() {\n        return
+    \"(\" + x + \", \" + y + \")\";\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5884'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5884
+  :user_name: mono
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/398/
+  :language: Java
+  :time: 2008/02/27 11:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>このソートのためだけにトップレベルにクラスを定義するのが納得いかないで，ローカルクラスを使いました．無名クラスを使用しなかったのは，ぱっとみてどう動作するかをクラス名に示したかったからです．</p>\n\r\n\t"
+  :code: "import java.awt.Point;\nimport java.util.ArrayList;\nimport java.util.Collections;\nimport
+    java.util.Comparator;\nimport java.util.List;\nimport java.util.Random;\n\n\npublic
+    class Sample163 {\n\n    public static void main(String[] args) {\n        Random
+    random = new Random();\n        List&lt;Point&gt; list = new ArrayList&lt;Point&gt;();\n
+    \       for (int index = 0, count = 10; index &lt; count; index++) {\n            list.add(new
+    Point(random.nextInt(10), random.nextInt(10)));\n        }\n        \n        System.out.print(\"original
+    : \");\n        System.out.println(toString(list));\n        \n        class XYComparator
+    implements Comparator&lt;Point&gt; {\n            @Override\n            public
+    int compare(Point p1, Point p2) {\n                int result = compareTo(p1.x,
+    p2.x);\n                if( result == 0 ) {\n                    result = compareTo(p1.y,
+    p2.y);\n                }\n                return result;\n            }\n        }\n
+    \       \n        Collections.sort(list, new XYComparator());\n        System.out.print(\"xyorder
+    : \");\n        System.out.println(toString(list));\n        \n        class DistanceComparator
+    implements Comparator&lt;Point&gt; {\n            @Override\n            public
+    int compare(Point p1, Point p2) {\n                return compareTo(length(p1),
+    length(p2));\n            }\n            \n            // ベクトルではないのでlengthではないですが，\n
+    \           // 良い名前が思いつかないのでlengthにしました．\n            public int length(Point
+    p1) {\n                return p1.x * p1.x + p1.y * p1.y;\n            }\n        }\n
+    \       \n        Collections.sort(list, new DistanceComparator());\n        System.out.print(\"distance
+    : \");\n        System.out.println(toString(list));\n    }\n    \n    public static
+    int compareTo(int i1, int i2) {\n        return Integer.valueOf(i1).compareTo(i2);\n
+    \   }\n    \n    public static String toString(Point p) {\n        return \"(\"
+    + p.x + \",\" + p.y + \")\";\n    }\n    \n    public static String toString(List&lt;Point&gt;
+    list) {\n        StringBuilder builder = new StringBuilder();\n        builder.append(\"{\");\n
+    \       for (Point point : list) {\n            builder.append(toString(point));\n
+    \           builder.append(\",\");\n        }\n        builder.delete(builder.length()-1,
+    builder.length());\n        builder.append(\"}\");\n        return builder.toString();\n
+    \   }\n\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5868'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5868
+  :user_name: Otter
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2008/02/27 06:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">匿名さんのとほとんど同じですが、微妙な違いとして：\r\n１．辞書順は実は言語サポートがある。\r\n２．distをData.Function.on
+    :: (b -&gt; b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; a -&gt; cを使って適用している。\r\n\r\nところ*だけ*違います。何かのお役に立てば...\r\n</pre>\r\n\t"
+  :code: |
+    module Main
+        where
+
+    import Data.List
+    import Data.Function
+
+    byDist :: (Int, Int) -&gt; (Int, Int) -&gt; Ordering
+    byDist x y = on compare dist x y
+        where
+            dist (x, y) = x * x + y * y
+
+    sortByDict as = sort as
+    sortByDist as = sortBy byDist as
+
+    main = do
+        putStrLn $ show lstOrig
+        putStrLn "Sort by distance"
+        putStrLn.show $ sortByDist lstOrig
+        putStrLn "Sort by dictionary order"
+        putStrLn.show $ sortByDict lstOrig
+        where
+            lstOrig = [(1, 2), (2, 1), (4, 30), (9, 0), (-1, -10)]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5865'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5865
+  :user_name: naranja
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/448/
+  :language: D
+  :time: 2008/02/27 05:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \r\n\t"
+  :code: |
+    import std.stdio;
+    import std.algorithm;
+
+    void main(){
+        int[][] array = [[1, 3], [-1, 0], [-2, 3], [1, -9], [1, -19],
+                         [4, 2], [3, 104], [4, -91]];
+
+        bool lexical(int[] a, int[] b){
+            return (a[0] == b[0]) ? (a[1] &lt; b[1]) : (a[0] &lt; b[0]);
+        }
+        bool distance(int[] a, int[] b){
+            return (a[0] * a[0] + a[1] * a[1]) &lt; (b[0] * b[0] + b[1] * b[1]);
+        }
+
+        auto a1 = array.dup;
+        auto a2 = array.dup;
+        sort!(lexical)(a1);
+        sort!(distance)(a2);
+
+        writeln(a1);  // [[-2 3] [-1 0] [1 -19] [1 -9] [1 3] [3 104] [4 -91] [4 2]]
+        writeln(a2);  // [[-1 0] [1 3] [-2 3] [4 2] [1 -9] [1 -19] [4 -91] [3 104]]
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5861'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5861
+  :user_name: ocean
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/02/27 05:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>普通に。</p>\n\r\n\t"
+  :code: |
+    import random
+
+    def main():
+        a = [(i, j) for i in xrange(3) for j in xrange(3)]
+        random.shuffle(a)
+
+        print "original:"
+        print a
+
+        print "dictionary:"
+        print sorted(a)
+
+        print "distance:"
+        print sorted(a, key=lambda p: p[0] ** 2 + p[1] ** 2)
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5886'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5886
+  :user_name: saws
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/02/27 15:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>任意のn次元の座標に対応しています.\nzipメソッドのためにeachメソッドを定義してEnumerableをインクルードしているためにちょっと大がかりになっています.\n大がかりついでにinspectも再定義してpメソッドで適切に出力されるようにしてみました.</p>\n\r\n\t"
+  :code: |
+    class CoordSet
+      def initialize(coord_set)
+        @coord_set = coord_set.map{|c| Coord.new(c)}
+      end
+      def sort_by(order=nil)
+        lex_compare = proc{|c0,c1|
+          c0.zip(c1).each{|e0,e1| break e0 &lt;=&gt; e1 unless e0 == e1}}
+        case order
+        when 'lexical' then block = proc{|a,b| lex_compare.call(a,b)}
+        when 'linear'  then block = proc{|a,b| a.size == b.size ?
+            lex_compare.call(a,b) : a.size &lt;=&gt; b.size}
+        else block = proc{|a,b| a &lt;=&gt; b}
+        end
+        @coord_set.sort(&amp;block)
+      end
+    end
+    class Coord
+      include Enumerable
+      def initialize(coord) @coord = coord end
+      #
+      def size() @coord.map{|x| x.to_i**2}.inject(0){|a,b| a+b} end
+      #
+      def inspect() @coord end
+      #
+      def each(&amp;block) @coord.each(&amp;block) end
+    end
+    set = [[0, 9], [1, 2], [1, 3], [2, 8], [9, 5], [6, 8], [0, 2]]
+    cs = CoordSet.new(set)
+    p cs.sort_by('lexical')
+      #=&gt; [[0, 2], [0, 9], [1, 2], [1, 3], [2, 8], [6, 8], [9, 5]]
+    p cs.sort_by('linear')
+      #=&gt; [[0, 2], [1, 2], [1, 3], [2, 8], [0, 9], [6, 8], [9, 5]]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6794'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/6794
+  :user_name: 匿名
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/07/22 02:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">キャッシュなんていう前にsqrtが本当に\r\n必要なのか考えた方がよさそう。</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5911'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5911
+  :user_name: ryugate
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/674/
+  :language: Erlang
+  :time: 2008/03/01 16:02 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>既存が無かったので、書いてみました。</p>\n<p>使いかたは</p>\n<p>L1 = [{1,8}, {3,4},
+    {1,3}, {2,4}, {1,2}].</p>\n<p>sort:lexical(L1).</p>\n<p>sort:fromOrigin(L1).</p>\n<p>な感じです。</p>\n\r\n\t"
+  :code: |
+    -module(sort).
+    -export([lexical/1, fromOrigin/1]).
+
+    lexical(L) -&gt;
+      lists:sort(L).
+
+    fromOrigin(L) -&gt;
+      lists:sort(fun ({AA,AB},{BA,BB}) -&gt; (AA*AA + AB*AB) &lt; (BA*BA + BB*BB) end, L).
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6135'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/6135
+  :user_name: bamboo
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/778/
+  :language: R
+  :time: 2008/04/04 13:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Rのカバレッジ上げときますね。</p>\n\r\n\t"
+  :code: |
+    # データフレームを(x,y)として作成。
+    df &lt;- data.frame(x=as.integer(runif(20)*10),y=as.integer(runif(20)*10));
+    # 辞書順？
+    tmp &lt;- df[sort(df$y,index=T)$ix,];
+    tmp[sort(tmp$x,index=T)$ix,];
+
+    # 距離順
+    df[sort(df$x**2+df$y**2, index=T)$ix,]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5858'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5858
+  :user_name: mc
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/02/27 05:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  Common Lispのsort関数は、大小を比較する関数を指定しますが、\r<br>比較する関数さえ変更すれば、多様な比較が可能となっています。\r<br><br>sortはリストを破壊的に変更するので、例では、リストをコピーして引数に与えています。\r\n\t"
+  :code: "*positions*\n;=&gt;\n((9 . 98) (77 . 0) (17 . 30) (17 . 73) (83 . 3) (81
+    . 30) (99 . 99)\n (90 . 68) (21 . 81) (92 . 29))\n\n;; 辞書順で比較\n(sort (copy-list
+    *positions*)\n      (lambda (x y) \n        (cond ((&lt; (car x) (car y)) 'T)\n
+    \             ((= (car x) (car y)) (&lt; (cdr x) (cdr y)))\n              ('T
+    nil))))\n;=&gt;\n((9 . 98) (17 . 30) (17 . 73) (21 . 81) (77 . 0) (81 . 30) (83
+    . 3)\n (90 . 68) (92 . 29) (99 . 99))\n\n\n;; (0, 0)からの距離で比較\n(sort (copy-list
+    *positions*) \n      #'&lt; :key (lambda (x) (expt (+ (car x) (cdr x)) 1/2)))\n;=&gt;\n((17
+    . 30) (77 . 0) (83 . 3) (17 . 73) (21 . 81) (9 . 98) (81 . 30)\n (92 . 29) (90
+    . 68) (99 . 99))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5874'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5874
+  :user_name: Sixeight
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/710/
+  :language: 
+  :time: 2008/02/27 07:01 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\r\n\t  <p>すいません言語指定し忘れました。\nRubyです。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5957'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/5957
+  :user_name: takatoh
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/189/
+  :language: OCaml
+  :time: 2008/03/06 05:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>うわっ，typoしたままのを貼り付けてしまいました（今頃気づいた）。改めて張り直しておきます。</p>\n\r\n\t"
+  :code: |
+    type point = Point of float * float
+
+
+    let compare_point a b =
+      match (a, b) with
+        (Point (x1, y1), Point (x2, y2)) -&gt; if x1 = x2 then compare y1 y2
+                                                       else compare x1 x2
+
+    let distance = function
+        Point (x, y) -&gt; sqrt (x *. x +. y *. y)
+
+
+    let sort_by_dic = List.sort compare_point
+
+
+    let sort_by_dis = List.sort (fun a b -&gt; compare (distance a) (distance b))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8186'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/8186
+  :user_name: taninsw
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/973/
+  :language: Haskell
+  :time: 2008/12/15 15:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>単純に。</p>\n\r\n\t"
+  :code: "import List\n\nsort1 = sort test\nsort2 = sortBy (\\a b-&gt;compare (f a)(f
+    b)) test\n  where f(a,b)=a^2+b^2 \n\n\ntest =[(24,42),(26,13),(44,98),(97,94),(45,49),(17,84),(78,14),(58,56),\n
+    \      (60,16),(94,83),(38,60),(61,56),(57,90),(52,83),(44,14),(94,77),\n       (37,32),(90,66),(37,24),(22,50),(38,29),(96,95),(41,47),(47,17),\n
+    \      (18,95),(22,41),(40,28),(41,20),(15,40),(83,52),(54,34),(42,4),\n       (88,48),(84,23),(68,24),(50,53),(5,99),(37,64),(93,2),(31,23),\n
+    \      (87,20),(29,69),(12,64),(40,82),(45,56),(33,82),(68,2),(23,73),\n       (71,90),(78,12),(31,67),(95,53),(5,72),(8,38),(54,27),(64,4),\n
+    \      (19,55),(91,88),(30,24),(18,32),(100,94),(96,39),(38,78),(31,96),\n       (13,66),(77,95),(94,85),(87,22),(90,53),(36,23),(27,4),(85,19),(37,11),\n
+    \      (16,17),(15,59),(31,7),(8,7),(37,20),(11,34),(84,66),(14,88),(57,89),\n
+    \      (92,17),(26,68),(40,52),(46,59),(94,57),(15,5),(63,20),(7,12),(59,15),\n
+    \      (51,68),(76,4),(56,84),(29,14),(86,44),(51,51),(52,30),(49,34),(82,73)]\n\n\n{-
+    for making testdata\nimport Random\nmain = do ranGen &lt;- newStdGen\n          let
+    xs = take 200 $ randomRs (1,100::Int) ranGen\n          print $ zip (take 100
+    xs) (drop 100 xs)\n-}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8196'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/8196
+  :user_name: taninsw
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/973/
+  :language: Haskell
+  :time: 2008/12/17 04:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>onの存在を知ったので、2つ目のソートをせっかくだから短くてしみました。</p>\n\r\n\t"
+  :code: |
+    sort2=sortBy$on compare$uncurry$on(+)(^2)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8508'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/8508
+  :user_name: selpo
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/1013/
+  :language: C
+  :time: 2009/02/15 12:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>普通にソートしました。</p>\n\r\n\t"
+  :code: |
+    using System;
+    using System.Drawing;
+    public static class Program
+    {
+        static void Main(string[] args)
+        {
+            Point[] a = {    new Point(2, -4),
+                            new Point(1, 3),
+                            new Point(1, 5),
+                            new Point(-3, -1) };
+            Point[] b = {    new Point(2, -4),
+                            new Point(2, 3),
+                            new Point(1, 5),
+                            new Point(-3, -1) };
+            SortPoint1(a);
+            SortPoint2(b);
+            Console.WriteLine("----a----");
+            foreach (Point p in a)
+                Console.WriteLine(p.ToString());
+            Console.WriteLine("----b----");
+            foreach (Point p in b)
+                Console.WriteLine(p.ToString());
+        }
+        static void SortPoint1(Point[] points)
+        {
+            Array.Sort&lt;Point&gt;(points, (a, b) =&gt;
+            {
+                if (a.X &gt; b.X) return 1;
+                else if (a.X &lt; b.Y) return -1;
+                else return a.Y - b.Y;
+            });
+        }
+        static void SortPoint2(Point[] points)
+        {
+            Array.Sort&lt;Point&gt;(points, (a, b) =&gt; ((int)((0L + a.X * a.X + a.Y * a.Y) - (0L + b.X * b.X + b.Y * b.Y))));
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8198'
+  :parent_id: '163'
+  :url: http://ja.doukaku.org/comment/8198
+  :user_name: taninsw
+  :user_url: /web/20101203115625/http://ja.doukaku.org/user/973/
+  :language: Haskell
+  :time: 2008/12/17 11:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>comparingの存在を知ったので、さらにsort2を1文字減らせました。</p>\n<p>import文が増えてますが。</p>\n\r\n\t"
+  :code: |
+    import Data.Function
+    import Data.List
+    import Data.Ord
+
+    sort2=sortBy$comparing$uncurry$on(+)(^2)
+  :tags: []
+  :references:
+    :url: 
+    :title: 

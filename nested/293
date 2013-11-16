@@ -1,0 +1,2680 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja"> 
+  <head>
+
+<script type="text/javascript" src="/static/js/analytics.js" ></script>
+<link type="text/css" rel="stylesheet" href="/static/css/banner-styles.css"/>
+
+
+
+
+    <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+    <title>
+階層的なキーの連想配列化
+どう書く？org </title>
+
+    <link rel="stylesheet" type="text/css"
+	href="/web/20100706191633cs_/http://ja.doukaku.org/static/style/reset-fonts-grids.css" />
+    <link rel="stylesheet" type="text/css"
+	href="/web/20100706191633cs_/http://ja.doukaku.org/static/style/style.css?20071211?20071207" />
+	
+    <link rel="stylesheet" type="text/css"
+	href="/web/20100706191633cs_/http://ja.doukaku.org/static/style/pygments.css" />
+
+
+	
+    <!--<script src="/web/20100706191633/http://ja.doukaku.org/static/js/ieerbug/ieerbug.js" type="text/javascript"></script>-->
+
+
+<!--<script src="/web/20100706191633/http://ja.doukaku.org/static/js/ieerbug/ieerbug.js" type="text/javascript"></script>-->
+<script src="/web/20100706191633js_/http://ja.doukaku.org/static/js/jquery-1.1.3.1.js" type="text/javascript"></script>
+<script src="/web/20100706191633js_/http://ja.doukaku.org/static/js/rating.js" type="text/javascript"></script>
+<script src="/web/20100706191633js_/http://ja.doukaku.org/static/js/addtag.js?20071129" type="text/javascript"></script>
+
+<script type="text/javascript">
+is_key_navigation_enable = true;
+</script>
+<script src="/web/20100706191633js_/http://ja.doukaku.org/static/js/utils.js?~~~" type="text/javascript"></script>
+
+</head>
+
+
+<body id="doukaku_org">
+<!-- BEGIN WAYBACK TOOLBAR INSERT -->
+<script> if (window.archive_analytics) { window.archive_analytics.values['server_name']="wwwb-app11.us.archive.org";}; </script>
+
+<script type="text/javascript" src="/static/js/disclaim-element.js" ></script>
+<script type="text/javascript" src="/static/js/graph-calc.js" ></script>
+<script type="text/javascript" src="/static/jflot/jquery.min.js" ></script>
+<script type="text/javascript">
+//<![CDATA[
+var firstDate = 820454400000;
+var lastDate = 1388534399999;
+var wbPrefix = "/web/";
+var wbCurrentUrl = "http:\/\/ja.doukaku.org\/293\/nested\/";
+
+var curYear = -1;
+var curMonth = -1;
+var yearCount = 18;
+var firstYear = 1996;
+var imgWidth = 450;
+var yearImgWidth = 25;
+var monthImgWidth = 2;
+var trackerVal = "none";
+var displayDay = "6";
+var displayMonth = "Jul";
+var displayYear = "2010";
+var prettyMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function showTrackers(val) {
+	if(val == trackerVal) {
+		return;
+	}
+	if(val == "inline") {
+		document.getElementById("displayYearEl").style.color = "#ec008c";
+		document.getElementById("displayMonthEl").style.color = "#ec008c";
+		document.getElementById("displayDayEl").style.color = "#ec008c";		
+	} else {
+		document.getElementById("displayYearEl").innerHTML = displayYear;
+		document.getElementById("displayYearEl").style.color = "#ff0";
+		document.getElementById("displayMonthEl").innerHTML = displayMonth;
+		document.getElementById("displayMonthEl").style.color = "#ff0";
+		document.getElementById("displayDayEl").innerHTML = displayDay;
+		document.getElementById("displayDayEl").style.color = "#ff0";
+	}
+   document.getElementById("wbMouseTrackYearImg").style.display = val;
+   document.getElementById("wbMouseTrackMonthImg").style.display = val;
+   trackerVal = val;
+}
+function getElementX2(obj) {
+	var thing = jQuery(obj);
+	if((thing == undefined) 
+			|| (typeof thing == "undefined") 
+			|| (typeof thing.offset == "undefined")) {
+		return getElementX(obj);
+	}
+	return Math.round(thing.offset().left);
+}
+function trackMouseMove(event,element) {
+
+   var eventX = getEventX(event);
+   var elementX = getElementX2(element);
+   var xOff = eventX - elementX;
+	if(xOff < 0) {
+		xOff = 0;
+	} else if(xOff > imgWidth) {
+		xOff = imgWidth;
+	}
+   var monthOff = xOff % yearImgWidth;
+
+   var year = Math.floor(xOff / yearImgWidth);
+	var yearStart = year * yearImgWidth;
+   var monthOfYear = Math.floor(monthOff / monthImgWidth);
+   if(monthOfYear > 11) {
+       monthOfYear = 11;
+   }
+   // 1 extra border pixel at the left edge of the year:
+   var month = (year * 12) + monthOfYear;
+   var day = 1;
+	if(monthOff % 2 == 1) {
+		day = 15;
+	}
+	var dateString = 
+		zeroPad(year + firstYear) + 
+		zeroPad(monthOfYear+1,2) +
+		zeroPad(day,2) + "000000";
+
+	var monthString = prettyMonths[monthOfYear];
+	document.getElementById("displayYearEl").innerHTML = year + 1996;
+	document.getElementById("displayMonthEl").innerHTML = monthString;
+	// looks too jarring when it changes..
+	//document.getElementById("displayDayEl").innerHTML = zeroPad(day,2);
+
+	var url = wbPrefix + dateString + '/' +  wbCurrentUrl;
+	document.getElementById('wm-graph-anchor').href = url;
+
+   //document.getElementById("wmtbURL").value="evX("+eventX+") elX("+elementX+") xO("+xOff+") y("+year+") m("+month+") monthOff("+monthOff+") DS("+dateString+") Moy("+monthOfYear+") ms("+monthString+")";
+   if(curYear != year) {
+       var yrOff = year * yearImgWidth;
+       document.getElementById("wbMouseTrackYearImg").style.left = yrOff + "px";
+       curYear = year;
+   }
+   if(curMonth != month) {
+       var mtOff = year + (month * monthImgWidth) + 1;
+       document.getElementById("wbMouseTrackMonthImg").style.left = mtOff + "px";
+       curMonth = month;
+   }
+}
+//]]>
+</script>
+
+<style type="text/css">body{margin-top:0!important;padding-top:0!important;min-width:800px!important;}#wm-ipp a:hover{text-decoration:underline!important;}</style>
+<div id="wm-ipp" lang="en" class="__wb_banner_div" style="display:none; position:relative;padding:0 5px;min-height:70px;min-width:800px">
+
+
+<div id="wm-ipp-inside" class="__wb_banner_div" style="position:fixed;padding:0!important;margin:0!important;width:97%;min-width:780px;border:5px solid #000;border-top:none;background-image:url(/static/images/toolbar/wm_tb_bk_trns.png);text-align:center;-moz-box-shadow:1px 1px 3px #333;-webkit-box-shadow:1px 1px 3px #333;box-shadow:1px 1px 3px #333;font-size:11px!important;font-family:'Lucida Grande','Arial',sans-serif!important;">
+   <table style="border-collapse:collapse;margin:0;padding:0;width:100%;"><tbody><tr>
+   <td style="padding:10px;vertical-align:top;min-width:110px;">
+   <a href="/web/" title="Wayback Machine home page" style="background-color:transparent;border:none;"><img src="/static/images/toolbar/wayback-toolbar-logo.png" alt="Wayback Machine" width="110" height="39" border="0"/></a>
+   </td>
+   <td style="padding:0!important;text-align:center;vertical-align:top;width:100%;">
+
+       <table style="border-collapse:collapse;margin:0 auto;padding:0;width:570px;"><tbody><tr>
+       <td style="padding:3px 0;" colspan="2">
+       <form target="_top" method="get" action="/web/form-submit.jsp" name="wmtb" id="wmtb" style="margin:0!important;padding:0!important;"><input type="text" name="url" id="wmtbURL" value="http://ja.doukaku.org/293/nested/" style="width:400px;font-size:11px;font-family:'Lucida Grande','Arial',sans-serif;" onfocus="javascript:this.focus();this.select();" /><input type="hidden" name="type" value="replay" /><input type="hidden" name="date" value="20100706191633" /><input type="submit" value="Go" style="font-size:11px;font-family:'Lucida Grande','Arial',sans-serif;margin-left:5px;width: inherit !important" /><span id="wm_tb_options" style="display:block;"></span></form>
+       </td>
+       <td style="vertical-align:bottom;padding:5px 0 0 0!important;" rowspan="2">
+           <table style="border-collapse:collapse;width:110px;color:#99a;font-family:'Helvetica','Lucida Grande','Arial',sans-serif;"><tbody>
+			
+           <!-- NEXT/PREV MONTH NAV AND MONTH INDICATOR -->
+           <tr style="width:110px;height:16px;font-size:10px!important;">
+           	<td style="padding-right:9px;font-size:11px!important;font-weight:bold;text-transform:uppercase;text-align:right;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+		                <a href="/web/20100506231042/http://ja.doukaku.org/293/nested/" style="text-decoration:none;color:#33f;font-weight:bold;background-color:transparent;border:none;" title="6 May 2010"><strong>MAY</strong></a>
+		                
+               </td>
+               <td id="displayMonthEl" style="background:#000;color:#ff0;font-size:11px!important;font-weight:bold;text-transform:uppercase;width:34px;height:15px;padding-top:1px;text-align:center;" title="You are here: 19:16:33 Jul 6, 2010">JUL</td>
+				<td style="padding-left:9px;font-size:11px!important;font-weight:bold;text-transform:uppercase;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+                       Aug
+                       
+               </td>
+           </tr>
+
+           <!-- NEXT/PREV CAPTURE NAV AND DAY OF MONTH INDICATOR -->
+           <tr>
+               <td style="padding-right:9px;white-space:nowrap;overflow:visible;text-align:right!important;vertical-align:middle!important;" nowrap="nowrap">
+               
+		                <a href="/web/20100506231042/http://ja.doukaku.org/293/nested/" title="23:10:42 May 6, 2010" style="background-color:transparent;border:none;"><img src="/static/images/toolbar/wm_tb_prv_on.png" alt="Previous capture" width="14" height="16" border="0" /></a>
+		                
+               </td>
+               <td id="displayDayEl" style="background:#000;color:#ff0;width:34px;height:24px;padding:2px 0 0 0;text-align:center;font-size:24px;font-weight: bold;" title="You are here: 19:16:33 Jul 6, 2010">6</td>
+				<td style="padding-left:9px;white-space:nowrap;overflow:visible;text-align:left!important;vertical-align:middle!important;" nowrap="nowrap">
+               
+                       <img src="/static/images/toolbar/wm_tb_nxt_off.png" alt="Next capture" width="14" height="16" border="0"/>
+                       
+			    </td>
+           </tr>
+
+           <!-- NEXT/PREV YEAR NAV AND YEAR INDICATOR -->
+           <tr style="width:110px;height:13px;font-size:9px!important;">
+				<td style="padding-right:9px;font-size:11px!important;font-weight: bold;text-align:right;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+                       2009
+                       
+               </td>
+               <td id="displayYearEl" style="background:#000;color:#ff0;font-size:11px!important;font-weight: bold;padding-top:1px;width:34px;height:13px;text-align:center;" title="You are here: 19:16:33 Jul 6, 2010">2010</td>
+				<td style="padding-left:9px;font-size:11px!important;font-weight: bold;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+                       2011
+                       
+				</td>
+           </tr>
+           </tbody></table>
+       </td>
+
+       </tr>
+       <tr>
+       <td style="vertical-align:middle;padding:0!important;">
+           <a href="/web/20100706191633*/http://ja.doukaku.org/293/nested/" style="color:#33f;font-size:11px;font-weight:bold;background-color:transparent;border:none;" title="See a list of every capture for this URL"><strong>2 captures</strong></a>
+           <div class="__wb_banner_div" style="margin:0!important;padding:0!important;color:#666;font-size:9px;padding-top:2px!important;white-space:nowrap;" title="Timespan for captures of this URL">6 May 10 - 6 Jul 10</div>
+       </td>
+       <td style="padding:0!important;">
+       <a style="position:relative; white-space:nowrap; width:450px;height:27px;" href="" id="wm-graph-anchor">
+       <div class="__wb_banner_div" id="wm-ipp-sparkline" style="position:relative; white-space:nowrap; width:450px;height:27px;background-color:#fff;cursor:pointer;border-right:1px solid #ccc;" title="Explore captures for this URL">
+			<img id="sparklineImgId" style="position:absolute; z-index:9012; top:0px; left:0px;"
+				onmouseover="showTrackers('inline');" 
+				onmouseout="showTrackers('none');"
+				onmousemove="trackMouseMove(event,this)"
+				alt="sparklines"
+				width="450"
+				height="27"
+				border="0"
+				src="/web/jsp/graph.jsp?graphdata=450_27_1996:-1:000000000000_1997:-1:000000000000_1998:-1:000000000000_1999:-1:000000000000_2000:-1:000000000000_2001:-1:000000000000_2002:-1:000000000000_2003:-1:000000000000_2004:-1:000000000000_2005:-1:000000000000_2006:-1:000000000000_2007:-1:000000000000_2008:-1:000000000000_2009:-1:000000000000_2010:6:000010100000_2011:-1:000000000000_2012:-1:000000000000_2013:-1:000000000000"></img>
+			<img id="wbMouseTrackYearImg" 
+				style="display:none; position:absolute; z-index:9010;"
+				width="25" 
+				height="27"
+				border="0"
+				src="/static/images/toolbar/transp-yellow-pixel.png"></img>
+			<img id="wbMouseTrackMonthImg"
+				style="display:none; position:absolute; z-index:9011; " 
+				width="2"
+				height="27" 
+				border="0"
+				src="/static/images/toolbar/transp-red-pixel.png"></img>
+       </div>
+		</a>
+
+       </td>
+       </tr></tbody></table>
+   </td>
+   <td style="text-align:right;padding:5px;width:65px;font-size:11px!important;">
+       <a href="javascript:;" onclick="document.getElementById('wm-ipp').style.display='none';" style="display:block;padding-right:18px;background:url(/static/images/toolbar/wm_tb_close.png) no-repeat 100% 0;color:#33f;font-family:'Lucida Grande','Arial',sans-serif;margin-bottom:23px;background-color:transparent;border:none;" title="Close the toolbar">Close</a>
+       <a href="http://faq.web.archive.org/" style="display:block;padding-right:18px;background:url(/static/images/toolbar/wm_tb_help.png) no-repeat 100% 0;color:#33f;font-family:'Lucida Grande','Arial',sans-serif;background-color:transparent;border:none;" title="Get some help using the Wayback Machine">Help</a>
+   </td>
+   </tr></tbody></table>
+
+</div>
+</div>
+<script type="text/javascript">
+ var wmDisclaimBanner = document.getElementById("wm-ipp");
+ if(wmDisclaimBanner != null) {
+   disclaimElement(wmDisclaimBanner);
+ }
+</script>
+<!-- END WAYBACK TOOLBAR INSERT -->
+
+
+<div id="page_head" class="compact">
+  <h1 class="compact">
+    <a href="/web/20100706191633/http://ja.doukaku.org/">どう書く？org</a><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/beta.png" alt="beta">
+  </h1>
+</div>
+
+<div id="page_body" class="compact">
+<div id="content" class="compact">
+
+
+
+
+<h2 class="compact">
+<img src='/web/20100706191633im_/http://ja.doukaku.org/static/image/star_gold.png' alt=お題(出題済み)>
+<a href="/web/20100706191633/http://ja.doukaku.org/293/">階層的なキーの連想配列化</a>
+</h2>
+
+    
+
+
+
+
+
+<div class="comment" id="comment10464">
+  <p class="banner"><a href="/web/20100706191633/http://ja.doukaku.org/user/1052/" target="_top">sawa</a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/star_silver.png" border=0/></a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10464/">#10464</a>(<script language="JavaScript">print_time(new Date("2010/04/25 04:00 GMT"));</script><noscript>2010/04/25 04:00 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100706191633/http://ja.doukaku.org/lang/ruby/">
+	  Ruby
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>間違ってトピックにも同じものを投稿しました。投稿はこちらにお願いします。
+
+住所のように任意の深さの階層性をなすキーとそれに対応したオブジェクトを
+
+['東京都', '区部', '千代田区', object1]
+
+のように配列で表すとします。このような配列からなる配列
+
+[['東京都', '区部', '千代田区', object1],
+['東京都', '区部', '中央区', object2],
+['東京都', '区部', '港区', object3],
+[東京都', '多摩地域', '支部', '昭島市', object4],
+['東京都', '多摩地域', '支部', 'あきる野市', object5],
+['東京都', '多摩地域', '西多摩郡', '奥多摩町', object6],
+['東京都', '島嶼部', '大島支庁', '大島町', object7],
+['東京都', '島嶼部', '三宅支庁', '三宅村', object8]]
+
+を階層的な連想配列に変換して下さい。可能なら、各連想配列をキーにしたがって並べてください。
+もっとよいデータがあれば、それを使ってください。</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35</pre></td><td class="code"><div class="highlight"><pre><span class="c1">#!/usr/bin/ruby1.9.1 -Ku</span>
+<span class="k">class</span> <span class="nc">Array</span>
+    <span class="k">def</span> <span class="nf">hashtree</span>
+        <span class="n">sort_by</span> <span class="p">{</span><span class="o">|</span><span class="n">a</span><span class="o">|</span> <span class="n">a</span><span class="o">.</span><span class="n">first</span><span class="p">}</span>
+        <span class="o">.</span><span class="n">each_with_object</span><span class="p">({})</span> <span class="k">do</span> <span class="o">|</span><span class="n">a</span><span class="p">,</span> <span class="n">h</span><span class="o">|</span>
+            <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">2</span>
+                <span class="n">h</span><span class="o">[</span><span class="n">a</span><span class="o">.</span><span class="n">first</span><span class="o">]</span> <span class="o">||=</span> <span class="o">[]</span>
+                <span class="n">h</span><span class="o">[</span><span class="n">a</span><span class="o">.</span><span class="n">first</span><span class="o">].</span><span class="n">push</span><span class="p">(</span><span class="n">a</span><span class="o">[</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="o">]</span><span class="p">)</span>
+            <span class="k">else</span>
+                <span class="n">h</span><span class="o">[</span><span class="n">a</span><span class="o">.</span><span class="n">first</span><span class="o">]</span> <span class="o">=</span> <span class="n">a</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span>
+            <span class="k">end</span>
+        <span class="k">end</span>
+        <span class="o">.</span><span class="n">each_with_object</span><span class="p">({})</span> <span class="k">do</span> <span class="o">|</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">),</span> <span class="n">h</span><span class="o">|</span>
+            <span class="n">h</span><span class="o">[</span><span class="n">k</span><span class="o">]</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">instance_of?</span><span class="p">(</span><span class="nb">Array</span><span class="p">)?</span> <span class="n">v</span><span class="o">.</span><span class="n">hashtree</span> <span class="p">:</span> <span class="n">v</span>
+        <span class="k">end</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="nb">require</span> <span class="s1">&#39;pp&#39;</span>
+<span class="n">pp</span> <span class="o">[</span><span class="sx">%w(東京都 区部 千代田区 object1)</span><span class="p">,</span>
+<span class="sx">%w(東京都 区部 中央区 object2)</span><span class="p">,</span>
+<span class="sx">%w(東京都 区部 港区 object3)</span><span class="p">,</span>
+<span class="sx">%w(東京都 多摩地域 支部 昭島市 object4)</span><span class="p">,</span>
+<span class="sx">%w(東京都 多摩地域 支部 あきる野市 object5)</span><span class="p">,</span>
+<span class="sx">%w(東京都 多摩地域 西多摩郡 奥多摩町 object6)</span><span class="p">,</span>
+<span class="sx">%w(東京都 島嶼部 大島支庁 大島町 object7)</span><span class="p">,</span>
+<span class="sx">%w(東京都 島嶼部 三宅支庁 三宅村 object8)</span><span class="o">].</span><span class="n">hashtree</span>
+
+<span class="c1"># =&gt;</span>
+<span class="p">{</span><span class="s2">&quot;東京都&quot;</span><span class="o">=&gt;</span>
+  <span class="p">{</span><span class="s2">&quot;区部&quot;</span><span class="o">=&gt;</span><span class="p">{</span><span class="s2">&quot;中央区&quot;</span><span class="o">=&gt;</span><span class="s2">&quot;object2&quot;</span><span class="p">,</span> <span class="s2">&quot;千代田区&quot;</span><span class="o">=&gt;</span><span class="s2">&quot;object1&quot;</span><span class="p">,</span> <span class="s2">&quot;港区&quot;</span><span class="o">=&gt;</span><span class="s2">&quot;object3&quot;</span><span class="p">},</span>
+   <span class="s2">&quot;多摩地域&quot;</span><span class="o">=&gt;</span>
+    <span class="p">{</span><span class="s2">&quot;支部&quot;</span><span class="o">=&gt;</span><span class="p">{</span><span class="s2">&quot;あきる野市&quot;</span><span class="o">=&gt;</span><span class="s2">&quot;object5&quot;</span><span class="p">,</span> <span class="s2">&quot;昭島市&quot;</span><span class="o">=&gt;</span><span class="s2">&quot;object4&quot;</span><span class="p">},</span>
+     <span class="s2">&quot;西多摩郡&quot;</span><span class="o">=&gt;</span><span class="p">{</span><span class="s2">&quot;奥多摩町&quot;</span><span class="o">=&gt;</span><span class="s2">&quot;object6&quot;</span><span class="p">}},</span>
+   <span class="s2">&quot;島嶼部&quot;</span><span class="o">=&gt;</span><span class="p">{</span><span class="s2">&quot;三宅支庁&quot;</span><span class="o">=&gt;</span><span class="p">{</span><span class="s2">&quot;三宅村&quot;</span><span class="o">=&gt;</span><span class="s2">&quot;object8&quot;</span><span class="p">},</span> <span class="s2">&quot;大島支庁&quot;</span><span class="o">=&gt;</span><span class="p">{</span><span class="s2">&quot;大島町&quot;</span><span class="o">=&gt;</span><span class="s2">&quot;object7&quot;</span><span class="p">}}}}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10464/addtag/" class="addtag" id="addtag_10464">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100706191633/http://ja.doukaku.org/lang/ruby/">
+		Ruby
+      </a>]
+	  
+      [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10464/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10464/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10464"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10464"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10464"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100706191633/http://ja.doukaku.org/293/reply_to/10464/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+
+<div class="indent">
+<a href="/web/20100706191633/http://ja.doukaku.org/293/post_comment/">
+投稿する
+</a>
+</div>
+
+
+<h2>投稿されたコメント - ネスト表示</h2>
+<a href="/web/20100706191633/http://ja.doukaku.org/293/flatten/">フラット表示</a> 
+<a href="/web/20100706191633/http://ja.doukaku.org/293/">非表示</a> 
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment10465">
+  <p class="banner"><a href="/web/20100706191633/http://ja.doukaku.org/user/755/" target="_top">athos</a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10465/">#10465</a>(<script language="JavaScript">print_time(new Date("2010/04/25 07:21 GMT"));</script><noscript>2010/04/25 07:21 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100706191633/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></td><td class="code"><div class="highlight"><pre>(defn coll-&gt;map [coll]
+  (reduce (fn [val key] {key val}) (reverse coll)))
+  
+(defn merge-recursively [x y]
+  (merge-with #(merge-recursively %1 %2) x y))
+
+(defn solve [x]
+  (reduce merge-recursively {} (map coll-&gt;map x)))
+
+(def addresses
+  &#39;[[東京都 区部 千代田区 object1]
+    [東京都 区部 中央区 object2]
+    [東京都 区部 港区 object3]
+    [東京都 多摩地域 支部 昭島市 object4]
+    [東京都 多摩地域 支部 あきる野市 object5]
+    [東京都 多摩地域 西多摩郡 奥多摩町 object6]
+    [東京都 島嶼部 大島支庁 大島町 object7]
+    [東京都 島嶼部 三宅支庁 三宅村 object8]])
+
+(println (solve addresses))
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10465/addtag/" class="addtag" id="addtag_10465">タグ</a>:
+	
+    
+    <a href="/web/20100706191633/http://ja.doukaku.org/tag/Clojure/">Clojure</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100706191633/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10465/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10465/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10465"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10465"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10465"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100706191633/http://ja.doukaku.org/293/reply_to/10465/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment10467">
+  <p class="banner"><a href="/web/20100706191633/http://ja.doukaku.org/user/760/" target="_top">turugina</a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10467/">#10467</a>(<script language="JavaScript">print_time(new Date("2010/04/25 08:49 GMT"));</script><noscript>2010/04/25 08:49 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100706191633/http://ja.doukaku.org/lang/perl/">
+	  Perl
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>こんな感じでいいのかな。無駄にkeyとobjectが重なった場合の処理も書いてますが</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50</pre></td><td class="code"><div class="highlight"><pre><span class="k">use</span> <span class="n">strict</span><span class="p">;</span>
+<span class="k">use</span> <span class="n">warnings</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nn">Data::</span><span class="n">Dumper</span><span class="p">;</span>
+
+<span class="k">sub </span><span class="nf">make_tree</span>
+<span class="p">{</span>
+    <span class="k">my</span> <span class="nv">$h</span> <span class="o">=</span> <span class="nb">shift</span><span class="p">;</span>
+    <span class="k">my</span> <span class="nv">$ar</span> <span class="o">=</span> <span class="nb">shift</span><span class="p">;</span>
+
+    <span class="nb">die</span> <span class="k">if</span> <span class="nv">@$ar</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="k">my</span> <span class="nv">$k</span> <span class="o">=</span> <span class="nb">shift</span> <span class="nv">@$ar</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span> <span class="nb">exists</span> <span class="nv">$h</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$k</span><span class="p">}</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span> <span class="o">!</span><span class="nb">ref</span> <span class="nv">$h</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$k</span><span class="p">}</span> <span class="p">)</span> <span class="p">{</span>
+            <span class="nv">$h</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$k</span><span class="p">}</span> <span class="o">=</span> <span class="p">{</span> <span class="nv">$h</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$k</span><span class="p">}</span> <span class="o">=&gt;</span> <span class="nb">undef</span> <span class="p">};</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="nv">$h</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$k</span><span class="p">}</span> <span class="o">=</span> <span class="o">+</span><span class="p">{};</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span> <span class="nv">@$ar</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span> <span class="nb">keys</span> <span class="nv">%</span><span class="p">{</span><span class="nv">$h</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$k</span><span class="p">}}</span> <span class="p">)</span> <span class="p">{</span>
+            <span class="nv">$h</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$k</span><span class="p">}{</span><span class="nv">$ar</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span> <span class="o">=</span> <span class="nb">undef</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nv">$h</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$k</span><span class="p">}</span> <span class="o">=</span> <span class="nv">$ar</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="n">make_tree</span><span class="p">(</span><span class="nv">$h</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$k</span><span class="p">},</span> <span class="nv">$ar</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">my</span> <span class="nv">$data</span> <span class="o">=</span> 
+<span class="p">[</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;区部&#39;</span><span class="p">,</span> <span class="s">&#39;千代田区&#39;</span><span class="p">,</span> <span class="s">&#39;object1&#39;</span><span class="p">],</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;区部&#39;</span><span class="p">,</span> <span class="s">&#39;中央区&#39;</span><span class="p">,</span> <span class="s">&#39;object2&#39;</span><span class="p">],</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;区部&#39;</span><span class="p">,</span> <span class="s">&#39;港区&#39;</span><span class="p">,</span> <span class="s">&#39;object3&#39;</span><span class="p">],</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;多摩地域&#39;</span><span class="p">,</span> <span class="s">&#39;支部&#39;</span><span class="p">,</span> <span class="s">&#39;昭島市&#39;</span><span class="p">,</span> <span class="s">&#39;object4&#39;</span><span class="p">],</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;多摩地域&#39;</span><span class="p">,</span> <span class="s">&#39;支部&#39;</span><span class="p">,</span> <span class="s">&#39;あきる野市&#39;</span><span class="p">,</span> <span class="s">&#39;object5&#39;</span><span class="p">],</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;多摩地域&#39;</span><span class="p">,</span> <span class="s">&#39;西多摩郡&#39;</span><span class="p">,</span> <span class="s">&#39;奥多摩町&#39;</span><span class="p">,</span> <span class="s">&#39;object6&#39;</span><span class="p">],</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;島嶼部&#39;</span><span class="p">,</span> <span class="s">&#39;大島支庁&#39;</span><span class="p">,</span> <span class="s">&#39;大島町&#39;</span><span class="p">,</span> <span class="s">&#39;object7&#39;</span><span class="p">],</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;島嶼部&#39;</span><span class="p">,</span> <span class="s">&#39;三宅支庁&#39;</span><span class="p">,</span> <span class="s">&#39;三宅村&#39;</span><span class="p">,</span> <span class="s">&#39;object8&#39;</span><span class="p">],</span>
+<span class="p">];</span>
+
+<span class="k">my</span> <span class="nv">$tree</span> <span class="o">=</span> <span class="o">+</span><span class="p">{};</span>
+<span class="n">make_tree</span><span class="p">(</span><span class="nv">$tree</span><span class="p">,</span> <span class="nv">$_</span><span class="p">)</span> <span class="k">for</span> <span class="nv">@$data</span><span class="p">;</span>
+
+<span class="k">print</span> <span class="n">Dumper</span><span class="p">(</span><span class="nv">$tree</span><span class="p">);</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10467/addtag/" class="addtag" id="addtag_10467">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100706191633/http://ja.doukaku.org/lang/perl/">
+		Perl
+      </a>]
+	  
+      [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10467/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10467/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10467"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10467"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10467"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100706191633/http://ja.doukaku.org/293/reply_to/10467/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment10468">
+  <p class="banner"><a href="/web/20100706191633/http://ja.doukaku.org/user/588/" target="_top">sekia</a>
+
+	
+	&nbsp;
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10468/">#10468</a>(<script language="JavaScript">print_time(new Date("2010/04/25 09:27 GMT"));</script><noscript>2010/04/25 09:27 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100706191633/http://ja.doukaku.org/lang/perl/">
+	  Perl
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33</pre></td><td class="code"><div class="highlight"><pre><span class="c1">#!/usr/bin/env perl</span>
+
+<span class="k">use</span> <span class="n">strict</span><span class="p">;</span>
+<span class="k">use</span> <span class="n">warnings</span><span class="p">;</span>
+
+<span class="k">sub </span><span class="nf">hashtree</span> <span class="p">{</span>
+  <span class="k">my</span> <span class="nv">$result</span> <span class="o">=</span> <span class="o">+</span><span class="p">{};</span>
+  <span class="n">_hashtree</span><span class="p">(</span><span class="nv">$result</span><span class="p">,</span> <span class="nv">$_</span><span class="p">)</span> <span class="k">for</span> <span class="nv">@_</span><span class="p">;</span>
+  <span class="nv">$result</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">sub </span><span class="nf">_hashtree</span> <span class="p">{</span>
+  <span class="k">my</span> <span class="p">(</span><span class="nv">$tree</span><span class="p">,</span> <span class="nv">$entry</span><span class="p">)</span> <span class="o">=</span> <span class="nv">@_</span><span class="p">;</span>
+  <span class="k">return</span> <span class="nv">$tree</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$entry</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span> <span class="o">=</span> <span class="nv">$entry</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nv">@$entry</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">;</span>
+  <span class="k">my</span> <span class="p">(</span><span class="nv">$car</span><span class="p">,</span> <span class="nv">@cdr</span><span class="p">)</span> <span class="o">=</span> <span class="nv">@$entry</span><span class="p">;</span>
+  <span class="k">my</span> <span class="nv">$subtree</span> <span class="o">=</span> <span class="nv">$tree</span><span class="o">-&gt;</span><span class="p">{</span><span class="nv">$car</span><span class="p">}</span> <span class="o">||=</span> <span class="o">+</span><span class="p">{};</span>
+  <span class="n">_hashtree</span><span class="p">(</span><span class="nv">$subtree</span><span class="p">,</span> <span class="o">\</span><span class="nv">@cdr</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">use</span> <span class="n">YAML</span> <span class="n">qw</span><span class="sr">//</span><span class="p">;</span>
+
+<span class="k">my</span> <span class="nv">@entries</span> <span class="o">=</span> <span class="p">(</span>
+  <span class="p">[</span><span class="n">qw</span><span class="sr">/東京都 区部 千代田区 object1/</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">qw</span><span class="sr">/東京都 区部 中央区 object2/</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">qw</span><span class="sr">/東京都 区部 港区 object3/</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">qw</span><span class="sr">/東京都 多摩地域 支部 昭島市 object4/</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">qw</span><span class="sr">/東京都 多摩地域 支部 あきる野市 object5/</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">qw</span><span class="sr">/東京都 多摩地域 西多摩郡 奥多摩町 object6/</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">qw</span><span class="sr">/東京都 島嶼部 大島支庁 大島町 object7/</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">qw</span><span class="sr">/東京都 島嶼部 三宅支庁 三宅村 object8/</span><span class="p">]</span>
+<span class="p">);</span>
+
+<span class="k">print</span> <span class="nn">YAML::</span><span class="n">Dump</span><span class="p">(</span><span class="n">hashtree</span><span class="p">(</span><span class="nv">@entries</span><span class="p">));</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10468/addtag/" class="addtag" id="addtag_10468">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100706191633/http://ja.doukaku.org/lang/perl/">
+		Perl
+      </a>]
+	  
+      [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10468/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10468/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10468"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10468"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10468"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100706191633/http://ja.doukaku.org/293/reply_to/10468/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment10469">
+  <p class="banner"><a href="/web/20100706191633/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10469/">#10469</a>(<script language="JavaScript">print_time(new Date("2010/04/27 03:15 GMT"));</script><noscript>2010/04/27 03:15 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100706191633/http://ja.doukaku.org/lang/perl/">
+	  Perl
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>末尾から先頭に辿れるように、リファレンスで繋いでみました。題意に沿っているか
+心配なのですが...。
+</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57</pre></td><td class="code"><div class="highlight"><pre><span class="k">use</span> <span class="n">strict</span><span class="p">;</span>
+<span class="k">my</span> <span class="nv">%leaf</span><span class="p">;</span>
+
+<span class="k">my</span> <span class="nv">@data</span> <span class="o">=</span> <span class="p">(</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;区部&#39;</span><span class="p">,</span> <span class="s">&#39;千代田区&#39;</span><span class="p">,</span> <span class="s">&#39;object1&#39;</span><span class="p">],</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;区部&#39;</span><span class="p">,</span> <span class="s">&#39;中央区&#39;</span><span class="p">,</span> <span class="s">&#39;object2&#39;</span><span class="p">],</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;区部&#39;</span><span class="p">,</span> <span class="s">&#39;港区&#39;</span><span class="p">,</span> <span class="s">&#39;object3&#39;</span><span class="p">],</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;多摩地域&#39;</span><span class="p">,</span> <span class="s">&#39;支部&#39;</span><span class="p">,</span> <span class="s">&#39;昭島市&#39;</span><span class="p">,</span> <span class="s">&#39;object4&#39;</span><span class="p">],</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;多摩地域&#39;</span><span class="p">,</span> <span class="s">&#39;支部&#39;</span><span class="p">,</span> <span class="s">&#39;あきる野市&#39;</span><span class="p">,</span> <span class="s">&#39;object5&#39;</span><span class="p">],</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;多摩地域&#39;</span><span class="p">,</span> <span class="s">&#39;西多摩郡&#39;</span><span class="p">,</span> <span class="s">&#39;奥多摩町&#39;</span><span class="p">,</span> <span class="s">&#39;object6&#39;</span><span class="p">],</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;島嶼部&#39;</span><span class="p">,</span> <span class="s">&#39;大島支庁&#39;</span><span class="p">,</span> <span class="s">&#39;大島町&#39;</span><span class="p">,</span> <span class="s">&#39;object7&#39;</span><span class="p">],</span>
+<span class="p">[</span><span class="s">&#39;東京都&#39;</span><span class="p">,</span> <span class="s">&#39;島嶼部&#39;</span><span class="p">,</span> <span class="s">&#39;三宅支庁&#39;</span><span class="p">,</span> <span class="s">&#39;三宅村&#39;</span><span class="p">,</span> <span class="s">&#39;object8&#39;</span><span class="p">]);</span>
+
+<span class="k">foreach</span> <span class="k">my</span> <span class="nv">$i</span> <span class="p">(</span><span class="mi">0</span> <span class="o">..</span> <span class="nv">$#data</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">foreach</span> <span class="k">my</span> <span class="nv">$j</span> <span class="p">(</span><span class="mi">0</span> <span class="o">..</span> <span class="nv">$#</span><span class="p">{</span><span class="nv">$data</span><span class="p">[</span><span class="nv">$i</span><span class="p">]})</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$j</span> <span class="o">==</span> <span class="nv">$#</span><span class="p">{</span><span class="nv">$data</span><span class="p">[</span><span class="nv">$i</span><span class="p">]})</span> <span class="p">{</span>
+       <span class="nv">$leaf</span><span class="p">{</span><span class="nv">$data</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="nv">$j</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span> <span class="o">=</span> <span class="nv">$data</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="nv">$j</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="k">my</span> <span class="p">(</span><span class="nv">$ref</span><span class="p">,</span> <span class="nv">$item</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nb">ref</span><span class="p">(</span><span class="nv">$data</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="nv">$j</span><span class="p">])</span> <span class="ow">ne</span> <span class="s">&#39;ARRAY&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$item</span> <span class="o">=</span> <span class="nv">$data</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="nv">$j</span><span class="p">];</span>
+        <span class="nv">$ref</span> <span class="o">=</span> <span class="p">[</span><span class="nv">$item</span><span class="p">];</span>
+        <span class="nv">$data</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="nv">$j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nv">$data</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="nv">$j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="nv">$ref</span><span class="p">];</span>
+        <span class="k">foreach</span> <span class="k">my</span> <span class="nv">$k</span> <span class="p">(</span><span class="nv">$i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">..</span> <span class="nv">$#data</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nv">$data</span><span class="p">[</span><span class="nv">$k</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">eq</span> <span class="nv">$item</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nb">shift</span> <span class="nv">@</span><span class="p">{</span><span class="nv">$data</span><span class="p">[</span><span class="nv">$k</span><span class="p">]};</span>
+            <span class="nv">$data</span><span class="p">[</span><span class="nv">$k</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nv">$data</span><span class="p">[</span><span class="nv">$k</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nv">$ref</span><span class="p">];</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nv">$ref</span> <span class="o">=</span> <span class="nv">$data</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="nv">$j</span><span class="p">];</span>
+        <span class="nv">$data</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="nv">$j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nv">$data</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="nv">$j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="nv">$ref</span><span class="p">];</span>
+        <span class="nv">$item</span> <span class="o">=</span> <span class="nv">$data</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="nv">$j</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+        <span class="k">foreach</span> <span class="k">my</span> <span class="nv">$k</span> <span class="p">(</span><span class="nv">$i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">..</span> <span class="nv">$#data</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">next</span> <span class="k">if</span> <span class="nb">ref</span><span class="p">(</span><span class="nv">$data</span><span class="p">[</span><span class="nv">$k</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">ne</span> <span class="s">&#39;ARRAY&#39;</span><span class="p">;</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nv">$data</span><span class="p">[</span><span class="nv">$k</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">eq</span> <span class="nv">$item</span> <span class="ow">and</span> <span class="nv">$data</span><span class="p">[</span><span class="nv">$k</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">eq</span> <span class="nv">$data</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="nv">$j</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">{</span>
+            <span class="nb">shift</span> <span class="nv">@</span><span class="p">{</span><span class="nv">$data</span><span class="p">[</span><span class="nv">$k</span><span class="p">]};</span>
+            <span class="nv">$data</span><span class="p">[</span><span class="nv">$k</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nv">$data</span><span class="p">[</span><span class="nv">$k</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nv">$ref</span><span class="p">];</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">sub </span><span class="nf">query</span> <span class="p">{</span>
+  <span class="k">foreach</span> <span class="k">my</span> <span class="nv">$key</span> <span class="p">(</span><span class="nv">@_</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">my</span> <span class="p">(</span><span class="nv">$ref</span><span class="p">,</span> <span class="nv">@list</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="nv">$leaf</span><span class="p">{</span><span class="nv">$key</span><span class="p">},</span> <span class="nv">$key</span><span class="p">);</span>
+    <span class="k">while</span> <span class="p">(</span><span class="nv">$ref</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nb">unshift</span> <span class="nv">@list</span><span class="p">,</span> <span class="nv">$ref</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+      <span class="nv">$ref</span> <span class="o">=</span> <span class="nv">@$ref</span> <span class="o">==</span> <span class="mi">2</span> <span class="p">?</span> <span class="nv">$ref</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">print</span> <span class="s">&quot;@list\n&quot;</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">query</span><span class="p">(</span><span class="s">&#39;object2&#39;</span><span class="p">,</span> <span class="s">&#39;object6&#39;</span><span class="p">);</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10469/addtag/" class="addtag" id="addtag_10469">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100706191633/http://ja.doukaku.org/lang/perl/">
+		Perl
+      </a>]
+	  
+      [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10469/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10469/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10469"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10469"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10469"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100706191633/http://ja.doukaku.org/293/reply_to/10469/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment10471">
+  <p class="banner"><a href="/web/20100706191633/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10471/">#10471</a>(<script language="JavaScript">print_time(new Date("2010/04/27 12:37 GMT"));</script><noscript>2010/04/27 12:37 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffdfdf;">-2/2=-1.00</span></span><a href="/web/20100706191633/http://ja.doukaku.org/293/nested/#comment10471" onClick="$('#comment10471 .comment_content').show()">[open]</a>
+  </p>
+  <div class="comment_content" style="display: none">
+	<div class="comment_body">
+	  <p>That’s unquestioned that the distinguished &lt;a href=&quot;<a class="reference" href="/web/20100706191633/http://www.essaysprofessors.com/paper-writing-service.html">http://www.essaysprofessors.com/paper-writing-service.html</a>&quot;&gt;paper writing service&lt;/a&gt; will create the premium quality &lt;a href=&quot;<a class="reference" href="/web/20100706191633/http://www.essaysprofessors.com/custom-essay-writing.html">http://www.essaysprofessors.com/custom-essay-writing.html</a>&quot;&gt;custom essay writing&lt;/a&gt; for people which don’t have writing skills. It would be the easiest way for such people, I do opine!</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10471/addtag/" class="addtag" id="addtag_10471">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffdfdf;"
+  >-2/2=-1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10471"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10471"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10471"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100706191633/http://ja.doukaku.org/293/reply_to/10471/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment10472">
+  <p class="banner"><a href="/web/20100706191633/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10472/">#10472</a>(<script language="JavaScript">print_time(new Date("2010/04/27 12:50 GMT"));</script><noscript>2010/04/27 12:50 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffdfdf;">-2/2=-1.00</span></span><a href="/web/20100706191633/http://ja.doukaku.org/293/nested/#comment10472" onClick="$('#comment10472 .comment_content').show()">[open]</a>
+  </p>
+  <div class="comment_content" style="display: none">
+	<div class="comment_body">
+	  <p>Usually, college students do not like the term research paper composing, but they still need to present their writing technique! Hence, the &lt;a href=&quot;<a class="reference" href="/web/20100706191633/http://primeessays.com/index.php?mode=main">http://primeessays.com/index.php?mode=main</a>&quot;&gt;buy essay&lt;/a&gt; writing service should be a great helper for custom research papers writing.</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10472/addtag/" class="addtag" id="addtag_10472">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffdfdf;"
+  >-2/2=-1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10472"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10472"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10472"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100706191633/http://ja.doukaku.org/293/reply_to/10472/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment10490">
+  <p class="banner"><a href="/web/20100706191633/http://ja.doukaku.org/user/1129/" target="_top">Lost_dog</a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10490/">#10490</a>(<script language="JavaScript">print_time(new Date("2010/05/03 14:14 GMT"));</script><noscript>2010/05/03 14:14 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100706191633/http://ja.doukaku.org/lang/haskell/">
+	  Haskell
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>木構造っぽかったので、木にしました。</p>
+<p>Haskellの実行環境がない方もいると思うので、実行結果を載せておきます。</p>
+<pre class="literal-block">
+root
+|
+`- 東京都
+   |
+   +- 区部
+   |  |
+   |  +- 中央区
+   |  |  |
+   |  |  `- object2
+   |  |
+   |  +- 千代田区
+   |  |  |
+   |  |  `- object1
+   |  |
+   |  `- 港区
+   |     |
+   |     `- object3
+   |
+   +- 多摩地域
+   |  |
+   |  +- 支部
+   |  |  |
+   |  |  +- あきる野市
+   |  |  |  |
+   |  |  |  `- object5
+   |  |  |
+   |  |  `- 昭島市
+   |  |     |
+   |  |     `- object4
+   |  |
+   |  `- 西多摩郡
+   |     |
+   |     `- 奥多摩町
+   |        |
+   |        `- object6
+   |
+   `- 島嶼部
+      |
+      +- 三宅支庁
+      |  |
+      |  `- 三宅村
+      |     |
+      |     `- object8
+      |
+      `- 大島支庁
+         |
+         `- 大島町
+            |
+            `- object7
+</pre>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></td><td class="code"><div class="highlight"><pre><span class="kr">import</span> <span class="n">List</span>
+<span class="kr">import</span> <span class="n">Data</span><span class="o">.</span><span class="n">Tree</span>
+<span class="kr">import</span> <span class="n">Data</span><span class="o">.</span><span class="n">Function</span>
+<span class="kr">import</span> <span class="nv">qualified</span> <span class="n">System</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">UTF8</span> <span class="nv">as</span> <span class="n">U</span>
+
+<span class="nv">test</span> <span class="o">=</span> <span class="n">U</span><span class="o">.</span><span class="nv">writeFile</span> <span class="s">&quot;out.txt&quot;</span> <span class="o">$</span> <span class="nv">drawTree</span> <span class="o">$</span> <span class="nv">mkTree</span> <span class="nv">tab1</span>
+
+<span class="nv">mkTree</span> <span class="o">::</span> <span class="p">[[</span><span class="n">String</span><span class="p">]]</span> <span class="o">-&gt;</span> <span class="n">Tree</span> <span class="n">String</span>
+<span class="nv">mkTree</span> <span class="o">=</span> <span class="nv">unfoldTree</span> <span class="nv">f</span><span class="o">.</span><span class="nv">map</span> <span class="p">(</span><span class="s">&quot;root&quot;</span><span class="o">:</span><span class="p">)</span> <span class="kr">where</span>
+  <span class="nv">f</span> <span class="nv">xss</span> <span class="o">=</span> <span class="p">(</span><span class="nv">xss</span><span class="o">!!</span><span class="mi">0</span><span class="o">!!</span><span class="mi">0</span><span class="p">,</span> <span class="nv">filter</span><span class="p">(</span><span class="nv">not</span><span class="o">.</span><span class="nv">all</span> <span class="nv">null</span><span class="p">)</span> <span class="o">$</span> <span class="nv">groupBy</span><span class="p">((</span><span class="o">==</span><span class="p">)`</span><span class="nv">on</span><span class="p">`</span><span class="nv">take</span> <span class="mi">1</span><span class="p">)</span> <span class="o">$</span> <span class="nv">sort</span> <span class="o">$</span> <span class="nv">map</span><span class="p">(</span><span class="nv">drop</span> <span class="mi">1</span><span class="p">)</span> <span class="nv">xss</span><span class="p">)</span>
+
+<span class="nv">tab1</span> <span class="o">=</span> <span class="p">[</span> <span class="p">[</span><span class="s">&quot;東京都&quot;</span><span class="p">,</span> <span class="s">&quot;区部&quot;</span><span class="p">,</span> <span class="s">&quot;千代田区&quot;</span><span class="p">,</span> <span class="s">&quot;object1&quot;</span><span class="p">]</span>
+       <span class="p">,</span> <span class="p">[</span><span class="s">&quot;東京都&quot;</span><span class="p">,</span> <span class="s">&quot;区部&quot;</span><span class="p">,</span> <span class="s">&quot;中央区&quot;</span><span class="p">,</span> <span class="s">&quot;object2&quot;</span><span class="p">]</span>
+       <span class="p">,</span> <span class="p">[</span><span class="s">&quot;東京都&quot;</span><span class="p">,</span> <span class="s">&quot;区部&quot;</span><span class="p">,</span> <span class="s">&quot;港区&quot;</span><span class="p">,</span> <span class="s">&quot;object3&quot;</span><span class="p">]</span>
+       <span class="p">,</span> <span class="p">[</span><span class="s">&quot;東京都&quot;</span><span class="p">,</span> <span class="s">&quot;多摩地域&quot;</span><span class="p">,</span> <span class="s">&quot;支部&quot;</span><span class="p">,</span> <span class="s">&quot;昭島市&quot;</span><span class="p">,</span> <span class="s">&quot;object4&quot;</span><span class="p">]</span>
+       <span class="p">,</span> <span class="p">[</span><span class="s">&quot;東京都&quot;</span><span class="p">,</span> <span class="s">&quot;多摩地域&quot;</span><span class="p">,</span> <span class="s">&quot;支部&quot;</span><span class="p">,</span> <span class="s">&quot;あきる野市&quot;</span><span class="p">,</span> <span class="s">&quot;object5&quot;</span><span class="p">]</span>
+       <span class="p">,</span> <span class="p">[</span><span class="s">&quot;東京都&quot;</span><span class="p">,</span> <span class="s">&quot;多摩地域&quot;</span><span class="p">,</span> <span class="s">&quot;西多摩郡&quot;</span><span class="p">,</span> <span class="s">&quot;奥多摩町&quot;</span><span class="p">,</span> <span class="s">&quot;object6&quot;</span><span class="p">]</span>
+       <span class="p">,</span> <span class="p">[</span><span class="s">&quot;東京都&quot;</span><span class="p">,</span> <span class="s">&quot;島嶼部&quot;</span><span class="p">,</span> <span class="s">&quot;大島支庁&quot;</span><span class="p">,</span> <span class="s">&quot;大島町&quot;</span><span class="p">,</span> <span class="s">&quot;object7&quot;</span><span class="p">]</span>
+       <span class="p">,</span> <span class="p">[</span><span class="s">&quot;東京都&quot;</span><span class="p">,</span> <span class="s">&quot;島嶼部&quot;</span><span class="p">,</span> <span class="s">&quot;三宅支庁&quot;</span><span class="p">,</span> <span class="s">&quot;三宅村&quot;</span><span class="p">,</span> <span class="s">&quot;object8&quot;</span><span class="p">]</span>
+       <span class="p">]</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10490/addtag/" class="addtag" id="addtag_10490">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100706191633/http://ja.doukaku.org/lang/haskell/">
+		Haskell
+      </a>]
+	  
+      [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10490/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10490/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10490"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10490"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10490"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100706191633/http://ja.doukaku.org/293/reply_to/10490/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment10492">
+  <p class="banner"><a href="/web/20100706191633/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10492/">#10492</a>(<script language="JavaScript">print_time(new Date("2010/05/04 00:01 GMT"));</script><noscript>2010/05/04 00:01 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100706191633/http://ja.doukaku.org/lang/smalltalk/">
+	  Smalltalk
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Squeak Smalltalk で。4.1 以降では copy fixTemps は不要です。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31</pre></td><td class="code"><div class="highlight"><pre>| data treeOf |
+data := #(
+    (&#39;東京都&#39; &#39;区部&#39; &#39;千代田区&#39; object1)
+    (&#39;東京都&#39; &#39;区部&#39; &#39;中央区&#39; object2)
+    (&#39;東京都&#39; &#39;区部&#39; &#39;港区&#39; object3)
+    (&#39;東京都&#39; &#39;多摩地域&#39; &#39;支部&#39; &#39;昭島市&#39; object4)
+    (&#39;東京都&#39; &#39;多摩地域&#39; &#39;支部&#39; &#39;あきる野市&#39; object5)
+    (&#39;東京都&#39; &#39;多摩地域&#39; &#39;西多摩郡&#39; &#39;奥多摩町&#39; object6)
+    (&#39;東京都&#39; &#39;島嶼部&#39; &#39;大島支庁&#39; &#39;大島町&#39; object7)
+    (&#39;東京都&#39; &#39;島嶼部&#39; &#39;三宅支庁&#39; &#39;三宅村&#39; object8)).
+
+treeOf := nil.
+treeOf := [:list |
+    | set | 
+    set := (list collect: [:each | each first]) asSet collect: [:key |
+        | val |
+        val := list select: [:each | each size &gt; 1 and: [each first = key]]
+            thenCollect: [:each | each allButFirst].
+        val := treeOf copy fixTemps value: val.
+        val ifEmpty: [key]
+            ifNotEmpty: [key -&gt; (val size = 1 ifTrue: [val first] ifFalse: [val])]].
+    set asArray].
+^treeOf copy fixTemps value: data
+
+&quot;=&gt; {
+&#39;東京都&#39;-&gt;{
+    &#39;区部&#39;-&gt;{&#39;港区&#39;-&gt;#object3 . &#39;千代田区&#39;-&gt;#object1 . &#39;中央区&#39;-&gt;#object2} . 
+    &#39;多摩地域&#39;-&gt;{
+        &#39;支部&#39;-&gt;{&#39;昭島市&#39;-&gt;#object4 . &#39;あきる野市&#39;-&gt;#object5} . 
+        &#39;西多摩郡&#39;-&gt;&#39;奥多摩町&#39;-&gt;#object6} . 
+    &#39;島嶼部&#39;-&gt;{&#39;大島支庁&#39;-&gt;&#39;大島町&#39;-&gt;#object7 . &#39;三宅支庁&#39;-&gt;&#39;三宅村&#39;-&gt;#object8}}} &quot;
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10492/addtag/" class="addtag" id="addtag_10492">タグ</a>:
+	
+    
+    <a href="/web/20100706191633/http://ja.doukaku.org/tag/Squeak_Smalltalk/">Squeak_Smalltalk</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100706191633/http://ja.doukaku.org/lang/smalltalk/">
+		Smalltalk
+      </a>]
+	  
+      [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10492/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10492/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10492"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10492"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10492"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100706191633/http://ja.doukaku.org/293/reply_to/10492/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment10493">
+  <p class="banner"><a href="/web/20100706191633/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10493/">#10493</a>(<script language="JavaScript">print_time(new Date("2010/05/04 15:40 GMT"));</script><noscript>2010/05/04 15:40 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffdfdf;">-2/2=-1.00</span></span><a href="/web/20100706191633/http://ja.doukaku.org/293/nested/#comment10493" onClick="$('#comment10493 .comment_content').show()">[open]</a>
+  </p>
+  <div class="comment_content" style="display: none">
+	<div class="comment_body">
+	  <p>Such good &lt;a href=&quot;<a class="reference" href="/web/20100706191633/http://www.topdissertations.com/">http://www.topdissertations.com</a>&quot;&gt;dissertation&lt;/a&gt; about this topic is the thing that people should purchase from the dissertation writers, thence  every time they get the &lt;a href=&quot;<a class="reference" href="/web/20100706191633/http://www.topdissertations.com/">http://www.topdissertations.com</a>&quot;&gt;buy thesis&lt;/a&gt; and custom writing.</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10493/addtag/" class="addtag" id="addtag_10493">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffdfdf;"
+  >-2/2=-1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10493"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10493"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10493"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100706191633/http://ja.doukaku.org/293/reply_to/10493/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment10494">
+  <p class="banner"><a href="/web/20100706191633/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10494/">#10494</a>(<script language="JavaScript">print_time(new Date("2010/05/04 17:20 GMT"));</script><noscript>2010/05/04 17:20 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffdfdf;">-2/2=-1.00</span></span><a href="/web/20100706191633/http://ja.doukaku.org/293/nested/#comment10494" onClick="$('#comment10494 .comment_content').show()">[open]</a>
+  </p>
+  <div class="comment_content" style="display: none">
+	<div class="comment_body">
+	  <p>It is time to confess that you impressed us with your superior theme related to this good topic. Thence, we will attempt to complete the thesis mba on the base of your stuff. Or believably, this is real to detect the &lt;a href=&quot;<a class="reference" href="/web/20100706191633/http://www.exclusivethesis.com/">http://www.exclusivethesis.com</a>&quot;&gt;dissertation&lt;/a&gt; service.</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10494/addtag/" class="addtag" id="addtag_10494">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffdfdf;"
+  >-2/2=-1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10494"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10494"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10494"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100706191633/http://ja.doukaku.org/293/reply_to/10494/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment10500">
+  <p class="banner"><a href="/web/20100706191633/http://ja.doukaku.org/user/856/" target="_top">fumokmm</a>
+
+	
+	&nbsp;
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10500/">#10500</a>(<script language="JavaScript">print_time(new Date("2010/05/11 12:28 GMT"));</script><noscript>2010/05/11 12:28 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100706191633/http://ja.doukaku.org/lang/groovy/">
+	  Groovy
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Collection#groupByを使って再帰呼び出しで定義してみました。</p>
+<p>assert hashTree(data.sort{ Math.random()}) == hashTree(data.sort{ Math.random() })
+部に関しては、ランダムにソートしたデータ同士で作ったハッシュの結果が同等であることをテストしています。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27</pre></td><td class="code"><div class="highlight"><pre>def data = [
+  [&#39;東京都&#39;, &#39;区部&#39;,     &#39;千代田区&#39;, &#39;object1&#39;],
+  [&#39;東京都&#39;, &#39;区部&#39;,     &#39;中央区&#39;,   &#39;object2&#39;],
+  [&#39;東京都&#39;, &#39;区部&#39;,     &#39;港区&#39;,     &#39;object3&#39;],
+  [&#39;東京都&#39;, &#39;多摩地域&#39;, &#39;支部&#39;,     &#39;昭島市&#39;,     &#39;object4&#39;],
+  [&#39;東京都&#39;, &#39;多摩地域&#39;, &#39;支部&#39;,     &#39;あきる野市&#39;, &#39;object5&#39;],
+  [&#39;東京都&#39;, &#39;多摩地域&#39;, &#39;西多摩郡&#39;, &#39;奥多摩町&#39;,   &#39;object6&#39;],
+  [&#39;東京都&#39;, &#39;島嶼部&#39;,   &#39;大島支庁&#39;, &#39;大島町&#39;,     &#39;object7&#39;],
+  [&#39;東京都&#39;, &#39;島嶼部&#39;,   &#39;三宅支庁&#39;, &#39;三宅村&#39;,     &#39;object8&#39;],
+]
+
+def hashTree = this.&amp;toHashMap.curry(0)
+def result = hashTree(data)
+
+// 以下テスト
+assert result.toString() == &#39;[東京都:[区部:[中央区:object2, 千代田区:object1, 港区:object3], 多摩地域:[支部:[あきる野市:object5, 昭島市:object4], 西多摩郡:[奥多摩町:object6]], 島嶼部:[三宅支庁:[三宅村:object8], 大島支庁:[大島町:object7]]]]&#39;
+assert hashTree(data.sort{ Math.random()}) == hashTree(data.sort{ Math.random() })
+
+// ハッシュマップに変換するメソッド
+def toHashMap(idx, list) {
+  if (idx == list.first().size() - 1) return list.first()[idx]
+  def result = [:] as TreeMap // キーで並べ替えるマップ
+  list.groupBy{ it[idx] }.each {
+    result[it.key] = toHashMap(idx + 1, it.value)
+  }
+  result
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10500/addtag/" class="addtag" id="addtag_10500">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100706191633/http://ja.doukaku.org/lang/groovy/">
+		Groovy
+      </a>]
+	  
+      [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10500/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10500/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10500"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10500"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10500"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100706191633/http://ja.doukaku.org/293/reply_to/10500/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment10502">
+  <p class="banner"><a href="/web/20100706191633/http://ja.doukaku.org/user/959/" target="_top">uehaj</a>
+
+	
+	&nbsp;
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10502/">#10502</a>(<script language="JavaScript">print_time(new Date("2010/05/14 21:02 GMT"));</script><noscript>2010/05/14 21:02 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100706191633/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>平凡です。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32</pre></td><td class="code"><div class="highlight"><pre>data = [[&#39;東京都&#39;, &#39;区部&#39;, &#39;千代田区&#39;, &quot;object1&quot;],
+        [&#39;東京都&#39;, &#39;区部&#39;, &#39;中央区&#39;, &quot;object2&quot;],
+        [&#39;東京都&#39;, &#39;区部&#39;, &#39;港区&#39;, &quot;object3&quot;],
+        [&#39;東京都&#39;, &#39;多摩地域&#39;, &#39;支部&#39;, &#39;昭島市&#39;, &quot;object4&quot;],
+        [&#39;東京都&#39;, &#39;多摩地域&#39;, &#39;支部&#39;, &#39;あきる野市&#39;, &quot;object5&quot;],
+        [&#39;東京都&#39;, &#39;多摩地域&#39;, &#39;西多摩郡&#39;, &#39;奥多摩町&#39;, &quot;object6&quot;],
+        [&#39;東京都&#39;, &#39;島嶼部&#39;, &#39;大島支庁&#39;, &#39;大島町&#39;, &quot;object7&quot;],
+        [&#39;東京都&#39;, &#39;島嶼部&#39;, &#39;三宅支庁&#39;, &#39;三宅村&#39;, &quot;object8&quot;]]
+
+def putHashTree(hash, list) {
+  if (list.size() == 2) {
+    hash.put(list[0], list[-1])
+    return hash
+  }
+  else if (hash.containsKey(list[0])) {
+    def v = hash.get(list[0])
+    if (v instanceof Map) {
+      putHashTree(v, list[1..-1])
+      return hash
+    }
+  }
+  hash.put(list[0], putHashTree([:], list[1..-1]))
+  return hash
+}
+
+hashTree = [:]
+
+data.each {
+  putHashTree(hashTree, it)
+}
+
+println hashTree
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10502/addtag/" class="addtag" id="addtag_10502">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100706191633/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10502/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10502/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10502"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10502"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10502"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100706191633/http://ja.doukaku.org/293/reply_to/10502/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment10503">
+  <p class="banner"><a href="/web/20100706191633/http://ja.doukaku.org/user/959/" target="_top">uehaj</a>
+
+	
+	&nbsp;
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10503/">#10503</a>(<script language="JavaScript">print_time(new Date("2010/05/14 21:03 GMT"));</script><noscript>2010/05/14 21:03 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100706191633/http://ja.doukaku.org/lang/groovy/">
+	  Groovy
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>言語指定を間違えたので再投稿です。
+すみません。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32</pre></td><td class="code"><div class="highlight"><pre>data = [[&#39;東京都&#39;, &#39;区部&#39;, &#39;千代田区&#39;, &quot;object1&quot;],
+        [&#39;東京都&#39;, &#39;区部&#39;, &#39;中央区&#39;, &quot;object2&quot;],
+        [&#39;東京都&#39;, &#39;区部&#39;, &#39;港区&#39;, &quot;object3&quot;],
+        [&#39;東京都&#39;, &#39;多摩地域&#39;, &#39;支部&#39;, &#39;昭島市&#39;, &quot;object4&quot;],
+        [&#39;東京都&#39;, &#39;多摩地域&#39;, &#39;支部&#39;, &#39;あきる野市&#39;, &quot;object5&quot;],
+        [&#39;東京都&#39;, &#39;多摩地域&#39;, &#39;西多摩郡&#39;, &#39;奥多摩町&#39;, &quot;object6&quot;],
+        [&#39;東京都&#39;, &#39;島嶼部&#39;, &#39;大島支庁&#39;, &#39;大島町&#39;, &quot;object7&quot;],
+        [&#39;東京都&#39;, &#39;島嶼部&#39;, &#39;三宅支庁&#39;, &#39;三宅村&#39;, &quot;object8&quot;]]
+
+def putHashTree(hash, list) {
+  if (list.size() == 2) {
+    hash.put(list[0], list[-1])
+    return hash
+  }
+  else if (hash.containsKey(list[0])) {
+    def v = hash.get(list[0])
+    if (v instanceof Map) {
+      putHashTree(v, list[1..-1])
+      return hash
+    }
+  }
+  hash.put(list[0], putHashTree([:], list[1..-1]))
+  return hash
+}
+
+hashTree = [:]
+
+data.each {
+  putHashTree(hashTree, it)
+}
+
+println hashTree
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10503/addtag/" class="addtag" id="addtag_10503">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100706191633/http://ja.doukaku.org/lang/groovy/">
+		Groovy
+      </a>]
+	  
+      [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10503/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10503/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10503"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10503"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10503"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100706191633/http://ja.doukaku.org/293/reply_to/10503/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment10876">
+  <p class="banner"><a href="/web/20100706191633/http://ja.doukaku.org/user/647/" target="_top">ivoryworks</a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/star_bronze.png" border=0/></a><a href="/web/20100706191633/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10876/">#10876</a>(<script language="JavaScript">print_time(new Date("2010/06/29 09:31 GMT"));</script><noscript>2010/06/29 09:31 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100706191633/http://ja.doukaku.org/lang/php/">
+	  PHP
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>配列を&amp;で渡しているのがポイント。
+終端にobjectを格納するところがスマートじゃないかもしれない。
+</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73</pre></td><td class="code"><div class="highlight"><pre><span class="x">$tokyo = array(</span>
+<span class="x">        array(&#39;東京都&#39;, &#39;区部&#39;, &#39;千代田区&#39;, &#39;object1&#39;)</span>
+<span class="x">        ,array(&#39;東京都&#39;, &#39;区部&#39;, &#39;中央区&#39;, &#39;object2&#39;)</span>
+<span class="x">        ,array(&#39;東京都&#39;, &#39;区部&#39;, &#39;港区&#39;, &#39;object3&#39;)</span>
+<span class="x">        ,array(&#39;東京都&#39;, &#39;多摩地域&#39;, &#39;支部&#39;, &#39;昭島市&#39;, &#39;object4&#39;)</span>
+<span class="x">        ,array(&#39;東京都&#39;, &#39;多摩地域&#39;, &#39;支部&#39;, &#39;あきる野市&#39;, &#39;object5&#39;)</span>
+<span class="x">        ,array(&#39;東京都&#39;, &#39;多摩地域&#39;, &#39;西多摩郡&#39;, &#39;奥多摩町&#39;, &#39;object6&#39;)</span>
+<span class="x">        ,array(&#39;東京都&#39;, &#39;島嶼部&#39;, &#39;大島支庁&#39;, &#39;大島町&#39;, &#39;object7&#39;)</span>
+<span class="x">        ,array(&#39;東京都&#39;, &#39;島嶼部&#39;, &#39;三宅支庁&#39;, &#39;三宅村&#39;, &#39;object8&#39;)</span>
+<span class="x">        );</span>
+
+<span class="x">$tokyo_tree = array();</span>
+
+<span class="x">foreach ( $tokyo as $obs ) {</span>
+<span class="x">    $w = &amp;$tokyo_tree;</span>
+<span class="x">    $cnt = count( $obs );</span>
+<span class="x">    for ( $i = 0; $i &lt; $cnt; $i++ ) {</span>
+<span class="x">        if ( $i == $cnt-1 ) {</span>
+<span class="x">            $w = $obs[$i];</span>
+<span class="x">        }</span>
+<span class="x">        else {</span>
+<span class="x">            $w = &amp;$w[$obs[$i]];</span>
+<span class="x">        }</span>
+<span class="x">    }</span>
+<span class="x">}</span>
+
+<span class="x">print_r( $tokyo_tree );</span>
+
+
+<span class="x">/*** 結果 ***/</span>
+<span class="x">Array</span>
+<span class="x">(</span>
+<span class="x">    [東京都] =&gt; Array</span>
+<span class="x">        (</span>
+<span class="x">            [区部] =&gt; Array</span>
+<span class="x">                (</span>
+<span class="x">                    [千代田区] =&gt; object1</span>
+<span class="x">                    [中央区] =&gt; object2</span>
+<span class="x">                    [港区] =&gt; object3</span>
+<span class="x">                )</span>
+<span class="x"> </span>
+<span class="x">            [多摩地域] =&gt; Array</span>
+<span class="x">                (</span>
+<span class="x">                    [支部] =&gt; Array</span>
+<span class="x">                        (</span>
+<span class="x">                            [昭島市] =&gt; object4</span>
+<span class="x">                            [あきる野市] =&gt; object5</span>
+<span class="x">                        )</span>
+<span class="x"> </span>
+<span class="x">                    [西多摩郡] =&gt; Array</span>
+<span class="x">                        (</span>
+<span class="x">                            [奥多摩町] =&gt; object6</span>
+<span class="x">                        )</span>
+<span class="x"> </span>
+<span class="x">                )</span>
+<span class="x"> </span>
+<span class="x">            [島嶼部] =&gt; Array</span>
+<span class="x">                (</span>
+<span class="x">                    [大島支庁] =&gt; Array</span>
+<span class="x">                        (</span>
+<span class="x">                            [大島町] =&gt; object7</span>
+<span class="x">                        )</span>
+<span class="x"> </span>
+<span class="x">                    [三宅支庁] =&gt; Array</span>
+<span class="x">                        (</span>
+<span class="x">                            [三宅村] =&gt; object8</span>
+<span class="x">                        )</span>
+<span class="x"> </span>
+<span class="x">                )</span>
+<span class="x"> </span>
+<span class="x">        )</span>
+<span class="x"> </span>
+<span class="x">)</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100706191633/http://ja.doukaku.org/comment/10876/addtag/" class="addtag" id="addtag_10876">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100706191633/http://ja.doukaku.org/lang/php/">
+		PHP
+      </a>]
+	  
+      [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10876/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100706191633/http://ja.doukaku.org/comment/10876/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_10876"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_10876"
+  >0</span><span 
+  class="button green"
+  id="rating_p_10876"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100706191633/http://ja.doukaku.org/293/reply_to/10876/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+</div>
+
+<div id="side_menu" class="compact">
+
+<iframe src="/web/20100706191633if_/http://ja.doukaku.org/login_info/" frameborder=0 width=100% id="login_info">
+iframe required
+</iframe>
+
+<h4 class="semi_compact">一覧</h4>
+
+<ul>
+<!--<li><a href="/web/20100706191633/http://ja.doukaku.org/user/">ユーザ</a>-->
+<li><a href="/web/20100706191633/http://ja.doukaku.org/lang/">言語</a>
+<li><a href="/web/20100706191633/http://ja.doukaku.org/challenge/">お題</a>
+<li><a href="/web/20100706191633/http://ja.doukaku.org/topic/">トピック</a>
+<li><a href="/web/20100706191633/http://ja.doukaku.org/comment/">投稿</a>
+<li><a href="/web/20100706191633/http://ja.doukaku.org/good_comments/">評価の高い投稿</a>
+<li><a href="/web/20100706191633/http://ja.doukaku.org/tag/">タグ</a>
+</ul>
+
+<h4 class="compact">フィード</h4>
+<ul>
+<li><a href="/web/20100706191633/http://ja.doukaku.org/feeds/challenges/">最新のお題</a><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/feed_icon.png">
+<li><a href="/web/20100706191633/http://ja.doukaku.org/feeds/topics/">最新のトピック</a><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/feed_icon.png">
+<li><a href="/web/20100706191633/http://ja.doukaku.org/feeds/comments/">新着投稿</a><img src="/web/20100706191633im_/http://ja.doukaku.org/static/image/feed_icon.png">
+</ul>
+
+
+
+
+
+
+
+<h4 class="compact">その他</h4>
+<ul>
+<li><a href="/web/20100706191633/http://ja.doukaku.org/qa/">Q&A</a>
+<li><a href="/web/20100706191633/http://ja.doukaku.org/feedback/">フィードバック</a>
+<!--<li><a href="/web/20100706191633/http://ja.doukaku.org/terms">用語集</a>-->
+</ul>
+
+
+<h4 class="compact">リンク</h4>
+<ul>
+<li><a href="/web/20100706191633/http://www.lingr.com/room/doukaku_ja">チャットルーム(Lingr)</a>
+<li><a href="/web/20100706191633/http://labs.cybozu.co.jp/">サイボウズ・ラボ</a>
+<li><a href="/web/20100706191633/http://www.djangoproject.com/">Django</a>
+</ul>
+
+<h4 id="pathtraq" class="compact"><a href="/web/20100706191633/http://pathtraq.com/analytics?url=http%3A%2F%2Fja.doukaku.org%2Fcomment%2F*%2F%20desc%3A%E3%81%A9%E3%81%86%E6%9B%B8%E3%81%8Forg&m=popular">Pathtraq</a></h4>
+<div class="indent">
+<span id="pathtraq_sentinel">loading...</span>
+</div>
+
+
+</div>
+</div>
+
+
+<div id="page_foot" class="bordered">
+
+<a rel="license" href="/web/20100706191633/http://creativecommons.org/licenses/by/2.1/jp/">
+<img alt="Creative Commons License" style="border-width:0" src="/web/20100706191633im_/http://i.creativecommons.org/l/by/2.1/jp/88x31.png" /></a>
+このサイトの内容は、
+<a rel="license" href="/web/20100706191633/http://creativecommons.org/licenses/by/2.1/jp/">クリエイティブ・コモンズ・ライセンス</a>の下でライセンスされています。
+<a href="/web/20100706191633/http://ja.doukaku.org/qa/#licence">[詳細]</a>
+
+</div>
+
+</body>
+
+
+
+
+<script type="text/javascript">
+$(document).ready(function(){$("#doukaku_org").after("<script src='/web/20100706191633/http://api.pathtraq.com/pages?url=http%3A%2F%2Fja.doukaku.org%2Fcomment%2F*%2F%20desc%3A%E3%81%A9%E3%81%86%E6%9B%B8%E3%81%8Forg&api=json&callback=addPathtraq'><" + "/script>")});
+</script>
+
+<script src="/web/20100706191633js_/http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-2136157-1";
+urchinTracker();
+</script>
+
+
+
+
+</html>
+
+
+
+
+
+<!--
+     FILE ARCHIVED ON 19:16:33 Jul 6, 2010 AND RETRIEVED FROM THE
+     INTERNET ARCHIVE ON 14:11:53 Nov 16, 2013.
+     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+     SECTION 108(a)(3)).
+-->

@@ -1,0 +1,329 @@
+---
+:id: '175'
+:title: 再帰を用いた迷路探索問題
+:comments:
+- :id: '6255'
+  :parent_id: '175'
+  :url: http://ja.doukaku.org/comment/6255
+  :user_name: buttmeister
+  :user_url: /web/20080820014856/http://ja.doukaku.org/user/800/
+  :language: C
+  :time: 2008/05/04 06:42 GMT
+  :vote_count: '13'
+  :vote_score: '-11'
+  :body: "\r\n\t  再帰の問題例としての迷路問題。\r\n迷路問題は、迷路に対してスタートとゴールを定義し、スタートからゴールまでの道順を探索することである。探索が成功した場合はその経路を表示し、ゴールにたどり着けない場合はその旨を表示することとする。\r\n\r\nこのような問題では、まず迷路空間をどのように表現するか考慮する必要がある。たとえば格子状を座標と考えて左上（０，０）と考えて右下を（５，５）と表現した場合はスタート（１，１）からゴール（１，４）まで、\r\n（１，１）－（２，１）－（３，１）－（４，１）－４，２）－（４，３）－（３，３）－（２，３）－（２，４）－（１，４）\r\nという経路を通ることによってたどり着くと表現できる。\r\n\r\n問題の制約\r\n上記のように座標で考えるをわかりやすいが少し趣向を凝らしてリストを用いて迷路空間を表現し探索することを考えてみる。\r\nリストの構成要素は迷路を構成するそれぞれのマス目となる。よって、マス目1つは、以下のような構造体boxで表現できる。構造対boxは自分自身の上下左右のマスを表すポインタと自分自身の状態を保持するためのflagの意味は以下のコメントの通りである。\r\n\r\n**(1)**\r\n\r\n上記の迷路問題スタートからゴールに辿り着く最短の経路は、次のように表現できる。\r\n((((((((start-&gt;right)-&gt;right)-&gt;right)-&gt;down)-&gt;down)-&gt;left)-&gt;left)-&gt;down)-&gt;left
+    = goal\r\nのように表現できる。\r\n\r\n上記の例では、人間の場合は瞬時に最短経路がわかるが、コンピュータは人間のような空間把握能力はないため、逐次滝に経路をたどることによってコールを探すことになる。つまり、ひたすらある方向に進み進めなくなったら違う方向に進むという事を繰り返してゴールを探索する。そのため、必ずしも最短経路を辿ってゴールできるとは限らない。\r\n\r\n**(2)**\r\n\r\n上記のプログラムを作成してください。\r\nヒント\r\nまずファイルからデータ（迷路空間）を読み込み、迷路空間を構成する。\r\nそのあとに再帰を用いて、スタートからゴールまで探索する。\r\n\r\n\r\n\r\n\t"
+  :code: |
+    図１-
+    ＊＊＊＊＊＊
+    ＊８０００＊
+    ＊＊＊＊０＊
+    ＊＊０００＊
+    ＊９０＊０＊
+    ＊＊＊＊＊＊
+
+
+    **(1)**
+
+    struct {
+    int flag;
+    struct box *up;
+    struct box *down;
+    struct box *right;
+    struct box *left;
+    };
+    struct box *null = (struct box *)NULL;
+    struct box *start; struct box *goal;
+
+
+    **(2)**
+
+    void visit(struct box *b,...) {
+    ①ゴールに到達できない場合は次の処理を行う。
+    ②現在の通路を通過したことを示すフラグを立てる
+    ③上が空いてれば上に移動
+    ④下が空いてれば下に移動
+    ⑤右が空いてれば右に移動
+    ⑥左が空いてれば左に移動
+    ｝
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6260'
+  :parent_id: '175'
+  :url: http://ja.doukaku.org/comment/6260
+  :user_name: Y
+  :user_url: /web/20080820014856/http://ja.doukaku.org/user/428/
+  :language: Mathematica
+  :time: 2008/05/04 15:08 GMT
+  :vote_count: '3'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">再帰のない言語やあっても深さの制限が厳しい言語があるので、\r\n手法は限定しないほうがいいのではないでしょうか\r\n（構造体とかリストとかも）。\r\n要は迷路が解ければいいわけで。\r\n\r\n例えばグラフアルゴリズムを標準サポートしている処理系なら、\r\n最短経路も特に難しいということはないかと\r\n（愚直なエージェントを実装したいということがあるかもしれませんが）\r\n\r\nnum：座標を数字に変換する補助関数\r\npos：数字を座標に変換する補助関数\r\n\r\n実行結果（Mathematicaなのでインデックスがずれます）：\r\n{{2,2},{2,3},{2,4},{2,5},{3,5},{4,5},{4,4},{4,3},{5,3},{5,2}}</pre>\n\t"
+  :code: |
+    &lt;&lt;DiscreteMath`GraphPlot`;
+    &lt;&lt;DiscreteMath`Combinatorica`;
+
+    tmp={
+          "******",
+          "*8000*",
+          "****0*",
+          "**000*",
+          "*90*0*",
+          "******"};
+    maze=Characters/@tmp;
+    n=Length@First@maze;
+    num[i_,j_]:=n (i-1)+j
+    pos[x_]:={Quotient[x,n,1]+1,Mod[x,n,1]}
+
+    start=num@@First@Position[maze,"8"];
+    goal=num@@First@Position[maze,"9"];
+    arcs={};
+    Do[
+        If[maze[[i,j]]!="*",
+          If[maze[[i,j+1]]!="*",
+            AppendTo[arcs,{num[i,j],num[i,j+1]}]];
+          If[maze[[i+1,j]]!="*",
+            AppendTo[arcs,{num[i,j],num[i+1,j]}]]],
+        {i,1,Length@maze-1},{j,1,n-1}];
+
+    sol=ShortestPath[FromUnorderedPairs@arcs,start,goal];
+    If[Head@sol===ShortestPath || Length@sol==1,False,
+      pos/@sol]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6263'
+  :parent_id: '175'
+  :url: http://ja.doukaku.org/comment/6263
+  :user_name: buttmeister
+  :user_url: /web/20080820014856/http://ja.doukaku.org/user/800/
+  :language: C
+  :time: 2008/05/05 15:14 GMT
+  :vote_count: '6'
+  :vote_score: '-4'
+  :body: "\n\t  <p>C言語初心者なんでうまく実行できません。座標を読み込むテキストファイルの読み込み方がよくわかりません。</p>\n\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+
+    #define START 8
+    #define GOAL 1
+    #define ROUTE 100
+    #define END -1
+    int maze[6][6];
+    const int y_goal = 5, x_goal =2;
+    int route[ROUTE][2];
+    int rp = 0;
+    int solvemaze(int y, int x) {
+        static int success = 0;
+        if(y==y_goal &amp;&amp; x==x_goal)success == GOAL;
+        maze[y][x] = 'T';
+        if(!success &amp;&amp; maze[y-1][x] == '0'){solvemaze(y-1, x);}
+        if(!success &amp;&amp; maze[y][x+1] == '0'){solvemaze(y, x+1); }
+        if(!success &amp;&amp; maze[y][x-1] == '0'){solvemaze(y, x-1); }
+        if(!success &amp;&amp; maze[y+1][x] == '0'){solvemaze(y+1, x); }
+        if(success) {
+            route[rp][0] = y;
+            route[rp][1] = x;
+            rp++;
+        }
+        return success;
+    }
+
+    void maze_print() {
+        int i, j;
+        for(i=0; i&lt;6; i++) {
+            for(j=0; j&lt;6;j++) {
+                printf("%d", maze[j][i]);
+            }
+            printf("\n");
+        }
+    }
+
+    int main() {
+        int i;
+        maze_print(); printf("\n");
+        solvemaze(1,1);
+        maze_print(); printf("\n");
+        for(i=rp; i; i--) {
+            printf("%d.", route[i-1][0]);
+            printf("%d", route[i-1][1]);
+        }
+        putchar('\n');
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6264'
+  :parent_id: '175'
+  :url: http://ja.doukaku.org/comment/6264
+  :user_name: Y
+  :user_url: /web/20080820014856/http://ja.doukaku.org/user/428/
+  :language: 
+  :time: 2008/05/05 16:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">&gt;&gt;194\r\n学校の宿題だったんですね。\r\nすいませんでした、Mathematicaなんかでやってしまって。\r\nでも、ここは多言語クックブックなので、言語と実装方法を指定しても無駄だと思いますよ。\r\nところで、締め切り思いっきり過ぎちゃってますけど、大丈夫でしょうか、いろんな意味で。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20080820014856/http://chomework.sakura.ne.jp/log1/1135125328_02.html
+    :title: C/C++の宿題を片付けます 56代目
+- :id: '6265'
+  :parent_id: '175'
+  :url: http://ja.doukaku.org/comment/6265
+  :user_name: 匿名
+  :user_url: /web/20080820014856/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/05/06 13:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>CやC++でスタックオーバフローの検出の仕方を教えてください。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6266'
+  :parent_id: '175'
+  :url: http://ja.doukaku.org/comment/6266
+  :user_name: 匿名
+  :user_url: /web/20080820014856/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/05/06 13:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>書き忘れました。スレヌシ限定で！</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6268'
+  :parent_id: '175'
+  :url: http://ja.doukaku.org/comment/6268
+  :user_name: あにす
+  :user_url: /web/20080820014856/http://ja.doukaku.org/user/504/
+  :language: 
+  :time: 2008/05/06 23:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>\"上記のプログラム\"とはどのようなプログラムでしょうか？\n任意のデータ形式のファイルを読み込み、その迷路を解き、経路を任意の形式で出力するプログラムを作成すれば良いのでしょうか？\n再帰を使うことは必須でしょうか?ループで書いてもいいと思うのですが…。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6279'
+  :parent_id: '175'
+  :url: http://ja.doukaku.org/comment/6279
+  :user_name: 匿名
+  :user_url: /web/20080820014856/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/05/10 01:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>スレヌシではないけど、参考ページをペタっとな</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20080820014856/http://www.nminoru.jp/~nminoru/programming/stackoverflow_handling.html
+    :title: スタックオーバーフローのハンドリング
+- :id: '6393'
+  :parent_id: '175'
+  :url: http://ja.doukaku.org/comment/6393
+  :user_name: morohashitsutomu2
+  :user_url: /web/20080820014856/http://ja.doukaku.org/user/815/
+  :language: Other
+  :time: 2008/05/31 05:45 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n#include
+    &lt;conio.h&gt;\n\n#define STR_LEN 512 \n\nint deque(struct box *b);\nvoid print_pass();\nvoid
+    pop(struct box **pass_tail);\nvoid push(struct box *b, struct box **pass_tail);\nvoid
+    link_up_down(struct box **head1, struct box **head2, struct box **tail2);\nvoid
+    link_right_left(int type, struct box **head, struct box **tail);\nvoid read_maze(FILE
+    *fp);\nint visit(struct box *b, struct box **pass_head, struct box **pass_tail);\nint
+    main(void);\n\nstruct box{\n    int flag;            //-1=壁, 0=通路, 1=通過, 8=スタート,
+    9=ゴール \n    struct box *up;        //上のマスへのポインタ\n    struct box *down;    //下のマスへのポインタ\n
+    \   struct box *right;    //右のマスへのポインタ\n    struct box *left;    //左のマスへのポインタ\n
+    \   struct box *pass_next;   //探索経路上、次のマスへのポインタ\n    struct box *pass_prev;   //探索経路上、前のマスへのポインタ\n};\n\nstruct
+    box *null = (struct box *)NULL;    //リストの終端として利用\nstruct box *start, *goal;                //スタート及びゴール\n\n//リストの先頭から方向を示す整数を返す[経路出力用]\nint
+    deque(struct box *b){\n    if(b-&gt;pass_next == b-&gt;up) return 0;\n    if(b-&gt;pass_next
+    == b-&gt;down) return 1;\n    if(b-&gt;pass_next == b-&gt;right) return 2;\n    if(b-&gt;pass_next
+    == b-&gt;left) return 3;\n    return -1;\n}\n\n//戻りなし経路の表示\nvoid print_pass()\n{\n
+    \   static const char *dirstr[] = {\"up\", \"down\", \"right\", \"left\"};\n    struct
+    box *b;\n    for(b = start; b != goal; b = b-&gt;pass_next) {//スタートからゴールまで\n        printf(\"%s
+    \", dirstr[deque(b)]);//探索した経路を表示していく\n    }\n}\n\n//リストの最後の要素を削除する[経路出力用]\nvoid
+    pop(struct box **pass_tail) \n{\n    struct box *b = *pass_tail;\n    *pass_tail
+    = b-&gt;pass_prev;//前のマスに戻る\n    b-&gt;pass_prev-&gt;pass_next = null;//リンクの削除\n
+    \   b-&gt;pass_prev = null;\n}\n\n//リストの最後に要素を追加する[経路出力用]\nvoid push(struct box
+    *b, struct box **pass_tail){\n\n    b-&gt;pass_prev = *pass_tail;//次のマスから前のマスへのリンク\n
+    \   b-&gt;pass_prev-&gt;pass_next = b;//前のマスから次のマスへのリンク\n    *pass_tail = b;//次のマスに進む\n}\n\n//up及びdownのリンクを作成する\nvoid
+    link_up_down(struct box **head1, struct box **head2, struct box **tail2){\n\n
+    \   if(*head2 == null) {//リストが空ならば\n        *head2 = *head1;//read_mazeで読み込んだ行の左端を迷路の左上端とする\n
+    \   } else {\n        struct box *p1, *p2;//p1は現在の行の分、p2は前の行の分\n        for(p1
+    = *head1, p2 = *tail2; p1 != null &amp;&amp; p2 != null; p1 = p1-&gt;right, p2
+    = p2-&gt;right) {//1行読み込む\n            p1-&gt;up = p2;//現在のマスから上へのリンク\n            p1-&gt;up-&gt;down
+    = p1;//上から現在のマスへのリンク\n        }\n    }\n    *tail2 = *head1;//tail2の更新\n}\n\n//right及びleftのリンクを作成する。\nvoid
+    link_right_left(int type, struct box **head, struct box **tail) {\n    /* この関数内でのリストは，引数で**head,**tailとして与えられているので，*head,*tailで扱う．*/\n
+    \   // typeで指定されたboxを作成する．\n    struct box *p = (struct box*)malloc(sizeof(struct
+    box));\n\n    /* boxであるp の flag , right , leftを決定 */\n\n    p-&gt;flag = type;//それぞれ初期化。左右リンク作成前なので、type以外をnullとしておく\n
+    \   p-&gt;up = p-&gt;down = p-&gt;left = p-&gt;right = p-&gt;pass_next = p-&gt;pass_prev
+    = null;\n    if(*head == null) { // もしリストがカラだったら，リストの要素がないのだから p が先頭\n        *head
+    = p;//リストの先頭に追加する\n    } else {\n        p-&gt;left = *tail;//前のマスへのリンク\n        p-&gt;left-&gt;right
+    = p;//左から現在のマスへのリンク\n    }\n    *tail = p;//リストの末尾をpとする\n}\n\n//迷路データを読み込む\nvoid
+    read_maze(FILE *fp)\n{\n    struct box *head1,*tail1,*head2,*tail2;//それぞれ左右のリンクの左端と右端、迷路全体の左上と左下\n
+    \   unsigned int i;\n    char buffer[STR_LEN];//読み込んだ行の保管用\n\n    //１本ずつ左右のリストを生成し、２本のリストから上下のリンクを生成する。\n
+    \   head2 = tail2 = null;//端二か所を空のリストとする\n    while(!feof(fp)){//ファイルの終わりまで\n\n
+    \       head1 = tail1 = null;//左右リンクの端を空のリストとする\n\n        if(fgets(buffer, STR_LEN
+    - 1, fp) == NULL) //ファイルから読み込み\n            break;\n        for(i = 0; i &lt;
+    strlen(buffer) - 1; i++){//読み込んだ行の文字数だけ\n\n            // ファイル中の文字(char型)を整数(int型)で表す\n
+    \           int type;\n            switch(buffer[i]) {\n            case '*':\n
+    \               type = -1;\n                break;\n            case '0':\n            case
+    '8':\n            case '9':\n                type = buffer[i] - '0';\n                break;\n
+    \           default:\n                printf(\"迷路データに規定外の文字'%c'があります。\\n\", buffer[i]);\n
+    \               return ;\n            }\n\n            // 左右リンクを作成\n            link_right_left(type,
+    &amp;head1, &amp;tail1);\n\n            // startとgoalの決定\n            if(type
+    == 8) {\n                start = tail1;\n            } else if(type == 9) {\n
+    \               goal = tail1;\n            }\n        }\n\n        /*  (上下のリンクを生成)
+    */\n        link_up_down(&amp;head1,&amp;head2, &amp;tail2);\n        \n    }\n}\n\nint
+    visit(struct box *b, struct box **pass_head, struct box **pass_tail){\n    //ゴールならば・・・\n
+    \   if(b-&gt;flag == 9){\n        printf(\"goal!\\n\");\n        return(0);\n
+    \   }\n    \n    //現在のマス目を通過済みとする\n    if(b-&gt;flag == 0) b-&gt;flag = 1;\n    \n
+    \   //上方向が空いているなら上にいく\n    if(b-&gt;up != null &amp;&amp; (b-&gt;up-&gt;flag ==
+    0 || b-&gt;up-&gt;flag == 9)) {\n        printf(\"up \");\n        push(b-&gt;up,
+    pass_tail);//経路出力用に、リストの最後に追加しておく\n        if(visit(b-&gt;up, pass_head, pass_tail)
+    == 0)return(0);//再帰を利用して迷路を探索していく\n        pop(pass_tail);//リストの最後を削除する\n    }\n
+    \   \n    //下方向が空いているなら下にいく\n    if(b-&gt;down != null &amp;&amp; (b-&gt;down-&gt;flag
+    == 0 || b-&gt;down-&gt;flag == 9)) {\n        printf(\"down \");\n        push(b-&gt;down,
+    pass_tail);\n        if(visit(b-&gt;down, pass_head, pass_tail) == 0)return(0);\n
+    \       pop(pass_tail);\n    }\n    \n    //右方向が空いているなら右にいく\n    if(b-&gt;right
+    != null &amp;&amp; (b-&gt;right-&gt;flag == 0 || b-&gt;right-&gt;flag == 9)) {\n
+    \       printf(\"right \");\n        push(b-&gt;right, pass_tail);\n        if(visit(b-&gt;right,
+    pass_head, pass_tail) == 0)return(0);\n        pop(pass_tail);\n    }\n\n    //左方向が空いているなら左にいく\n
+    \   if(b-&gt;left != null &amp;&amp; (b-&gt;left-&gt;flag == 0 || b-&gt;left-&gt;flag
+    == 9)) {\n        printf(\"left \");\n        push(b-&gt;left, pass_tail);\n        if(visit(b-&gt;left,
+    pass_head, pass_tail) == 0)return(0);\n        pop(pass_tail);\n    }\n\n    //4方向行き詰まりなので前のマスへ戻る\n
+    \   printf(\"return! \"); \n\n    //現在のマス目を未通過に戻す\n    b-&gt;flag = 0;\n\n    return(1);\n}\n\nint
+    main(void){\n    FILE *fp;\n    int menu=-1;/* メニュー用*/\n    char fileName[STR_LEN];
+    \   //迷路データファイル名\n    struct box *pass_head=null,*pass_tail=null;\n\n    //迷路データファイル名の決定\n
+    \   while(menu &lt; 0 || menu &gt; 3)\n    {\n        printf(\"0.終了\\n\");\n        printf(\"1.
+    meirodata.txt を読み込む\\n\");\n        printf(\"2. data.txt を読み込む\\n\");\n        printf(\"3.
+    読み込むファイルを指定する\\n\");\n        printf(\"メニューから選択して下さい。 : \");\n        scanf(\"%d\",&amp;menu);\n
+    \   }\n\n    if(menu==0)return(0);\n    if(menu==1)strcpy(fileName,\"meirodata.txt\");\n
+    \   if(menu==2)strcpy(fileName,\"data.txt\");\n    if(menu==3)\n        scanf(\"%s\",fileName);\n\n
+    \   //ファイルを開く\n    if((fp = fopen(fileName, \"r\")) == NULL){\n        fprintf(stderr,
+    \"file read error!\\n\");\n        exit(1);\n    }\n    //迷路を読み込む\n    read_maze(fp);\n
+    \   fclose(fp);\n    //経路を探索する\n    printf(\"探索経路----------\\n\");\n    pass_head
+    = pass_tail = start;\n    visit(start,&amp;pass_head,&amp;pass_tail);\n    printf(\"戻りなし経路----------\\n\");\n\n
+    \   print_pass();\n\n    printf(\"goal!\\n------------------\\n\");\n\n    return(0);\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

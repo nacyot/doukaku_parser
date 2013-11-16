@@ -1,0 +1,868 @@
+---
+:id: '43'
+:title: 与えた条件を満たす候補
+:comments:
+- :id: '3399'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/3399
+  :user_name: にしお
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/13 09:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"box\">\r\n['and', 'or', 'not', 'and']\r\nのような入力が与えられた場合に、\r\n式
+    x1 and x2 or not x3 and x4 の値が\r\nTrueとなるような、x1～x4の組み合わせを全て\r\n出力するプログラムを作成してください。\r\nx1～x4には真と偽の2通りの値だけが入るものとします。\r\n\r\nPythonであれば上の入力に対し、\r\n(True,
+    True, True, True)\r\n(True, True, False, True)\r\n(True, False, False, True)\r\n(False,
+    True, False, True)\r\n(False, False, False, True)\r\nと出力します。\r\n\r\nandとorの優先順位は同じで左結合性、\r\nつまりa
+    and b or c and dは\r\n(((a and b) or c) and d)\r\nという順番で評価されるものとします。\r\n\r\n参考：\r\n<a
+    href=\"/web/20081204193937/http://www.kmonos.net/wlog/70.html#_2111070226\">d.y.d.</a>\r\n\r\nキミならどう書く2.0の小町算問題と似てますが。\r\n</pre>\r\n\r\nこのお題はmorchinさんの投稿をもとに作成しました。\r\nご投稿ありがとうございました。\r\n<br>\r\n元ネタの\r\n<a
+    href=\"/web/20081204193937/http://ja.wikipedia.org/wiki/%E5%85%85%E8%B6%B3%E5%8F%AF%E8%83%BD%E6%80%A7%E5%95%8F%E9%A1%8C\">充足可能性問題
+    - Wikipedia</a>\r\nは、\r\n同じリテラル(x1とかnot x2とか)が複数回出てくることを想定しているので、\r\n今回の問題のようにそれぞれ別の変数でだと<a
+    href=\"/web/20081204193937/http://ja.wikipedia.org/wiki/%E4%B9%97%E6%B3%95%E6%A8%99%E6%BA%96%E5%BD%A2\">乗法標準形
+    - Wikipedia</a>にした場合に、答えが…と色々悩みどころでした。\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2104'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2104
+  :user_name: にしお
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/13 10:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  すみません、サンプル出力が間違ってましたorz 修正しました\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2105'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2105
+  :user_name: shuyo
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/84/
+  :language: Ruby
+  :time: 2007/08/13 10:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">こんな感じ。prodloop のところはもう少しましにしたかったけど、うーん。\r\n\r\n&gt;
+    solve(['and', 'or', 'not', 'and'])\r\n[true, true, true, true]\r\n[true, true,
+    false, true]\r\n[true, false, false, true]\r\n[false, true, false, true]\r\n[false,
+    false, false, true]\r\n</pre>\n\t"
+  :code: |
+    def prodloop(count, arg=[])
+      if count &gt; 0
+        (prodloop count-1, arg + [true]) + (prodloop count-1, arg + [false])
+      else
+        [arg]
+      end
+    end
+
+    def solve(list)
+      expression = ""
+      idx = 0
+      list.each do |op|
+        if op == "not"
+          expression += " not "
+        else
+          expression += " arg[#{idx}] #{op} "
+          idx += 1
+        end
+      end
+      expression += " arg[#{idx}] "
+      prodloop(idx+1).each do |arg|
+        p arg if eval(expression)
+      end
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2106'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2106
+  :user_name: sumim
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/13 11:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk で。\n\t"
+  :code: |
+    | input selStream |
+    input := #(and or not and).
+    input replaceAll: #and with: #&amp;.
+    input replaceAll: #or with: #|.
+    selStream := input readStream.
+    World findATranscript: nil.
+    {true. false} asDigitsToPower: 4 do: [:xs |
+        selStream reset.
+        (xs allButFirst inject: xs first into: [:result :each |
+            | selector |
+            selector := selStream next.
+            selStream peek = #not ifTrue: [each := each perform: selStream next].
+            result perform: selector with: each]) ifTrue: [Transcript cr; show: xs]]
+
+    "=&gt; #(true true true true)
+       #(true true false true)
+       #(true false false true)
+       #(false true false true)
+       #(false false false true) "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '2109'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2109
+  :user_name: iwk
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/49/
+  :language: OCaml
+  :time: 2007/08/13 13:07 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">イマイチ。</pre>\n\t"
+  :code: |
+    #light
+    type ListBuilder () =
+        member l.Bind (v,f) = List.concat (List.map f v)
+        member l.Return x = [x]
+        member l.Let(v,f) = f v
+
+    let guard c = if c then [()] else []
+
+    let doList = new ListBuilder()
+
+    let rec all_comb = function
+        | 0 -&gt; [[]]
+        | n -&gt; doList { let! rest = all_comb (n-1)
+                        let! result = [(true::rest);(false::rest)]
+                        return result }
+
+    let num_args cmds =
+        List.filter ((&lt;&gt;) "not") cmds
+        |&gt; List.length
+        |&gt; (+) 1
+
+    let rec satisfy (cmds:string list) (bools:bool list) =
+        match cmds,bools with
+        | [],b::[]            -&gt; b
+        | "not"::[],b::[]     -&gt; not b
+        | "not"::cs,b::bs     -&gt; satisfy cs ((not b)::bs)
+        | "and"::"not"::cs,b::b'::bs -&gt; satisfy cs ((b &amp;&amp; (not b'))::bs)
+        | "or"::"not"::cs,b::b'::bs  -&gt; satisfy cs ((b || (not b'))::bs)
+        | "and"::cs,b::b'::bs -&gt; satisfy cs ((b &amp;&amp; b')::bs)
+        | "or"::cs,b::b'::bs  -&gt; satisfy cs ((b || b')::bs)
+
+    let get_combs cmds =
+        doList { let! cont = all_comb (num_args cmds)
+                 do! guard (satisfy cmds cont)
+                 return cont }
+
+    do get_combs ["and";"or";"not";"and"]
+       |&gt; (print_any &gt;&gt; print_newline)
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '2110'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2110
+  :user_name: nskj77
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/375/
+  :language: Haskell
+  :time: 2007/08/13 13:23 GMT
+  :vote_count: '5'
+  :vote_score: '5'
+  :body: "\n\t  <pre class=\"compact\">こんな感じ。\r\n*Main&gt; f [\"and\",\"or\",\"not\",\"and\"]\r\n(True,True,True,True)\r\n(True,True,False,True)\r\n(True,False,False,True)\r\n(False,True,False,True)\r\n(False,False,False,True)</pre>\n\t"
+  :code: |
+    t :: (Bool -&gt; Bool) -&gt; [Bool] -&gt; [String] -&gt; Bool
+    t prev (x:[]) _ = prev x
+    t prev (x:xs) (op:ops) | op == "not" = t prev (not x:xs) ops
+                           | op == "and" = t ((&amp;&amp;) (prev x)) xs ops
+                           | op == "or"  = t ((||) (prev x)) xs ops
+
+    f :: [String] -&gt; IO ()
+    f ops = mapM_ print [(b1,b2,b3,b4) | bs@(b1:b2:b3:[b4]) &lt;- bss, test bs ops]
+      where bss = sequence $ replicate 4 [True,False]
+            test = t id
+  :tags:
+  - Haskell
+  :references:
+    :url: 
+    :title: 
+- :id: '2114'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2114
+  :user_name: iwk
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/49/
+  :language: OCaml
+  :time: 2007/08/13 14:10 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">nskj77さんのコードを参考に修正してみました。</pre>\n\t"
+  :code: |
+    #light
+    type ListBuilder () =
+        member l.Bind (v,f) = List.concat (List.map f v)
+        member l.Return x = [x]
+        member l.Let(v,f) = f v
+
+    let guard c = if c then [()] else []
+
+    let doList = new ListBuilder()
+
+    let rec satisfy prev bs cmds =
+        match bs, cmds with
+        | b::[], _     -&gt; prev b
+        | b::bs, cmd::cmds -&gt;
+                match cmd with
+                | "not" -&gt; satisfy prev ((not b)::bs) cmds
+                | "and" -&gt; satisfy ((&amp;&amp;) (prev b)) bs cmds
+                | "or"  -&gt; satisfy ((||) (prev b)) bs cmds
+
+    let rec all_comb = function
+        | 0 -&gt; [[]]
+        | n -&gt; doList { let! rest = all_comb (n-1)
+                        let! result = [(true::rest);(false::rest)]
+                        return result }
+
+    let get_combs cmds =
+        let len = 1 + (List.length (List.filter ((&lt;&gt;) "not") cmds))
+        doList { let! bs = all_comb len
+                 do! guard (satisfy (fun x -&gt; x) bs cmds)
+                 return bs }
+
+    do get_combs ["and";"or";"not";"and"]
+       |&gt; (print_any &gt;&gt; print_newline)
+  :tags:
+  - F#
+  :references:
+    :url: /web/20081204193937/http://ja.doukaku.org/comment/2110/
+    :title: ''
+- :id: '2115'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2115
+  :user_name: naoya_t
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/348/
+  :language: awk
+  :time: 2007/08/13 14:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: "{\n#\tand or not and --&gt; x1&amp;x2|!x3&amp;x4\n\ts = \"\"\n\tcnt = 0\n\n\tfor
+    (i=1; i&lt;=NF; i++) {\n\t\top = $i\n\t\tif (op ‾ /not/) {\n\t\t\ts = s \"!\"\n\t\t}
+    else if (op ‾ /and/) {\n\t\t\ts = s \"x\" ++cnt \"&amp;\"\n\t\t} else if (op ‾
+    /or/) {\n\t\t\ts = s \"x\" ++cnt \"|\"\n\t\t}\n\t}\n\ts = s \"x\" ++cnt\n\n\tfor
+    (i=2^cnt-1; i&gt;0; i--) {\n\t\texpr = make_expr(s,i,x,cnt)\n\t\tif (apply_expr(expr))
+    show(x,cnt)\n\t}\n}\n\nfunction make_expr(s,n,x,digits, i)\n{\n\tfor (i=digits;
+    i&gt;=1; i--) {\n\t\tx[i] = n % 2\n\t\tsub(\"x\"i, x[i], s)\n\t\tn = (n - x[i])
+    / 2\n\t}\n\treturn s\n}\n\nfunction apply_expr(expr, n,tmp,i,result)\n{\n\t# not
+    を先に処理\n\tgsub(/!1/,\"0\", expr)\n\tgsub(/!0/,\"1\", expr)\n\t# これで and と or だけ考えればよくなる\n\tn
+    = split(expr,tmp,\"\")\n\tresult = tmp[1]\n\tfor (i=2; i&lt;=n; i+=2) {\n\t\tif
+    (tmp[i] ‾ /&amp;/)\n\t\t\tresult = result &amp;&amp; tmp[i+1]\n\t\telse\n\t\t\tresult
+    = result || tmp[i+1]\n\t}\n\treturn result\n}\n\nfunction show(x,cnt, i)\n{\n\tprintf
+    \"(\"\n\tfor (i=1; i&lt;=cnt; i++) {\n\t\tprintf(\"%s\", x[i] == 1 ? \"True\"
+    : \"False\")\n\t\tif (i &lt; cnt) printf \", \"\n\t}\n\tprintf \")¥n\"\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2116'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2116
+  :user_name: naoya_t
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/348/
+  :language: 
+  :time: 2007/08/13 14:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">自己レスです。\r\n\r\n使い方ですが\r\n% awk -f and-or-not.awk\r\nand\r\n(True,
+    True)\r\nor\r\n(True, True)\r\n(True, False)\r\n(False, True)\r\nand or\r\n(True,
+    True, True)\r\n(True, True, False)\r\n(True, False, True)\r\n(False, True, True)\r\n(False,
+    False, True)\r\nand or not and\r\n(True, True, True, True)\r\n(True, True, False,
+    True)\r\n(True, False, False, True)\r\n(False, True, False, True)\r\n(False, False,
+    False, True)\r\n\r\nコード中のバックスラッシュやチルダが化けてしまうのはどうにかならないものでしょうか・・・</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2119'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2119
+  :user_name: iwk
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/49/
+  :language: OCaml
+  :time: 2007/08/13 14:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">さらにモナドを使わずに書き直してみました。</pre>\n\t"
+  :code: |
+    #light
+    let rec satisfy prev bs cmds =
+        match bs, cmds with
+        | b::[], _     -&gt; prev b
+        | b::bs, cmd::cmds -&gt;
+                match cmd with
+                | "not" -&gt; satisfy prev ((not b)::bs) cmds
+                | "and" -&gt; satisfy ((&amp;&amp;) (prev b)) bs cmds
+                | "or"  -&gt; satisfy ((||) (prev b)) bs cmds
+
+    let rec all_comb = function
+        | 0 -&gt; [[]]
+        | n -&gt; [ for res in all_comb (n-1) -&gt;&gt; [true::res;false::res] ]
+
+    let get_combs cmds =
+        let len = 1 + (List.length (List.filter ((&lt;&gt;) "not") cmds))
+        [for bs in all_comb len when satisfy (fun x -&gt; x) bs cmds -&gt; bs]
+
+    do get_combs ["and";"or";"not";"and"]
+       |&gt; (print_any &gt;&gt; print_newline)
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '2121'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2121
+  :user_name: rubikitch
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/105/
+  :language: Common
+  :time: 2007/08/13 16:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">S式に変換するところでめちゃくちゃ苦労した。</pre>\n\t"
+  :code: |
+    (defpackage doukaku43 (:use common-lisp))
+    (in-package :doukaku43)
+
+    (defun make-sexp (operators)
+      "入力から式を生成。"
+      (labels ((tmp (ops)
+                 (loop for op in ops
+                    with i = -1
+                    appending
+                    (if (eq op 'not)
+                        (list 'not)
+                        (list `(nth ,(incf i) l) op)) into lst
+                    finally
+                    (return `(,@lst (nth ,(incf i) l)))))
+               (parse-not (ops)
+                 (let ((pos (position 'not ops :from-end t)))
+                   (if pos
+                       (parse-not (replace ops `((not ,(nth (1+ pos) ops)) nil) :start1 pos))
+                       (delete nil ops))))
+               (infix2prefix (ops)
+                 (loop for (op x) on (cdr ops) by #'cddr with res = (car ops)
+                    do (setf res `(,op ,res ,x))
+                    finally (return res))))
+        (infix2prefix (parse-not (tmp operators)))))
+
+    ;; テスト
+    (make-sexp '(and or not and))           ; =&gt; (AND (OR (AND (NTH 0 L) (NTH 1 L)) (NOT (NTH 2 L))) (NTH 3 L))
+    (make-sexp '(not not not))              ; =&gt; (NOT (NOT (NOT (NTH 0 L))))
+
+    (defun func (operators)
+      "入力から式を計算する関数を返す。"
+      (let ((sexp (make-sexp operators)))
+        (lambda (l)
+          (declare (special l))
+          (eval sexp))))
+
+    (defun boolean-combination (n)
+      "[t,nil]のN個の全組み合わせ。"
+      (cond ((= n 1)
+             '((t) (nil)))
+            (t
+             (let ((it (boolean-combination (1- n))))
+               (loop for c in it appending
+                    `((t ,@c) (nil ,@c)))))))
+
+    (defun arity (operators)
+      (- (length operators) (count 'not operators) -1))
+
+    (defun solve (operators)
+      (let ((expr (func operators)))
+        (loop for bools in (boolean-combination (arity operators))
+           when (funcall expr bools)
+           collecting bools)))
+
+    (solve '(and or not and))               ; =&gt; ((T T T T) (T T NIL T) (NIL T NIL T) (T NIL NIL T) (NIL NIL NIL T))
+    (solve '(not not not))                  ; =&gt; ((NIL))
+    (solve '())                             ; =&gt; ((T))
+    (solve '(and and and and and and))      ; =&gt; ((T T T T T T T))
+    (solve '(and))                          ; =&gt; ((T T))
+    (solve '(or))                           ; =&gt; ((T T) (NIL T) (T NIL))
+    (solve '(and or))                       ; =&gt; ((T T T) (NIL T T) (T NIL T) (NIL NIL T) (T T NIL))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2122'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2122
+  :user_name: yuin
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/08/13 16:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    type bool = Boolean
+    type f2   = Function2[bool,bool,bool]
+
+    class Solver(lst:List[String]) {
+      val fs = {
+        def factory(t:String, f:bool=&gt;bool)(v1:bool, v2:bool) = t match {
+          case "and" =&gt; v1&amp;&amp;f(v2)
+          case "or" =&gt;  v1||f(v2)
+        }
+        def it(lst:List[String]):List[f2] = lst match {
+          case n::"not"::xs =&gt; factory(n, !_) _::it(xs)
+          case n::xs    =&gt;     factory(n, x=&gt;x) _::it(xs)
+          case Nil      =&gt;     Nil
+        }
+        it(lst)
+      }
+
+      def solve() = {
+        val eachv = List(true, false).foreach _
+        def apply(v1:bool, fs:List[f2], res:List[bool]):unit = fs match {
+          case Nil if v1 =&gt; println(res.reverse)
+          case f::fs   =&gt; eachv(x=&gt; apply(f(v1,x),fs, x::res))
+          case _ =&gt; ()
+        }
+        eachv(x=&gt; apply(x,fs,List(x)))
+      }
+    }
+
+    new Solver(List("and", "or", "not", "and")) solve
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2125'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2125
+  :user_name: yuin
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/08/13 20:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">盆休みで生活リズム乱れまくり。\r\n\r\n[\"not\",\"not\",\"not\"]みたいなケースに対応してみた。</pre>\n\t"
+  :code: "type bool = Boolean\ntype f2   = Function2[bool,bool,bool]\ntype pred =
+    Function1[bool,bool]\ntype tokens = List[String]\nclass Solver(lst:tokens) {\n\n
+    \ val nlst = { \n    def it(lst:tokens,i:int):tokens = lst match {\n      case
+    \"not\"::xs =&gt; it(xs, i+1)\n      case n::xs     =&gt; it(xs, 0):::List(n,
+    if(i%2==0){\"\"}else{\"not\"})\n      case Nil       =&gt; (if(i%2==0){\"\"}else{\"not\"})::Nil\n
+    \   }\n    it(lst, 0).reverse.filter(_!=\"\")\n  }\n\n  val fs = {\n    def factory(t:String,
+    f1:pred, f2:pred)(v1:bool, v2:bool) = t match {\n      case \"and\" =&gt; f1(v1)&amp;&amp;f2(v2)\n
+    \     case \"or\" =&gt;  f1(v1)||f2(v2)\n    }\n    def it(lst:tokens, f:pred):List[f2]
+    = lst match {\n      case \"not\"::xs =&gt; it(xs, !_)\n      case n::\"not\"::xs
+    =&gt; factory(n, f, !_) _::it(xs, x=&gt;x)\n      case n::xs    =&gt;     factory(n,
+    f, x=&gt;x) _::it(xs, x=&gt;x)\n      case Nil      =&gt;     Nil\n    }\n    it(nlst,
+    x=&gt;x)\n  }\n\n  def solve() = nlst.length match{\n    case 0 =&gt; println(List(true))\n
+    \   case 1 if nlst.head == \"not\" =&gt; println(List(false))\n    case _ =&gt;
+    \n      val eachv = List(true, false).foreach _\n      def apply(v1:bool, fs:List[f2],
+    res:List[bool]):unit = fs match {\n        case Nil if v1 =&gt; println(res.reverse)\n
+    \       case f::fs   =&gt; eachv(x=&gt; apply(f(v1,x),fs, x::res))\n        case
+    _ =&gt; ()\n      }\n      eachv(x=&gt; apply(x,fs,List(x)))\n  }\n}\n\nnew Solver(List(\"and\",
+    \"or\",\"not\", \"and\")) solve\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2126'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2126
+  :user_name: matyr
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/08/13 20:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  身も蓋も無し。\n\t"
+  :code: "function doukaku43(){\n\tvar exp = \"\", result = [], x = 0, X, i, j, l;\n\tfor(i
+    = 0, l = arguments.length; i &lt; l; i++) switch(arguments[i]){\n\tcase \"and\":
+    exp = \"(\"+ exp + \"X[\"+ x++ +\"]) &amp;&amp; \"; break;\n\tcase \"or\" : exp
+    = \"(\"+ exp + \"X[\"+ x++ +\"]) || \"; break;\n\tcase \"not\": exp += \"!\";
+    break;\n\t}\n\texp += \"X[\"+ x++ +\"]\";\n\tfor(i = 0, l = 1 &lt;&lt; x; i &lt;
+    l; i++){\n\t\tfor(j = x, X = []; j--;) X.push(!!(i &gt;&gt; j &amp; 1));\n\t\tif(eval(exp))
+    result.push(X);\n\t}\n\treturn result;\n}\n(function(){\n\tfor(var r, s = \"\",
+    i = 0, j; i &lt; arguments.length; i++){\n\t\tr = doukaku43.apply(this, arguments[i]);\n\t\ts
+    += arguments[i].join(\" \") +\" :\\n\";\n\t\tfor(j = 0; j &lt; r.length; j++)
+    s += \"  \"+ r[j] + \"\\n\";\n\t}\n\tthis.WSH ? WSH.echo(s) : alert(s);\n})(['and',
+    'or', 'not', 'and'], ['not', 'or', 'and'], ['not', 'not']);\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2128'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2128
+  :user_name: naoya_t
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/348/
+  :language: awk
+  :time: 2007/08/14 00:28 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">not だけの組合せが処理できないので改訂版。\r\n\r\n% awk -f and-or-not-2.awk\r\nnot\r\n(False)\r\nnot
+    not\r\n(True)\r\nnot not not\r\n(False)\r\nnot and not\r\n(False, False)\r\nnot
+    not and not\r\n(True, False)\r\nnot or not\r\n(True, False)\r\n(False, True)\r\n(False,
+    False)\r\n</pre>\n\t"
+  :code: "{\n#    and or not and --&gt; x1&amp;x2|!x3&amp;x4\n    s = \"\"\n    cnt
+    = 0\n\n    for (i=1; i&lt;=NF; i++) {\n        op = $i\n        if (op ~ /not/)
+    {\n            s = s \"!\"\n        } else if (op ~ /and/) {\n            s =
+    s \"x\" ++cnt \"&amp;\"\n        } else if (op ~ /or/) {\n            s = s \"x\"
+    ++cnt \"|\"\n        }\n    }\n    s = s \"x\" ++cnt\n\n#    for (i=2^cnt-1; i&gt;0;
+    i--) {\n    for (i=2^cnt-1; i&gt;=0; i--) { # i=0は (False,False,...,False)\n        expr
+    = make_expr(s,i,x,cnt)\n        if (apply_expr(expr)) show(x,cnt)\n    }\n}\n\nfunction
+    make_expr(s,n,x,digits, i)\n{\n    for (i=digits; i&gt;=1; i--) {\n        x[i]
+    = n % 2\n        sub(\"x\"i, x[i], s)\n        n = (n - x[i]) / 2\n    }\n    return
+    s\n}\n\nfunction apply_expr(expr, n,tmp,i,result)\n{\n    # not を先に処理\n#    gsub(/!1/,\"0\",
+    expr)\n#    gsub(/!0/,\"1\", expr)\n\tr = expr\n\tgsub(/[^!]/,\"\",r) # expr の中の
+    ! だけを抽出した文字列を得る\n\tfor (i=length(r); i&gt;0; i--) {\n\t\tgsub(r 1, (i + 1) % 2,
+    expr)\n\t\tgsub(r 0, i % 2, expr)\n\t\tr = substr(r,2) # １字短縮\n\t}\n\n    # これで
+    and と or だけ考えればよくなる\n    n = split(expr,tmp,\"\")\n    result = tmp[1]\n    for
+    (i=2; i&lt;=n; i+=2) {\n        if (tmp[i] ~ /&amp;/)\n            result = result
+    &amp;&amp; tmp[i+1]\n        else\n            result = result || tmp[i+1]\n    }\n
+    \   return result\n}\n\nfunction show(x,cnt, i)\n{\n    printf \"(\"\n    for
+    (i=1; i&lt;=cnt; i++) {\n        printf(\"%s\", x[i] == 1 ? \"True\" : \"False\")\n
+    \       if (i &lt; cnt) printf \", \"\n    }\n    printf \")\\n\"\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2129'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2129
+  :user_name: cats
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/08/14 01:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Text.RegularExpressions;
+    class Program
+    {
+      static void Main()
+      {
+        Show(new string[] { "and", "or", "not", "and" });
+      }
+      static void Show(string[] ss)
+      {
+        List&lt;string&gt; l = new List&lt;string&gt;();
+        // 全組合わせ作成
+        Get(ss, 0, "", l);
+        foreach (string s in l) if (Check(s)) Show(s);
+      }
+      static string Rev(char c) { return c != 'F' ? "F" : "T"; }
+      static bool Check(string s)
+      {
+        Match m;
+        Regex r1 = new Regex("![TF]", RegexOptions.Compiled);
+        Regex r2 = new Regex("^[TF]&amp;[TF]", RegexOptions.Compiled);
+        Regex r3 = new Regex("^[TF]|[TF]", RegexOptions.Compiled);
+        while (s.Length &gt; 1)
+        {
+          if ((m = r1.Match(s)).Success)
+            s = s.Substring(0, m.Index) + Rev(m.Value[1]) + s.Substring(m.Index + 2);
+          else if ((m = r2.Match(s)).Success)
+            s = (s.StartsWith("T&amp;T") ? "T" : "F") + s.Substring(3);
+          else if ((m = r3.Match(s)).Success)
+            s = (s.StartsWith("F|F") ? "F" : "T") + s.Substring(3);
+        }
+        return s != "F";
+      }
+      static void Show(string s)
+      {
+        Console.Write("(");
+        bool bFirst = true;
+        foreach (char c in s)
+        {
+          if ("&amp;|!".IndexOf(c) &gt;= 0) continue;
+          if (!bFirst) Console.Write(", ");
+          bFirst = false;
+          Console.Write(c != 'F');
+        }
+        Console.WriteLine(")");
+      }
+      static void Get(string[] ss, int pos, string cur, List&lt;string&gt; l)
+      {
+        if (pos == ss.Length)
+        {
+          l.Add(cur + "T");
+          l.Add(cur + "F");
+          return;
+        }
+        switch (ss[pos])
+        {
+          case "and":
+            Get(ss, pos + 1, cur + "T&amp;", l);
+            Get(ss, pos + 1, cur + "F&amp;", l);
+            break;
+          case "or":
+            Get(ss, pos + 1, cur + "T|", l);
+            Get(ss, pos + 1, cur + "F|", l);
+            break;
+          case "not":
+            Get(ss, pos + 1, cur + "!", l);
+            break;
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2132'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2132
+  :user_name: sumim
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/14 02:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#(not not not) などに対応できる版を Squeak Smalltalk
+    で。</pre>\n\t"
+  :code: |
+    | input numArgs |
+    input := #(&amp; | not &amp;).
+    numArgs := (input collect: [:sel | sel numArgs]) sum + 1.
+    World findATranscript: nil.
+    {true. false} asDigitsToPower: numArgs do: [:xs |
+         | xsStream expression |
+         xsStream := xs readStream.
+         expression := input inject: xsStream next printString into: [:expStr :sel |
+              expStr, ' ', sel, (sel == #not ifFalse: [xsStream next printString] ifTrue: [''])].
+         (Compiler evaluate: expression) ifTrue: [Transcript cr; show: xs]]
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '2133'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2133
+  :user_name: にしお
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/14 03:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">むむ、化けますか？</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2134'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2134
+  :user_name: 匿名
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/08/14 03:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">お題の入力の条件を、'not'を削除すると3つの'or'または'and'からなるもの、と解釈しましたが違う？\r\n\r\n'not'の処理のみ最初に済ませ、あとはカッコで優先順位をかえたevalで手抜きしました。\r\n</pre>\n\t"
+  :code: |
+    def f(a):
+      for i in range(16):
+        o = [i/8==0, (i%8)/4==0, (i%4)/2==0, i%2==0]
+        b = list(a)
+        x = list(o)
+        while 'not' in b:
+          i = b.index('not')
+          x[i] = not x[i]
+          b.pop(i)
+        if eval('(((%s %s %s) %s %s) %s %s)' % (x[0], b[0], x[1], b[1], x[2], b[2], x[3])):
+          print o
+
+    f(['and', 'or', 'not', 'and'])
+    f(['not', 'not', 'and', 'or', 'not', 'not', 'not', 'and'])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2140'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2140
+  :user_name: drop
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/388/
+  :language: Haskell
+  :time: 2007/08/14 04:36 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Main&gt; f [\"and\",\"or\",\"not\",\"and\"]\r\n[True,True,True,True]\r\n[True,True,False,True]\r\n[False,True,False,True]\r\n[True,False,False,True]\r\n[False,False,False,True]\r\n\r\n解を直接構成。\"and\"を100個並べて入力してもすぐ終わる(もちろん\"or\"だと無理です)。</pre>\n\t"
+  :code: "f = mapM_ (print . reverse) . g . reverse\ng [] = [[True]]\ng (\"not\":ops)
+    = [not b:bs | (b:bs)&lt;-g ops]\ng (\"and\":ops) = map (True:) (g ops) \ng (\"or\":ops)
+    = map (False:) (g ops) ++ map (True:) anybs\n where anybs = sequence $ (replicate.length.head.g)
+    ops [True,False]\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2141'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2141
+  :user_name: raynstard
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/127/
+  :language: C
+  :time: 2007/08/14 04:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">総当たりがうまく思いつかなかったのでビット配列に変換してしまいました。。。\r\n\r\nNOTの計算がやっつけぽくてあまり好ましくないですがまぁ、いっか(笑\r\ngcc
+    -std=c99 -Wall doukaku43.c -o a</pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;memory.h&gt;
+
+    int dec2bin(char *buf, size_t bufsize, int n)
+    {
+        memset(buf, '\0', bufsize);
+        while( bufsize &gt; 0 )
+        {
+            buf[bufsize-1] = n &amp; 1;
+            bufsize --;
+            n &gt;&gt;= 1;
+        }
+        return 0;
+    }
+
+    int solver(const char *op[], size_t nop)
+    {
+        int bits = nop + 1;
+        int result ;
+        int n,k,m;
+
+        for( k=0; k&lt;nop; k++ )
+        {
+            /* NOTは右辺のみなので値無し */
+            if( strcmp(op[k], "not") == 0 ) bits --;
+        }
+        char x[bits];
+
+        bits = 1 &lt;&lt; bits;
+        for( n=bits; n&gt;0; n--)
+        {
+            dec2bin(x, sizeof(x), n); /* ビット配列に変換 */
+            result  = x[0] ;
+            if( strcmp(op[0], "not") == 0 ) result = (~x[0] &amp; 1);
+            for( m=0,k=0; k&lt;nop; k++,m++ )
+            {
+                if( k&lt;nop-1 )
+                {
+                    /* NOTの場合は先に計算する */
+                    if( strcmp(op[k+1], "not") == 0 ) x[m+1] = (~x[m+1] &amp; 1);
+                }
+
+                if( strcmp(op[k], "not") == 0 ) m--; /* 計算済みなので次も同じ値を使用する */
+                else if( strcmp(op[k], "and") == 0 ) result &amp;= x[m+1];
+                else if( strcmp(op[k], "or") == 0 )  result |= x[m+1];
+                else if( strcmp(op[k], "xor") == 0 ) result = (result ^ x[m+1]) &amp; 1;
+                else
+                {
+                    printf("invalid opration:[%s]\n",op[k]);
+                    return -1;
+                }
+            }
+            if( result == 1 )
+            {
+                /* 結果出力 */
+                dec2bin(x, sizeof(x), n);
+                printf("(");
+                for( m=0; m&lt;sizeof(x)-1; m++ )
+                {
+                    printf("%s, ", (x[m])?"True":"False");
+                }
+                printf("%s)\n", (x[m])?"True":"False");
+            }
+        }
+        return 0;
+    }
+
+    int main(int argc, char *argv[])
+    {
+        solver( (const char *[]){"and","or","not","and"}, 4);
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2142'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2142
+  :user_name: yooskeh
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/91/
+  :language: Prolog
+  :time: 2007/08/14 05:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">?- solve([and, or, not, and]).\r\n[true, true,
+    true, true]\r\n[true, true, fail, true]\r\n[true, fail, fail, true]\r\n[fail,
+    true, fail, true]\r\n[fail, fail, fail, true]\r\n\r\nと言う感じです。</pre>\n\t"
+  :code: "solve(Ps) :-\n\tforall((tf(Ps, Pt, T, X), solve(Pt, T, Xs)),\n\t       writeln([X|Xs])).\n\nsolve([],
+    T, []) :-\n\tT, !.\nsolve([P|Ps], T, [X|Xs]) :-\n\ttf(Ps, Pt, U, X),\n\t(   P
+    = and -&gt; solve(Pt, (T,U), Xs)\n\t;   P = or  -&gt; solve(Pt, (T;U), Xs)\n\t).\n\ntf([not|Ps],
+    Pt, \\+T, X) :-\n\t!, tf(Ps, Pt, T, X).\ntf(Ps, Ps, X, X) :-\n\tmember(X, [true,
+    fail]).\n"
+  :tags:
+  - SWI-Prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '2145'
+  :parent_id: '43'
+  :url: http://ja.doukaku.org/comment/2145
+  :user_name: nobsun
+  :user_url: /web/20081204193937/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/14 06:29 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">guard をつかってみた</pre>\n\t"
+  :code: |
+    import Control.Monad
+
+    starling f g x = f x (g x)
+
+    f :: [String] -&gt; [[Bool]]
+    f cs = sequence (replicate 4 [False,True])
+       &gt;&gt;= starling ((&gt;&gt;) . guard . flip (t id) cs) return
+
+    t :: (Bool -&gt; Bool) -&gt; [Bool] -&gt; [String] -&gt; Bool
+    t prev [x]    _           = prev x
+    t prev (x:xs) ("not":ops) = t prev (not x:xs) ops
+    t prev (x:xs) ("and":ops) = t (prev x &amp;&amp;) xs  ops
+    t prev (x:xs) ("or" :ops) = t (prev x ||) xs  ops
+
+    {-
+    *Main&gt; f ["and","or","not","and"]
+    [[False,False,False,True]
+    ,[False,True,False,True]
+    ,[True,False,False,True]
+    ,[True,True,False,True]
+    ,[True,True,True,True]]
+    -}
+  :tags: []
+  :references:
+    :url: 
+    :title: 

@@ -1,0 +1,1788 @@
+---
+:id: '209'
+:title: タブ区切りデータの処理
+:comments:
+- :id: '7723'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7723
+  :user_name: kh
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/654/
+  :language: 
+  :time: 2008/10/02 10:39 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  <p>タブ区切りのデータを読み込んで操作をし書き出す方法を教えてください。\n読み込み・書き出しの方法は任意とします。</p>\n<p>与えられるデータは:</p>\n<ul
+    class=\"simple\">\n<li>レコードの区切りは改行、カラムの区切りはタブです。</li>\n<li>最初のレコードはヘッダで、カラムの名前が書いてあります。</li>\n<li>それ以降はデータで、第1,4カラムは整数値、第2,3カラムは文字列値です。</li>\n</ul>\n<p>この入力データに対して以下の操作をしたものを書き出してください:</p>\n<ul
+    class=\"simple\">\n<li>第1カラムの値でデータを昇順にソートする。</li>\n<li>第2カラムと第3カラムをヘッダを含めて入れ替える。</li>\n<li>第4カラムの値にそれぞれ1を加える。</li>\n</ul>\n<p>入力の例:</p>\n<pre
+    class=\"literal-block\">\nID      Surname Forename        Age\n1       Sato    Hanako
+    \ 17\n0       Suzuki  Taro    18\n...\n</pre>\n<p>出力の例:</p>\n<pre class=\"literal-block\">\nID
+    \     Forename        Surname Age\n0       Taro    Suzuki  19\n1       Hanako
+    \ Sato    18\n...\n</pre>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7724'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7724
+  :user_name: 匿名
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/10/02 13:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  こんなんでいいのかなぁ。\n\t"
+  :code: |
+    #text = open("data.txt").read()
+    text = """ID    Surname    Forename    Age
+    1    Sato    Hanako    17
+    0    Suzuki    Taro    18
+    3    Ozawa    Ichiro    66
+    2    Asoh    Taro    68
+    """
+
+    records = [l.split('\t') for l in text.split('\n')][:-1]
+    header = records.pop(0)
+
+    records.sort(key=lambda r: int(r[0]))
+    for r in [header] + records:
+        r[1],r[2] = r[2],r[1]
+    for r in records:
+        r[3] = "%d" % (int(r[3]) + 1)
+
+    for r in [header] + records:
+        print '\t'.join(r)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7725'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7725
+  :user_name: 匿名
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/4/
+  :language: Perl
+  :time: 2008/10/02 13:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">標準入力から読込\r\n標準出力への出力\r\n</pre>\n\t"
+  :code: |
+    @header = split(/\t/, &lt;&gt;);
+    ($header[2], $header[1]) = ($header[1], $header[2]);
+    print join("\t", @header);
+
+    print map { ($_-&gt;[2], $_-&gt;[1])=($_-&gt;[1], $_-&gt;[2]);$_-&gt;[3]++; join("\t", @$_)."\n"; } sort{ $a-&gt;[0] &lt;=&gt; $b-&gt;[0] } map [split /\t/], &lt;&gt; ;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7726'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7726
+  :user_name: emasaka
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/10/02 18:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>sortを使いawkを使わない解。bashとdashで動作確認。</p>\n<p>1、3、4、5行目にはタブ文字が含まれています。</p>\n\n\t"
+  :code: |
+    IFS='    '
+    read -r id forename surname age
+    echo "$id    $surname    $forename    $age"
+    sort -n -t '    ' | while read -r id forename surname age;do
+        echo "$id    $surname    $forename    $((age + 1))"
+    done
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7727'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7727
+  :user_name: nobsun
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/10/02 19:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">標準入力から標準出力へ\r\n\r\n$ runghc tsv.hs &lt; tsv.data\r\nID
+    \     Forename        Surname Age\r\n0       Taro    Suzuki  19\r\n1       Hanako
+    \ Sato    18\r\n</pre>\n\t"
+  :code: "import Control.Arrow\nimport Data.Function\nimport Data.List\n\nmain ::
+    IO ()\nmain = putStr . unlines . map (concat . intersperse \"\\t\") . uncurry
+    (++) \n     . second (map inccol4 . sortBy (compare `on` readInt . head)) \n     .
+    splitAt 1 . map (swap23 . words) \n     . filter (not . null) . lines =&lt;&lt;
+    getContents\n  where swap23 (x:y:z:ws) = x:z:y:ws\n        inccol4 (x:y:z:[w])
+    = x:y:z:[show (readInt w+1)]\n        readInt :: String -&gt; Int\n        readInt
+    = read\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7728'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7728
+  :user_name: nobsun
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/10/02 19:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>効率すこし改善版</p>\n\n\t"
+  :code: "import Control.Arrow\nimport Data.Function\nimport Data.List\n\nmain ::
+    IO ()\nmain = mapM_ (putStrLn . concat . intersperse \"\\t\") . uncurry (++) \n
+    \    . (map (swap23 . words) *** sortBy (compare `on` readInt . head) . map (swap23inccol4
+    . words)) \n     . splitAt 1 . filter (not . null) . lines =&lt;&lt; getContents\n
+    \ where swap23 (x:y:z:ws) = x:z:y:ws\n        swap23inccol4 (x:y:z:[w]) = x:z:y:[show
+    (readInt w+1)]\n        readInt :: String -&gt; Int\n        readInt = read\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7729'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7729
+  :user_name: kkobayashi
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2008/10/02 21:51 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <p>統計処理言語だけあって、Rでは、この手のデータ処理は非常に直感的です。</p>\n\n\t"
+  :code: |
+    # タブ区切りのデータを読み込む
+    d &lt;- read.delim("input.tsv")
+
+    # 第1カラムの値でデータを昇順にソートする。
+    d &lt;- d[sort.list(d[,1]),]
+
+    # 第2カラムと第3カラムをヘッダを含めて入れ替える。
+    d[,c(2,3)] &lt;- d[,c(3,2)]
+    colnames(d)[c(2,3)] &lt;- colnames(d)[c(3,2)]
+
+    # 第4カラムの値にそれぞれ1を加える。
+    d[,4] &lt;- d[,4] + 1
+
+    # 書き出す
+    write.table(d, "output.tsv", sep="\t", quote=F, row.names=F)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7730'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7730
+  :user_name: turugina
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/760/
+  :language: C
+  :time: 2008/10/02 22:11 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">何とか。\r\nしかし何か美しくない...</pre>\n\t"
+  :code: "#include &lt;algorithm&gt;\n#include &lt;functional&gt;\n#include &lt;iostream&gt;\n#include
+    &lt;iterator&gt;\n#include &lt;sstream&gt;\n#include &lt;string&gt;\n#include
+    &lt;vector&gt;\n\nnamespace\n{\n\nclass Row\n{\n  std::vector&lt;std::string&gt;
+    data_;\n\n  friend std::istream&amp; operator&gt;&gt;(std::istream&amp;, Row&amp;);\n
+    \ friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp;, const Row&amp;);\n\n
+    \ public:\n  std::size_t find(const std::string&amp; key) const; \n\n  std::string&amp;
+    operator[](std::size_t i)\n  { return data_.at(i); }\n  const std::string&amp;
+    operator[](std::size_t i) const\n  { return data_.at(i); }\n\n  bool empty() const\n
+    \ { return data_.empty() || data_.size() == 1 &amp;&amp; data_[0] == \"\"; }\n};\n\nstd::istream&amp;\noperator&gt;&gt;(std::istream&amp;
+    is, Row&amp; r_)\n{\n  Row r;\n  std::string line;\n  std::getline(is, line);\n
+    \ \n  std::string::size_type i, o = 0; \n  while ((i = line.find(\"\\t\", o))
+    != std::string::npos)\n  {\n    r.data_.push_back(line.substr(o, i - o));\n    o
+    = i+1;\n  }\n  r.data_.push_back(line.substr(o));\n  std::swap(r, r_);\n  return
+    is;\n}\n\nstd::ostream&amp;\noperator&lt;&lt;(std::ostream&amp; os, const Row&amp;
+    r)\n{\n  std::copy(r.data_.begin(), r.data_.end(), std::ostream_iterator&lt;std::string&gt;(os,
+    \"\\t\"));\n  os &lt;&lt; \"\\n\";\n  return os;\n}\n\nstd::size_t\nRow::find(const
+    std::string&amp; key)\nconst\n{\n  std::vector&lt;std::string&gt;::const_iterator
+    it =\n    std::find(data_.begin(), data_.end(), key);\n  if ( it == data_.end()
+    )\n    throw \"not found\";\n  return std::distance(data_.begin(), it);\n}\n\ntypedef
+    Row Header;\nclass Table\n{\n  Header header_;\n  std::vector&lt;Row&gt; rows_;\n\n
+    \ friend std::istream&amp; operator&gt;&gt;(std::istream&amp;, Table&amp;);\n
+    \ friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp;, const Table&amp;);\n\n
+    \ public:\n    void sort_by(std::size_t idx);\n    void swap_columns(std::size_t
+    col1, std::size_t col2);\n    template &lt;typename Filter&gt;\n      void filter(std::size_t
+    idx, Filter f);\n\n  private:\n    class comparator\n      : public std::binary_function&lt;bool,
+    Row, Row&gt;\n    {\n      std::size_t col_;\n      public:\n      comparator(std::size_t
+    col) : col_(col) {}\n\n      bool operator()(const Row&amp; r1, const Row&amp;
+    r2) const\n      { return r1[col_] &lt; r2[col_]; }\n    };\n};\n\nstd::istream&amp;\noperator&gt;&gt;(std::istream&amp;
+    is, Table&amp; t)\n{\n  is &gt;&gt; t.header_;\n\n  std::istream_iterator&lt;Row&gt;
+    b(is),e;\n  std::copy(b, e, std::back_inserter(t.rows_));\n  if (t.rows_.back().empty())\n
+    \   t.rows_.erase(t.rows_.end() - 1);\n\n  return is;\n}\n\nstd::ostream&amp;\noperator&lt;&lt;(std::ostream&amp;
+    os, const Table&amp; t)\n{\n  os &lt;&lt; t.header_;\n  std::copy(t.rows_.begin(),
+    t.rows_.end(), std::ostream_iterator&lt;Row&gt;(os, \"\"));\n  return os;\n}\n\nvoid
+    \nTable::sort_by(std::size_t idx)\n{\n  comparator comp(idx);\n  std::sort(rows_.begin(),
+    rows_.end(), comp);\n}\n\nvoid\nTable::swap_columns(std::size_t col1, std::size_t
+    col2)\n{\n  if ( col1 == col2 ) return;\n  std::swap(header_[col1], header_[col2]);\n
+    \ std::vector&lt;Row&gt;::iterator it = rows_.begin();\n  for ( ; it != rows_.end();
+    ++it )\n    std::swap((*it)[col1], (*it)[col2]);\n}\n\ntemplate &lt;typename Filter&gt;\nvoid\nTable::filter(std::size_t
+    idx, Filter f)\n{\n  std::vector&lt;Row&gt;::iterator it = rows_.begin();\n  for
+    ( ; it != rows_.end(); ++it )\n  {\n    std::stringstream ss((*it)[idx]);\n    typename
+    Filter::result_type v;\n    ss &gt;&gt; v;\n    v = f(v);\n    ss.clear();\n    ss
+    &lt;&lt; v;\n    (*it)[idx] = ss.str();\n  }\n}\n\nint filter(int i)\n{ return
+    i+1; }\n\n} // namespace\n\nint main()\n{\n  std::istringstream ss(\n      \"ID\\tSurname\\tForename\\tAge\\n\"\n
+    \     \"1\\tSato\\tHanako\\t17\\n\"\n      \"0\\tSuzuki\\tTaro\\t18\\n\"\n      );\n\n
+    \ Table t;\n  ss &gt;&gt; t;\n  std::cout &lt;&lt; t &lt;&lt; \"\\n=====\\n\";\n\n
+    \ t.sort_by(0);\n  t.swap_columns(1,2);\n  t.filter(3, std::ptr_fun(filter));\n\n
+    \ std::cout &lt;&lt; t &lt;&lt; \"\\n\";\n  return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7731'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7731
+  :user_name: kiy0taka
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/16/
+  :language: Java
+  :time: 2008/10/02 22:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "import java.util.ArrayList;\nimport java.util.Arrays;\nimport java.util.Collections;\nimport
+    java.util.Comparator;\nimport java.util.List;\n\n\npublic class Sample {\n\n    private
+    List&lt;String&gt; header;\n\n    private List&lt;List&lt;String&gt;&gt; data;\n\n
+    \   public Sample(String str) {\n        boolean isFirst = true;\n        String[]
+    lines = str.split(\"\\n\");\n        data = new ArrayList&lt;List&lt;String&gt;&gt;(lines.length
+    - 1);\n        for (String line : str.split(\"\\n\")) {\n            List&lt;String&gt;
+    row = Arrays.asList(line.split(\"\\t\"));\n            if (isFirst &amp;&amp;
+    !(isFirst = false)) {\n                header = row;\n            } else {\n                data.add(row);\n
+    \           }\n        }\n    }\n\n    public Sample sort(final int column) {\n
+    \       Collections.sort(data, new Comparator&lt;List&lt;String&gt;&gt;() {\n
+    \           public int compare(List&lt;String&gt; l, List&lt;String&gt; r) {\n
+    \               return r.get(column).compareTo(l.get(column));\n            }\n
+    \       });\n        return this;\n    }\n\n    public Sample swapColumn(final
+    int column1, final int column2) {\n        List&lt;List&lt;String&gt;&gt; list
+    = new ArrayList&lt;List&lt;String&gt;&gt;(data);\n        list.add(0, header);\n
+    \       forAll(list, new Closure() {\n            public void each(List&lt;String&gt;
+    row) {\n                row.set(column1, row.set(column2, row.get(column1)));\n
+    \           }\n        });\n        return this;\n    }\n\n    public Sample addValue(final
+    int column, final int add) {\n        forAll(new Closure() {\n            public
+    void each(List&lt;String&gt; row) {\n                row.set(column,\n                    Integer.toString(Integer.parseInt(row.get(column))
+    + add)); \n            }\n        });\n        return this;\n    }\n\n    private
+    void forAll(Closure c) {\n        forAll(data, c);\n    }\n\n    private void
+    forAll(List&lt;List&lt;String&gt;&gt; list, Closure c) {\n        for (List&lt;String&gt;
+    row : list) {\n            c.each(row);\n        }\n    }\n\n    @Override\n    public
+    String toString() {\n        StringBuilder builder = new StringBuilder();\n        builder.append(join(header)).append(\"\\n\");\n
+    \       for (List&lt;String&gt; row : data) {\n            builder.append(join(row)).append(\"\\n\");\n
+    \       }\n        return builder.toString();\n    }\n\n    private String join(List&lt;String&gt;
+    list) {\n        StringBuilder builder = new StringBuilder();\n        boolean
+    isFirst = true;\n        for (String str : list) {\n            if (!isFirst)
+    {\n                builder.append(\"\\t\");\n            } else {\n                isFirst
+    = false;\n            }\n            builder.append(str);\n        }\n        return
+    builder.toString();\n    }\n\n    private static interface Closure {\n        public
+    void each(List&lt;String&gt; row);\n    }\n\n    public static void main(String[]
+    args) {\n        String str =\n            \"ID\\tSurname\\tForename\\tAge\\n\"
+    +\n            \"1\\tSato\\tHanako\\t17\\n\" +\n            \"0\\tSuzuki\\tTaro\\t18\\n\";\n
+    \       System.out.println(\n            new Sample(str).sort(1).swapColumn(1,
+    2).addValue(3, 1));\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7732'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7732
+  :user_name: sumim
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/10/02 23:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    | data cr numRows numCols table rIdx labels rows |
+    data := 'ID    Surname    Forename    Age
+    1    Sato    Hanako    17
+    0    Suzuki    Taro    18
+    3    Ozawa    Ichiro    66
+    2    Asoh    Taro    68'.
+
+    cr := Character cr.
+    numRows := (data occurrencesOf: cr) + 1.
+    numCols := ((data upTo: cr) occurrencesOf: Character tab) + 1.
+    table := Matrix rows: numRows columns: numCols.
+    rIdx := 0.
+    data linesDo: [:line |
+        | cIdx |
+        rIdx := rIdx + 1.
+        cIdx := 0.
+        line tabDelimitedFieldsDo: [:each | table at: rIdx at: (cIdx := cIdx + 1) put: each]].
+
+    labels := table atRow: 1.
+    table atColumn: 4 put: (table atColumn: 4) + 1.
+    table atRow: 1 put: labels.
+    table swapColumn: 2 withColumn: 3.
+    labels := table atRow: 1.
+    rows := (2 to: table rowCount) collect: [:idx | table atRow: idx].
+    rows sort: [:a :b | a first &lt; b first].
+
+    World findATranscript: nil.
+    {labels}, rows do: [:each |
+        Transcript cr.
+        each do: [:elem | Transcript show: elem] separatedBy: [Transcript tab]]
+
+    "=&gt;
+    ID  Forename  Surname  Age
+    0   Taro      Suzuki   19
+    1   Hanako    Sato     18
+    2   Taro      Asoh     69
+    3   Ichiro    Ozawa    67  "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '7733'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7733
+  :user_name: nori
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/59/
+  :language: Python
+  :time: 2008/10/03 00:44 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>Python Code Reading 4に出てきたmetaclassをつかってみました。</p>\n<p><a class=\"reference\"
+    href=\"/web/20091213020717/http://coreblog.org/ats/stuff/python-codereading/event-04\">http://coreblog.org/ats/stuff/python-codereading/event-04</a></p>\n\n\t"
+  :code: |
+    def readheader(line):
+      class _Meta(type):
+        def __init__(cls, name, bases, dct):
+          cls._attrnames = tuple(line.split('\t'))
+
+      class TSVObject(object):
+        __metaclass__ = _Meta
+        def __init__(self, line):
+          attrvalues = tuple(line.split('\t'))
+          self.__dict__.update(dict(zip(self._attrnames, attrvalues)))
+        def __str__(self):
+          return '&lt;TSVObject %s&gt;'%(','.join(['%s=%s'%(key, value) for key, value in self.__dict__.items()]),)
+        __repr__ = __str__
+
+      return TSVObject
+
+    def parse(lines):
+      klass = None
+      L = list()
+      for line in lines:
+        if klass is None:
+          klass = readheader(line)
+          continue
+        L.append(klass(line))
+      return L
+
+    data = (
+      '''ID\tSurname\tForename\tAge\n'''
+      '''1\tSato\tHanako\t17\n'''
+      '''0\tSuzuki\tTaro\t18\n'''
+      )
+
+    lines = data.splitlines()
+    L = parse(lines)
+    def cmp(a, b):
+      a = int(a.ID), int(b.ID)
+      if a &gt; b:
+        return -1
+      elif b &lt; a:
+        return 1
+      return 0
+    L.sort(cmp)
+
+    print '%s\t%s\t%s\t%s'%('ID', 'Forename', 'Surname', 'Age')
+    for item in L:
+      print '%s\t%s\t%s\t%s'%(item.ID, item.Forename, item.Surname, int(item.Age)+1)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7734'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7734
+  :user_name: g000001
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/10/03 01:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  なんだか書き捨てって感じになってしまいました(^^;\n\t"
+  :code: "(defpackage :doukaku-209 (:use :cl :split-sequence))\n(in-package :doukaku-209)\n\n(defun
+    parse-integer-or-never (string &amp;key (after #'values))\n  (let ((num (parse-integer
+    string :junk-allowed 'T)))\n    (if num (funcall after num) string)))\n\n(with-open-file
+    (in \"doukaku-209.data\")\n  (with-open-file (out \"doukaku-209.out\" :direction
+    :output :if-exists :supersede)\n    (format out \"~{~{~A~^    ~}~%~}\"\n            (destructuring-bind
+    (title &amp;rest data)          \n                (loop :for (id sur fore age)
+    :=  (split-sequence #\\Tab (read-line in nil nil)) \n                      :while
+    (and id sur fore age)\n                      :collect (list (parse-integer-or-never
+    id) \n                                     fore \n                                     sur
+    \n                                     (parse-integer-or-never age :after #'1+)))\n
+    \             `(,title ,@(sort data #'&lt; :key #'first))))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7735'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7735
+  :user_name: g000001
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/10/03 03:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  オブジェクト指向っぽく書いてみたつもりです…\r<br>(with-open-file (in \"doukaku-209.data\")\r<br>  (update-file (make-instance 'doukaku-209) in *standard-output*))\r<br>;&gt;&gt;&gt;\r<br>ID\tForename\tSurname\tAge\r<br>0\tTaro\tSuzuki\t19\r<br>1\tHanako\tSato\t18\n\t"
+  :code: "(defpackage :doukaku-209 (:use :cl :split-sequence))\n(in-package :doukaku-209)\n\n(defclass
+    file-op () ())\n\n(defgeneric file-to-data (file-op stream))\n(defgeneric swap-colum
+    (file-op data))\n(defgeneric sort-data (file-op data))\n(defgeneric update-datum
+    (file-op data))\n(defgeneric format-out-data (file-op stream data))\n(defgeneric
+    update-file (file-op in-stream out-stream))\n\n(defmethod update-file ((op file-op)
+    (in stream) (out stream))\n  (format-out-data op out\n    (swap-colum op \n      (destructuring-bind
+    (title &amp;rest data) (file-to-data op in)\n        `(,title ,@(sort-data op
+    (loop :for line :in data \n                                       :collect (update-datum
+    op line))))))))\n                     \n(defclass doukaku-209 (file-op) ())\n\n(defmethod
+    file-to-data ((op doukaku-209) (in stream))\n  (loop :for line := (read-line in
+    nil nil) :while line\n        :collect (split-sequence #\\Tab line)))\n\n(defmethod
+    swap-colum ((op doukaku-209) (data list))\n  (loop :for xx :in (copy-list data)
+    \n        :do (rotatef (nth 1 xx) (nth 2 xx)) \n        :collect xx))\n\n(defmethod
+    sort-data ((op doukaku-209) (data list))\n  (sort (copy-list data) #'&lt; :key
+    #'first))\n\n(defmethod format-out-data ((op doukaku-209) (out stream) (data list))\n
+    \ (format out \"~{~{~A~^    ~}~%~}\" data))\n\n(defmethod update-datum ((op doukaku-209)
+    (row list))\n  (destructuring-bind (id sur fore age) row\n    (list (parse-integer
+    id)\n          sur\n          fore\n          (1+ (parse-integer age)))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7736'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7736
+  :user_name: 匿名
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/10/03 05:33 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>項目の入れ替えが行われていない</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7737'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7737
+  :user_name: 匿名
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/10/03 05:38 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  ↑(#7736)は、勘違い\r\nすみませんでした。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7739'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7739
+  :user_name: あにす
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/10/03 07:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  いまいちすっきりと書けません。\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using VB_IO = Microsoft.VisualBasic.FileIO;
+
+    class Program {
+        static void Main(string[] args) {
+            //テーブルの準備
+            List&lt;string&gt; headers = new List&lt;string&gt;();
+            List&lt;List&lt;string&gt;&gt; table = new List&lt;List&lt;string&gt;&gt;();
+
+            //TSVの読み込みにはMicrosoft.VisualBasic.FileIOTextFieldParserクラスが便利。CSVにも使えるよ。
+            //Microsoft.VisualBasicを参照に加えてね。
+            using(VB_IO.TextFieldParser tfp = new VB_IO.TextFieldParser(args[0], Encoding.GetEncoding("shift-jis"))) {
+                tfp.SetDelimiters("\t");//区切り記号はタブ
+
+                //通常のテキストファイルと同じ感覚で扱えます。
+                headers.AddRange(tfp.ReadFields());
+                while(!tfp.EndOfData) {
+                    table.Add(new List&lt;string&gt;(tfp.ReadFields()));
+                }
+
+                tfp.Close();
+            }
+
+            //第1カラムの値でデータを昇順にソートする。
+            table.Sort((a, b) =&gt; (int.Parse(a[0]) - int.Parse(b[0])));//何回見ても書いてもラムダ式きもい。
+
+            //第2カラムと第3カラムをヘッダを含めて入れ替える。
+            headers.Reverse(1, 2);
+            foreach(List&lt;string&gt; row in table){
+                row.Reverse(1, 2);
+                //第4カラムの値にそれぞれ1を加える。
+                row[3] = (int.Parse(row[3]) + 1).ToString();
+            }
+
+            //出力
+            foreach(string header in headers){
+                Console.Write(header + "\t");
+            }
+            Console.WriteLine();
+            foreach(List&lt;string&gt; row in table) {
+                foreach(string cell in row) {
+                    Console.Write(cell + "\t");
+                }
+                Console.WriteLine();
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7740'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7740
+  :user_name: fkmn
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/190/
+  :language: Ruby
+  :time: 2008/10/03 08:39 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>なぜか、ここまで Ruby が無かったので投稿。</p>\n<p>こういうデータを扱うための、CSV というそのものズバリのクラスがあります。</p>\n<p>データは標準入力から読み込み。</p>\n<p>#
+    もう少しすっきりと書けそう。</p>\n\n\t"
+  :code: |
+    require 'csv'
+
+    rows = CSV.parse(STDIN.read, "\t")
+    rows[1], rows[2] = rows[2], rows[1]
+    result = []
+    result &lt;&lt; rows.shift
+    rows.sort_by{ |r| r[0] }.
+      inject(result) { |a, b| b[3] = b[3].to_i + 1; a &lt;&lt; b }.
+      each { |r| puts r.join("\t") }
+  :tags: []
+  :references:
+    :url: /web/20091213020717/http://doc.loveruby.net/refm/api/view/class/CSV
+    :title: CSV - Rubyリファレンスマニュアル
+- :id: '7741'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7741
+  :user_name: Y
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/428/
+  :language: C
+  :time: 2008/10/03 09:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">1. ファイルの終わりまで繰り返す\r\n1.1. 1行を読む\r\n1.2. \\tでsplitして*r=vector&lt;string&gt;に格納\r\n1.3.
+    swapで入れ替え\r\n1.4. rをvector&lt; vector&lt;string&gt; &gt;に格納\r\n2.1. 並び替え\r\n2.2.
+    \\tをはさみながらjoinして表示</pre>\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    #include &lt;vector&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;boost/algorithm/string.hpp&gt;
+    #include &lt;boost/algorithm/string/join.hpp&gt;
+    #include &lt;boost/foreach.hpp&gt;
+    using namespace std;
+    using namespace boost::algorithm;
+    typedef vector&lt;string&gt; row;
+
+    bool comp(row* lhs, row* rhs) {
+        return atoi((*lhs)[0].c_str()) &lt; atoi((*rhs)[0].c_str());
+    }
+
+    int main()
+    {
+        vector&lt;row*&gt; all;
+        string line;
+        while (getline(cin,line)) {
+            row* r=new row();
+            split(*r,line,is_any_of("\t"));
+            swap((*r)[1],(*r)[2]);
+            all.push_back(r);
+        }
+        sort(all.begin()+1,all.end(),comp);
+        BOOST_FOREACH(row* r, all) cout&lt;&lt;join(*r,"\t")&lt;&lt;endl;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7742'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7742
+  :user_name: turugina
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/760/
+  :language: 
+  :time: 2008/10/03 10:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>「第4カラムの値にそれぞれ1を加える」が抜けてますよー</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7743'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7743
+  :user_name: takeo
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/935/
+  :language: Scala
+  :time: 2008/10/03 18:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>あまりScalaらしくありませんが...。</p>\n\n\t"
+  :code: "object Tsv {\n  \n  def tsv(text:String) : Unit = {\n    import scala.io.Source\n
+    \   val lines = Source.fromString(text).getLines\n    print(lines.next)\n    val
+    data = lines.map({s:String =&gt; s.split(\"\\t\")})\n    val lst = List.fromIterator(data).sort({(a:Array[String],
+    b:Array[String]) =&gt; Integer.parseInt(a(0)) &lt; Integer.parseInt(b(0))})\n
+    \   for (line &lt;- lst) {print(line(0) + \"\\t\" + line(1) + \"\\t\" + line(2)
+    + \"\\t\" + line(3))}\n  }\n  \n  def main(args : Array[String]) : Unit = {\n
+    \   val testData = \"ID\\tSurname\\tForename\\tAge\\n1\\tSato\\tHanako\\t17\\n0\\tSuzuki\\tTaro\\t18\\n\"\n
+    \   tsv(testData)\n  }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7744'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7744
+  :user_name: Y
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/428/
+  :language: C
+  :time: 2008/10/03 19:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ご指摘ありがとうございます。修正しました。\r\n\r\n1. ファイルの終わりまで繰り返す\r\n1.1.
+    1行を読む\r\n1.2. \\tでsplitして*r=vector&lt;string&gt;に格納\r\n1.3. swapで入れ替え\r\n1.4.
+    1を加える\r\n1.5. rをvector&lt; vector&lt;string&gt; &gt;に格納\r\n2.1. 並び替え\r\n2.2. \\tをはさみながらjoinして表示</pre>\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    #include &lt;vector&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;boost/algorithm/string.hpp&gt;
+    #include &lt;boost/algorithm/string/join.hpp&gt;
+    #include &lt;boost/foreach.hpp&gt;
+    #include &lt;boost/lexical_cast.hpp&gt;
+    using namespace std;
+    using namespace boost;
+    using namespace boost::algorithm;
+    typedef vector&lt;string&gt; row;
+
+    bool comp(row* lhs, row* rhs) {
+        return lexical_cast&lt;int&gt;((*lhs)[0]) &lt; lexical_cast&lt;int&gt;((*rhs)[0]);
+    }
+
+    int main()
+    {
+        vector&lt;row*&gt; all;
+        string line;
+        while (getline(cin,line)) {
+            row* r=new row;
+            split(*r,line,is_any_of("\t"));
+            swap((*r)[1],(*r)[2]);
+            try { (*r)[3]=lexical_cast&lt;string&gt;(lexical_cast&lt;int&gt;((*r)[3])+1); }
+            catch (const bad_lexical_cast&amp;) {}
+            all.push_back(r);
+        }
+        sort(all.begin()+1,all.end(),comp);
+        BOOST_FOREACH(row* r, all) cout&lt;&lt;join(*r,"\t")&lt;&lt;endl;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7745'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7745
+  :user_name: cappuccino
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/549/
+  :language: C
+  :time: 2008/10/04 00:17 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <p>ファイルから読んでファイルへ書き出します。</p>\n\n\t"
+  :code: |
+    using System.IO;
+    using System.Linq;
+
+    class Program
+    {
+        static void Main()
+        {
+            var header =
+                from line in File.ReadAllLines("inFile.txt").Take(1)
+                let x = line.Split('\t')
+                select x[0] + '\t' + x[2] + '\t' + x[1] + '\t' + x[3];
+
+            var lines =
+                from line in File.ReadAllLines("inFile.txt").Skip(1)
+                let x = line.Split('\t')
+                orderby x[0]
+                select x[0] + '\t' + x[2] + '\t' + x[1] + '\t' + (int.Parse(x[3]) + 1);
+
+            File.WriteAllLines("outFile.txt", header.Concat(lines).ToArray());
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7746'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7746
+  :user_name: pooq
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/606/
+  :language: J
+  :time: 2008/10/03 21:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">   ]d=.;:;._2 data            レコードを改行で、カラムをタブで区切りboxに入れる。\r\n+--+-------+--------+---+\r\n|ID|Surname|Forename|Age|\r\n+--+-------+--------+---+\r\n|1
+    |Sato   |Hanako  |17 |\r\n+--+-------+--------+---+\r\n|0 |Suzuki |Taro    |18
+    |\r\n+--+-------+--------+---+\r\n\r\n   ]h=.0{d                    1行目をヘッダに。J言語ではリストやテーブルの\r\n+--+-------+--------+---+
+    \    インデックスは0－オリジン。\r\n|ID|Surname|Forename|Age|\r\n+--+-------+--------+---+\r\n\r\n
+    \  ]d=.}.d                    2行目からをデータに。\r\n+-+------+------+--+\r\n|1|Sato  |Hanako|17|\r\n+-+------+------+--+\r\n|0|Suzuki|Taro
+    \ |18|\r\n+-+------+------+--+\r\n\r\n   ]d=. d /: 0{\"1 d           第1カラムの値でデータを昇順にソートする。\r\n+-+------+------+--+\r\n|0|Suzuki|Taro
+    \ |18|\r\n+-+------+------+--+\r\n|1|Sato  |Hanako|17|\r\n+-+------+------+--+\r\n\r\n
+    \  ]h=.0 2 1 3{ h           ヘッダの第2カラムと第3カラムを入れ替える。\r\n+--+--------+-------+---+\r\n|ID|Forename|Surname|Age|\r\n+--+--------+-------+---+\r\n\r\n
+    \  ]d=. 0 2 1 3 {\"1 d         データの第2カラムと第3カラムを入れ替える。\r\n+-+------+------+--+\r\n|0|Taro
+    \ |Suzuki|18|\r\n+-+------+------+--+\r\n|1|Hanako|Sato  |17|\r\n+-+------+------+--+\r\n\r\n
+    \  ]d=.(\":&amp;&gt;:&amp;\".&amp;.&gt;3{\"1 d) 3}\"0 1 d      第4カラムの値にそれぞれ1を加える。\r\n+-+------+------+--+
+    \                    数値に変換して加算した後、文字列に戻す。\r\n|0|Taro  |Suzuki|19|\r\n+-+------+------+--+\r\n|1|Hanako|Sato
+    \ |18|\r\n+-+------+------+--+\r\n\r\n   ]d=.h,d                       ヘッダとデータを連結。\r\n+--+--------+--------+---+\r\n|ID|Surname
+    |Forename|Age|\r\n+--+--------+--------+---+\r\n|0 |Taro    |Suzuki  |19 |\r\n+--+--------+--------+---+\r\n|1
+    |Hanako  |Sato    |18 |\r\n+--+--------+--------+---+\r\n\r\n  ]d=.(,TAB&amp;;)/\"1
+    d　　　　　　　カラムを区切るタブを挿入。\r\n+--+-+--------+-+-------+-+---+\r\n|ID| |Forename| |Surname|
+    |Age|\r\n+--+-+--------+-+-------+-+---+\r\n|0 | |Taro    | |Suzuki | |19 |\r\n+--+-+--------+-+-------+-+---+\r\n|1
+    | |Hanako  | |Sato   | |18 |\r\n+--+-+--------+-+-------+-+---+\r\n　　　　　　　　　　　　　　　　　最後にboxから取り出して出力。\r\n</pre>\n\t"
+  :code: |
+    data =. ;: ;._2 stdin''
+    header =. 0{data
+    data =. }.data
+    data =. data /: 0{"1 data
+    header =. 0 2 1 3{ header
+    data =. 0 2 1 3{"1 data
+    data =. (":&amp;&gt;:&amp;".&amp;.&gt;3{"1 data) 3}"0 1 data
+    data =. header , data
+    wd&amp;;"1 (, TAB&amp;;)/"1 data
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7747'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7747
+  :user_name: leque
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2008/10/03 23:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>書き捨てっぽく。引き数でファイル名を取って標準出力へ。</p>\n\n\t"
+  :code: |
+    (use srfi-1)
+    (use text.csv)
+
+    (define (main args)
+      (receive (header body) (call-with-input-file (cadr args)
+                               (lambda (port)
+                                 (car+cdr (port-&gt;list (make-csv-reader #\tab)
+                                                      port))))
+        (for-each
+         (cute (make-csv-writer #\tab) (current-output-port) &lt;&gt;)
+         (cons (list (first header) (third header) (second header) (fourth header))
+               (map (cut map x-&gt;string &lt;&gt;)
+                    (sort
+                     (map (lambda (vs)
+                            (list (string-&gt;number (first vs))
+                                  (third vs)
+                                  (second vs)
+                                  (+ (string-&gt;number (fourth vs)) 1)))
+                          body)
+                     (lambda (v1 v2) (&lt; (first v1) (first v2)))))))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '7750'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7750
+  :user_name: silverwire
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/646/
+  :language: Batchfile
+  :time: 2008/10/04 09:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">バッチで。</pre>\n\t"
+  :code: "@echo off\n  setlocal enabledelayedexpansion\n    set a=0\n    set d=0\n
+    \   set l=0\n    set z=\n    \n    if \"%1\" == \"\" (echo %~n0 [FILE] &amp; exit
+    /b 1)\n    \n    for /f \"tokens=1-4\" %%a in (%1) do (\n      echo %%a    %%c
+    \   %%b    %%d\n      goto _BREAK_\n    )\n    :_BREAK_\n    \n    for /f \"tokens=1\"
+    %%a in ('more +1 %1') do (\n      if %%a gtr !a! set a=%%a\n    )\n    \n    call
+    :length %a% l\n    for /l %%i in (1,1,%l%) do set z=!z!0\n    \n    for /f \"tokens=1-4\"
+    %%a in ('more +1 %1') do (\n      set a=%z%%%a\n      set /a d=%%d+1\n      set
+    %~n0_!a:~-%l%!=%%a    %%c    %%b    !d!\n    )\n    \n    for /f \"tokens=2 delims==\"
+    %%l in ('set %~n0_') do echo %%l\n  endlocal\ngoto :EOF\n\n:length\n  setlocal\n
+    \   set i=0\n    set t=%~1\n    \n    if \"%t%\" == \"\" endlocal &amp; set %2=0\n
+    \   \n    :_LENGTH_\n      set t=%t:~1%\n      set /a i+=1\n    if not \"%t%\"
+    == \"\" goto _LENGTH_\n  endlocal &amp; set %2=%i%\ngoto :EOF\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7753'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7753
+  :user_name: 匿名
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/4/
+  :language: Erlang
+  :time: 2008/10/04 12:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">実行方法：\r\n$ cat hoge.txt\r\nID\tSurname\tForename\tAge\r\n1\tSato\tHanako\t17\r\n0\tSuzuki\tTaro\t18\r\n\r\n$
+    erlc doukaku7723.erl\r\n$ erl -noshell -s doukaku7723 main hoge.txt -s init stop\r\nID\tForename\tSurname\tAge\r\n0\tTaro\tSuzuki\t19\r\n1\tHanako\tSato\t18</pre>\n\t"
+  :code: |
+    -module(doukaku7723).
+    -export([main/1]).
+
+    main(Filename) -&gt;
+        {ok, Bin} = file:read_file(Filename),
+        A1 = string:tokens(binary_to_list(Bin), "\r\n"),
+        [H | T] = lists:map(curry(flip(fun string:tokens/2), "\t"), A1),
+        A2 = lists:map(fun swap23inc4/1, T),
+        A3 = lists:sort(fun([E1|_], [E2|_]) -&gt; list_to_integer(E1) &lt; list_to_integer(E2) end, A2),
+        A4 = lists:map(func_comp(fun lists:concat/1, curry(fun intersperse/2, "\t")), [swap23(H) | A3]),
+        A5 = lists:concat(intersperse("\r\n", A4)),
+        io:format("~s~n", [A5]).
+
+    swap23([A,B,C,D | Rest]) -&gt; [A,C,B,D|Rest].
+    swap23inc4([A,B,C,D | Rest]) -&gt; [A,C,B,integer_to_list(1+list_to_integer(D)) | Rest].
+
+    intersperse(_, []) -&gt; [];
+    intersperse(_, [X]) -&gt; [X];
+    intersperse(Sep, [X | XS]) -&gt; [X, Sep | intersperse(Sep, XS)].
+    curry(F, A) -&gt; fun(B) -&gt; F(A, B) end.
+    flip(F) -&gt; fun(A, B) -&gt; F(B, A) end.
+    func_comp(F, G) -&gt; fun(X) -&gt; F(G(X)) end.
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7754'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7754
+  :user_name: ocean
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/10/05 18:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ほとんど #7724 さんと同じですね・・・でも書いちゃったので投稿。</p>\n\n\t"
+  :code: |
+    def convert(input, output):
+        # read from file
+        datas = [line.rstrip('\n').split('\t') for line in open(input)]
+        # swap column2 and column3 (with header)
+        for data in datas:
+            data[1], data[2] = data[2], data[1]
+        # remove header
+        header = datas.pop(0)
+        # sort by column1
+        datas.sort(key=lambda data: int(data[0]))
+        # add 1 to column4
+        for data in datas:
+            data[3] = str(int(data[3]) + 1)
+        # restore header
+        datas.insert(0, header)
+        # write to file
+        io = open(output, "w")
+        for data in datas:
+            io.write('\t'.join(data) + '\n')
+
+    if __name__ == '__main__':
+        convert("input.txt", "output.txt")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7757'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7757
+  :user_name: susu
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/218/
+  :language: OCaml
+  :time: 2008/10/05 23:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "let succ_str s =\n  try (string_of_int (int_of_string s + 1))\n  with Failure
+    _ -&gt; s\n\nlet read scanbuf f =\n  let t = \"\\t\"  and nl = \"\\n\"  in\n  Scanf.bscanf
+    scanbuf \"%[^\\t]\\t%[^\\t]\\t%[^\\t]\\t%[^\\n]%c\"\n  (fun a b c d _ -&gt; f
+    [a;t;c;t;b;t; succ_str d; nl])  \n\nlet f ch =\n  let accu = ref [] in\n  try\n
+    \   read ch (List.iter print_string);\n    while true do\n      (read ch (fun
+    l -&gt; accu := l::!accu))\n    done;\n  with End_of_file -&gt;\n    let l = List.stable_sort
+    (fun a b -&gt;\n      compare (List.hd a) (List.hd b)) !accu\n    in List.iter
+    (List.iter print_string) l;;\n(*  \nlet s = \"\\\nID\\tSurname\\tForename\\tAge\n1\\tSato\\tHanako\\t17\n0\\tSuzuki\\tTaro\\t18\n\"\nlet
+    (path,o) = \n  Filename.open_temp_file \"doukaku209_\" \".txt\";;\noutput_string
+    o s;  close_out o;;\n\nlet sbuf = Scanf.Scanning.from_file path in (f sbuf);;\n*)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7758'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7758
+  :user_name: 匿名
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/4/
+  :language: Ruby
+  :time: 2008/10/06 01:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  最近Rubyを始めました。\r\nどうでしょうか？\r\n\r\n\n\t"
+  :code: |
+    lines = ARGF.readlines
+
+    csvs = lines.map {|line| line.split("\t")}
+    head = csvs.shift
+    print [head[0], head[2], head[1], head[3]].join("\t")
+
+    csvs.sort {|csv1, csv2| csv1[0] &lt;=&gt; csv2[0] }.each do |csv|
+      puts [csv[0], csv[2], csv[1], csv[3].to_i + 1].join("\t")
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7759'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7759
+  :user_name: nattou_curry
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/913/
+  :language: 
+  :time: 2008/10/06 09:22 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">import java.io.*;\r\nimport java.util.*;\r\n\r\nclass
+    Table {\r\n\t\r\n\tpublic static void main( String[] args ) {\r\n\t\tTable table
+    = new Table()\r\n\t\t\t.input( \"in.tsv\" )\r\n\t\t\t.sort( 0 )\r\n\t\t\t.replace(
+    1, 2 )\r\n\t\t\t.increment( 3 )\r\n\t\t\t.output( \"out.tsv\" );\r\n\t}\r\n\t\r\n\tCell[][]
+    cells;\r\n\t\r\n\tclass Cell {\r\n\t\tString value;\r\n\t\tCell( String value
+    ) {\r\n\t\t\tthis.value = value;\r\n\t\t}\r\n\t\tpublic String toString() { return
+    value; }\r\n\t\tpublic int compareTo( Cell that ) { return this.value.compareTo(
+    that.value ); }\r\n\t\tpublic void increment() { value = ( Integer.parseInt( value
+    ) + 1 ) + \"\"; }\r\n\t}\r\n\t\r\n\tclass Sorter implements Comparable {\r\n\t\tCell
+    key;\r\n\t\tCell[] row;\r\n\t\tSorter( Cell key, Cell[] row ) {\r\n\t\t\tthis.key
+    = key;\r\n\t\t\tthis.row = row;\r\n\t\t}\r\n\t\tpublic int compareTo( Object that
+    ) {\r\n\t\t\treturn this.key.compareTo( ( (Sorter) that ).key );\r\n\t\t}\r\n\t}\r\n\t\r\n\tTable
+    input( String file ) {\r\n\t\ttry {\r\n\t\t\tBufferedReader in = new BufferedReader(
+    new FileReader( file ) );\r\n\t\t\tList&lt;Cell[]&gt; list = new ArrayList&lt;Cell[]&gt;();\r\n\t\t\tString
+    line;\r\n\t\t\twhile ( ( line = in.readLine() ) != null ) {\r\n\t\t\t\tlist.add(
+    makeCells( line.split( \"\\t\" ) ) );\r\n\t\t\t}\r\n\t\t\tin.close();\r\n\t\t\tcells
+    = list.toArray( new Cell[0][] );\r\n\t\t\treturn this;\r\n\t\t} catch ( IOException
+    e ) { throw new RuntimeException ( e ); }\r\n\t}\r\n\t\r\n\tTable sort( int ic
+    ) {\r\n\t\tCell[] column = column( ic );\r\n\t\tSorter[] sorters = new Sorter[rows()-1];\r\n\t\tfor
+    ( int ir = 1; ir &lt; rows(); ++ir ) {\r\n\t\t\tsorters[ir-1] = new Sorter( column[ir],
+    row( ir ) );\r\n\t\t}\r\n\t\tArrays.sort( sorters );\r\n\t\tfor ( int ir = 1;
+    ir &lt; rows(); ++ir ) {\r\n\t\t\tcells[ir] = sorters[ir-1].row;\r\n\t\t}\r\n\t\treturn
+    this;\r\n\t}\r\n\t\r\n\tTable replace( int ic1, int ic2 ) {\r\n\t\tCell[] column1
+    = column( ic1 );\r\n\t\tCell[] column2 = column( ic2 );\r\n\t\tset( ic1, column2
+    );\r\n\t\tset( ic2, column1 );\r\n\t\treturn this;\r\n\t}\r\n\t\r\n\tTable increment(
+    int ic ) {\r\n\t\tCell[] column = column( ic );\r\n\t\tfor ( int ir = 1; ir &lt;
+    rows(); ++ir ) {\r\n\t\t\tcolumn[ir].increment();\r\n\t\t}\r\n\t\treturn this;\r\n\t}\r\n\t\r\n\tTable
+    output( String file ) {\r\n\t\ttry {\r\n\t\t\tPrintWriter out = new PrintWriter(
+    new BufferedWriter( new FileWriter( file ) ) );\r\n\t\t\tout.print( toString()
+    );\r\n\t\t\tout.flush();\r\n\t\t\tout.close();\r\n\t\t\treturn this;\r\n\t\t}
+    catch ( IOException e ) { throw new RuntimeException( e ); }\r\n\t}\r\n\r\n\tCell[]
+    makeCells( String[] array ) {\r\n\t\tCell[] cells = new Cell[array.length];\r\n\t\tfor
+    ( int i = 0; i &lt; array.length; ++i ) {\r\n\t\t\tcells[i] = new Cell( array[i]
+    );\r\n\t\t}\r\n\t\treturn cells;\r\n\t}\r\n\t\r\n\tvoid set( int ic, Cell[] column
+    ) {\r\n\t\tfor ( int ir = 0; ir &lt; rows(); ++ir ) {\r\n\t\t\tcells[ir][ic] =
+    column[ir];\r\n\t\t}\r\n\t}\r\n\t\r\n\tCell[] row( int ir ) {\r\n\t\tCell[] bak
+    = new Cell[columns()];\r\n\t\tfor ( int ic = 0; ic &lt; columns(); ++ic ) {\r\n\t\t\tbak[ic]
+    = cells[ir][ic];\r\n\t\t}\r\n\t\treturn bak;\r\n\t}\r\n\t\r\n\tCell[] column(
+    int ic ) {\r\n\t\tCell[] bak = new Cell[rows()];\r\n\t\tfor ( int ir = 0; ir &lt;
+    rows(); ++ir ) {\r\n\t\t\tbak[ir] = cells[ir][ic];\r\n\t\t}\r\n\t\treturn bak;\r\n\t}\r\n\t\r\n\tint
+    rows() { return cells.length; }\r\n\t\r\n\tint columns() { return cells[0].length;
+    }\r\n\t\r\n\tpublic String toString() {\r\n\t\tStringBuilder bak = new StringBuilder();\r\n\t\tfor
+    ( int ir = 0; ir &lt; cells.length; ++ir ) {\r\n\t\t\tfor ( int ic = 0; ic &lt;
+    cells[0].length; ++ic ) {\r\n\t\t\t\tbak.append( ic &gt; 0 ? \"\\t\"\r\n\t\t\t\t\t\t:
+    \"\" ).append( cells[ir][ic].toString() );\r\n\t\t\t}\r\n\t\t\tbak.append( \"\\r\\n\"
+    );\r\n\t\t}\r\n\t\treturn bak.toString();\r\n\t}\r\n}</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7760'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7760
+  :user_name: 99yen
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2008/10/07 05:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>なでしこで、手順に忠実に書いてみました。</p>\n\n\t"
+  :code: |
+    input="ID    Surname    Forename    Age
+    1    Sato    Hanako    17
+    0    Suzuki    Taro    18"
+
+    data=inputをTSV取得
+    # ヘッダを切り取る
+    head=dataの0を配列切り取る
+
+    # 第1カラムでソート
+    dataの0を表数値ソート
+    # 第2カラムと第3カラムを入れ替え
+    data=dataの1と2を表列入替
+    # ヘッダも入れ替え
+    head=headの1と2を配列入替
+    # 第4カラムに1を加算
+    Iで0から(dataの配列要素数-1)まで繰り返す
+        data[I][3]=data[I][3]+1
+    # ヘッダとデータを結合
+    output=(headの表行列交換)にdataを表追加
+    # 結果を表示
+    outputを表TSV変換して表示
+
+    ●配列入替(AのXとYを)
+        AのXにA[Y]を配列挿入
+        AのY+1を配列削除
+        Aで戻る
+
+    ●表列入替(AのXとYを)
+        AのYを表列取得
+        AのXにそれを表列挿入
+        それのY+1を表列削除
+        それで戻る
+
+    ●表追加(AにBを)
+        Aの(Aの配列要素数)にBを配列一括挿入
+        Aで戻る
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7761'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7761
+  :user_name: 匿名
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/10/07 10:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  data は複数形なので datas はちょっと変かも。。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7768'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7768
+  :user_name: ckbx
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/893/
+  :language: Python
+  :time: 2008/10/10 04:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">一行Pythonで190 bytes.\r\n標準入力から標準出力へ。\r\n\r\n横に広がって見づらいので\r\n適当に改行を入れました。</pre>\n\t"
+  :code: |
+    import sys;T,N='\t\n';I=int;R=[l[:-1].split(T)for l in sys.stdin];A,B,C,D=R[0];
+    print N.join(map(T.join,[(A,C,B,D)]+[(a,c,b,str(I(d)+1))for a,b,c,d in sorted(
+    R[1:],None,lambda x:I(x[0]))])),N
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7796'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7796
+  :user_name: genzou
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/10/14 08:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "def text = new File(\"test.csv\").text\n\ndef lines = text.split(\"\\n\")\n\ndef
+    titles = lines[0].split(\"\\t\")\ndef records = lines[1..-1].collect{\n    it.split(\"\\t\")\n}\n\n//
+    第1カラムの値でデータを昇順にソートする。\nrecords.sort{ it[0] }\n\n// 第2カラムと第3カラムをヘッダを含めて入れ替える。\ndef
+    change( row ){\n    def tmp = row[2]\n    row[2] = row[1]\n    row[1] = tmp\n}\nchange(titles)\nrecords.each{\n
+    \   change(it)    \n}\n\n// 第4カラムの値にそれぞれ1を加える。\nrecords.each{ r -&gt;\n    r[3]
+    = (r[3].toInteger() + 1).toString()\n}\n\n([titles] + records).each{\n    println
+    it.join(\"\\t\")\n}\n"
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '7799'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7799
+  :user_name: 匿名
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/4/
+  :language: Groovy
+  :time: 2008/10/14 23:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>genzouさんに触発されて書いてみました。</p>\n\n\t"
+  :code: |
+    boolean firstLine = true
+    def lines = []
+    new File("test.csv").eachLine {
+        e = it.split("\t")
+        if (firstLine) {
+            println([e[0],e[2],e[1],e[3]].join("\t"))
+            firstLine = false
+        }
+        else {
+            lines.push(e)
+        }
+    }
+
+    lines.sort{it[0].toInteger()}.each{
+        println([it[0],it[2],it[1],it[3].toInteger() +1].join("\t"))
+    }
+  :tags: []
+  :references:
+    :url: /web/20091213020717/http://d.hatena.ne.jp/uehaj/20081015/1224043055
+    :title: Grな日々
+- :id: '7800'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7800
+  :user_name: ksky
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/918/
+  :language: Other
+  :time: 2008/10/15 04:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>私も書いてみました。わかりやすさ重視で書いたつもりです。。</p>\n\n\t"
+  :code: |
+    lines = new File('test.csv').readLines()
+    rows = lines.collect { it.split('\t') }
+    head = rows.remove(0)
+    rows.each { row -&gt;
+      [0, 3].each { row[it] = row[it].toInteger() }
+    }
+
+    rows.sort { it[0] }
+    [head, *rows].each { tmp = it[1]; it[1] = it[2]; it[2] = tmp }
+    rows.each { it[3]++ }
+
+    [head, *rows].each { println it.join('\t') }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7801'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7801
+  :user_name: ksky
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/918/
+  :language: Groovy
+  :time: 2008/10/15 05:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>私も書いてみました。わかりやすさ重視で書いたつもりです。。</p>\n\n\t"
+  :code: |
+    lines = new File('test.csv').readLines()
+    rows = lines.collect { it.split('\t') }
+    head = rows.remove(0)
+    rows.each { row -&gt;
+      [0, 3].each { row[it] = row[it].toInteger() }
+    }
+
+    rows.sort { it[0] }
+    [head, *rows].each { tmp = it[1]; it[1] = it[2]; it[2] = tmp }
+    rows.each { it[3]++ }
+
+    [head, *rows].each { println it.join('\t') }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7802'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7802
+  :user_name: ksky
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/918/
+  :language: 
+  :time: 2008/10/15 05:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>間違えてOtherで投稿しちゃいました。削除はできないんですね。。Groovyに投稿し直します。ごめんなさい。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7804'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7804
+  :user_name: M.Suzuki
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/771/
+  :language: Haskell
+  :time: 2008/10/16 06:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あまり美しくないですが、基本に忠実に。\r\n</pre>\n\t"
+  :code: |
+    import System.Environment
+    import Data.List
+
+    q1 (x:xs) = x:sortBy (\a b -&gt; compare (toNum a) (toNum b)) xs
+        where
+            toNum n = read (head n)::Int
+    q2 = map (\[i,l,f,a] -&gt; [i,f,l,a])
+    q3 (x:xs) = x:map (\[i,l,f,a] -&gt; [i,l,f,show $ 1+read a]) xs
+
+    main = do
+        args &lt;- getArgs
+        contents &lt;- if (not.null) args
+            then readFile $ head args
+            else getContents
+        let rec = map words $ lines contents
+        putStrLn $ shows $ q1 rec
+        putStrLn $ shows $ q2 rec
+        putStrLn $ shows $ q3 rec
+        where
+            shows list = unlines $ map (concat.intersperse "\t") list
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7816'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7816
+  :user_name: matyr
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/343/
+  :language: Groovy
+  :time: 2008/10/22 16:58 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  ワンライナ\n\t"
+  :code: |
+    groovy -e '{h,...r-&gt;[h,*r.each{it[0,4]*.toInteger()}.each{++it[3]}.sort{it[0]}]*.join("\t").any"".&amp;println}(*"$System.in".trim().split(/\n/)*.split(/\t/)*.getAt([0,2,1,3]))'&lt;data.csv
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7817'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7817
+  :user_name: matyr
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/343/
+  :language: 
+  :time: 2008/10/22 17:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">&lt; it[0,4]*.toInteger()\r\n---\r\n&gt; a-&gt;[0,3].each{a[it]=0.decode(a[it])}\r\n\r\n全然違った。「it[0,3]=it[0,3]*.toInteger()」だとうまくいかなくて残念。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7873'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7873
+  :user_name: nobusuke_neko
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/926/
+  :language: JavaScript
+  :time: 2008/10/27 14:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  C:\\&gt;type emp.txt\r<br>ID      Surname Forename        Age\r<br>1       Sato    Hanako  17\r<br>0       Suzuki  Taro    18\r<br><br>C:\\&gt;cscript /nologo csv.js &lt; emp.txt\r<br>ID      Forename        Surname Age\r<br>0       Taro    Suzuki  19\r<br>1       Hanako  Sato    18\r<br>"
+  :code: |
+    Array.prototype.each = function(iterator){
+      for(var i=0, length=this.length; i&lt;length; i++) iterator(this[i],i);
+    }
+
+    var table = [];
+    WScript.StdIn.ReadAll().split('\r\n').each(function(line){
+      if(!line.match(/^\s*$/)) table.push(line.split('\t'));
+    });
+    var header = table.shift();
+
+    //第1カラムの値でデータを昇順にソートする
+    table.sort(function(a,b){return a[0]-b[0];});
+    //第4カラムの値にそれぞれ1を加える
+    table.each(function(row){row[3]=row[3]*1+1;});
+    //第2カラムと第3カラムをヘッダを含めて入れ替える
+    table.unshift(header);
+    table.each(function(row){
+      WScript.StdOut.WriteLine([row[0],row[2],row[1],row[3]].join('\t'));
+    });
+  :tags:
+  - JScript
+  - WSH
+  :references:
+    :url: 
+    :title: 
+- :id: '7932'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7932
+  :user_name: tonio_antonio
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/944/
+  :language: Other
+  :time: 2008/11/03 00:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>はじめまして。最初awk向きなのになぜ未投稿？と思ったのですが、ソートが必要なのですね。\n教科書どおりのqsortですが、整数値をソートする、ということで17行目で　+0　してから比較してみました。</p>\n\n\t"
+  :code: |
+    &gt;type data.txt
+    ID    Surname    Forename    Age
+    0    Suzuki    Taro    19
+    1    Sato    Hanako    18
+    11    Kato    Junko    40
+    3    Yamammoto    Shingo    46
+
+    &gt;type  tab_sort.awk
+    BEGIN{FS="\t";OFS="\t"}
+
+    NR == 1{ print $1,$3,$2,$4 }
+    NR &gt; 1{t=$2;$2=$3;$3=t;$4=$4+1;A[NR]=$0;}
+
+    END{qsort(A,2,NR)
+         for(i=2;i&lt;=NR;i++) print A[i]
+        }
+
+    function qsort(A,left,right){
+       if(left&gt;=right) return
+       swap(A,left,left+int((right-left+1)*rand()))
+       last=left
+       for(i=left+1;i&lt;=right;i++)
+           #if(A[i] &lt; A[left]) swap(A,++last,i)
+           if(A[i] + 0 &lt; A[left] + 0) swap(A,++last,i)
+       swap(A,left,last)
+       qsort(A,left,last-1)
+       qsort(A,last+1,right)
+    }
+
+    function swap(A,i,j){
+       t=A[i];A[i]=A[j];A[j]=t
+    }
+
+    &gt;mawk32 -f tab_sort.awk data.txt &gt; kekka.txt
+    &gt;type kekka.txt
+    ID    Forename    Surname    Age
+    0    Taro    Suzuki    20
+    1    Hanako    Sato    19
+    3    Shingo    Yamammoto    47
+    11    Junko    Kato    41
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7933'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/7933
+  :user_name: tonio_antonio
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/944/
+  :language: awk
+  :time: 2008/11/03 06:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>はじめまして。最初awk向きなのになぜ未投稿？と思ったのですが、ソートが必要なのですね。\n教科書どおりのqsortですが、整数値をソートする、ということで17行目で　+0　してから比較してみました。\n#最初の投稿時、言語を指定しそこない、otherに投稿してしまいました。申し訳ありません。</p>\n\n\t"
+  :code: |
+    &gt;type data.txt
+    ID    Surname    Forename    Age
+    0    Suzuki    Taro    19
+    1    Sato    Hanako    18
+    11    Kato    Junko    40
+    3    Yamammoto    Shingo    46
+
+    &gt;type  tab_sort.awk
+    BEGIN{FS="\t";OFS="\t"}
+
+    NR == 1{ print $1,$3,$2,$4 }
+    NR &gt; 1{t=$2;$2=$3;$3=t;$4=$4+1;A[NR]=$0;}
+
+    END{qsort(A,2,NR)
+         for(i=2;i&lt;=NR;i++) print A[i]
+        }
+
+    function qsort(A,left,right){
+       if(left&gt;=right) return
+       swap(A,left,left+int((right-left+1)*rand()))
+       last=left
+       for(i=left+1;i&lt;=right;i++)
+           #if(A[i] &lt; A[left]) swap(A,++last,i)
+           if(A[i] + 0 &lt; A[left] + 0) swap(A,++last,i)
+       swap(A,left,last)
+       qsort(A,left,last-1)
+       qsort(A,last+1,right)
+    }
+
+    function swap(A,i,j){
+       t=A[i];A[i]=A[j];A[j]=t
+    }
+
+    &gt;mawk32 -f tab_sort.awk data.txt &gt; kekka.txt
+    &gt;type kekka.txt
+    ID    Forename    Surname    Age
+    0    Taro    Suzuki    20
+    1    Hanako    Sato    19
+    3    Shingo    Yamammoto    47
+    11    Junko    Kato    41
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8055'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/8055
+  :user_name: 匿名
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/4/
+  :language: Ruby
+  :time: 2008/11/19 20:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>どうですかね。Rubyっぽいですか？</p>\n\n\t"
+  :code: "lst = []\n\n#全部リスト(lst)に取り込んで\nwhile gets\n  lst &lt;&lt; chomp.split(\"\\t\")\nend\n\n#Array#mapで第２カラムと第３カラムを入れ替えて\nlst.map!{|x|x[0],
+    x[1], x[2], x[3] = \n            x[0], x[2], x[1], x[3]}\n\n#見出しを出力して\nputs lst.shift.join(\"\\t\")\n\n#IDを数値にして、Ageに一つ加えて、IDで並び替えて出力\nfor
+    i in lst.map{|x|[x[0].to_i, x[1], x[2], x[3].next]}.sort\n  puts i.join(\"\\t\")\nend\n\n__END__\nID
+    \   Surname    Forename    Age\n1    Sato    Hanako    17\n0    Suzuki    Taro
+    \   18\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8056'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/8056
+  :user_name: mamamoto
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/437/
+  :language: 
+  :time: 2008/11/19 20:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">5行目はprintでなくputsじゃないですか。\r\nあと7行目、sortでなくsort_by{|csv|
+    csv[0]}のがよくないですか。\r\n(でもsort_byって昔なかったんですっけ)</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8057'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/8057
+  :user_name: mamamoto
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2008/11/19 21:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>俺なりのRubyっぽく、かつ各操作の直交性を意識して書いてみました。</p>\n\n\t"
+  :code: |
+    str = "ID\tSurname\tForename\tAge
+    1\tSato\tHanako\t17
+    0\tSuzuki\tTaro\t18"
+
+    #取り込み
+    data = str.split(/\n/).map{|line| line.split("\t")}
+
+    #第2カラムと第3カラムをヘッダを含めて入れ替える。
+    data.each{|record| t = record[1]; record[1] = record[2]; record[2] = t}
+
+    head = data.shift
+
+    #第1カラムの値でデータを昇順にソートする。
+    data = data.sort_by{|record| record[0]}
+
+    #第4カラムの値にそれぞれ1を加える。
+    data.each{|record| record[3].succ!}
+
+    #表示
+    ([head]+data).each{|record| puts record.join("\t")}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8148'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/8148
+  :user_name: taninsw
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/973/
+  :language: Haskell
+  :time: 2008/12/13 05:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>配列とか知ってればもっとスマートにかけたと思うのですが、まだ学習中なので……。</p>\n\n\t"
+  :code: "import List\n\ntestdata = \"ID\\tSurname\\tForename\\tAge\\n\" ++\n           \"1\\tSato\\tHanako\\t17\\n\"
+    ++\n           \"0\\tSuzuki\\tTaro\\t18\\n\" ++\n           \"2\\tTanaka\\tYaeko\\t16\"
+    \n\n\n\nreadI ::String -&gt; Int\nreadI = read\n\nmkTable = map words.lines \nmkText
+    = unlines .map (concat.intersperse \"\\t\") \n\nsortTable (header:body)= header:sortBy
+    (\\a b-&gt;compare (readI $ head a) (readI $ head b)) body\n\n\nswapColumn23 table
+    = map swapItem table\n    where swapItem [a,b,c,d]=[a,c,b,d]\n\nadd1Column4 (header:body)=
+    header:map (reverse.(\\(x:xs)-&gt;show(readI(x)+1):xs).reverse) body\n\nconverter
+    :: String -&gt; String\nconverter content = mkText $ add1Column4 $ swapColumn23
+    $ sortTable $ mkTable content\n\nmain = interact $ converter\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8171'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/8171
+  :user_name: ihag
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/560/
+  :language: C
+  :time: 2008/12/14 14:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Safe C String Library (SafeStr)に，ちょうどsafestr_splitがあるので，それを使ってみました．</p>\n\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n#include
+    \"safestr.h\"\n\n#ifndef false\n# define false 0\n#endif\n#ifndef true\n# define
+    true !false\n#endif\n\nstruct item_t {\n    int is_int;\n    union {\n        safestr_t
+    str;\n        int num;\n    } value;\n};\n\n\nstruct item_t *\ncreate_record_from_list(safestr_t
+    *list)\n{\n    struct item_t *item;\n    int i;\n\n    if ((item = (struct item_t
+    *)malloc(sizeof(struct item_t[4])))\n        == NULL) {\n        perror(\"malloc\");\n
+    \       exit(EXIT_FAILURE);\n    }\n    \n    for (i = 0; i &lt; 4 &amp;&amp;
+    list[i] != NULL; i++) {\n        item[i].is_int = false;\n        item[i].value.str
+    = list[i];\n        safestr_reference(list[i]);\n    }\n    if (i != 4) {\n        fprintf(stderr,
+    \"ERROR: 4 fields needed.\\n\");\n        exit(EXIT_FAILURE);\n    }\n\n    return
+    item;\n}\n\nvoid\nconvert_int_fields(struct item_t *item)\n{\n    int value;\n
+    \   int i;\n    for (i = 0; i &lt;= 3; i+=3) {\n        value = safestr_toint32(item[i].value.str,
+    0);\n        safestr_free(item[i].value.str);\n        item[i].value.num = value;\n
+    \       item[i].is_int = true;\n    }\n}\n\nvoid\nrecords_dump(struct item_t **list,
+    struct item_t *header,\n             ssize_t list_size, int *order)\n{\n    int
+    i, j, col;\n    struct item_t *cur;\n    safestr_t str = safestr_create(\"\",
+    0);\n    safestr_t str_p = str;\n\n    for (i = -1; i &lt; list_size; i++) {\n
+    \       cur = (i == -1) ? header : list[i];\n        for (j = 0; j &lt; 4; j++)
+    {\n            col = (order == NULL) ? j : order[j];\n            if (cur[col].is_int)
+    {\n                safestr_sprintf(&amp;str, SAFESTR_TEMP(\"%d\"),\n                                cur[col].value.num);\n
+    \               str_p = str;\n            } else {\n                str_p = cur[col].value.str;\n
+    \           }\n            printf(\"%s%s\", (j == 0) ? \"\" : \"\\t\", (char *)str_p);\n
+    \       }\n        putchar('\\n');\n    }\n    safestr_free(str);\n}\n\nvoid\nrecords_copy(struct
+    item_t **dest, struct item_t **src,\n             int record_size)\n{\n    struct
+    item_t *item;\n    int i, j;\n\n    for (i = 0; i &lt; record_size; i++) {\n        if
+    ((item = (struct item_t *)malloc(sizeof(struct item_t[4])))\n            == NULL)
+    {\n            perror(\"malloc\");\n            exit(EXIT_FAILURE);\n        }\n
+    \       dest[i] = item;\n\n        for (j = 0; j &lt; 4; j++) {\n            dest[i][j]
+    = src[i][j];\n            if (!dest[i][j].is_int)\n                safestr_reference(dest[i][j].value.str);\n
+    \       }\n    }\n}\n\nvoid\nrecords_free(struct item_t **list, int record_size)\n{\n
+    \   int i, j;\n\n    for (i = 0; i &lt; record_size; i++) {\n        for (j =
+    0; j &lt; 4; j++)\n            if (!list[i][j].is_int)\n                safestr_release(list[i][j].value.str);\n
+    \       free(list[i]);\n    }\n}\n\nint\ncompare(const void *former, const void
+    *latter)\n{\n    struct item_t *former_p = *((struct item_t **)former);\n    struct
+    item_t *latter_p = *((struct item_t **)latter);\n\n    return (former_p[0].value.num
+    - latter_p[0].value.num);\n}\n\nint\nmain(int argc, char **argv)\n{\n    safestr_t
+    line, *list;\n    struct item_t *record, *header = NULL;\n    struct item_t *records[64],
+    *r_temp[64];\n    int i, record_size = 0;\n    int order[4] = { 0, 2, 1, 3 };\n
+    \   \n    memset(&amp;records, 0, sizeof(records));\n    \n    /* read data from
+    stdin */\n    while ((line = safestr_readline(stdin)) != NULL) {\n        list
+    = safestr_split(line, SAFESTR_TEMP(\"\\t\"));\n        record = create_record_from_list(list);\n\n
+    \       if (header == NULL)\n            header = record;\n        else {\n            convert_int_fields(record);\n
+    \           records[record_size++] = record;\n        }\n        safestr_free(line);\n
+    \       safestr_freelist(list);\n    }\n    if (record_size == 0)\n        exit(EXIT_SUCCESS);\n\n\n
+    \   /*\n     * show results\n     */\n    /* #1 */\n    records_copy(r_temp, records,
+    record_size);\n    qsort(r_temp, record_size, sizeof(struct item_t *), compare);\n\n
+    \   printf(\"Result of #1:\\n\");\n    records_dump(r_temp, header, record_size,
+    NULL);\n    printf(\"\\n\");\n    records_free(r_temp, record_size);\n\n    /*
+    #2 */\n    records_copy(r_temp, records, record_size);\n    qsort(r_temp, record_size,
+    sizeof(struct item_t *), compare);\n\n    printf(\"Result of #2:\\n\");\n    records_dump(r_temp,
+    header, record_size, order);\n    printf(\"\\n\");\n    records_free(r_temp, record_size);\n\n
+    \   /* #3 */\n    records_copy(r_temp, records, record_size);\n    for (i = 0;
+    i &lt; record_size; i++)\n        r_temp[i][3].value.num += 1;\n\n    printf(\"Result
+    of #3:\\n\");\n    records_dump(r_temp, header, record_size, NULL);\n    printf(\"\\n\");\n
+    \   records_free(r_temp, record_size);\n\n\n    /* finalize */\n    records_free(records,
+    record_size);\n\n    exit(0);\n}\n"
+  :tags:
+  - SafeStr
+  :references:
+    :url: /web/20091213020717/http://www.zork.org/safestr/
+    :title: Safe C String Library
+- :id: '8307'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/8307
+  :user_name: cappuccino
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/549/
+  :language: C
+  :time: 2009/01/09 10:17 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>１６行目を修正。</p>\n<p>文字列型でソートしてました。</p>\n<p>1</p>\n<p>10   &lt;</p>\n<p>2</p>\n<p>3</p>\n<p>4</p>\n<p>5</p>\n<p>6</p>\n<p>7</p>\n<p>8</p>\n<p>9</p>\n\n\t"
+  :code: |
+    using System.IO;
+    using System.Linq;
+
+    class Program
+    {
+        static void Main()
+        {
+            var header =
+                from line in File.ReadAllLines("inFile.txt").Take(1)
+                let x = line.Split('\t')
+                select x[0] + '\t' + x[2] + '\t' + x[1] + '\t' + x[3];
+
+            var lines =
+                from line in File.ReadAllLines("inFile.txt").Skip(1)
+                let x = line.Split('\t')
+                orderby int.Parse(x[0])
+                select x[0] + '\t' + x[2] + '\t' + x[1] + '\t' + (int.Parse(x[3]) + 1);
+
+            File.WriteAllLines("outFile.txt", header.Concat(lines).ToArray());
+        }
+    }
+  :tags:
+  - LINQ
+  :references:
+    :url: 
+    :title: 
+- :id: '8428'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/8428
+  :user_name: fumokmm
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/856/
+  :language: Groovy
+  :time: 2009/02/01 11:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  いまさら投稿してみる。\r<br>分かりやすく書いたつもりです。\r<br><br>**ポイント\r<br>ヘッダとデータは　#head(), #tail()を使って取得。\r<br>ヘッダごと入れ替え時は、列を1本ずつ取得してから、#transpose()で行・列を入れ替え。\r<br><br>**test.tsv\r<br>ID      Surname Forename        Age\r<br>1       Sato    Hanako  17\r<br>0       Suzuki  Taro    18\r<br><br>**実行結果\r<br>[入力時]\r<br>ID      Surname Forename        Age\r<br>1       Sato    Hanako  17\r<br>0       Suzuki  Taro    18\r<br><br>[出力時]\r<br>ID      Forename        Surname Age\r<br>0       Taro    Suzuki  19\r<br>1       Hanako  Sato    18\n\t"
+  :code: |
+    // 入力
+    def list0 = new File('test.tsv').readLines()*.split('\t')
+    // 第1カラムの値でデータを昇順にソートする。
+    def list1 = [list0.head(), *(list0.tail().sort{it[0]})]
+    // 第2カラムと第3カラムをヘッダを含めて入れ替える。
+    def list2 = [
+      list1*.getAt(0),
+      list1*.getAt(2), // ←第2カラムと
+      list1*.getAt(1), // ←第3カラムの入れ替え
+      list1*.getAt(3)
+    ].transpose()
+    // 第4カラムの値にそれぞれ1を加える。
+    def list3 = [list2.head(),
+       *(list2.tail().collect{ [*(it[0..2]), it[3].toInteger() + 1] })]
+    // 出力
+    println """\
+    [入力時]
+    ${ list0*.join('\t').join('\n') }
+
+    [出力時]
+    ${ list3*.join('\t').join('\n') }\
+    """
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8538'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/8538
+  :user_name: 匿名
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/4/
+  :language: OCaml
+  :time: 2009/02/21 04:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>F#で。</p>\n\n\t"
+  :code: |
+    #light "off"
+    open System;
+    open System.IO;
+
+    let reader (stream:TextReader) =
+      0 |&gt; Seq.unfold
+          (fun x -&gt;
+             match stream.ReadLine() with
+               | null -&gt; None
+               | s -&gt; Some(s.Split([|'\t'|]), x))
+    in
+    let main (input:TextReader) (output:TextWriter) =
+      let records = reader input in
+      let header = records |&gt; Seq.take 1 in
+      let contents =
+        records
+        |&gt; Seq.sort_by (fun x -&gt; int x.[0])
+        |&gt; Seq.map (fun x -&gt; [|x.[0]; x.[1]; x.[2]; string ((int x.[3]) + 1)|])
+      in
+        Seq.append header contents
+        |&gt; Seq.map (fun x -&gt; String.Join("\t", [|x.[0]; x.[2]; x.[1]; x.[3]|]))
+        |&gt; Seq.iter output.WriteLine
+    in
+      main Console.In Console.Out;;
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '9002'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/9002
+  :user_name: hiro_h
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/1055/
+  :language: Python
+  :time: 2009/05/24 00:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">python初心者ですが...\r\nちなみにpython2.3では動かないはず。</pre>\n\t"
+  :code: |
+    import sys
+    def reorderdOutput(line, headerFlag):
+        line = line.strip()
+        columns = line.split("\t")
+        columns[1], columns[2] = columns[2], columns[1]
+        if headerFlag == 0:
+            columns[3] = str(int(columns[3]) + 1)
+        print "\t".join(columns)
+    ## main
+    inFile = sys.argv[1]
+    f = open(inFile)
+    ## header line treatment
+    line = f.readline()
+    reorderdOutput(line, 1)
+    ## data section treatment
+    for line in sorted(f):
+        reorderdOutput(line, 0)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9640'
+  :parent_id: '209'
+  :url: http://ja.doukaku.org/comment/9640
+  :user_name: T_GYOUTEN
+  :user_url: /web/20091213020717/http://ja.doukaku.org/user/1107/
+  :language: Other
+  :time: 2009/10/22 12:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Personクラスを定義して、それのインスタンスのリストを作って、それをソートするという余計な手間ばかりをかけてます。</p>\n\n\t"
+  :code: "open System.IO\n\nlet inputFileName = @\"s:\\inputData.txt\"\nlet outputFileName
+    = @\"s:\\outputData.txt\"\n\ntype Person (st:string[]) =\n    member this.id =
+    System.Int32.Parse st.[0]\n    member this.age = (System.Int32.Parse  st.[3])
+    + 1\n    member this.toFormat () =\n        this.id.ToString() + \"\\t\" + st.[1]
+    + \"\\t\" + st.[2] + \"\\t\" + this.age.ToString() \n\nlet splitReplaceToArr (str:string)
+    =\n    let strArr = str.Split([|'\\t'|])\n    [|strArr.[0];strArr.[2];strArr.[1];strArr.[3]|]\n\nlet
+    linesReadRepToList (inputFileName: string) =\n    [                                             \n
+    \       use fileReader = new StreamReader(inputFileName)  \n        while not
+    fileReader.EndOfStream do          \n            let line = splitReplaceToArr
+    (fileReader.ReadLine())\n            yield line                               \n
+    \    ]\n\nlet headerArr = List.hd (linesReadRepToList inputFileName)\nlet personList
+    = List.map (fun arr -&gt; new Person (arr))  (List.tl (linesReadRepToList inputFileName))\nlet
+    sortedList = List.sortWith(fun (l:Person) (r:Person) -&gt; r.age - l.age) personList
+    \nlet resultList = (Array.reduce  (fun s inStr -&gt; s + \"\\t\" + inStr) headerArr)
+    :: \n                    (List.map (fun (p:Person) -&gt; p.toFormat()) sortedList)
+    \n\nFile.WriteAllLines(outputFileName,resultList)\n"
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 

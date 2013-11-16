@@ -1,0 +1,2079 @@
+---
+:id: '219'
+:title: 島の数をカウントする
+:comments:
+- :id: '8053'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8053
+  :user_name: ckbx
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/893/
+  :language: 
+  :time: 2008/11/19 12:51 GMT
+  :vote_count: '7'
+  :vote_score: '5'
+  :body: "\r\n\t  <pre class=\"compact\">m×nの長方形のマス目のうちいくつかを黒く塗りつぶします。\r\nこのとき、白の島、黒の島がそれぞれいくつあるかをカウントしてください。\r\n\r\nただし、2つのマスは、同色マスの上下左右の移動で移れるとき、\r\n同じ島にあると定義します。\r\n\r\n例：\r\n□■■□\r\n□□■□\r\n□■□□\r\n□■■□\r\n白の島は2つ\r\n黒の島は2つ\r\n\r\n例：\r\n□□□□\r\n■□■□\r\n□■□□\r\n□□□□\r\n白の島は1つ\r\n黒の島は3つ</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8054'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8054
+  :user_name: mamamoto
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2008/11/19 19:29 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>あんまりRubyである必要のないコードですが。</p>\n\n\t"
+  :code: |
+    #!ruby -Ku
+
+    def fill(sima, x, y, color)
+      return if x &lt; 0 || y &lt; 0 ||
+        !sima[x] || !sima[x][y] ||
+        sima[x][y] != color
+
+      sima[x][y] = nil
+      fill(sima, x+1, y, color)
+      fill(sima, x-1, y, color)
+      fill(sima, x, y+1, color)
+      fill(sima, x, y-1, color)
+    end
+
+    def next_point(sima)
+      sima.size.times{|y|
+        sima[0].size.times{|x|
+          return [x,y] if sima[x][y]
+        }
+      }
+      nil
+    end
+
+    def sima_scan(str)
+      sima = str.split(/\n/).map{|line| line.split(//)}
+      result = Hash.new{0}
+
+      while np = next_point(sima)
+        x,y = *np
+        result[sima[x][y]] += 1
+        fill(sima, x, y, sima[x][y])
+      end
+
+      result
+    end
+
+    a = "□■■□
+    □□■□
+    □■□□
+    □■■□"
+
+    b = "□□□□
+    ■□■□
+    □■□□
+    □□□□"
+
+    p sima_scan(a)
+    p sima_scan(b)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8059'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8059
+  :user_name: 匿名
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/11/20 09:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    # -*- coding: utf-8 -*-
+
+    from random import randint
+
+    m, n = 4, 3
+
+    A = ''.join([''.join([u'□' if randint(0, 1) else u'■' for j in range(n)])+'\n' for i in range(m)])
+
+    a = [[0 if A[i*(n+1)+j] == u'□' else 1 for j in range(n)] for i in range(m)]
+    #for i in a:
+    #  print i
+
+    def f(i, j):
+      k = a[i][j]
+      a[i][j] = -1
+      if i &gt; 0 and a[i-1][j] == k: f(i-1, j)
+      if j &gt; 0 and a[i][j-1] == k: f(i, j-1)
+      if i &lt; m-1 and a[i+1][j] == k: f(i+1, j)
+      if j &lt; n-1 and a[i][j+1] == k: f(i, j+1)
+
+    r = [0, 0]
+    for i in range(m):
+      for j in range(n):
+        if a[i][j] != -1:
+          r[a[i][j]] += 1
+          f(i, j)
+
+    print A
+    print 'white: %d\nblack: %d' % tuple(r)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8060'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8060
+  :user_name: emasaka
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/11/20 05:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>標準入力→標準出力です。</p>\n\n\t"
+  :code: "#!/bin/bash \ndeclare -a ISLANDS_WHITE\ndeclare -a ISLANDS_BLACK\n\nfunction
+    expand_islands() {\n    local -i x=$1\n    local -i y=$2\n    local bw=$3\n\n
+    \   local -a islands\n    if [ $bw = □ ]; then\n        islands=(\"${ISLANDS_WHITE[@]}\")\n
+    \   else\n        islands=(\"${ISLANDS_BLACK[@]}\")\n    fi\n\n    local p found\n
+    \   local -i i n=${#islands[@]}\n    for ((i = 0; i &lt; $n; i++)); do\n        for
+    p in ${islands[i]}; do\n            local -i px=${p%,*} py=${p#*,}\n            if
+    (((x == px &amp;&amp; y == py + 1) ||\n                 (y == py &amp;&amp; x
+    == px + 1) )); then\n                if [ -z \"$found\" ]; then\n                    islands[i]=\"${islands[i]}
+    $x,$y\"\n                    found=$i\n                else    # join two islands\n
+    \                   islands[found]=\"${islands[found]} ${islands[i]} $x,$y\"\n
+    \                   unset islands[i]\n                fi\n                break\n
+    \           fi\n        done\n    done\n    [ -z \"$found\" ] &amp;&amp; islands=(\"${islands[@]}\"
+    \"$x,$y\")        # new island\n\n    if [ $bw = □ ]; then\n        ISLANDS_WHITE=(\"${islands[@]}\")\n
+    \   else\n        ISLANDS_BLACK=(\"${islands[@]}\")\n    fi\n}\n\nfunction check_islands()
+    {\n    local line\n    local -i y=0\n    while read -r line; do\n        local
+    -i x\n        for ((x = 0; x &lt; ${#line}; x++)); do\n            expand_islands
+    $x $y ${line:$x:1}\n        done\n        ((y++))\n    done\n}\n\ncheck_islands\necho
+    白の島は${#ISLANDS_WHITE[@]}\necho 黒の島は${#ISLANDS_BLACK[@]}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8061'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8061
+  :user_name: horiuchi
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/11/21 00:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ついでに島の大きさも数えてますが、今回は関係ないですね。</p>\n\n\t"
+  :code: |
+    import java.awt.Point;
+    import java.util.HashMap;
+    import java.util.Map;
+
+
+    public class Sample219 {
+        private static final char NULL = ' ';
+
+        public Map&lt;Character, Integer&gt; scanIslands(String map) {
+            String[] lines = map.split("\n");
+            char[][] mapdata = new char[lines.length][];
+            for (int index = 0; index &lt; lines.length; index++) {
+                mapdata[index] = lines[index].toCharArray();
+            }
+
+            Map&lt;Character, Integer&gt; result = new HashMap&lt;Character, Integer&gt;();
+            for (Point p = getNextPoint(mapdata); p != null; p = getNextPoint(mapdata)) {
+                char c = mapdata[p.y][p.x];
+                scan(mapdata, p.x, p.y, c);
+                Integer count = result.get(c);
+                if (count == null) {
+                    result.put(c, 1);
+                } else {
+                    result.put(c, count + 1);
+                }
+            }
+            return result;
+        }
+
+        private Point getNextPoint(char[][] map) {
+            for (int y = 0; y &lt; map.length; y++) {
+                for (int x = 0; x &lt; map[y].length; x++) {
+                    if (map[y][x] != NULL) {
+                        return new Point(x, y);
+                    }
+                }
+            }
+            return null;
+        }
+        private int scan(char[][] map, int x, int y, char c) {
+            if (y &lt; 0 || map.length &lt;= y) return 0;
+            if (x &lt; 0 || map[y].length &lt;= x) return 0;
+            if (map[y][x] != c) return 0;
+            int result = 1;
+            map[y][x] = NULL;
+            result += scan(map, x + 1, y, c);
+            result += scan(map, x, y + 1, c);
+            result += scan(map, x - 1, y, c);
+            result += scan(map, x, y - 1, c);
+            return result;
+        }
+
+        public static void main(String[] args) {
+            Sample219 sample = new Sample219();
+            System.out.println(sample.scanIslands(
+                    "□■■□\n" +
+                    "□□■□\n" +
+                    "□■□□\n" +
+                    "□■■□"));
+            System.out.println(sample.scanIslands(
+                    "□□□□\n" +
+                    "■□■□\n" +
+                    "□■□□\n" +
+                    "□□□□"));
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '8062'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8062
+  :user_name: nobsun
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/11/20 19:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ナイーブに。\r\n\r\n実行例\r\n*Main&gt; :main\r\n□■■□\r\n□□■□\r\n□■□□\r\n□■■□\r\n白の島:
+    2個\r\n黒の島: 2個\r\n□□□□\r\n■□■□\r\n□■□□\r\n□□□□\r\n白の島: 1個\r\n黒の島: 3個\r\n</pre>\n\t"
+  :code: "import Control.Arrow\nimport Data.List\nimport Data.Function\nimport qualified
+    System.IO.UTF8 as U\n\nmain :: IO ()\nmain =  mapM_ displayIsland [sample1,sample2]\n\ndisplayIsland
+    = uncurry (&gt;&gt;) . (printMAP &amp;&amp;&amp; (printAnswer . count . islands))\n
+    \ where\n    printMAP = U.putStr . unlines . map (concatMap show)\n    printAnswer
+    (w,b) = mapM_ U.putStrLn [\"白の島: \"++show w++\"個\"\n                                         ,\"黒の島:
+    \"++show b++\"個\"]\n\ndata BW = B | W deriving (Eq)\n\ninstance Show BW where\n
+    \ show B = \"■\"\n  show W = \"□\"\n\ngrouping :: [[(Int,BW)]] -&gt; [[(Int,BW)]]\ngrouping
+    = map (concatMap renumber . adjacent)\n  where\n    adjacent = groupBy ((==) `on`
+    snd)\n    renumber = uncurry replicate . (length &amp;&amp;&amp; minimumBy (compare
+    `on` fst))\n\ncount :: [[(Int,BW)]] -&gt; (Int,Int)\ncount = (cnt *** cnt) . partition
+    ((W ==) . snd) . concat\n  where \n    cnt = length . groupBy ((==) `on` fst)
+    . sortBy (compare `on` fst)\n\nislands :: [[BW]] -&gt; [[(Int,BW)]]\nislands =
+    fst . head\n        . filter (uncurry ((==) . transpose))\n        . uncurry zip
+    \n        . (id &amp;&amp;&amp; tail) \n        . iterate (transpose . grouping)\n
+    \       . numbering \n  where\n    numbering = snd . mapAccumL number [0..]  \n
+    \   number (n:ns) (x:xs) = case number ns xs of (ns',ys) -&gt; (ns',(n,x):ys)\n
+    \   number ns     []     = (ns,[])\n\nsample1 = [[W,B,B,W]\n          ,[W,W,B,W]\n
+    \         ,[W,B,W,W]\n          ,[W,B,B,W]]\n\nsample2 = [[W,W,W,W]\n          ,[B,W,B,W]\n
+    \         ,[W,B,W,W]\n          ,[W,W,W,W]]\n"
+  :tags:
+  - ghc-6.10.1
+  - utf8-string
+  :references:
+    :url: 
+    :title: 
+- :id: '8063'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8063
+  :user_name: genzou
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/11/20 22:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ロジックが汚いですね。</p>\n\n\t"
+  :code: |
+    def text = """\
+    □□□□
+    ■□■□
+    □■□□
+    □□□□"""
+
+    def score = ["■":0, "□":0]
+
+    board = text.readLines().collect{ it.split("")[1..-1] }
+    XMAX = board.size() - 1
+    YMAX = board[0].size() - 1
+
+    def eat( mark, x, y ){
+        [["x":x-1, "y":y], ["x":x+1, "y":y], ["x":x, "y":y-1], ["x":x, "y":y+1]].findAll{
+            (it.x in 0..XMAX) &amp;&amp; (it.y in 0..YMAX) &amp;&amp; board[it.x][it.y] == mark
+        }.each{
+            board[it.x][it.y] = "×"
+            eat( mark, it.x, it.y )
+        }
+    }
+
+    XMAX.times{ x -&gt;
+        YMAX.times{ y -&gt;
+            def mark = board[x][y]
+            if( mark != "×" ){
+                score[mark]++
+                eat(mark, x, y)
+            }
+        }
+    }
+
+    println score
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '8064'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8064
+  :user_name: genzou
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/11/21 04:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>しまった・・・誤り発見です。</p>\n\n\t"
+  :code: |
+    def text = """\
+    □■■□
+    ■□□□
+    □□□■
+    □■■□"""
+
+    def score = ["■":0, "□":0]
+
+    board = text.readLines().collect{ it.split("")[1..-1] }
+    XMAX = board.size() - 1
+    YMAX = board[0].size() - 1
+
+    def eatAround( mark, x, y ){
+        [["x":x-1, "y":y], ["x":x+1, "y":y], ["x":x, "y":y-1], ["x":x, "y":y+1]].findAll{
+            (it.x in 0..XMAX) &amp;&amp; (it.y in 0..YMAX) &amp;&amp; board[it.x][it.y] == mark
+        }.each{
+            board[it.x][it.y] = "×"
+            eatAround( mark, it.x, it.y )
+        }
+    }
+
+    (0..XMAX).each{ x -&gt;
+        (0..YMAX).each{ y -&gt;
+            def mark = board[x][y]
+            if( mark != "×" ){
+                score[mark]++
+                eatAround(mark, x, y)
+            }
+        }
+    }
+
+    println score
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '8065'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8065
+  :user_name: genzou
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/11/20 22:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>何度もごめんなさい。\nほんのちょっと修正です。</p>\n\n\t"
+  :code: |
+    def text = """\
+    □■■□
+    ■□□■
+    □□■□
+    □■■□"""
+
+    def score = ["■":0, "□":0]
+
+    board = text.readLines().collect{ it.split("")[1..-1] }
+    XMAX = board.size() - 1
+    YMAX = board[0].size() - 1
+
+    def eat( mark, x, y ){
+        board[x][y] = "×"
+        // 周辺もいただきます♪
+        [["x":x-1, "y":y], ["x":x+1, "y":y], ["x":x, "y":y-1], ["x":x, "y":y+1]].findAll{
+            (it.x in 0..XMAX) &amp;&amp; (it.y in 0..YMAX) &amp;&amp; board[it.x][it.y] == mark
+        }.each{
+            eat( mark, it.x, it.y )
+        }
+    }
+
+    (0..XMAX).each{ x -&gt;
+        (0..YMAX).each{ y -&gt;
+            def mark = board[x][y]
+            if( mark != "×" ){
+                score[mark]++
+                eat(mark, x, y)
+            }
+        }
+    }
+
+    println score
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '8066'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8066
+  :user_name: あにす
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/11/20 23:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  これで例の2問は解けました。\n\t"
+  :code: |
+    //http://ja.doukaku.org/219/
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+
+    namespace どう書く_org島の数をカウントする {
+        class Program {
+            static void Main(string[] args) {
+                string map = @"
+    □□□□
+    ■□■□
+    □■□□
+    □□□□
+    ";
+                islandCount(map);
+
+                Console.ReadLine();
+            }
+
+            static void islandCount(string map_) {
+                List&lt;string&gt; map = new List&lt;string&gt;(map_.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries));
+                List&lt;Island&gt; islandList = new List&lt;Island&gt;();
+                for(int y = 0; y &lt; map.Count; y++) {
+                    for(int x = 0; x &lt; map[0].Length; x++) {
+                        char cell = map[y][x];
+                        bool flag = false;
+                        for(int islandIndex = 0; islandIndex &lt; islandList.Count; islandIndex++) {
+                            for(int cellIndex = 0; cellIndex &lt; islandList[islandIndex].Count; cellIndex++) {
+                                if(isNext(islandList[islandIndex][cellIndex], new Point(x, y)) &amp;&amp; map[islandList[islandIndex][0].Y][islandList[islandIndex][0].X] == cell) {
+                                    islandList[islandIndex].Add(new Point(x, y));
+                                    flag = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(!flag) {
+                            Island island = new Island();
+                            island.Add(new Point(x, y));
+                            islandList.Add(island);
+                        }
+                    }
+                }
+
+                while(islandListMarge(islandList, map)) { }
+
+                Console.WriteLine("白の島は" + islandList.Count&lt;Island&gt;((x) =&gt; (map[x[0].Y][x[0].X] == '□')).ToString() + "つ");
+                Console.WriteLine("黒の島は" + islandList.Count&lt;Island&gt;((x) =&gt; (map[x[0].Y][x[0].X] == '■')).ToString() + "つ");
+            }
+
+            static bool islandListMarge(List&lt;Island&gt; islandList, List&lt;string&gt; map) {
+                for(int i = 0; i &lt; islandList.Count; i++) {
+                    for(int j = 0; j &lt; islandList.Count; j++) {
+                        if(i == j) continue;
+                        Island a = islandList[i];
+                        Island b = islandList[j];
+                        if(map[a[0].Y][a[0].X] != map[b[0].Y][b[0].X]) continue;
+                        for(int a_ = 0; a_ &lt; a.Count; a_++) {
+                            for(int b_ = 0;b_ &lt; b.Count; b_++) {
+                                if(isNext(a[a_], b[b_])) {
+                                    a.AddRange(b);
+                                    islandList.Remove(b);
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+
+            static bool isNext(Point a, Point b) {
+                Point tmpB = b;
+                bool r = false;
+                for(int i = -1; i &lt;= 1; i++) {
+                    for(int j = -1; j &lt;= 1; j++) {
+                        if(i * j != 0) continue;
+                        tmpB.Offset(i, j);
+                        if(a == tmpB) r = true;
+                        tmpB = b;
+                    }
+                }
+                return r;
+            }
+        }
+
+        class Island :List&lt;Point&gt; {
+
+        }
+    }
+  :tags:
+  - C#3.0
+  :references:
+    :url: 
+    :title: 
+- :id: '8067'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8067
+  :user_name: 99yen
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2008/11/21 06:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>画像に変換して、塗っていってます。</p>\n\n\t"
+  :code: |
+    map="□■■□
+    □□■□
+    □■□□
+    □■■□"
+    tmpとは配列
+    mapを改行で区切るを反復
+        tmpの回数-1に(対象を文字列分解の表行列交換)を配列一括挿入
+    map_h=aで改行の出現回数+1
+    map_w=aから改行まで切り取るの文字数
+    island_black=0
+    island_white=0
+    島とはイメージ
+    島の高さはmap_h
+    島の幅はmap_w
+    Iで0からmap_h-1まで繰り返す
+        Jで0からmap_w-1まで繰り返す
+            もし、tmp[I,J]="■"ならば
+                島のJ,Iへ黒色を点描画
+    Iで0からmap_h-1まで繰り返す
+        Jで0からmap_w-1まで繰り返す
+            島のJ,Iを点取得で条件分岐
+                黒色ならば
+                    island_black=island_black+1
+                    島のJ,Iを緑色で塗る
+                白色ならば
+                    island_white=island_white+1
+                    島のJ,Iを緑色で塗る
+    「黒い島は{island_black}個
+    白い島は{island_white}個」を言う
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8068'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8068
+  :user_name: 匿名
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/11/21 08:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">実質C言語ですね。\r\nC++らしいのも考えたい…。</pre>\n\t"
+  :code: "#include &lt;iostream&gt;\n\nstatic const int Width  = 4;\nstatic const
+    int Height = 4;\n\nvoid markCell(int row, int col, const char cells[Height][Width],
+    bool marks[Height][Width])\n{\n    marks[row][col] = true;\n    if((row &gt; 0
+    \        ) &amp;&amp; ( ! marks[row - 1][col]) &amp;&amp; (cells[row][col] ==
+    cells[row - 1][col])) markCell(row - 1, col, cells, marks);\n    if((row &lt;
+    Height - 1) &amp;&amp; ( ! marks[row + 1][col]) &amp;&amp; (cells[row][col] ==
+    cells[row + 1][col])) markCell(row + 1, col, cells, marks);\n    if((col &gt;
+    0)          &amp;&amp; ( ! marks[row][col - 1]) &amp;&amp; (cells[row][col] ==
+    cells[row][col - 1])) markCell(row, col - 1, cells, marks);\n    if((col &lt;
+    Width - 1)  &amp;&amp; ( ! marks[row][col + 1]) &amp;&amp; (cells[row][col] ==
+    cells[row][col + 1])) markCell(row, col + 1, cells, marks);\n}\n\nvoid doukaku219(const
+    char cells[Height][Width])\n{\n    int  countWhite = 0;\n    int  countBlack =
+    0;\n    bool marks[Height][Width];\n\n    for(int row = 0; row &lt; Height; ++row)\n
+    \   {\n        for(int col = 0; col &lt; Width; ++col)\n        {\n            marks[row][col]
+    = 0;\n        }\n    }\n\n    for(int row = 0; row &lt; Height; ++row)\n    {\n
+    \       for(int col = 0; col &lt; Width; ++col)\n        {\n            if( !
+    marks[row][col])\n            {\n                if(cells[row][col] == 0)\n                {\n
+    \                   ++countWhite;\n                }\n                else\n                {\n
+    \                   ++countBlack;\n                }\n                marks[row][col]
+    = true;\n            }\n            markCell(row, col, cells, marks);\n        }\n
+    \   }\n\n    std::cout &lt;&lt; \"白の島は\" &lt;&lt; countWhite &lt;&lt; \"つ\" &lt;&lt;
+    std::endl;\n    std::cout &lt;&lt; \"黒の島は\" &lt;&lt; countBlack &lt;&lt; \"つ\"
+    &lt;&lt; std::endl;\n}\n\nint main(int, char* [])\n{\n    const char probrem0[Width][Height]
+    =\n    {\n        { 0, 1, 1, 0 },\n        { 0, 0, 1, 0 },\n        { 0, 1, 0,
+    0 },\n        { 0, 1, 1, 0 }\n    };\n\n    const char probrem1[Width][Height]
+    =\n    {\n        { 0, 0, 0, 0 },\n        { 1, 0, 1, 0 },\n        { 0, 1, 0,
+    0 },\n        { 0, 0, 0, 0 } \n    };\n\n    doukaku219(probrem0);\n    doukaku219(probrem1);\n\n
+    \   return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8069'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8069
+  :user_name: mattsan
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/833/
+  :language: 
+  :time: 2008/11/21 08:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ログインし忘れた orz。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8070'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8070
+  :user_name: mattsan
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/833/
+  :language: C
+  :time: 2008/11/21 14:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">おまけにこまかいミスがちらほら。とほほ orz。</pre>\n\t"
+  :code: "#include &lt;iostream&gt;\n\nstatic const int Width  = 4;\nstatic const
+    int Height = 4;\n\nvoid markCell(int row, int col, const char cells[Height][Width],
+    bool marks[Height][Width])\n{\n    marks[row][col] = true;\n    if((row &gt; 0
+    \        ) &amp;&amp; ( ! marks[row - 1][col]) &amp;&amp; (cells[row][col] ==
+    cells[row - 1][col])) markCell(row - 1, col, cells, marks);\n    if((row &lt;
+    Height - 1) &amp;&amp; ( ! marks[row + 1][col]) &amp;&amp; (cells[row][col] ==
+    cells[row + 1][col])) markCell(row + 1, col, cells, marks);\n    if((col &gt;
+    0)          &amp;&amp; ( ! marks[row][col - 1]) &amp;&amp; (cells[row][col] ==
+    cells[row][col - 1])) markCell(row, col - 1, cells, marks);\n    if((col &lt;
+    Width - 1)  &amp;&amp; ( ! marks[row][col + 1]) &amp;&amp; (cells[row][col] ==
+    cells[row][col + 1])) markCell(row, col + 1, cells, marks);\n}\n\nvoid doukaku219(const
+    char cells[Height][Width])\n{\n    int  countWhite = 0;\n    int  countBlack =
+    0;\n    bool marks[Height][Width];\n\n    for(int row = 0; row &lt; Height; ++row)\n
+    \   {\n        for(int col = 0; col &lt; Width; ++col)\n        {\n            marks[row][col]
+    = 0;\n        }\n    }\n\n    for(int row = 0; row &lt; Height; ++row)\n    {\n
+    \       for(int col = 0; col &lt; Width; ++col)\n        {\n            if( !
+    marks[row][col])\n            {\n                if(cells[row][col] == 0)\n                {\n
+    \                   ++countWhite;\n                }\n                else\n                {\n
+    \                   ++countBlack;\n                }\n                markCell(row,
+    col, cells, marks);\n            }\n        }\n    }\n\n    std::cout &lt;&lt;
+    \"白の島は\" &lt;&lt; countWhite &lt;&lt; \"つ\" &lt;&lt; std::endl;\n    std::cout
+    &lt;&lt; \"黒の島は\" &lt;&lt; countBlack &lt;&lt; \"つ\" &lt;&lt; std::endl;\n}\n\nint
+    main(int, char* [])\n{\n    const char problem0[Width][Height] =\n    {\n        {
+    0, 1, 1, 0 },\n        { 0, 0, 1, 0 },\n        { 0, 1, 0, 0 },\n        { 0,
+    1, 1, 0 }\n    };\n\n    const char problem1[Width][Height] =\n    {\n        {
+    0, 0, 0, 0 },\n        { 1, 0, 1, 0 },\n        { 0, 1, 0, 0 },\n        { 0,
+    0, 0, 0 } \n    };\n\n    doukaku219(problem0);\n    doukaku219(problem1);\n\n
+    \   return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8071'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8071
+  :user_name: 匿名
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/11/21 11:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+
+    static
+    void walk(char *board, int W, int H, int pos, int color)
+    {
+        if (board[pos] == color) {
+            int row = pos / W, col = pos % W;
+            board[pos] = -1;
+            if (col &gt; 0) walk(board, W, H, pos - 1, color);
+            if (row &gt; 0) walk(board, W, H, pos - W, color);
+            if (col &lt; W - 1) walk(board, W, H, pos + 1, color);
+            if (row &lt; H - 1) walk(board, W, H, pos + W, color);
+        }
+    }
+    static
+    void solve(char *board, int width, int height, int *result)
+    {
+        int pos, size = width * height;
+        for (pos = 0; pos &lt; size; ++pos)
+            if (board[pos] &gt;= 0) {
+                ++result[board[pos]];
+                walk(board, width, height, pos, board[pos]);
+            }
+    }
+    static
+    void pr(const char **colors, const int *result)
+    {
+        int i;
+        for (i = 0; colors[i]; ++i)
+            printf("%sの島は%dつ\n", colors[i], result[i]);
+    }
+    int main(void)
+    {
+        const char *colors[] = { "白", "黒", 0 };
+        char a1[] = { 0,1,1,0, 0,0,1,0, 0,1,0,0, 0,1,1,0 };
+        char a2[] = { 0,0,0,0, 1,0,1,0, 0,1,0,0, 0,0,0,0 };
+        int r1[] = { 0, 0 }, r2[] = { 0, 0 };
+        solve(a1, 4, 4, r1), pr(colors, r1);
+        solve(a2, 4, 4, r2), pr(colors, r2);
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8072'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8072
+  :user_name: leque
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2008/11/22 00:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>特にひねりもなく。</p>\n\n\t"
+  :code: |
+    (use srfi-43)
+
+    (define (count-island target board)
+      (let ((h (vector-length board))
+            (w (vector-length (vector-ref board 0)))
+            (v (vector-map (lambda (i x) (vector-copy x)) board))
+            (c (gensym)))
+        (define (bref b x y) (vector-ref (vector-ref b y) x))
+        (define (bset! b x y o) (vector-set! (vector-ref b y) x o))
+        (define (fill-paint! x y)
+          (let loop ((x x) (y y))
+            (cond ((or (negative? x) (&gt;= y h)))
+                  ((&gt;= x w)
+                   (loop 0 (+ y 1)))
+                  ((equal? (bref v x y) target)
+                   (bset! v x y c)
+                   (loop (- x 1) y)
+                   (loop (+ x 1) y)
+                   (loop x (+ y 1))))))
+        (let loop ((x 0) (y 0) (n 0))
+          (cond ((&gt;= y h)
+                 n)
+                ((&gt;= x w)
+                 (loop 0 (+ y 1) n))
+                ((equal? (bref v x y) target)
+                 (fill-paint! x y)
+                 (loop (+ x 1) y (+ n 1)))
+                (else
+                 (loop (+ x 1) y n))))))
+
+    (let ((bs '(#(#(0 1 1 0)
+                  #(0 0 1 0)
+                  #(0 1 0 0)
+                  #(0 1 1 0))
+                #(#(0 0 0 0)
+                  #(1 0 1 0)
+                  #(0 1 0 0)
+                  #(0 0 0 0)))))
+      (for-each (lambda (b)
+                  (format #t "白の島は‾Aつ‾%黒の島は‾Aつ‾%"
+                          (count-island 0 b)
+                          (count-island 1 b)))
+                bs))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '8073'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8073
+  :user_name: mtoyoshi
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/957/
+  :language: Ruby
+  :time: 2008/11/22 23:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    WHITE = "□"
+    BLACK = "■"
+
+    AREA = [
+      %w[□ □ □ □],
+      %w[■ □ ■ □],
+      %w[□ ■ □ □],
+      %w[□ □ □ □]
+    ]
+
+    Mark = Array.new(AREA.size).map{ Array.new(AREA[0].size, false) }
+
+    def marking(x, y, color)
+      return false if x &lt; 0 || x &gt;= AREA.size || y &lt; 0 || y &gt;= AREA[0].size || AREA[x][y] != color || Mark[x][y] != false
+
+      Mark[x][y] = true
+
+      marking(x,   y+1, color)
+      marking(x+1, y,   color)
+      marking(x,   y-1, color)
+      marking(x-1, y,   color)
+
+      true
+    end
+
+    def loop(counter, color)
+      (0...AREA.size).each do |x|
+        (0...AREA[x].size).each do |y|
+          counter += 1 if marking(x, y, color)
+        end
+      end
+
+      counter
+    end
+
+    puts "白の島は#{loop(0, WHITE)}です。"
+    puts "黒の島は#{loop(0, BLACK)}です。"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8074'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8074
+  :user_name: 匿名
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/4/
+  :language: Scala
+  :time: 2008/11/22 23:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Scalaの練習として。</p>\n\n\t"
+  :code: "object Tile extends Enumeration {\n  val White, Black, Fill = Value\n}\nimport
+    Tile._\n  \nclass Q8053 {\n  def countIsland(str : String, target : Value) = {\n
+    \   var data = parse(str)\n    var result = 0\n    for (y &lt;- 0 to data.length
+    - 1; x &lt;- 0 to data(y).length - 1) {\n      if (data(y)(x) == target) {\n        fill(data,
+    y, x, target)\n        result += 1\n      }\n    }\n    result\n  }\n\n  def parse(str
+    : String) = {\n    str.lines.toList.map(_.toList.map( x =&gt; if (x == '□') White
+    else Black).toArray).toArray\n  }\n\n  def fill(data : Array[Array[Value]], y
+    :Int, x :Int, target : Value):Unit = {\n    if (y &lt; 0 || y &gt;= data.length
+    || x &lt; 0 || x &gt;= data(y).length || data(y)(x) != target) {\n      return\n
+    \   }\n    data(y)(x) = Fill\n    fill(data, y-1, x, target)\n    fill(data, y+1,
+    x, target)\n    fill(data, y, x-1, target)\n    fill(data, y, x+1, target)\n  }\n}\n\nobject
+    Main {\n  val sample1 = \"\"\"□■■□\n                  |□□■□\n                  |□■□□\n
+    \                 |□■■□\"\"\".stripMargin\n\n  val sample2 = \"\"\"□□□□\n                  |■□■□\n
+    \                 |□■□□\n                  |□□□□\"\"\".stripMargin\n\n  def main(args
+    : Array[String]) = {\n    var q = new Q8053\n    println(q countIsland(sample1,
+    White)) // 2\n    println(q countIsland(sample1, Black)) // 2\n    println(q countIsland(sample2,
+    White)) // 1\n    println(q countIsland(sample2, Black)) // 3\n  }\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8075'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8075
+  :user_name: sumim
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/11/23 05:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: "| map islands deltas |\nmap := Matrix rows: 4 columns: 4 contents: \n    '□□□□',\n
+    \   '■□■□',\n    '□■□□',\n    '□□□□'.\ndeltas := {0@0. -1@0. 0@-1. 0@1. 1@0}.\nislands
+    := OrderedCollection new.\nmap withIndicesDo: [:elem :row :col |\n    | neighs
+    |\n    neighs := (deltas select: [:dt |\n        (map at: row + dt y at: col +
+    dt x ifInvalid: nil) = elem]) asSet + (col@row).\n    islands copy do: [:is |\n
+    \       (is intersection: neighs) ifNotEmpty: [neighs addAll: (islands remove:
+    is)]].\n    islands add: neighs].\n^(islands collect: [:is |\n    | pos |\n    pos
+    := is anyOne.\n    map at: pos y at: pos x]) asBag sortedCounts asArray\n\"=&gt;
+    {3-&gt;$■ . 1-&gt;$□} \"\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '8076'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8076
+  :user_name: kiris
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/912/
+  :language: Scala
+  :time: 2008/11/23 22:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>匿名で投稿してしまったのと気に食わない部分があったので少し修正して。</p>\n\n\t"
+  :code: "object Q8053 {\n  object Tile extends Enumeration {\n    val White, Black,
+    Fill = Value\n  }\n  import Tile._\n  \n  def countIsland(str : String, target
+    : Value) = {\n    var data = parse(str)\n    var result = 0\n    for (y &lt;-
+    0 to data.length - 1; x &lt;- 0 to data(y).length - 1) {\n      if (data(y)(x)
+    == target) {\n        fill(data, y, x, target)\n        result += 1\n      }\n
+    \   }\n    result\n  }\n\n  def parse(str : String) = {\n    str.lines.toList.map(_.toList.map(
+    x =&gt; if (x == '□') White else Black).toArray).toArray\n  }\n\n  def fill(data
+    : Array[Array[Value]], y :Int, x :Int, target : Value):Unit = {\n    if (y &lt;
+    0 || y &gt;= data.length || x &lt; 0 || x &gt;= data(y).length || data(y)(x) !=
+    target) {\n      return\n    }\n    data(y)(x) = Fill\n    fill(data, y-1, x,
+    target)\n    fill(data, y+1, x, target)\n    fill(data, y, x-1, target)\n    fill(data,
+    y, x+1, target)\n  }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8078'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8078
+  :user_name: kozima
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2008/11/24 14:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>普通なやり方で。</p>\n\n\t"
+  :code: |
+    (defun fill-map (a c i j)
+      (destructuring-bind (h w) (array-dimensions a)
+        (and (&lt; -1 i h)
+             (&lt; -1 j w)
+             (eql (aref a i j) c)
+             (let ((c1 (aref a i j)))
+               (setf (aref a i j) nil)
+               (fill-map a c1 (1- i) j)
+               (fill-map a c1 (1+ i) j)
+               (fill-map a c1 i (1- j))
+               (fill-map a c1 i (1+ j))))))
+
+    (defun count-islands (m)
+      (let ((a (list (cons :W 0) (cons :B 0))))
+        (dotimes (i (array-dimension m 0))
+          (dotimes (j (array-dimension m 1))
+            (when (aref m i j)
+              (incf (cdr (assoc (aref m i j) a)))
+              (fill-map m (aref m i j) i j))))
+        a))
+
+    ;;; tests
+    (defun print-map (m)
+      (dotimes (i (array-dimension m 0))
+        (dotimes (j (array-dimension m 1) (terpri))
+          (princ (ecase (aref m i j)
+                   (:B (or (name-char "BLACK_SQUARE") #\B))
+                   (:W (or (name-char "WHITE_SQUARE") #\W)))))))
+
+    (defun test (m)
+      (format t "Map:~%")
+      (print-map m)
+      (let ((a (count-islands m)))
+        (format t "white: ~D~%black:~D~%"
+                (cdr (assoc :W a)) (cdr (assoc :B a)))))
+
+    (test #2A((:W :B :B :W)
+              (:W :W :B :W)
+              (:W :B :W :W)
+              (:W :B :B :W)))
+    (test #2A((:W :W :W :W)
+              (:B :W :B :W)
+              (:W :B :W :W)
+              (:W :W :W :W)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8081'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8081
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2008/11/25 03:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">・１行ずつ処理。\r\n・列をビットに対応させて連結情報は整数のリストで保持。\r\n
+    \ （例えば [W,B,W,W] という行は [[1,12],[2]] に変換）\r\n・縦に連結しているかはビット論理積が非０かで判定。\r\n・連結は加算。（例えば
+    [W,B,W,W] で左の１個の W と右の２個の W が\r\n  連結していることがわかった場合は 1+12（つまり 13）で表せる）\r\n</pre>\n\t"
+  :code: "import Data.List\nimport Data.Bits\n\ndata BW = B | W deriving (Eq)\n\nconv
+    :: [BW] -&gt; [[Int]]\nconv xs = map (map (sum.map snd).filter (not.null))\n  $
+    transpose $ unfoldr f $ zip xs $ iterate (2*) 1  where\n  f [] = Nothing \n  f
+    zs = Just([ws,bs],zs'') where\n    (ws,zs' ) = span ((==W).fst) zs\n    (bs,zs'')
+    = span ((==B).fst) zs'\n\ncount :: [[BW]] -&gt; [Int]\ncount rows = map (sum.concat)
+    $ transpose $ snd\n  $ mapAccumL g [[],[]] $ (++ [[[],[]]]) $ map conv rows  where\n
+    \ g yss xss = unzip $ zipWith (mapAccumL h) xss yss\n  h xs y = if null cs then
+    (ds, 1) else (sum cs: ds, 0)  where\n    (cs,ds) = partition ((/=0).(y.&amp;.))
+    xs\n\n{-\n&gt; count [[W,W,W,W],[B,W,B,W],[W,B,W,W],[W,W,W,W]]\n[1,3]\n-}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8089'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8089
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/304/
+  :language: Ruby
+  :time: 2008/11/28 03:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#8081 を ruby で。\r\neach を使うか inject を使うか迷う。</pre>\n\t"
+  :code: |
+    def conv(xs)
+      d, wbs = 1, [[],[]]
+      xs.scan(/(W*)(B*)/){|wb|
+        [0,1].each{|i|
+          m = 1&lt;&lt;wb[i].length
+          wbs[i] &lt;&lt; (m-1)*d if (m &gt; 1)
+          d *= m
+        }
+      }
+      {:w =&gt; wbs[0], :b =&gt; wbs[1]}
+    end
+
+    def count(rows)
+      zs2 = (rows.map{|xs|conv xs}+[{:w=&gt;[],:b=&gt;[]}]).inject(:w=&gt;[[],0],:b=&gt;[[],0]){|zs,xs|
+        {:w =&gt; g(xs[:w],*zs[:w]), :b =&gt; g(xs[:b],*zs[:b])}
+      }
+      {:w =&gt; zs2[:w][1], :b =&gt; zs2[:b][1]}
+    end
+
+    def g(xs,ys,m)
+      ys2 = ys.inject(xs){|as,y|
+          bs, c = [], 0
+          as.each{|z| if (z&amp;y != 0) then c += z; else bs &lt;&lt; z; end}
+          if (c &gt; 0) then bs &lt;&lt; c; else m += 1; bs; end
+      }
+      [ys2,m]
+    end
+
+    p(count(["WBBW","WWBW","WBWW","WBBW"])) # =&gt; {:b=&gt;2, :w=&gt;2}
+    p(count(["WWWW","BWBW","WBWW","WWWW"])) # =&gt; {:b=&gt;3, :w=&gt;1}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8093'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8093
+  :user_name: 匿名
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/4/
+  :language: Perl
+  :time: 2008/11/28 17:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Perl がないようなので１つ。</pre>\n\t"
+  :code: |
+    use strict;
+    my $m = int(rand 3) + 4; my $n = $m + int(rand(7 - $m));
+    my (%board, %group);
+
+    foreach my $i (1 .. $m) {
+      foreach my $j (1 .. $n) {
+        my $key = $i . $j;
+        $board{$key} = int(rand 2);
+        print $board{$key} ? '■' : '□';
+        print "\n" if $j == $n;
+        my $flag = 0;
+        if ($i &gt; 1) {
+          my $up_key = $key - 10;
+          if ($board{$key} == $board{$up_key}) {
+            foreach my $item (@{$group{$board{$key}}}) {
+              if ($item =~ /$up_key/) { $item .= ":$key"; $flag = 1; }
+            }
+          }
+        }
+        if ($j &gt; 1) {
+          my $left_key = $key - 1;
+          if ($board{$key} == $board{$left_key}) {
+            $flag++;
+            if ($flag == 1) {
+              foreach my $item (@{$group{$board{$key}}}) {
+                $item .= ":$key" if $item =~ /$left_key/;
+              }
+            } else {
+              my ($same) = grep { $group{$board{$key}}-&gt;[$_] =~ /$key/ } 0 .. $#{$group{$board{$key}}};
+              my ($left) = grep { $group{$board{$key}}-&gt;[$_] =~ /$left_key/ } 0 .. $#{$group{$board{$key}}};
+              if ($same != $left) {
+                $group{$board{$key}}-&gt;[$same] = join ':', sort
+                  split /:/, "$group{$board{$key}}-&gt;[$same]:$group{$board{$key}}-&gt;[$left]";
+                splice(@{$group{$board{$key}}}, $left, 1);
+              }
+            }
+          }
+        }
+        push @{$group{$board{$key}}}, $key unless $flag;
+      }
+    }
+
+    print "\n□の島: ", scalar(@{$group{0}}), "\n  ", join(', ', @{$group{0}}), "\n";
+    print "\n■の島: ", scalar(@{$group{1}}), "\n  ", join(', ', @{$group{1}}), "\n";
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8096'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8096
+  :user_name: uehaj
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2008/11/30 06:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>BASICのpaint文の処理に近いのかな。</p>\n\n\t"
+  :code: |
+    def paint(s, x, y, value) {
+        if (x &lt; 0 || y &lt; 0 || x &gt;= s[0].size() || y &gt;= s.size() || s[y][x]==value) {
+            return
+        }
+        s[y][x] = value
+        paint(s, x+1, y, value)
+        paint(s, x-1, y, value)
+        paint(s, x, y+1, value)
+        paint(s, x, y-1, value)
+    }
+    def count(data) {
+        [0,1].each { color -&gt;
+            s = data.collect{it.collect{it=="■"?0:1}};
+            count = 0
+            (0..&lt;s.size()).each {y-&gt;
+                (0..&lt;s[y].size()).each { x-&gt;
+                    if (s[y][x] != color) {
+                        paint(s, x, y, color)
+                        count++
+                    }
+                }
+            }
+            println count
+        }
+    }
+
+    count(["□■■□",
+           "□□■□",
+           "□■□□",
+           "□■■□"])
+
+    count(["□□□□",
+           "■□■□",
+           "□■□□",
+           "□□□□"])
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '8104'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8104
+  :user_name: bushimichi
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/971/
+  :language: PHP
+  :time: 2008/12/02 06:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">PHPで書く人がいなかったので。\r\n１．基本的に左上から右下へ捜査していく\r\n\r\n２．特定の位置から、右、下の位置を基本的につながっているか確認する。\r\nつながっている場合は、同じ島の番号を振る\r\n\r\n３．途中でぐるっと回ってつながっていることがわかったらその時点で、\r\n島の番号を振りなおして、島の数を修正する。\r\n\r\n上下左右の４点を調べていく方法は\r\nなんとなくありきたりなのでやめました。\r\n</pre>\n\t"
+  :code: "$w = $h = 4;\n\n$a = array(\n      array(\n        array(0,1,1,0)\n       ,array(0,1,0,0)\n
+    \      ,array(0,0,1,0)\n       ,array(0,1,1,0)\n      ),\n      array(\n        array(0,0,0,0)\n
+    \      ,array(1,0,1,0)\n       ,array(0,1,0,0)\n       ,array(0,0,0,0)\n      )\n
+    \   );\n\n\nfunction revSima($a0){\n  global $w,$h;\n    $a1 = array();\n    for($i=0;$i&lt;$w;$i++){\n
+    \     for($j=0;$j&lt;$h;$j++){\n        $a1[$i][$j] = $a0[$i][$j] === 0 ? 1 :
+    0;\n      }\n    }\n    return $a1;\n}\n\nfunction countSima($a0){\n  global $w,$h;\n
+    \ \n  $k = array();\n    $g = 1;\n    \n    for($i=0;$i&lt;$w;$i++){\n\n      for($j=0;$j&lt;$h;$j++){\n
+    \   \n        if($a0[$i][$j] === 0) continue;\n\n            if($a0[$i][$j] ===
+    1){\n              $a0[$i][$j] = ++$g;\n              $k[$g] = 1;\n            }\n
+    \         $c = $a0[$i][$j];\n\n          if($i + 1 &lt; $h &amp;&amp; $a0[$i +
+    1][$j] === 1){\n            $a0[$i + 1][$j] = $c;\n          }\n          \n          if($j
+    + 1 &lt; $w &amp;&amp; $a0[$i][$j + 1] === 1){\n            $a0[$i][$j + 1] =
+    $c;\n            \n          }elseif($j + 1 &lt; 4 &amp;&amp; $a0[$i][$j + 1]
+    &gt; 1 ){\n\n            for($m=0;$m&lt;$i+1;$m++){\n              for($n=0;$n&lt;4;$n++){\n
+    \               if($a0[$m][$n] === $c){\n                  $a0[$m][$n] = $a0[$i][$j
+    + 1];\n                    }\n              }\n            }\n            unset($k[$c]);\n
+    \         }\n      }\n    }\n    return count(array_keys($k));\n}\n\nforeach($a
+    as $v){\n  echo '(Black,White) = ('. countSima($v) . ','. countSima(revSima($v))
+    . ')' . \"\\n\";\n}\n"
+  :tags:
+  - PHP
+  - 島
+  :references:
+    :url: 
+    :title: 
+- :id: '8105'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8105
+  :user_name: bushimichi
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/971/
+  :language: Other
+  :time: 2008/12/02 10:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>島の数を答えればいいので、\nつながっていれば島の数を数えなおす\nループを改定しました。</p>\n\n\t"
+  :code: "$w = $h = 4;\n\n$a = array(\n      array(\n        array(0,1,1,0)\n       ,array(0,1,0,0)\n
+    \      ,array(0,0,1,0)\n       ,array(0,1,1,0)\n      ),\n      array(\n        array(0,0,0,0)\n
+    \      ,array(1,0,1,0)\n       ,array(0,1,0,0)\n       ,array(0,0,0,0)\n      )\n
+    \   );\n\n\nfunction revSima($a0){\n  global $w,$h;\n    $a1 = array();\n    for($i=0;$i&lt;$w;$i++){\n
+    \     for($j=0;$j&lt;$h;$j++){\n        $a1[$i][$j] = $a0[$i][$j] === 0 ? 1 :
+    0;\n      }\n    }\n    return $a1;\n}\n\nfunction countSima($a0){\n  global $w,$h;\n
+    \ \n  $k = array();\n    $g = $c = 1;\n    for($i=0;$i&lt;$w;$i++){\n\n      for($j=0;$j&lt;$h;$j++){\n
+    \   \n        if($a0[$i][$j] === 0) continue;\n\n            if($a0[$i][$j] ===
+    1){\n              $a0[$i][$j] = ++$g;\n              $k[$g] = 1;\n            }\n
+    \         $c = $a0[$i][$j];\n\n          if($i + 1 &lt; $h &amp;&amp; $a0[$i +
+    1][$j] === 1){\n            $a0[$i + 1][$j] = $c;\n          }\n          \n          if($j
+    + 1 &lt; $w &amp;&amp; $a0[$i][$j + 1] === 1){\n            $a0[$i][$j + 1] =
+    $c;\n            \n          }elseif($j + 1 &lt; $w &amp;&amp; $a0[$i][$j + 1]
+    &gt; 1 &amp;&amp; $c &gt; $a0[$i][$j + 1] ){\n\n            for($m=$i; $m&lt;=$i+1;
+    $m++){\n              for($n=0; $n&lt;=$j; $n++){\n                if($a0[$m][$n]
+    === $c){\n                  $a0[$m][$n] = $a0[$i][$j + 1];\n                }\n
+    \             }\n            }\n            unset($k[$c]);\n          }\n      }\n
+    \   }\n    return count(array_keys($k));\n}\n\nforeach($a as $v){\n  echo '(Black,White)
+    = ('. countSima($v) . ','. countSima(revSima($v)) . ')' . \"\\n\";\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8113'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8113
+  :user_name: k20k
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/975/
+  :language: 
+  :time: 2008/12/05 00:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">初投稿です。\r\n変態的な実装ができないかと考えていたのですが、\r\n最適化していくうちに#8104さんと似た考え方になってしまいました。\r\n秀丸の新規窓の左上に島を書いて、マクロ実行です。\r\n\r\n考え方は以下の通りです。\r\n１．左上から右下に向かって横にスキャン\r\n２．上と左の島連番取得\r\n３．取得出来なければ新しい島＆島数プラス\r\n４．上と左の島連番が一致しない場合、左の島連番を塗り直し＆島数マイナス\r\n</pre>\n\t"
+  :code: |
+    #xcharlen=2;
+    $wchar="□";
+    $bchar="■";
+
+    #xlen=4;
+    #ylen=4;
+
+    #wcnt=0;
+    #bcnt=0;
+    ##x=0;
+    ##y=0;
+    ##serial=1;
+
+        while( ##y &lt; #ylen ) {
+            ##x=0;
+            while( ##x &lt; #xlen ) {
+                call GETCHAR ##x, ##y;
+                $$c = $$return;
+                if( ##y == 0 ) {
+                    ##no = ##serial;
+                } else {
+                    call GETCHAR ##x, ##y-1;
+                    if( $$return == $$c ) {
+                        ##no = #mtx[##y-1][##x];
+                    } else {
+                        ##no = ##serial;
+                    }
+                }
+                if( ##x &gt; 0 ) {
+                    call GETCHAR ##x-1, ##y;
+                    if( $$return == $$c ) {
+                        if( ##no == ##serial ) {
+                            ##no = #mtx[##y][##x-1];
+                        } else if( ##no != #mtx[##y][##x-1] ) {
+                            call RENUM ##no, #mtx[##y][##x-1], ##y, $$c;
+                        }
+                    }
+                }
+                #mtx[##y][##x] = ##no;
+                if( ##no == ##serial ) {
+                    call CNTISLAND $$c, 1;
+                    ##serial = ##serial+1;
+                }
+                ##x = ##x+1;
+            }
+            ##y = ##y+1;
+        }
+
+        message "白の島は" + str(#wcnt) + "つ\n" + "黒の島は" + str(#bcnt) + "つ";
+
+        endmacro;
+
+    RENUM:
+        ##i=0;
+        while( ##i &lt; ##3+1 ) {
+            ##j=0;
+            while( ##j &lt; #xlen ) {
+                if( #mtx[##i][##j]==##2 ) {
+                    #mtx[##i][##j]=##1;
+                }
+                ##j=##j+1;
+            }
+            ##i=##i+1;
+        }
+
+        call CNTISLAND $$4, -1;
+
+        return;
+
+    CNTISLAND:
+        if( $$1 == $wchar ) {
+            #wcnt=#wcnt+##2;
+        } else {
+            #bcnt=#bcnt+##2;
+        }
+
+        return;
+
+    GETCHAR:
+        ##x1 = ##1 * #xcharlen;
+        ##x2 = ##x1 + #xcharlen;
+        $$res=gettext(##x1, ##2, ##x2, ##2, 0);
+
+        return $$res;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8114'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8114
+  :user_name: bushimichi
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/971/
+  :language: 
+  :time: 2008/12/05 03:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>調べる位置が、右と下　左と上の違い\nなのでそんな大差はないのかもしれないけど、\nスキャンする方向が、左上から右下ということを\n考えると、#8104
+    より、こっちのほうが、島の塗り直しがシンプルでいいですね。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8121'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8121
+  :user_name: 匿名
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/12/06 10:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">かなりムダなことをしている…</pre>\n\t"
+  :code: "#include &lt;iostream&gt;\n#include &lt;vector&gt;\n#include &lt;string&gt;\n#include
+    &lt;algorithm&gt;\n#include &lt;iterator&gt;\n#include &lt;stdexcept&gt;\n\ntemplate
+    &lt;class cell&gt; class Field {\npublic:\n    Field(int width, int height) :
+    width_(width), height_(height), v_(width * height) {}\n    void initialize(std::string
+    data){\n        std::copy(data.begin(), data.end(), v_.begin());\n    }\n\n    void
+    print(){\n        int i=0;\n        for(std::vector&lt;cell&gt;::const_iterator
+    ite=v_.begin();ite!=v_.end();++ite){\n            std::cout &lt;&lt; *ite;\n            ++i;\n
+    \           if(0==i%width_){\n                i=0;\n                std::cout
+    &lt;&lt; '\\n';\n            }\n        }\n        std::cout &lt;&lt; std::endl;\n
+    \   }\n    \n    cell&amp; get(int x, int y) throw(std::out_of_range){\n        if(x
+    &lt; 0 || x &gt;= width_)\n            throw std::out_of_range(\"out of range
+    by x\");\n        if(y &lt; 0 || y &gt;= height_)\n            throw std::out_of_range(\"out
+    of range by y\");\n        return v_.at(x + y * width_);\n    }\n\n    int get_width()
+    { return width_; }\n    int get_height() { return height_; }\n\nprivate:\n    int
+    width_;\n    int height_;\n    std::vector&lt;cell&gt; v_;\n};\n\ntypedef int
+    color;\n\nclass Cell {\npublic:\n    Cell() : kind_(none), c_code_(0) {}\n    Cell(const
+    char&amp; kind) : c_code_(0) {\n        switch(kind){\n        case 'W':\n            kind_
+    = white;\n            break;\n        case 'B':\n            kind_ = black;\n
+    \           break;\n        default:\n            kind_= none;\n        }\n    }\n
+    \   Cell(const Cell&amp; c) : kind_(c.kind_), c_code_(c.c_code_) {}\n    \n    const
+    color&amp; get_color() const { return c_code_;}\n\n    const char toString() const{\n
+    \       if(kind_==white)\n            return 'W';\n        else if(kind_==black)\n
+    \           return 'B';\n        return ' ';\n    }\n\n    friend void paint(Field&lt;Cell&gt;&amp;
+    f, int x, int y, Cell *neighbor = NULL);\n\nprivate:\n    enum Kind { none, white,
+    black };\n    \n    Kind kind_;\n    mutable color c_code_;\n};\n\nstd::ostream&amp;
+    operator &lt;&lt; ( std::ostream&amp; os , const Cell&amp; c ){\n    os &lt;&lt;
+    c.toString() ;\n    return  os ;\n}\n\nstatic color black = 0, white = 0;\n\nvoid
+    paint(Field&lt;Cell&gt;&amp; f, int x, int y, Cell *neighbor){\n    //範囲外指定の場合は、処理しない\n
+    \   if(x &lt; 0 || x &gt;= f.get_width()) return ;\n    if(y &lt; 0 || y &gt;=
+    f.get_height()) return ;\n\n    Cell&amp; c = f.get(x, y);\n    if(c.c_code_ !=
+    0) return ; //既に塗られている場合は、必要ない\n    if(neighbor != NULL){ //隣のセルから呼び出された\n        if(neighbor-&gt;kind_
+    != c.kind_) return ; //隣のセルと同種のセルでない場合は、処理しない\n\n        c.c_code_ = neighbor-&gt;c_code_;//同じ色にする\n
+    \   } else {\n        color  set_color;\n        switch(c.kind_){\n        case
+    Cell::Kind::black:\n            set_color = --black;\n            break;\n        case
+    Cell::Kind::white:\n            set_color = ++white;\n            break;\n        default:\n
+    \       // 未初期化、あり得ない\n            throw \"find unsetting kind of cell!\";\n        }\n
+    \       c.c_code_ = set_color;\n    }\n    //周りのセルを塗る\n    paint(f, x - 1, y,
+    &amp;c);\n    paint(f, x + 1, y, &amp;c);\n    paint(f, x, y - 1, &amp;c);\n    paint(f,
+    x, y + 1, &amp;c);\n}\n\nvoid painter(Field&lt;Cell&gt;&amp; f){\n    int width
+    =f.get_width();\n    int height=f.get_height();\n\n    for(int x=0;x &lt; width
+    ; ++x)\n        for(int y=0; y &lt; height ; ++y)\n            paint(f, x, y);\n}\n\nint
+    main(){\n    std::string data1(\n        \"WBBW\"\n        \"WWBW\"\n        \"WBWW\"\n
+    \       \"WBBW\"\n    );\n    std::string data2(\n        \"WWWW\"\n        \"BWBW\"\n
+    \       \"WBWW\"\n        \"WWWW\"\n    );\n\n    Field&lt;Cell&gt; f1(4, 4);\n
+    \   f1.initialize(data1);\n    f1.print();\n    painter(f1); //f1 を塗り分ける\n    //塗り分けるのに要した色数\n
+    \   std::cout &lt;&lt; \"black:\" &lt;&lt; -black &lt;&lt; '\\n';\n    std::cout
+    &lt;&lt; \"white:\" &lt;&lt; white &lt;&lt; '\\n';\n    std::cout &lt;&lt; std::endl;\n\n
+    \   black=white=0;\n    Field&lt;Cell&gt; f2(4, 4);\n    f2.initialize(data2);\n
+    \   f2.print();\n    painter(f2);\n    std::cout &lt;&lt; \"black:\" &lt;&lt;
+    -black &lt;&lt; '\\n';\n    std::cout &lt;&lt; \"white:\" &lt;&lt; white &lt;&lt;
+    '\\n';\n    std::cout &lt;&lt; std::endl;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8123'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8123
+  :user_name: bonotake
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/976/
+  :language: Other
+  :time: 2008/12/06 22:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>仕様記述言語Alloyでやってみました。\r</p>\n<p>島の判別のロジックより、マップを書くほう（23行目以降）が長くなってしまいました。\r</p>\n<p>\r</p>\n<p>最後のnoExampleはマップも自動生成しながら解きます。</p>\n</div>\n\t"
+  :code: "one sig Answer {\n  width, height, blackIslands, whiteIslands: Int\n}\n{\n
+    \ blackIslands = #{x: Island | some g:Square | g.island = x and g.color = Black}
+    \n  whiteIslands = #{x: Island | some g:Square | g.island = x and g.color = White}
+    \n}\nsig Square {\n  row, col: Int,\n  left, down: lone Square,\n  color: Color,\n
+    \ island: Island\n}\nabstract sig Color {}\none sig White, Black extends Color
+    {}\nsig Island {}\nfact islandLaw {\n  all disj s,s': Square | s.island = s'.island
+    iff\n      s' in s.^{s1,s2: Square |\n        (s2 in s1.(left+down) or s1 in s2.(left+down))
+    and s1.color = s2.color } \n}\n\nfact squareLaws {\n  all s1, s2: Square | s1.row
+    = s2.row and s1.col = s2.col iff s1 = s2\n  all g: Square {\n    g.col = Answer.width
+    - 1 =&gt; no g.left\n      else g.left.row = g.row and g.left.col = g.col + 1\n
+    \   g.row = Answer.height - 1 =&gt; no g.down\n      else g.down.row = g.row +
+    1 and g.down.col = g.col\n  }\n}\npred setSquare (r,c: Int, cl: Color) {\n  some
+    g: Square | g.row = r and g.col = c and g.color = cl\n}\n\npred example1 () {\n
+    \ Answer.width = 4 and Answer.height = 4\n  setSquare[0,0,White] and setSquare[0,1,Black]\n
+    \   and setSquare[0,2,Black] and setSquare[0,3,White]\n  setSquare[1,0,White]
+    and setSquare[1,1,White]\n    and setSquare[1,2,Black] and setSquare[1,3,White]\n
+    \ setSquare[2,0,White] and setSquare[2,1,Black]\n    and setSquare[2,2,White]
+    and setSquare[2,3,White]\n  setSquare[3,0,White] and setSquare[3,1,Black]\n    and
+    \ setSquare[3,2,Black] and setSquare[3,3,White]\n}\nrun example1 for 16\n\npred
+    example2 () {\n  Answer.width = 4 and Answer.height = 4\n  setSquare[0,0,White]
+    and setSquare[0,1,White]\n    and setSquare[0,2,White] and setSquare[0,3,White]\n
+    \ setSquare[1,0,Black] and setSquare[1,1,White]\n    and setSquare[1,2,Black]
+    and setSquare[1,3,White]\n  setSquare[2,0,White] and setSquare[2,1,Black]\n    and
+    setSquare[2,2,White] and setSquare[2,3,White]\n  setSquare[3,0,White] and setSquare[3,1,White]\n
+    \   and setSquare[3,2,White] and setSquare[3,3,White]\n}\nrun example2 for 16\n\npred
+    noExample () {\n  Answer.width = 4 and Answer.height = 4\n}\nrun example2 for
+    16\n"
+  :tags:
+  - Alloy
+  :references:
+    :url: 
+    :title: 
+- :id: '8126'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8126
+  :user_name: saws
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/12/07 09:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>折角なので1行にしてみました.\n内容は以下の通りです.</p>\n\n\t"
+  :code: |
+    #ruby -e "puts proc{|w,b,c| w.each_with_index{|line,i| line.each_with_index{|x,j| b[(pos=[i,j]).first][pos.last] = (b.to_enum.map.with_index{|line,i| line.to_enum.map.with_index{|x,j| [x,[i,j]]}}.inject([]){|a,b| a + b}.detect(nil){|y,cpos| y &amp;&amp; y.match(/\A\d#{w[cpos.first][cpos.last]}/) &amp;&amp; proc{|w,pos,cpos,result| con_aux = proc{|b,pos,cpos,e,dir,his| result or pos == cpos &amp;&amp; result = true or dir.map{|d| d.zip(cpos).map{|a,b| a+b}}.select{|c| c.all?{|c| (0...4).include?(c)}}.each{|c| con_aux.(b,pos,c,e,dir,his+[c]) if e == b[c.first][c.last] and !his.include?(c)}} and w[pos.first][pos.last] == w[cpos.first][cpos.last] and con_aux.(w,pos,cpos,w[cpos.first][cpos.last],[*-1..1].product([*-1..1]).select{|a,b| (a+b).abs == 1},[cpos]) and result}.(w,pos,cpos,nil)} or [(c[x]+=1).to_s+x.to_s]).first}} and c}.(w=Array.new(n=4){Array.new(n){[:b,:w].choice}},Array.new(n){Array.new(n){nil}},{:b =&gt; 0, :w =&gt; 0}), w.map(&amp;:join)"
+    class World
+      include Enumerable
+      def initialize(n=4,&amp;proc) @a = Array.new(n){Array.new(n,&amp;proc)}  end
+      def each()
+        @a.each_with_index{|line,i| line.each_with_index{|e,j| yield [e,[i,j]]}} end
+      def []=(pos,val) @a[pos.first][pos.last] = val end
+      def [](pos)      @a[pos.first][pos.last] end
+      def inspect()    @a.map(&amp;:join).join("\n")+"\n"  end
+    end
+    class Main
+      def initialize
+        @w, @c = World.new{rand(2).zero? ? :b : :w}, {:b =&gt; 0, :w =&gt; 0}
+        p @w, scan(World.new{nil}), @c
+      end
+      def scan(b)
+        @w.each{|x,pos| b[pos] = (b.detect(nil){|y,cpos| y &amp;&amp; y.match(/\A\d#{@w[cpos]}/) &amp;&amp; connect?(pos,cpos)} or ["#{@c[x]+=1}#{x}"]).first} and b
+      end
+      def connect?(pos,cpos,result=nil)
+        con_aux = proc{|b,pos,cpos,e,dir,his| result or pos == cpos &amp;&amp; result = true or dir.map{|c| c.zip(cpos).map{|a,b| a+b}}.select{|c| c.all?{|c| (0...4).include?(c)}}.each{|c| con_aux.(b,pos,c,e,dir,his+[c]) if e == b[c] and !his.include?(c)}}
+        @w[pos] == @w[cpos] and con_aux.(@w,pos,cpos,@w[cpos],[*-1..1].product([*-1..1]).select{|a,b| (a+b).abs == 1},[cpos]) and result
+      end
+    end
+  :tags:
+  - 1.9.0
+  :references:
+    :url: 
+    :title: 
+- :id: '8256'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8256
+  :user_name: fumokmm
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/856/
+  :language: Groovy
+  :time: 2008/12/24 12:15 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <div class=\"section\">\n<p>クラスを作ってやってみましたが、コードが増えてしまい、あんまりいいこと無しです。\r</p>\n<p>まぁしかし、Groovyの勉強にはなったかな。</p>\n</div>\n\t"
+  :code: "def board1 = new Board('''\\\n□□□□\n■□■□\n□■□□\n□□□□'''\n)\nboard1.out()\nboard1.search()\nboard1.outIslandNo()\nprintln
+    \"\"\"\\\n白の島は${board1.getIslandCount('□')}つ\n黒の島は${board1.getIslandCount('■')}つ\n\"\"\"\n\ndef
+    board2 = new Board('''\\\n□■■□\n□□■□\n□■□□\n□■■□'''\n)\nboard2.out()\nboard2.search()\nboard2.outIslandNo()\nprintln
+    \"\"\"\\\n白の島は${board2.getIslandCount('□')}つ\n黒の島は${board2.getIslandCount('■')}つ\n\"\"\"\n\n/**
+    ボードを表現するクラス */\nclass Board {\n  /** タイル */\n  def tiles\n  /** コンストラクタ */\n  def
+    Board(String text) {\n    tiles = text.readLines().collect{\n      (it as List).collect{
+    color -&gt; new Tile('color':color) }\n    }\n    \n    this.sizeY().times { y
+    -&gt;\n      this.sizeX().times { x -&gt;\n        this.tiles[y][x].setAround(this,
+    y, x)\n      }\n    }\n  }\n  /** Y方向のサイズ */\n  Integer sizeY() { return this.tiles.size()
+    as Integer }\n  /** X方向のサイズ */\n  Integer sizeX() { return this.tiles*.size().unique().first()
+    as Integer }\n  /** ボードの未設定の島の数 */\n  def remain()    { return tiles.flatten().findAll{
+    !it.island } }\n  /** 指定された色のタイルの島数 */\n  def getIslandCount(String color) {\n
+    \   return tiles.flatten().findAll{ it.color == color }.collect{ it.island }.unique().size()\n
+    \ }\n\n  /** 島をサーチする */\n  def search() {\n    // 島番号\n    Integer islandNo =
+    0\n    // 未設定のタイル分繰り返す\n    remain().each{ tile -&gt;\n      tile.island = tile.island
+    ?: ++islandNo\n      // 調べる方向\n      'urdl'.each{ dir -&gt;\n        def around
+    = tile.around[dir]\n        // 周りのタイルが同じ色の場合\n        if (around?.color == tile.color)
+    {\n          // 島番号が設定済み\n          if (around.island) {\n            tiles.flatten().findAll{
+    it.island == tile.island }.each{\n              it.island = around.island\n            }\n
+    \         // 島番号が未設定\n          } else {\n            around.island = tile.island\n
+    \         }\n        }\n      }\n    }\n  }\n\n  // デバッグ用\n  def out()         {
+    println tiles.collect{ it*.color.join() }.join('\\n') + '\\n' }\n  // デバッグ用\n
+    \ def outIslandNo() { println tiles.collect{ it*.island.join(' ') }.join('\\n')
+    + '\\n' }\n}\n\n/** タイルを表現するクラス */\nclass Tile {\n  /** タイルの色 */\n  def color
+    = ''\n  /** 周りのタイル */\n  def around\n  /** 島番号 */\n  def island = 0\n\n  // 周りを設定するためのクロージャ\n
+    \ def closAround = { dy, dx, board, y, x -&gt;\n    def rangeY = 0..&lt;board.sizeY()\n
+    \   def rangeX = 0..&lt;board.sizeX()\n    if (rangeY.contains(y + dy) &amp;&amp;
+    rangeX.contains(x + dx)) {\n      return board.tiles[y + dy][x + dx]\n    }\n
+    \ }\n  // 上方向を設定するためのクロージャ\n  def closAroundUp    = closAround.curry(-1,  0)\n
+    \ // 右方向を設定するためのクロージャ\n  def closAroundRight = closAround.curry( 0,  1)\n  //
+    下方向を設定するためのクロージャ\n  def closAroundDown  = closAround.curry( 1,  0)\n  // 左方向を設定するためのクロージャ\n
+    \ def closAroundLeft  = closAround.curry( 0, -1)\n\n  /** 周りを設定する */\n  def setAround(Board
+    board, int y, int x) {\n    around = [\n      u:closAroundUp   (board, y, x),\n
+    \     r:closAroundRight(board, y, x),\n      d:closAroundDown (board, y, x),\n
+    \     l:closAroundLeft (board, y, x)\n    ]\n  }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8257'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8257
+  :user_name: るびゅ
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/985/
+  :language: JavaScript
+  :time: 2008/12/26 01:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  (;;)って見るからに不安だよねー\r\n\r\nあ。IEでエラーなのは気にしない方向で\n\t"
+  :code: "&lt;html&gt;&lt;head&gt;&lt;script&gt;\nfunction shima(){\n  var str = \"&lt;br
+    /&gt;\", black = 0, white = 0 , cells = {};\n  for(var i = 1; i &lt;= 16; ++i){\n
+    \   cells[i] = Math.floor(Math.random() * 2);\n    str += (cells[i] ? \"□\": \"■\"
+    ) + (0 == i % 4? \"&lt;br /&gt;\" : \"\"); \n  }\n  function search(){\n    for(;;){\n
+    \     var i = null;\n      for(var cell in cells){\n        i = { area: [cell],
+    flag: cells[cell] }\n        delete cells[cell];\n        break;\n      }\n      if(!i)
+    break;\n      for(;;){\n        var len = i.area.length;\n        for(var j =
+    0; j &lt; len; j++){\n          var n = i.area[j];\n          for (var cell in
+    cells){\n            cell = parseInt(cell);\n            if( i.flag != cells[cell]
+    ) continue;\n            if      ( 0 == cell % 4 ){\n              if( n != cell
+    - 1 &amp;&amp; n != cell - 4 &amp;&amp; n != cell + 4 ) continue;\n            }else
+    if( 1 == cell % 4 ){\n              if( n != cell + 1 &amp;&amp; n != cell - 4
+    &amp;&amp; n != cell + 4 ) continue;\n            }else{\n              if( n
+    != cell - 1 &amp;&amp; n != cell + 1 &amp;&amp; n != cell - 4 &amp;&amp; n !=
+    cell + 4 ) continue;\n            }\n            i.area.push(cell);\n            delete
+    cells[cell];\n            break;\n          }\n        }\n        if (len == i.area.length)
+    break;\n      }\n      if(i.flag){\n        white++;\n      }else{\n        black++;\n
+    \     }\n    }\n  }\n  search();\n  document.body.innerHTML += str + \"white：\"
+    + white + \" black:\" + black;\n}\n&lt;/script&gt;&lt;/head&gt;&lt;body&gt;&lt;button
+    onclick=\"shima();\"&gt;start&lt;/button&gt;&lt;/body&gt;&lt;/html&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8261'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8261
+  :user_name: 割と普通
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/581/
+  :language: C
+  :time: 2008/12/28 12:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>基本的にLINQ使いで</p>\n\n\t"
+  :code: |2
+        class MyMain
+        {
+            public static void Main(string[] args)
+            {
+                string island = @"
+    □□□□
+    ■□■□
+    □□■■
+    □□□□
+    ";
+                Console.WriteLine(island);
+                var dict = CountUpIslandNum.returnIslandNum(island);
+                foreach (var key in dict.Keys)
+                {
+                    Console.WriteLine("{0}島の数は {1}", key, dict[key]);
+                }
+                Console.ReadLine();
+            }
+        }
+
+        class CountUpIslandNum
+        {
+            public static Dictionary&lt;char, int&gt; returnIslandNum(string island)
+            {
+                char[][] map = island.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Select(inst =&gt; inst.ToCharArray()).ToArray();
+                Dictionary&lt;char, int&gt; countDict = new Dictionary&lt;char, int&gt;();
+                countDict.Add('■', 0);
+                countDict.Add('□', 0);
+                for (int x = 0; x &lt; map.Length; x++)
+                {
+                    for (int y = 0; y &lt; map[x].Length; y++)
+                    {
+                        char c = map[x][y];
+                        if (countDict.ContainsKey(c))
+                        {
+                            check(map, x, y, countDict[c], c);
+                            countDict[c]++;
+                        }
+                    }
+                }
+                return countDict;
+            }
+            protected static void check(char[][] map, int x, int y, int value, char block)
+            {
+                if (x &lt; 0 || x &gt;= map.Length || y &lt; 0 || y &gt;= map[x].Length || map[x][y] != block)
+                {
+                    return;
+                }
+                map[x][y] = (char)value;
+                check(map, x + 1, y, value, block);
+                check(map, x - 1, y, value, block);
+                check(map, x, y + 1, value, block);
+                check(map, x, y - 1, value, block);
+            }
+        }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8265'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8265
+  :user_name: 匿名
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/4/
+  :language: Matlab
+  :time: 2008/12/31 01:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "input1 = [ 0 1 1 0; 0 0 1 0; 0 1 0 0; 0 1 1 0];\ninput2 = [ 0 0 0 0; 1 0
+    1 0; 0 1 0 0; 0 0 0 0];\n\nnBlobs1 = count_blobs(input1);\nnBlobs2 = count_blobs(input2);\n\n%以下　function　count_blobs\n\nfunction
+    nBlobs = count_blobs(input_mtx)\n\nnBlobs = 0;\nfor i = 1:size(input_mtx,2)\n
+    \   \n    if i==1\n        previous_raw = zeros(size(input_mtx,1),1)\n    else\n
+    \       previous_raw = input_mtx(:,i-1)\n    end\n    \n    for j = 1:size(input_mtx,1)
+    \n        if input_mtx(j,i) ==1 &amp;&amp; previous_raw(j) ~=1\n            if
+    j==1 | (j &gt; 1 &amp;&amp; input_mtx(j-1,i) ~=1)\n                    nBlobs
+    = nBlobs+1;\n            end\n        end\n    end\n\nend\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8286'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8286
+  :user_name: 匿名
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/4/
+  :language: Perl
+  :time: 2009/01/05 20:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    $m = 4;  $n = 4;
+
+    for my $i (0 .. $m - 1) {
+      for my $j (0 .. $n - 1) {
+        $board[$i][$j] = int(rand 2) ? '■' : '□';
+        print $board[$i][$j];
+      }
+      print "\n";
+    }
+    for my $i (0 .. $m - 1) {
+      for my $j (0 .. $n - 1) {
+        if ($board[$i][$j]) {
+          $num{$board[$i][$j]}++;
+          walk($i, $j, $board[$i][$j]);
+        }
+      }
+    }
+    print "■= $num{'■'}, □= $num{'□'}\n";
+
+    sub walk {
+      my ($i, $j, $c) = @_;
+      return if $c ne $board[$i][$j];
+      $board[$i][$j] = 0;
+      walk ($i-1, $j  , $c) if $i &gt; 0;
+      walk ($i+1, $j  , $c) if $i &lt; $m-1;
+      walk ($i  , $j-1, $c) if $j &gt; 0;
+      walk ($i  , $j+1, $c) if $j &lt; $n-1;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8301'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8301
+  :user_name: k20k
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/975/
+  :language: 
+  :time: 2009/01/08 20:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>遅くなりましたがありがとうございます。\n普通のやりかたも考えたのですが、秀丸マクロはサブルーチンのネストが20階層までらしいので、マップが広がった時に対応出来ないので、この方法に至りました。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8442'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8442
+  :user_name: 匿名
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/4/
+  :language: Ruby
+  :time: 2009/02/04 15:51 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  \n\t"
+  :code: "=begin\n1行読み込む毎にカウントしています。\n島の数 = セル数 - 隣接している辺数 + (2x2の範囲が同色の箇所数)\n例:  \"wwww,bwbw,wbww,wwww\"の場合、\nw:
+    13 - 13 + 1 = 1\nb: 3 - 0 + 0 = 3\n=end\n\nclass Sima  \n  def initialize\n    @h
+    = Hash.new(0)\n    @s = []\n  end\n  def count(s)\n    @s &lt;&lt; s.split(//)\n
+    \   @s[-1].each{|x|@h[x] += 1}\n    if @s.size &gt; 1\n      count_sq(w = @s[0].zip(@s[1]),
+    -1)\n      count_sq(w.zip(w[1..-1]), 1)\n      @s.shift\n    end\n    count_sq(@s[0].zip(@s[0][1..-1]),
+    -1)\n  end\n  def count_sq(ss, delta)\n    ss.each{|x|\n      x.flatten!\n      @h[x[0]]
+    += delta if x.uniq.size == 1}\n  end\n  def all \n    @h\n  end\nend\n\n[\n \"wbbw,wwbw,wbww,wbbw\",
+    # =&gt; {\"w\"=&gt;2, \"b\"=&gt;2}\n \"wwww,bwbw,wbww,wwww\", # =&gt; {\"w\"=&gt;1,
+    \"b\"=&gt;3}\n].each{|x|\n  sima = Sima.new  \n  x.split(/,/).each{|i|\n    sima.count(i)}\n
+    \ p sima.all}\n"
+  :tags:
+  - 1.8.6
+  - ruby
+  :references:
+    :url: 
+    :title: 
+- :id: '8450'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8450
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2009/02/05 04:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#8442 の方法が気に入ったので Haskell で。\r\n黒のセルを 1 に、白のセルを
+    -1 に対応させて隣接セルとの\r\n処理を加算と除算で済ますようにしました。\r\n</pre>\n\t"
+  :code: |
+    {-
+    島の数 = セル数 - 隣接している辺数 + (2x2の範囲が同色の箇所数)
+    -}
+    import List (partition)
+
+    data BW = B | W deriving (Eq)
+
+    toInt B = 1
+    toInt W = -1
+
+    count xss = (n1,-n2) where
+      ([n1,n2],_,_) = foldl f ([0,0],zeros,zeros) $ map (map toInt) xss
+      f (ns,xs0,ys0) xs = (ns',xs,ys) where
+        [ys,ys2,zs] = map g [(xs,tail xs),(xs0,xs),(ys0,ys)]
+        [(bp,wp),(bn,wn)] = map (partition (&gt;0)) [ns++xs++zs, ys++ys2]
+        ns' = [sum bp - sum bn, sum wp - sum wn]
+      g (as,bs) = map (`quot`2) $ zipWith (+) as bs
+      zeros = repeat 0
+
+    {-
+    &gt; count [[W,W,W,W],[B,W,B,W],[W,B,W,W],[W,W,W,W]]
+    (3,1)
+    -}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8452'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8452
+  :user_name: 匿名
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/4/
+  :language: Ruby
+  :time: 2009/02/05 05:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "=begin\n#8442をruby1.9.0のEnumeratorで書き換えたものです。\n=end\n\nclass Sima  \n  def
+    initialize\n    @h = Hash.new(0)\n  end\n  def count(ss)\n    ss = ss.map{|x|x.split(//)}.to_enum\n
+    \   ss.each{|s|\n      s.each{|x|@h[x] += 1}\n      count_sq(s.each_cons(2), -1)}
+    \n    ss.each_cons(2).each{|s|\n      count_sq(w=s[0].zip(s[1]), -1)\n      count_sq(w.each_cons(2),
+    1)}\n  end\n  def count_sq(ss, delta)\n    ss.each{|x|\n      x.flatten!\n      @h[x[0]]
+    += delta if x.uniq.size == 1}\n  end\n  def all \n    @h\n  end\nend\n  \n  [\n
+    \  \"wbbw,wwbw,wbww,wbbw\", # =&gt; {\"w\"=&gt;2, \"b\"=&gt;2}\n   \"wwww,bwbw,wbww,wwww\",
+    # =&gt; {\"w\"=&gt;1, \"b\"=&gt;3}\n   \"abcc,acbc,bccc,baca\", # =&gt; {\"a\"=&gt;3,
+    \"b\"=&gt;3, \"c\"=&gt;1}\n  ].each{|x|\n    sima = Sima.new  \n    sima.count(x.split(/,/).to_enum)\n
+    \   p sima.all}\n"
+  :tags:
+  - 1.9.0
+  - ruby
+  :references:
+    :url: 
+    :title: 
+- :id: '8491'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/8491
+  :user_name: ckbx
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/893/
+  :language: 
+  :time: 2009/02/12 07:32 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">双対グラフのオイラー標数という発想ですね。\r\nこのままですと、島に穴が開いている場合にうまくカウントができないようですので・・・\r\n■■■\r\n■□■\r\n■■■\r\n8
+    - 8 + 0 = 0</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9031'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/9031
+  :user_name: Songmu
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/763/
+  :language: Perl
+  :time: 2009/06/02 02:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    #/usr/bin/perl
+    use strict;
+    use warnings;
+    use List::MoreUtils qw/uniq/;
+
+    # 天地創造
+    my $earth = theCreation(7,6);
+
+    my @island_groups;
+    my $idx = -1;
+    # 2次元配列をなめて、隣接する土地が同じ色の場合、グループ化する。
+    # ざっくりグループ化する。
+    for my $y (0..$#$earth){
+        my $same_with_left = 0;
+        for my $x (0..$#{$earth-&gt;[$y]}){
+            unless($same_with_left){
+                #左が違う色の場合、新しいグループをアサインする。
+                $island_groups[++$idx] = [];
+                push @{$island_groups[$idx]}, "$y-$x";
+            }
+            if($x != $#{$earth-&gt;[$y]} and $earth-&gt;[$y][$x] == $earth-&gt;[$y][$x+1]){#右と色が同じ
+                $same_with_left = 1;
+                my $tmp = $x+1;
+                push @{$island_groups[$idx]}, "$y-$tmp";
+            }
+            else{
+                $same_with_left = 0;
+            }
+            if($y != $#$earth and $earth-&gt;[$y][$x] == $earth-&gt;[$y+1][$x]){#下と色が同じ
+                my $tmp = $y+1;
+                push @{$island_groups[$idx]}, "$tmp-$x";
+            }
+        }
+    }
+
+    #上で作ったグループ内で重複がある場合はマージ。無くなるまで繰り返す
+    #例 ['1-3','2-2'] ['1-3','2,3'] =&gt; ['1-3','2-2','2-3']
+    while(how_many_elms(@island_groups) != +($#$earth + 1)*($#{$earth-&gt;[0]} + 1)){
+        for my $i (0..$#island_groups){
+            if($island_groups[$i]){
+                for my $j ($i+1..$#island_groups){#積集合が存在すればマージ。後ろの集合は消去
+                    my @tmp = uniq(@{$island_groups[$i]}, @{$island_groups[$j]});
+                    if($#tmp != $#{$island_groups[$i]} + $#{$island_groups[$j]} + 1){
+                        @{$island_groups[$i]} = @tmp;
+                        $island_groups[$j] = [];
+                    }
+                }
+            }
+        }
+        @island_groups = grep {(scalar @$_) &gt; 0} @island_groups;
+    }
+    # 結果を出力する
+    my ($wht_i, $blk_i) = (0,0);
+    for my $group (@island_groups){
+        my ($x, $y) = split '-',$group-&gt;[0];
+        $earth-&gt;[$x][$y] ? $blk_i++ : $wht_i++;
+    }
+    print "black: $blk_i, white: $wht_i";
+
+
+    ###
+    #天地創造
+    sub theCreation{
+        my($n, $m) = @_;
+        my @result_arr;
+        for my $x (1..$n){
+            for my $y (1..$m){
+                $result_arr[$x-1][$y-1] = int(rand(2));
+                print $result_arr[$x-1][$y-1] ? '■' : '□';
+            }
+            print "\n";
+        }
+        return \@result_arr;
+    }
+    #配列の各要素が配列参照の場合、合計いくつの要素があるか。
+    #例： ([1,2],[33,4,5,6],[2,3,3]) =&gt; 9 が返る
+    sub how_many_elms{
+        my @arr = @_;
+        my $count = 0;
+        for(@arr){
+            $count += scalar @$_;
+        }
+        return $count;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9623'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/9623
+  :user_name: T_GYOUTEN
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/1107/
+  :language: Other
+  :time: 2009/10/05 12:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  F# で、Discriminated unionを使用しました。\r\nsolve [| [|0;1;1;0|];[|0;0;1;0|];[|0;1;0;0|];[|0;1;1;0|]
+    |]として\r\n結果は\r\n白の島は2つ\r\n黒の島は2つ\r\n    [W1][B1][B1][W2]    \r\n    [W1][W1][B1][W2]
+    \   \r\n    [W1][B2][W2][W2]    \r\n    [W1][B2][B2][W2]  \r\nという感じで答えが表示されます。
+    \ \n\t"
+  :code: "type Color =\n    |White\n    |Black\n\ntype Piece =\n    | Island of Color
+    * Option &lt;int&gt;\n    | Dummy\n    \n    member this.toStr () =\n        match
+    this with\n        | Island (White,Some(n)) -&gt; sprintf \"[W%d]\" n\n        |
+    Island (Black,Some(n)) -&gt; sprintf \"[B%d]\" n\n        | _ -&gt; \"    \"\n
+    \            \nlet makeUpArr (rawArr : int [][]) =\n    let tempArr = [| for i
+    in 0 .. (Array.length rawArr) + 1 do\n                            yield (Array.create
+    (Array.length rawArr.[0] + 2)) Dummy|]\n        \n    for i in 0 .. (Array.length
+    rawArr) - 1 do\n        let t = rawArr.[i]\n        for j in 0 .. (Array.length
+    rawArr.[0])-1 do\n            if rawArr.[i].[j] = 0 then\n                tempArr.[i+1].[j+1]
+    &lt;- Island(White,None)\n            else \n                tempArr.[i+1].[j+1]
+    &lt;- Island(Black,None)\n            \n    tempArr\n    \nlet mutable WhiteCount
+    =  0\nlet mutable BlackCount =  0\n\nlet rec nearCheck (i0,j0) (arr: Piece []
+    [] ) =\n    for (v1,v2) in [(1,0);(-1,0);(0,1);(0,-1)] do\n        let (i1,j1)
+    = (i0 + v1,j0 + v2) \n        match arr.[i0].[j0] ,arr.[i1].[j1] with\n        |Island
+    (c1,Some(number)),Island(c2,None) when c1 = c2 -&gt; arr.[i1].[j1] &lt;- Island(c1,Some(number));nearCheck(i1,j1)
+    arr\n        | _ -&gt; ()\n\nlet check i j (arr: Piece [] [] ) =\n    match arr.[i].[j]
+    with\n    |Island(c1,None) -&gt;match c1 with\n                       | White
+    -&gt; WhiteCount &lt;- WhiteCount + 1; arr.[i].[j] &lt;- Island (White,Some(WhiteCount))\n
+    \                      | Black -&gt; BlackCount &lt;- BlackCount + 1; arr.[i].[j]
+    &lt;- Island (Black,Some(BlackCount))\n                       nearCheck (i,j)
+    arr\n    | _ -&gt; () \n   \nlet cope (arr : Piece [] []) =\n \n    WhiteCount
+    &lt;- 0\n    BlackCount &lt;- 0\n \n    for i = 1 to (Array.length arr - 2) do\n
+    \       for j = 1 to (Array.length arr.[i] - 2) do\n            check i j arr
+    \n\nlet dispResult (arr : Piece [] []) =\n    printfn \"\"\n    printfn \"白の島は%dつ\"
+    WhiteCount\n    printfn \"黒の島は%dつ\" BlackCount\n    \n    for i = 0 to (Array.length
+    arr - 1) do\n        for j = 0 to (Array.length arr.[i] - 1) do\n            printf
+    \"%s\" (arr.[i].[j].toStr()) \n        printf \"\\n\"\n\nlet solve (rawArr : int
+    [] [] ) =\n    let data = makeUpArr rawArr\n    cope data\n    dispResult data\n\nsolve
+    [| [|0;1;1;0|];[|0;0;1;0|];[|0;1;0;0|];[|0;1;1;0|] |]\nsolve [| [|0;0;0;0|];[|1;0;1;0|];[|0;1;0;0|];[|0;0;0;0|]
+    |]\n"
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '9723'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/9723
+  :user_name: sasa
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/1127/
+  :language: C
+  :time: 2009/12/15 10:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">リンクリストを作って島を判別してます。\r\nなるべく言語に依存しない感じに書こうとしたのですが、マップの解析とカウンター変数だけ.NETしてしまいました。\r\n一次配列のループにしているので見辛くなっていたらすみません。</pre>\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
+    namespace IslandCounter {
+        class Program {
+            static void Main() {
+                string map =
+    @"□■□□
+    ■□■□
+    □■■■
+    □□□□";
+
+                int m = map.IndexOf(Environment.NewLine, 0);
+                int n = map.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Length;
+
+                map = string.Join(string.Empty, map.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries));
+                int[] field = new int[m * n];
+
+                Dictionary&lt;char, int&gt; counter = new Dictionary&lt;char, int&gt;();
+                counter.Add('□', 0);
+                counter.Add('■', 0);
+
+                for (int i = 0; i &lt; m * n; i++) {
+                    char c = map[i];
+                    counter[c]++;
+                    field[i] = i;
+                    if (i % m != 0) { // x軸の二行目から
+                        int prev = i - 1;
+                        if (c == map[prev]) {
+                            field[i] = prev;
+                            counter[c]--;
+                        }
+                    }
+                    if (i &gt;= m) { // y軸の二行目から
+                        int prev = i - m;
+                        if (c == map[prev] &amp;&amp; GetParent(field, i) != GetParent(field, prev)) {
+                            field[GetParent(field, i)] = prev;
+                            counter[c]--;
+                        }
+                    }
+                }
+                Console.WriteLine("白の島：" + counter['□'].ToString());
+                Console.WriteLine("黒の島：" + counter['■'].ToString());
+            }
+
+            private static int GetParent(int[] field,int i) {
+                int current = i;
+                while (field[current] != current) {
+                    current = field[current];
+                }
+                return current;
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9742'
+  :parent_id: '219'
+  :url: http://ja.doukaku.org/comment/9742
+  :user_name: Lost_dog
+  :user_url: /web/20100606042159/http://ja.doukaku.org/user/1129/
+  :language: Haskell
+  :time: 2009/12/27 05:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Lost_dogです。似たような問題は、他のコンテストでも時々みかけたのでやってみました。</p>\n<p>コーディングのポイントは、Data.Graphのcomponents関数を使うっていうだけです。モジュールって便利ですね。。</p>\n<p>あと入力を■□に制限する必要がなかったので、若干拡張的にしてあります。</p>\n<p><strong>Sample
+    Input 1</strong></p>\n<hr class=\"docutils\">\n<div class=\"line-block\">\n<div
+    class=\"line\">6 4</div>\n<div class=\"line\">□□■□□□</div>\n<div class=\"line\">■■■■■■</div>\n<div
+    class=\"line\">□■□□□□</div>\n<div class=\"line\">■□□■■□</div>\n</div>\n<hr class=\"docutils\">\n<p><strong>Sample
+    Output 1</strong></p>\n<hr class=\"docutils\">\n<div class=\"line-block\">\n<div
+    class=\"line\">[3,4]</div>\n</div>\n<hr class=\"docutils\">\n<p><strong>Sample
+    Input 2</strong></p>\n<hr class=\"docutils\">\n<div class=\"line-block\">\n<div
+    class=\"line\">6 3</div>\n<div class=\"line\">abbccc</div>\n<div class=\"line\">aabbca</div>\n<div
+    class=\"line\">aabacb</div>\n</div>\n<hr class=\"docutils\">\n<p><strong>Sample
+    Output 2</strong></p>\n<hr class=\"docutils\">\n<div class=\"line-block\">\n<div
+    class=\"line\">[3,2,1]</div>\n</div>\n<hr class=\"docutils\">\n<p>です。</p>\n\n\t"
+  :code: "module Main where\n\nimport Prelude hiding (getLine, print)\nimport Data.Graph\nimport
+    Data.Tree\nimport Data.Maybe\nimport Data.List\nimport Data.Function\nimport Control.Monad\nimport
+    System.IO.UTF8 \n\nmain = do [w,h] &lt;- fmap (map read.words) getLine\n          xss
+    \  &lt;- fmap (numbering w) $ replicateM h getLine\n          print $ count xss
+    $ components $ buildG (0,w*h-1) $ calEdge w xss\n\nnumbering w xss = snd $ mapAccumL
+    f 0 xss\n                  where f i xs = (i+w, zip [i..] xs)\n\ncalEdge w xss
+    = (concatMap f xss) ++ (concatMap f $ transpose xss)\n                where f
+    (x:xs) = catMaybes $ snd $ mapAccumL g x xs\n                      g (i,x) r@(j,y)
+    | x == y    = (r,Just(i,j))\n                                      | otherwise
+    = (r,Nothing)\n\ncount xss = map length.groupBy ((==)`on`c).sortBy (compare`on`c)\n
+    \           where c = snd.(concat xss!!).rootLabel\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

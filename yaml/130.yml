@@ -1,0 +1,247 @@
+---
+:id: '130'
+:title: 動的リンクライブラリの利用
+:comments:
+- :id: '5415'
+  :parent_id: '130'
+  :url: http://ja.doukaku.org/comment/5415
+  :user_name: ところてん
+  :user_url: /web/20110203060032/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2008/01/21 04:08 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">DLLを動的に呼び出すコードを書いてください。\r\n今回は、mecabのlibmecab.dllを利用してください。\r\n(Unix系の場合はlibmecab.so
+    かな？)</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20110203060032/http://mecab.sourceforge.net/
+    :title: 'MeCab: Yet Another Part-of-Speech and Morphological Analyzer'
+- :id: '5422'
+  :parent_id: '130'
+  :url: http://ja.doukaku.org/comment/5422
+  :user_name: tenka
+  :user_url: /web/20110203060032/http://ja.doukaku.org/user/664/
+  :language: C
+  :time: 2008/01/22 06:21 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <p>使わせてもらってるライブラリがlibmecab.libを使ってます。\n使い方が参考ページのまんまです・・・。</p>\n\r\n\t"
+  :code: |
+    using System;
+    using MeCab;
+
+    //libmecab.libだけだと色々と大変そうなので、
+    //配布されてるライブラリを使いました
+    //MeCabSharp.dll
+    //http://mf2.dotpp.net/software/mecabsharp.xml
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Tagger mecab = new Tagger();
+            string result = mecab.parse(
+                "「どう書く？org」へようこそ！ このサイトは出されたお題をいかに解くか競い合う、" +
+                " プログラマのためのコロシアムです。 投稿を試してみたい方はテスト、" +
+                " とりあえず眺めてみたい方は言語の一覧 がおすすめです。"
+            );
+            Console.WriteLine(result);
+        }
+    }
+  :tags: []
+  :references:
+    :url: /web/20110203060032/http://mitc.xrea.jp/diary/044#p3
+    :title: C#から形態素解析器のMeCabを呼び出してみた
+- :id: '5437'
+  :parent_id: '130'
+  :url: http://ja.doukaku.org/comment/5437
+  :user_name: tenka
+  :user_url: /web/20110203060032/http://ja.doukaku.org/user/664/
+  :language: C
+  :time: 2008/01/23 15:12 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">えっと探してみたら意外と簡単に実装できました。\r\n</pre>\r\n\t"
+  :code: "using System;\nusing System.Runtime.InteropServices;\n\nclass Program\n{\n
+    \   [DllImport(\"libmecab.dll\")]\n    extern static int mecab_new2(string arg);\n\n
+    \   [DllImport(\"libmecab.dll\")]\n    extern static string mecab_sparse_tostr(int
+    m, string str);\n\n    [DllImport(\"libmecab.dll\")]\n    extern static void mecab_destroy(int
+    m);\n\n    static void Main(string[] args)\n    {\n        int mecab = mecab_new2(\"\");\n
+    \       string s = mecab_sparse_tostr(mecab, \n            \"「どう書く？org」へようこそ！\"
+    + \n            \" このサイトは出されたお題をいかに解くか競い合う、\" +\n            \" プログラマのためのコロシアムです。\"
+    +\n            \" 投稿を試してみたい方はテスト、\" +\n            \" とりあえず眺めてみたい方は言語の一覧 がおすすめです。\"\n
+    \       );\n        mecab_destroy(mecab);\n\n        Console.WriteLine(s);\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: /web/20110203060032/http://www.doblog.com/weblog/myblog/10356/1754054#1754054
+    :title: 'MecabをC#で使ってみるテスト '
+- :id: '5416'
+  :parent_id: '130'
+  :url: http://ja.doukaku.org/comment/5416
+  :user_name: ところてん
+  :user_url: /web/20110203060032/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2008/01/21 04:15 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">pythonで書くとこんな感じ。\r\nwindows版のlibmecab.dllはshift
+    jisでビルドされているので、\r\n引き渡す際にshift-jisである必要がある。</pre>\r\n\t"
+  :code: |
+    # coding: shift_jis
+    from ctypes import *
+
+    class mecab():
+        def __init__(self,path):
+            self.lib = cdll.LoadLibrary(path)
+            argc = c_int(2)
+            argv = (c_char_p * 2)("mecab", "-Ochasen")
+            # 解析器のオブジェクトを作る
+            self.tagger = self.lib.mecab_new(argc, argv)
+
+        def getChasenStyle(self,word):
+            word = self.lib.mecab_sparse_tostr(self.tagger, word)
+            return c_char_p(word).value
+
+        def getChasenStyleList(self,word):
+            word = self.lib.mecab_sparse_tostr(self.tagger, word)
+            l = []
+            for line in c_char_p(word).value.splitlines():
+                l.append([])
+                for data in line.split("\t"):
+                    l[-1].append(data)
+            return l
+
+        def __del__(self):
+            self.lib.mecab_destroy(self.tagger)
+
+    if  __name__ == '__main__':
+        tagger = mecab('libmecab.dll')
+        s = "「どう書く？org」へようこそ！ このサイトは出されたお題をいかに解くか競い合う、"
+        " プログラマのためのコロシアムです。 投稿を試してみたい方はテスト、"
+        " とりあえず眺めてみたい方は言語の一覧 がおすすめです。"
+        print tagger.getChasenStyleList(s)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5423'
+  :parent_id: '130'
+  :url: http://ja.doukaku.org/comment/5423
+  :user_name: squld
+  :user_url: /web/20110203060032/http://ja.doukaku.org/user/643/
+  :language: 
+  :time: 2008/01/22 06:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">うは。さすがC#簡単すぎｗ\r\n\r\nアンマネージドなDLLだともう少し大変ですか？</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5444'
+  :parent_id: '130'
+  :url: http://ja.doukaku.org/comment/5444
+  :user_name: queck
+  :user_url: /web/20110203060032/http://ja.doukaku.org/user/681/
+  :language: Other
+  :time: 2008/01/24 06:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Factor です。UI だと文字化けするので、factor-nt.exe -run=listener とコマンドプロンプトから起動して、\"mecab.factor\"
+    run-file と実行してください。</p>\n\r\n\t"
+  :code: |
+    USING: kernel alien alien.syntax alien.c-types io ;
+
+    IN: mecab
+
+    : load-mecab-library ( -- )
+        "mecab" "libmecab.dll" "cdetl" add-library ; parsing
+
+    load-mecab-library
+
+    LIBRARY: mecab
+
+    TYPEDEF: void* mecab_t*
+    FUNCTION: mecab_t* mecab_new2 ( char* arg ) ;
+    FUNCTION: char* mecab_sparse_tostr ( mecab_t* m, char* str ) ;
+    FUNCTION: void mecab_destroy ( mecab_t* m ) ;
+
+    "" mecab_new2
+    dup "「どう書く？org」へようこそ！ このサイトは出されたお題をいかに解くか競い合う、プログラマのためのコロシアムです。 投稿を試してみたい方はテスト、とりあえず眺めてみたい方は言語の一覧 がおすすめです。"
+    mecab_sparse_tostr
+    write
+    mecab_destroy
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5419'
+  :parent_id: '130'
+  :url: http://ja.doukaku.org/comment/5419
+  :user_name: squld
+  :user_url: /web/20110203060032/http://ja.doukaku.org/user/643/
+  :language: Java
+  :time: 2008/01/21 11:45 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\r\n\t  <pre class=\"compact\">お題の意図に反していて参考にならないかもしれませんが、Javaのコードを投稿します。\r\n　・mecab入ってない環境なので、kernel32.dllを呼び出してます。\r\n　・Java標準APIだけではDLLの動的呼び出しができないのでJNIWrapperつかってます。\r\n\r\n実行結果\r\n---------------------\r\nResultCode:
+    1\r\ndwOSVersionInfoSize: 148\r\ndwMajorVersion: 6\r\ndwMinorVersion: 0\r\ndwBuildNumber:
+    6000\r\ndwPlatformId: 2\r\nszCSDVersion: com.jniwrapper.PrimitiveArray@5ffb18\r\n---------------------</pre>\r\n\t"
+  :code: |
+    import com.jniwrapper.Char;
+    import com.jniwrapper.Function;
+    import com.jniwrapper.Library;
+    import com.jniwrapper.Parameter;
+    import com.jniwrapper.Pointer;
+    import com.jniwrapper.PrimitiveArray;
+    import com.jniwrapper.Structure;
+    import com.jniwrapper.UInt32;
+
+    public class DLLCall {
+        /**
+         * typedef struct {
+         *         DWORD dwOSVersionInfoSize;
+         *         DWORD dwMajorVersion;
+         *         DWORD dwMinorVersion;
+         *         DWORD dwBuildNumber;
+         *         DWORD dwPlatformId;
+         *         CHAR szCSDVersion[128];
+         * } OSVERSIONINFOA;
+         */
+        private static class OSVERSIONINFOA extends Structure {
+            public final UInt32 dwOSVersionInfoSize = new UInt32();
+            public final UInt32 dwMajorVersion = new UInt32();
+            public final UInt32 dwMinorVersion = new UInt32();
+            public final UInt32 dwBuildNumber = new UInt32();
+            public final UInt32 dwPlatformId = new UInt32();
+            public final PrimitiveArray szCSDVersion = new PrimitiveArray(Char.class, 128);
+
+            public OSVERSIONINFOA() {
+                init(new Parameter[] { dwOSVersionInfoSize, dwMajorVersion, dwMinorVersion, dwBuildNumber, dwPlatformId, szCSDVersion });
+                dwOSVersionInfoSize.setValue(getLength());
+            }
+        }
+
+        public static void main(String[] args) {
+            Library tKernel32 = new Library("kernel32");
+            Function tGetVersionExA = tKernel32.getFunction("GetVersionExA");
+            OSVERSIONINFOA tOsversioninfoa = new OSVERSIONINFOA();
+            UInt32 tResult = new UInt32();
+            tGetVersionExA.invoke(tResult, new Pointer(tOsversioninfoa));
+
+            System.out.println("ResultCode: " + tResult);
+            System.out.println("dwOSVersionInfoSize: " + tOsversioninfoa.dwOSVersionInfoSize);
+            System.out.println("dwMajorVersion: " + tOsversioninfoa.dwMajorVersion);
+            System.out.println("dwMinorVersion: " + tOsversioninfoa.dwMinorVersion);
+            System.out.println("dwBuildNumber: " + tOsversioninfoa.dwBuildNumber);
+            System.out.println("dwPlatformId: " + tOsversioninfoa.dwPlatformId);
+            System.out.println("szCSDVersion: " + tOsversioninfoa.szCSDVersion);
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 

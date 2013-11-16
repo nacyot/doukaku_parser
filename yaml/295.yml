@@ -1,0 +1,517 @@
+---
+:id: '295'
+:title: 数字混じり文字列ソート
+:comments:
+- :id: '12222'
+  :parent_id: '295'
+  :url: http://ja.doukaku.org/comment/12222
+  :user_name: greentea
+  :user_url: /web/20110716025325/http://ja.doukaku.org/user/573/
+  :language: 
+  :time: 2010/07/17 13:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <div class=\"section\">\n<p>ファイル名の表示順序としてWindows Vista以降のExplorerや、KDEのDolphinでもいつの間にか、単純な辞書順ソートではなく数字混じりの文字列を数字順に並べるソートが採用されています。ここではそのソート方法を数字混じり文字列ソートと呼びます。\r</p>\n<p>さて、数字混じり文字列ソートを実装してください。なお入力される文字はASCII文字を仮定して構いませんが、日本語の扱える文字コードにも対応していればより理想的です。\r</p>\n<p>以下に、数字混じり文字列ソートでの挙動の例を示します。\r</p>\n<p>例1:\r</p>\n<p>辞書順ソート:
+    1.txt, 10.txt, 100.txt, 2.txt, 20.txt\r</p>\n<p>数字混じり文字列ソート: 1.txt, 2.txt, 10.txt,
+    20.txt, 100.txt\r</p>\n<p>例2:\r</p>\n<p>辞書順ソート: x12, x13, x1A, x1B, xAB\r</p>\n<p>数字混じり文字列ソート:
+    x1A, x1B, x12, x13, xAB\r</p>\n<p>例3:\r</p>\n<p>辞書順ソート: A10B1, A10B10, A10B2,
+    A1B1, A1B10, A1B2, A2B1, A2B10, A2B2\r</p>\n<p>数字混じり文字列ソート: A1B1, A1B2, A1B10,
+    A2B1, A2B2, A2B10, A10B1, A10B2, A10B10</p>\n</div>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '12603'
+  :parent_id: '295'
+  :url: http://ja.doukaku.org/comment/12603
+  :user_name: sawa
+  :user_url: /web/20110716025325/http://ja.doukaku.org/user/1052/
+  :language: Ruby
+  :time: 2010/07/31 23:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \n<p>こんな感じかと。\n</p>\n\n\n\r\n\t"
+  :code: |
+    #!/usr/bin/ruby
+    class Array
+    def mixed_sort; sort_by{|s| s.scan(/(\d+)|([^\d]+)/).map{|a| a[1] || a[0].to_i}} end
+    end
+
+    p %w[1.txt 10.txt 100.txt 2.txt 20.txt].mixed_sort
+    #=&gt; ["1.txt", "2.txt", "10.txt", "20.txt", "100.txt"]
+
+    p %w[x12 x13 x1A x1B xAB].mixed_sort
+    #=&gt; ["x1A", "x1B", "x12", "x13", "xAB"]
+
+    p %w[A10B1 A10B10 A10B2 A1B1 A1B10 A1B2 A2B1 A2B10 A2B2].mixed_sort
+    #=&gt; ["A1B1", "A1B2", "A1B10", "A2B1", "A2B2", "A2B10", "A10B1", "A10B2", "A10B10"]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '12604'
+  :parent_id: '295'
+  :url: http://ja.doukaku.org/comment/12604
+  :user_name: sawa
+  :user_url: /web/20110716025325/http://ja.doukaku.org/user/1052/
+  :language: Ruby
+  :time: 2010/08/01 00:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \n<p>おっと、数字で始まるのとそうでないのが混ざるときにエラーが出てしまいますね。そこで、直しました。\n</p>\n\n\n\r\n\t"
+  :code: |
+    #!/usr/bin/ruby
+    class Array
+    def mixed_sort; sort_by{|s| (' '+s).scan(/(\d+)|([^\d]+)/).map{|a| a[1] || a[0].to_i}} end
+    end
+
+    p %w[x12 x13 x1A x1B xAB 12x 13x 1A 1B].mixed_sort
+    #=&gt; ["1A", "1B", "12x", "13x", "x1A", "x1B", "x12", "x13", "xAB"]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '12592'
+  :parent_id: '295'
+  :url: http://ja.doukaku.org/comment/12592
+  :user_name: sumim
+  :user_url: /web/20110716025325/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2010/07/21 22:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Squeak Smalltalk 4.1 で。</p>\n\r\n\t"
+  :code: |
+    | splitDigitMixedStr sortDigitMixedStrs |
+
+    splitDigitMixedStr := [:str |
+        | inStream |
+        inStream := str readStream.
+        Array streamContents: [:ss |
+            | buffer flushBuffer |
+            buffer := String new writeStream.
+            flushBuffer := [buffer position &gt; 0
+                ifTrue: [ss nextPut: buffer contents. buffer reset]].
+            [inStream atEnd] whileFalse: [
+                inStream peek isDigit ifFalse: [buffer nextPut: inStream next] ifTrue: [
+                    flushBuffer value.
+                    ss nextPut: (Integer readFrom: inStream)]].
+            flushBuffer value]].
+
+    sortDigitMixedStrs := [:colln |
+        | pairs sortBlock |
+        pairs := colln collect: [:each | {each. (splitDigitMixedStr value: each)}].
+        sortBlock := nil.
+        sortBlock := [:a :b |
+            (a second isEmpty and: [b second notEmpty]) or: [
+                b second notEmpty and: [a second first &lt; b second first or: [
+                        a second first = b second first and: [sortBlock
+                            value: {a first. a second allButFirst}
+                            value: {b first. b second allButFirst}]]]]].
+        ((pairs sortBy: sortBlock) collect: [:pair | pair first]) asArray].
+
+    sortDigitMixedStrs value: #('1.txt' '10.txt' '100.txt' '2.txt' '20.txt').
+    "=&gt; #('1.txt' '2.txt' '10.txt' '20.txt' '100.txt') "
+
+    sortDigitMixedStrs value: #('x12' 'x13' 'x1A' 'x1B' 'xAB').
+    "=&gt; #('x1A' 'x1B' 'x12' 'x13' 'xAB') "
+
+    sortDigitMixedStrs value: #('A10B1' 'A10B10' 'A10B2' 'A1B1' 'A1B10' 'A1B2' 'A2B1' 'A2B10' 'A2B2').
+    "=&gt; #('A1B1' 'A1B2' 'A1B10' 'A2B1' 'A2B2' 'A2B10' 'A10B1' 'A10B2' 'A10B10') "
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '12235'
+  :parent_id: '295'
+  :url: http://ja.doukaku.org/comment/12235
+  :user_name: sna
+  :user_url: /web/20110716025325/http://ja.doukaku.org/user/819/
+  :language: Scala
+  :time: 2010/07/18 02:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  速度とかはあまり考えずに。\r<br><br>正規表現で文字列と数値の組のリストに変換してソートしています。\r<br>全角数字にも対応。(UnicodeのカテゴリNdの文字を数字と見なす)\r<br><br>実行結果\r<br>--------------------------------\r<br>辞書順ソート: 1.txt, 10.txt, 100.txt, 2.txt, 20.txt\r<br>数字混じり文字列ソート: 1.txt, 2.txt, 10.txt, 20.txt, 100.txt\r<br><br>辞書順ソート: x12, x13, x1A, x1B, xAB\r<br>数字混じり文字列ソート: x1A, x1B, x12, x13, xAB\r<br><br>辞書順ソート: A10B1, A10B10, A10B2, A1B1, A1B10, A1B2, A2B1, A2B10, A2B2\r<br>数字混じり文字列ソート: A1B1, A1B2, A1B10, A2B1, A2B2, A2B10, A10B1, A10B2, A10B10\r<br><br>辞書順ソート: あ８８あ, あ９あ, い１い, い２３い, う１００う, う５４う\r<br>数字混じり文字列ソート: あ９あ, あ８８あ, い１い, い２３い, う５４う, う１００う\r\n\t"
+  :code: "import scala.util.Sorting\n\nobject Doukaku295 {\n  \n  implicit def option2ordered[A
+    &lt;% Ordered[A]](opt: Option[A]): Ordered[Option[A]] =\n  new Ordered[Option[A]]
+    {\n    def compare(that: Option[A]) = {\n      if (opt.isEmpty) -1\n      else
+    if (that.isEmpty) 1\n      else opt.get compare that.get\n    }\n  }\n  \n  val
+    R = \"\"\"^(\\P{Nd}*)(\\p{Nd}*)(.*)$\"\"\".r\n  def toMixedNumbersList(str: String):
+    List[(String, Option[BigInt])] = {\n    if (str.length == 0) Nil\n    else {\n
+    \     str match {\n        case R(s, \"\", r) =&gt; (s, None           ) :: toMixedNumbersList(r)\n
+    \       case R(s, n , r) =&gt; (s, Some(BigInt(n))) :: toMixedNumbersList(r)\n
+    \     }\n    }\n  }\n  \n  def sortMixedNumbers(data: Seq[String]) = {\n    val
+    sa = data.map(d =&gt; (toMixedNumbersList(d) : Iterable[(String, Option[BigInt])],
+    d))\n    Sorting.stableSort(sa).map(_._2)\n  }\n  \n  def main(args: Array[String])
+    = {\n    \n    // ソート対象 (適当にシャッフル済み)\n    val data1: Seq[String] =\n      Array(\"100.txt\",
+    \"1.txt\", \"20.txt\", \"2.txt\", \"10.txt\")\n    val data2: Seq[String] =\n
+    \     Array(\"x13\", \"x1B\", \"xAB\", \"x12\", \"x1A\")\n    val data3: Seq[String]
+    =\n      Array(\"A2B2\", \"A10B1\", \"A2B10\", \"A10B10\", \"A10B2\", \"A1B1\",
+    \"A1B10\", \"A1B2\", \"A2B1\")\n    val data4: Seq[String] =\n      Array(\"う５４う\",
+    \"い２３い\", \"い１い\", \"あ９あ\", \"う１００う\", \"あ８８あ\")\n    \n    // 辞書順ソート\n    val
+    dic1 = Sorting.stableSort(data1)\n    val dic2 = Sorting.stableSort(data2)\n    val
+    dic3 = Sorting.stableSort(data3)\n    val dic4 = Sorting.stableSort(data4)\n    \n
+    \   // 数字混じり文字列ソート\n    val num1 = sortMixedNumbers(data1)\n    val num2 = sortMixedNumbers(data2)\n
+    \   val num3 = sortMixedNumbers(data3)\n    val num4 = sortMixedNumbers(data4)\n
+    \   \n    \n    println(\"辞書順ソート: \" + dic1.mkString(\", \"))\n    println(\"数字混じり文字列ソート:
+    \" + num1.mkString(\", \"))\n    println\n    println(\"辞書順ソート: \" + dic2.mkString(\",
+    \"))\n    println(\"数字混じり文字列ソート: \" + num2.mkString(\", \"))\n    println\n    println(\"辞書順ソート:
+    \" + dic3.mkString(\", \"))\n    println(\"数字混じり文字列ソート: \" + num3.mkString(\",
+    \"))\n    println\n    println(\"辞書順ソート: \" + dic4.mkString(\", \"))\n    println(\"数字混じり文字列ソート:
+    \" + num4.mkString(\", \"))\n    \n  }\n  \n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '12622'
+  :parent_id: '295'
+  :url: http://ja.doukaku.org/comment/12622
+  :user_name: baal
+  :user_url: /web/20110716025325/http://ja.doukaku.org/user/827/
+  :language: Scheme
+  :time: 2010/08/08 04:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  ひとまず全角数字は未対応で。\r\n\t"
+  :code: |
+    (define (split-number-mixed-string s)
+      (let loop1 ((ls (string-&gt;list s)) (ret '()))
+        (if (pair? ls)
+          (if (char-numeric? (car ls))
+            (let loop2 ((ls (cdr ls)) (buf (list (car ls))))
+              (if (and (pair? ls) (char-numeric? (car ls)))
+                (loop2 (cdr ls) (cons (car ls) buf))
+                (loop1 ls (cons (string-&gt;number (list-&gt;string (reverse buf))) ret))))
+            (let loop3 ((ls (cdr ls)) (buf (list (car ls))))
+              (if (and (pair? ls) (not (char-numeric? (car ls))))
+                (loop3 (cdr ls) (cons (car ls) buf))
+                (loop1 ls (cons (list-&gt;string (reverse buf)) ret)))))
+          (reverse ret))))
+
+    (define (compare-number-or-string o1 o2)
+      (if (and (number? o1) (number? o2))
+        (cond
+          ((= o1 o2) 0)
+          ((&lt; o1 o2) -1)
+          ((&gt; o1 o2) 1))
+        (let ((s1 (if (number? o1) (number-&gt;string o1) o1))
+              (s2 (if (number? o2) (number-&gt;string o2) o2)))
+          (cond
+            ((string=? s1 s2) 0)
+            ((string&lt;? s1 s2) -1)
+            ((string&gt;? s1 s2) 1)))))
+
+    (define (compare-number-or-string-list ls1 ls2)
+      (cond
+        ((null? ls1) #t)
+        ((null? ls2) #f)
+        (else
+          (let ((cmp (compare-number-or-string (car ls1) (car ls2))))
+            (cond
+              ((zero? cmp) (compare-number-or-string-list (cdr ls1) (cdr ls2)))
+              ((negative? cmp) #t)
+              ((positive? cmp) #f))))))
+
+    (define (sort-number-mixed-string ls)
+      (sort ls (lambda (o1 o2)
+        (compare-number-or-string-list
+          (split-number-mixed-string o1)
+          (split-number-mixed-string o2)))))
+
+    (sort-number-mixed-string '("1.txt" "10.txt" "100.txt" "2.txt" "20.txt"))
+    ;=&gt; ("1.txt" "2.txt" "10.txt" "20.txt" "100.txt")
+
+    (sort-number-mixed-string '("x12" "x13" "x1A" "x1B" "xAB"))
+    ;=&gt; ("x1A" "x1B" "x12" "x13" "xAB")
+
+    (sort-number-mixed-string '("A10B1" "A10B10" "A10B2" "A1B1" "A1B10" "A1B2" "A2B1" "A2B10" "A2B2"))
+    ;=&gt; ("A1B1" "A1B2" "A1B10" "A2B1" "A2B2" "A2B10" "A10B1" "A10B2" "A10B10")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '12594'
+  :parent_id: '295'
+  :url: http://ja.doukaku.org/comment/12594
+  :user_name: Lost_dog
+  :user_url: /web/20110716025325/http://ja.doukaku.org/user/1129/
+  :language: Haskell
+  :time: 2010/07/25 15:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>ミスりました。。</p>\n<p>「0a.txt」と「a.txt」がうまくソートされない気がするので直します。。</p>\n\r\n\t"
+  :code: |
+    split :: String -&gt; [LetterOrNumber]
+    split []                   = []
+    split xs | isNumber(xs!!0) = Number(readNumber as) : split bs
+             | otherwise       = Letter cs : split ds
+      where (as,bs) = span isNumber xs
+            (cs,ds) = span (not.isNumber) xs
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '12595'
+  :parent_id: '295'
+  :url: http://ja.doukaku.org/comment/12595
+  :user_name: fumokmm
+  :user_url: /web/20110716025325/http://ja.doukaku.org/user/856/
+  :language: Groovy
+  :time: 2010/07/28 10:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>ソートの細かい条件などひとまず気にせず自由に実装してみました。</p>\n\r\n\t"
+  :code: |
+    def shuffled = {
+      it.split(/ +/).toList().with {
+        Collections.shuffle(it); it
+      }
+    }
+
+    def text = shuffled('1.txt 10.txt 100.txt ２.txt 2.txt_20100728 2.txt_20100725 20.txt')
+    println text.collect{ [
+      orig: it,
+      num : it.findAll(/[0-9０１２３４５６７８９]+/)
+              .collect{ new BigDecimal(it) } ]
+    }.sort{ a, b -&gt;
+      if (!a.num &amp;&amp; !b.num) return a.orig &lt;=&gt; b.orig // オリジナル文字列で比較
+      if (!a.num &amp;&amp;  b.num) return  1 // 数値なしの方が大
+      if ( a.num &amp;&amp; !b.num) return -1 // 数値ありの方が小
+      for (i in 0..a.size()) { // 数値は先に登場したもの優先で並べ替え
+        def comp = a.num[i] &lt;=&gt; b.num[i]
+        if (comp) return comp
+      }
+      return 0
+    }.collect{ it.orig }.join(', ')
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '12609'
+  :parent_id: '295'
+  :url: http://ja.doukaku.org/comment/12609
+  :user_name: matarillo
+  :user_url: /web/20110716025325/http://ja.doukaku.org/user/136/
+  :language: C
+  :time: 2010/08/04 08:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>面倒なのでnullチェックしてませんよ。</p>\n\r\n\t"
+  :code: "using System;\nusing System.Text.RegularExpressions;\n \nstatic void Sort(string[]
+    src)\n{\n  Array.Sort(src, (x, y) =&gt;\n  {\n    int ix = 0, iy = 0;\n    Regex
+    np = new Regex(\"^([\\\\d]+)\"), op = new Regex(\"^([^\\\\d]+)\");\n    bool num
+    = true;\n    while (ix &lt; x.Length &amp;&amp; iy &lt; y.Length)\n    {\n      Regex
+    re = num ? np : op;\n      Match mx = re.Match(x.Substring(ix)), my = re.Match(y.Substring(iy));\n
+    \     if (mx.Success != my.Success) return x[ix] - y[iy];\n      if (mx.Success)\n
+    \     {\n        int r = num\n          ? int.Parse(mx.Groups[1].Value) - int.Parse(my.Groups[1].Value)\n
+    \         : string.Compare(mx.Groups[1].Value, my.Groups[1].Value);\n        if
+    (r != 0) return r;\n        ix += mx.Groups[1].Value.Length;\n        iy += my.Groups[1].Value.Length;\n
+    \     }\n      num = !num;\n    }\n    return x.Length - y.Length;\n  });\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '12618'
+  :parent_id: '295'
+  :url: http://ja.doukaku.org/comment/12618
+  :user_name: ワサビ
+  :user_url: /web/20110716025325/http://ja.doukaku.org/user/1045/
+  :language: OCaml
+  :time: 2010/08/06 10:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  #12235 snaさんの投稿を参考に作成しました。\r<br>全角数字にも対応しています。\r<br><br>実行結果：\r<br>&gt; [\"１.txt\"; \"１０.txt\"; \"100.txt\"; \"２.txt\"; \"２０.txt\"] |&gt; nsort |&gt; Seq.toList;;\r<br>val it : string list = [\"１.txt\"; \"２.txt\"; \"１０.txt\"; \"２０.txt\"; \"100.txt\"]\r<br><br>&gt; [\"x12\"; \"x13\"; \"x1A\"; \"x1B\"; \"xAB\"] |&gt; nsort |&gt; Seq.toList;;\r<br>val it : string list = [\"x1A\"; \"x1B\"; \"x12\"; \"x13\"; \"xAB\"]\r<br><br>&gt; [\"A10B1\"; \"A10B10\"; \"A10B2\"; \"A1B1\"; \"A1B10\"; \"A1B2\"; \"A2B1\"; \"A2B10\"; \"A2B2\"]\r<br>|&gt; nsort |&gt; Seq.toList;;\r<br>val it : string list =\r<br>  [\"A1B1\"; \"A1B2\"; \"A1B10\"; \"A2B1\"; \"A2B2\"; \"A2B10\"; \"A10B1\"; \"A10B2\";\r<br>   \"A10B10\"]\r\n\t"
+  :code: |
+    open System.Text.RegularExpressions
+    open System.Numerics
+
+    type Part = Str of string | Num of BigInteger
+
+    let nsort strs =
+        let zenNumToHan s = (s |&gt; char |&gt; int) - int '０' + int '0' |&gt; char |&gt; string
+        let rec strToParts res = function
+            | "" -&gt; List.rev res
+            | s -&gt;
+                match Regex.Match(s, @"^(\D*)(\d*)(.*)$").Groups |&gt; Seq.cast&lt;Group&gt;
+                      |&gt; Seq.map (fun g -&gt; g.Value) |&gt; Seq.toList with
+                | [_; s1; ""; _] -&gt; Str(s1)::res |&gt; List.rev
+                | [_; s1; s2; ss] -&gt; strToParts (Num(BigInteger.Parse s2)::Str(s1)::res) ss
+        strs |&gt; Seq.sortBy (fun s -&gt;
+            Regex.Replace(s, "[０-９]", fun (m : Match) -&gt; zenNumToHan m.Value)
+            |&gt; strToParts [])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '12336'
+  :parent_id: '295'
+  :url: http://ja.doukaku.org/comment/12336
+  :user_name: greentea
+  :user_url: /web/20110716025325/http://ja.doukaku.org/user/573/
+  :language: Python
+  :time: 2010/07/18 09:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <div class=\"section\">\n<p>早くも全角も含む答えを出されてしまった出遅れ出題者です。全角には中途半端に対応。\r</p>\n<p>リスト同士の比較(http://www.python.jp/doc/2.4/ref/comparisons.html)
+    を使うと都合よさそうなので、利用してみました。</p>\n</div>\r\n\t"
+  :code: "#!/usr/bin/python                         \n# coding: utf-8                           \nimport
+    re\n\ndef mixedNumberKey(a):\n    # 全角数字を半角に変えてるけど、'0.txt'と'０.txt'のように数字が同じ場合に\n
+    \   # 順序が定まらなくなるバグあり\n    for u,c in zip(u'０１２３４５６７８９', '0123456789'):\n        a
+    = a.replace(u, c)\n    regexp = re.compile('[0-9]+')\n    ls = [regexp.sub('0',
+    a)] + [int(s) for s in regexp.findall(a)]\n    return ls\n\nif __name__ == '__main__':\n
+    \   l = ['1.txt', '10.txt', '100.txt', '2.txt', '20.txt']\n    l.sort(key=mixedNumberKey)\n
+    \   for x in l:\n        print x,\n    print ''\n    l = ['x12', 'x13', 'x1A',
+    'x1B', 'xAB']\n    l.sort(key=mixedNumberKey)\n    for x in l:\n        print
+    x,\n    print ''\n    l = ['A10B1', 'A10B10', 'A10B2', 'A1B1', 'A1B10', 'A1B2',
+    'A2B1', 'A2B10', 'A2B2']\n    l.sort(key=mixedNumberKey)\n    for x in l:\n        print
+    x,\n    print ''\n    l = [u'あ８８あ', u'あ９あ', u'い１い', u'い２３い', u'う１００う', u'う５４う']\n
+    \   l.sort(key=mixedNumberKey)\n    for x in l:\n        print x,\n    print ''\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '12593'
+  :parent_id: '295'
+  :url: http://ja.doukaku.org/comment/12593
+  :user_name: Lost_dog
+  :user_url: /web/20110716025325/http://ja.doukaku.org/user/1129/
+  :language: Haskell
+  :time: 2010/07/25 19:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>素直な子なので、素直に実装したらこうなりました。。</p>\n<p>全角数字より半角数字を優先してます。</p>\n\r\n\t"
+  :code: |
+    import List
+    import Numeric
+    import Data.Ord
+    import qualified System.IO.UTF8 as U
+
+    data LetterOrNumber = Letter String | Number Int deriving (Eq,Ord)
+
+    solve :: [String] -&gt; [String]
+    solve = sortBy (comparing split)
+
+    split :: String -&gt; [LetterOrNumber]
+    split [] = []
+    split xs = Number(readNumber $ '0':as) : Letter cs : split ds
+      where (as,bs) = span isNumber xs
+            (cs,ds) = span (not.isNumber) bs
+
+    isNumber :: Char -&gt; Bool
+    isNumber = (`elem`number)
+
+    number :: String
+    number = "0０1１2２3３4４5５6６7７8８9９"
+
+    readNumber :: String -&gt; Int
+    readNumber = fst.head.readInt 20 isNumber ord'
+
+    ord' :: Char -&gt; Int
+    ord' c = case c`elemIndex`number of
+                Just n  -&gt; n
+                Nothing -&gt; error "parse error"
+
+    test1 = words "A10B1 A10B10 A10B2 A1B1 A1B10 A1B2 A2B1 A2B10 A2B2"
+    test2 = words "x１２ x１３ x１A x１B xAB"
+    test3 = words "3.txt 2.txt ３.txt １.txt 1.txt 2.txt"
+
+    main = mapM_ (U.putStrLn.unwords.solve) [test1,test2,test3]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '18213'
+  :parent_id: '295'
+  :url: http://ja.doukaku.org/comment/18213
+  :user_name: todogzm
+  :user_url: /web/20110716025325/http://ja.doukaku.org/user/550/
+  :language: Other
+  :time: 2010/08/16 10:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Clojure1.1で実装。\n他の方の実装を見ずに実装したらえらい長くなりました orz\ncompare-number-strがsort関数に渡せる比較関数になります。:</p>\n<pre
+    class=\"literal-block\">\nuser=&gt; z\n[\"A10B1\" \"A10B10\" \"A10B2\" \"A1B1\"
+    \"A1B10\" \"A1B2\" \"A2B1\" \"A2B10\" \"A2B2\"]\nuser=&gt; (sort compare-number-str
+    z)\n(\"A1B1\" \"A1B2\" \"A1B10\" \"A2B1\" \"A2B2\" \"A2B10\" \"A10B1\" \"A10B2\"
+    \"A10B10\")\n</pre>\n\r\n\t"
+  :code: |
+    (def zen-han-map {\０ \0, \１ \1, \２ \2, \３ \3, \４ \4, \５ \5, \６ \6, \７ \7, \８ \8, \９ \9})
+
+    (defn to-hankaku-number-str
+      "全角数字を半角数字に変換"
+      [number-str]
+      (apply str (replace zen-han-map number-str)))
+
+    (defn divide-number-str
+      "数字列と非数字列を分割"
+      [target]
+      (re-seq #"([0-9０１２３４５６７８９]+)|(\D+)" target))
+
+    (defn to-comparable
+      "[数字 非数字]という配列に変換。
+      数字列はlong型に変換し、それ以外は文字列のままを返す。"
+      [target-element]
+      (let [number (to-hankaku-number-str (second target-element))
+            non-number (nth target-element 2)]
+        [(when-not (empty? number) (Long/parseLong number))
+         non-number]))
+
+
+    (defn to-comparable-seq
+      "対象の文字列を比較可能な形式に変換"
+      [target-str]
+      (map to-comparable (divide-number-str target-str)))
+
+
+    (defn compare-element
+      "数字、非数字混在データの比較。"
+      [el-a el-b]
+      (cond
+        (nil? el-a) 1
+        (nil? el-b) -1
+        :else (compare el-a el-b)))
+
+    (defn compare-seqs
+      [comparable-seq-a comparable-seq-b]
+      (let [res (for [compare-result (map compare-element comparable-seq-a comparable-seq-b)
+                      :when (not (zero? compare-result))]
+                  compare-result)]
+        (if (empty? res) 0 (first res))))
+
+    (defn compare-number-str
+      "実際に比較に使用する関数。
+      2つの文字列を与え、数字部分は数字の大小で比較、非数字部分は辞書式順序で比較。"
+      [str-a str-b]
+      (let [comparable-seq-a (to-comparable-seq str-a)
+            comparable-seq-b (to-comparable-seq str-b)]
+        (compare-seqs comparable-seq-a comparable-seq-b)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '21159'
+  :parent_id: '295'
+  :url: http://ja.doukaku.org/comment/21159
+  :user_name: ivoryworks
+  :user_url: /web/20110716025325/http://ja.doukaku.org/user/647/
+  :language: PHP
+  :time: 2010/08/23 09:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  　natcasesort()だけでお題の要求は満たすのですが、この関数はキーの関係を保持するため、キーを持たない配列を扱う場合、使いづらいかもしれません(ソート結果をforeachではなくforで参照する場合、ソートされていないように見えてしまうでしょう)。\r<br>　以下の関数は、第1引数に対象の配列を、第2引数によりキーの関係を保持(する|しない)を指定できるようにしています。\r<br>"
+  :code: |
+    function NaturalSort( &amp;$target, $sw = FALSE )
+    {
+        natcasesort( $target );
+        if ( $sw ) {
+            foreach ( $target as $value ) {
+                $buf[] = $value;
+            }
+            $target = $buf;
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 

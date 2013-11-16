@@ -1,0 +1,977 @@
+---
+:id: '220'
+:title: 数独の問題数を数え上げる
+:comments:
+- :id: '8115'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8115
+  :user_name: ckbx
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/893/
+  :language: 
+  :time: 2008/12/05 05:41 GMT
+  :vote_count: '3'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">4×4のマスを2×2の4ブロックに区切り、いくつかのマスに1～4の数字を配置します。\r\n\r\n以下、空白のマスすべてに数字を補い、縦、横、および各ブロックについて1～4の数字が\r\nそれぞれ一個ずつ含まれている状態にすることが可能で、かつその方法が一意であるもの、\r\nつまり数独の問題として成立するもののみを考えます。\r\n\r\n4
+    1 | 2           4 1 | 2 3\r\n2   | 4 1         2 3 | 4 1\r\n----+-----  ---&gt;
+    \ ----+----\r\n  2 | 3 4         1 2 | 3 4\r\n3 4 | 1           3 4 | 1 2\r\n\r\nこのようなものの総数を「初期配置の数字の個数ごとに」カウントしてください。\r\n\r\n余力のある人は、極小な配置に限定してカウントしてみてください。\r\nただし、極小な配置とは、どの数字を取り除いても数独の問題として\r\n不成立になる配置を指すものとします。\r\n\r\n\r\nまどろっこしい言い回しになってしまいましたが、\r\n一言で言えば「数独の問題数を数え上げよ」という問題になります。\r\n\r\n参考：http://ja.wikipedia.org/wiki/%E6%95%B0%E7%8B%AC</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8117'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8117
+  :user_name: gandalf
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/780/
+  :language: C
+  :time: 2008/12/06 05:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>極小なもののみ数えました。\n回転、反転、置換で同じ形になるものも区別しています。\n初期配置15の時の288種類は正解の総数と同じです。\n0:
+    0\n1: 0\n2: 0\n3: 0\n4: 25728\n5: 260544\n6: 816960\n7: 1428288\n8: 1681248\n9:
+    1418304\n10: 879456\n11: 402144\n12: 133152\n13: 30432\n14: 4320\n15: 288\n16:
+    0\ntotal: 7080864</p>\n\n\t"
+  :code: |
+    #include &lt;sys/types.h&gt;
+
+    #include &lt;assert.h&gt;
+    #include &lt;libgen.h&gt;
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;string.h&gt;
+    #include &lt;strings.h&gt;
+    #include &lt;unistd.h&gt;
+
+    int pats[24][4] = {
+        {1, 2, 3, 4}, {1, 2, 4, 3},
+        {1, 3, 2, 4}, {1, 3, 4, 2},
+        {1, 4, 2, 3}, {1, 4, 3, 2},
+        {2, 1, 3, 4}, {2, 1, 4, 3},
+        {2, 3, 1, 4}, {2, 3, 4, 1},
+        {2, 4, 1, 3}, {2, 4, 3, 1},
+        {3, 1, 2, 4}, {3, 1, 4, 2},
+        {3, 2, 1, 4}, {3, 2, 4, 1},
+        {3, 4, 1, 2}, {3, 4, 2, 1},
+        {4, 1, 2, 3}, {4, 1, 3, 2},
+        {4, 2, 1, 3}, {4, 2, 3, 1},
+        {4, 3, 1, 2}, {4, 3, 2, 1},
+    };
+
+    #define nelems(e)    (sizeof (e)/ sizeof *(e))
+
+    void put(int [4][4], int, int, int *);
+    int chk(int [4][4]);
+    int try(int [4][4], int, int, int);
+    int uniqp(int [4][4]);
+    int subsetp(int [4][4], int [4][4]);
+    int wellp(int [4][4]);
+    void pull(int [4][4], int, int, int *);
+    int havesp(int *);
+    int nzero(int [4][4]);
+    void print(int [4][4]);
+
+    int (*r[300])[4][4];
+    int nr = 0;
+    int na = 0;
+    int h[17];
+
+    int wflag = 0;
+    int pflag = 0;
+
+    char *pname;
+
+    void
+    usage()
+    {
+        fprintf(stderr, "usage: %s [-w] [-p]\n", pname);
+        exit(1);
+    }
+
+    int
+    main(argc, argv)
+    char *argv[];
+    {
+        int b[4][4];
+        int n, i, j, k;
+        int c;
+        int ch;
+
+        pname = basename(argv[0]);
+
+        while ((ch = getopt(argc, argv, "wp")) != -1) {
+            switch (ch) {
+            case 'w':
+                wflag = 1;
+                break;
+            case 'p':
+                pflag = 1;
+                break;
+            default:
+                usage();
+            }
+        }
+        argc -= optind, argv += optind;
+        if (argc != 0) {
+            usage();
+        }
+
+        bzero(h, sizeof h);
+        bzero(b, sizeof b);
+        for (n = 0; n &lt; nelems(pats); n++) {
+            put(b, 0, 0, pats[n]);
+            for (i = 0; i &lt; nelems(pats); i++) {
+                put(b, 2, 0, pats[i]);
+                for (j = 0; j &lt; nelems(pats); j++) {
+                    put(b, 0, 2, pats[j]);
+                    for (k = 0; k &lt; nelems(pats); k++) {
+                        put(b, 2, 2, pats[k]);
+                        if (chk(b)) {
+                            int (*new)[4][4];
+                            new = calloc(1, sizeof *new);
+                            bcopy(b, new, sizeof *new);
+                            r[nr++] = new;
+                        }
+                    }
+                }
+            }
+        }
+
+        for (c = 0; c &lt; nr; c++) {
+            try(*r[c], 0, 0, 0);
+        }
+
+        for (c = 0; c &lt; nelems(h); c++) {
+            printf("%d: %d\n", c, h[c]);
+        }
+        printf("total: %d\n", na);
+
+        return 0;
+    }
+
+    void
+    put(b, x0, y0, p)
+    int b[4][4];
+    int *p;
+    {
+        b[y0 + 0][x0 + 0] = p[0];
+        b[y0 + 0][x0 + 1] = p[1];
+        b[y0 + 1][x0 + 0] = p[2];
+        b[y0 + 1][x0 + 1] = p[3];
+    }
+
+    int
+    chk(b)
+    int b[4][4];
+    {
+        int j, i, k;
+        int x[5];
+        for (j = 0; j &lt; 4; j++) {
+            bzero(x, sizeof x);
+            for (i = 0; i &lt; 4; i++) {
+                k = b[j][i];
+                if (x[k] == 1) {
+                    return 0;
+                }
+                x[k] = 1;
+            }
+        }
+        for (i = 0; i &lt; 4; i++) {
+            bzero(x, sizeof x);
+            for (j = 0; j &lt; 4; j++) {
+                k = b[j][i];
+                if (x[k] == 1) {
+                    return 0;
+                }
+                x[k] = 1;
+            }
+        }
+        return 1;
+    }
+
+    int
+    try(b, j0, i0, l)
+    int b[4][4];
+    {
+        int j, i;
+        int minimum = 1;
+        if (!uniqp(b)) {
+            return 0;
+        }
+        for (j = j0; j &lt; 4; j++) {
+            for (i = i0; i &lt; 4; i++) {
+                int k;
+                if ((k = b[j][i]) != 0) {
+                    b[j][i] = 0;
+                    if (try(b, j, i, l + 1)) {
+                        minimum = 0;
+                    }
+                    b[j][i] = k;
+                }
+            }
+            i0 = 0;
+        }
+        j0 = 0;
+        if (minimum) {
+            if (!wflag || wellp(b)) {
+                na++;
+                h[16 - nzero(b)]++;
+                if (pflag) {
+                    print(b);
+                }
+            }
+        }
+        return 1;
+    }
+
+    int
+    uniqp(b)
+    int b[4][4];
+    {
+        int c, u;
+        u = 0;
+        for (c = 0; c &lt; nr; c++) {
+            if (subsetp(*r[c], b)) {
+                if (u) {
+                    return 0;
+                }
+                u = 1;
+            }
+        }
+        assert(u);
+        return 1;
+    }
+
+    int
+    subsetp(a, b)
+    int a[4][4], b[4][4];
+    {
+        int j, i;
+        for (j = 0; j &lt; 4; j++) {
+            for (i = 0; i &lt; 4; i++) {
+                if (b[j][i] != 0 &amp;&amp; b[j][i] != a[j][i]) {
+                    return 0;
+                }
+            }
+        }
+        return 1;
+    }
+
+    int
+    wellp(b)
+    int b[4][4];
+    {
+        int p[4];
+        pull(b, 0, 0, p); if (!havesp(p)) return 0;
+        pull(b, 0, 2, p); if (!havesp(p)) return 0;
+        pull(b, 2, 0, p); if (!havesp(p)) return 0;
+        pull(b, 2, 2, p); if (!havesp(p)) return 0;
+        return 1;
+    }
+
+    void
+    pull(b, x0, y0, p)
+    int b[4][4];
+    int *p;
+    {
+        p[0] = b[y0 + 0][x0 + 0];
+        p[1] = b[y0 + 0][x0 + 1];
+        p[2] = b[y0 + 1][x0 + 0];
+        p[3] = b[y0 + 1][x0 + 1];
+    }
+
+    int
+    havesp(p)
+    int *p;
+    {
+        int i;
+        for (i = 0; i &lt; 4; i++) {
+            if (p[i] == 0) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    int
+    nzero(b)
+    int b[4][4];
+    {
+        int j, i;
+        int n = 0;
+        for (j = 0; j &lt; 4; j++) {
+            for (i = 0; i &lt; 4; i++) {
+                if (b[j][i] == 0) {
+                    n++;
+                }
+            }
+        }
+        return n;
+    }
+
+    void
+    print(b)
+    int b[4][4];
+    {
+        int j, i;
+
+        for (j = 0; j &lt; 4; j++) {
+            for (i = 0; i &lt; 4; i++) {
+                printf("%d ", b[j][i]);
+                if (i == 1) {
+                    printf("| ");
+                }
+            }
+            printf("\n");
+            if (j == 1) {
+                printf("----+----\n");
+            }
+        }
+        printf("\n");
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8118'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8118
+  :user_name: gandalf
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/780/
+  :language: 
+  :time: 2008/12/06 05:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ごめんなさい、間違えています。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8119'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8119
+  :user_name: gandalf
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/780/
+  :language: Other
+  :time: 2008/12/05 23:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>これでなおったと思う。\n0: 0\n1: 0\n2: 0\n3: 0\n4: 32928\n5: 363744\n6: 1264464\n7:
+    2476896\n8: 3303600\n9: 3205392\n10: 2331264\n11: 1283904\n12: 532416\n13: 162240\n14:
+    34560\n15: 4608\n16: 0\ntotal: 14996016</p>\n\n\t"
+  :code: "@@ -103,7 +103,11 @@\n        }\n \n        for (c = 0; c &lt; nr; c++)
+    {\n-               try(*r[c], j, i, 0);\n+               for (j = 0; j &lt; 4;
+    j++) {\n+                       for (i = 0; i &lt; 4; i++) {\n+                               try(*r[c],
+    j, i, 0);\n+                       }\n+               }\n        }\n \n        for
+    (c = 0; c &lt; nelems(h); c++) {\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8120'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8120
+  :user_name: 匿名
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/12/06 06:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>まだ間違っています。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8124'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8124
+  :user_name: xsd
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/154/
+  :language: OCaml
+  :time: 2008/12/07 00:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">極小な配置のものについて、1/4!だけカウントして後で4!倍してます。\r\n答えは、以下の通り。(あってる自信なし)\r\n\r\n[xsd@colinux
+    dk220]$ time ./dk220\r\n 0:     0\r\n 1:     0\r\n 2:     0\r\n 3:     0\r\n 4:
+    25728\r\n 5: 58368\r\n 6:  1536\r\n 7:     0\r\n 8:     0\r\n 9:     0\r\n10:
+    \    0\r\n11:     0\r\n12:     0\r\n13:     0\r\n14:     0\r\n15:     0\r\n16:
+    \    0\r\n\r\nreal    0m31.660s\r\nuser    0m21.770s\r\nsys     0m9.890s\r\n</pre>\n\t"
+  :code: |
+    module I = Int64
+
+    let build_answer () =
+        let addm m1 m2 = I.logor (I.shift_left m1 16) (I.of_int m2) in
+
+        let sep m =
+            let f s = (m lsr (4 * s)) land 15 in
+            f 3 lor f 2, f 1 lor f 0 in
+
+        let pat = [
+            0x1248; 0x1284; 0x1428; 0x1482; 0x1824; 0x1842;
+            0x2148; 0x2184; 0x2418; 0x2481; 0x2814; 0x2841;
+            0x4128; 0x4182; 0x4218; 0x4281; 0x4812; 0x4821;
+            0x8124; 0x8142; 0x8214; 0x8241; 0x8412; 0x8421 ] in
+
+        let rec loop n acc tmp m0 m1 m2 lis =
+            if n = 0 then tmp :: acc else match lis with
+            | []       -&gt; acc
+            | hd :: tl -&gt;
+                let mm = hd in
+                let mu, ml = sep mm in
+                let acc = (match n, m0 land mm, m1 land mu, m2 land ml with
+                    | 4, 0, _, _
+                    | 2, 0, _, _ -&gt; loop (n-1) acc (addm tmp mm) (m0 lor mm) (m1 lor mu) (m2 lor ml) pat
+                    | _, 0, 0, 0 -&gt; loop (n-1) acc (addm tmp mm) (m0 lor mm) 0 0 pat
+                    | _          -&gt; acc) in
+                loop n acc tmp m0 m1 m2 tl in
+        loop 4 [] 0L 0 0 0 pat
+
+    let test_answer ans =
+        let sr4 m = I.shift_right_logical m 4 in
+
+        let count target ans mask =
+            let rec loop acc m = function
+                | [] -&gt; acc
+                | hd :: tl -&gt; if acc &gt; 1 then acc
+                                         else loop (if I.logand hd m = m then acc + 1 else acc) m tl in
+            loop 0 (I.logand target (I.lognot mask)) ans in
+
+        let ismin target ans mask =
+            let rec im target ans mask = function
+                | 0L -&gt; true
+                | m  -&gt; if I.logand mask m = 0L &amp;&amp; count target ans (I.logor mask m) = 1 then false
+                        else im target ans mask (sr4 m) in
+            im target ans mask 0xF000000000000000L in
+
+        let rec check ans target arr n curm m =
+            if m = 0L then arr else
+                let nextm = I.logor curm m in
+                let m4 = sr4 m in
+                match count target ans nextm with
+                | 0 -&gt; arr
+                | 1 -&gt; let arr = if ismin target ans nextm then (arr.(n-1) &lt;- arr.(n-1) + 1; arr)
+                            else check ans target arr (n-1) nextm m4 in
+                        check ans target arr n curm m4
+                | _ -&gt;  check ans target (check ans target arr (n-1) (I.logor curm m) m4) n curm m4 in
+
+        let loop ans arr target =
+    (*        let _ = Printf.printf "%16LX\n%!" target in *)
+            check ans target arr 16 0L 0xF000000000000000L in
+        List.fold_left (loop ans) (Array.create 17 0)
+            (List.filter (fun x -&gt; Int64.logand x 0x1248L = 0x1248L) ans)
+
+    let _ =
+        let ans = build_answer () in
+        let arr = test_answer ans in
+        Array.iteri (fun i m -&gt; Printf.printf "%2d: %5d\n" i (m*24)) arr
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8129'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8129
+  :user_name: saws
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/12/10 16:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>解答そのものと解答数について応えてくれます.\nたぶん.</p>\n<p>それはそうと, ppメソッドは違う名前の方がいいのかもしれませんがアイデアがなかったのでこの名前になりました.</p>\n\n\t"
+  :code: |
+    class NumPlace
+      #an instance for initial argument of matrix
+      #|3 2 - 0|
+      #|0 1 - 3|
+      #|2 - 0 1| =&gt; mat = [[3, 2, nil, 0], [0, 1, nil, 3],
+      #|1 - 3 2|           [2, nil, 0, 1], [1, nil, 3, 2]]
+      def initialize(n=2,mat = Array.new(n**2){Array.new(n**2)})
+        @n, @size = n, n**2
+        @mat = mat
+      end
+      def solve
+        out = [] and solve_aux = proc{|mat, pos|
+          pos.nil? ? out &lt;&lt; mat :
+          @size.times{|val|
+            m = renew(mat, pos, val)
+            solve_aux.(m, succ(*pos)) if check(m, pos)}}
+        solve_aux.(@mat, [0,0]) and out
+      end
+      private
+      def check(mat, pos)
+        get_anum = proc{|pos| #get an area number that is indentical
+          pos.first.div(@n) + pos.last.div(@n)*@n}
+        area = proc{|mat,pos| #get an area at the position belonged
+          scan(mat){|row| row.select{|x,p|
+              get_anum.(p) == get_anum.(pos)}.map(&amp;:first)}.
+          reject(&amp;:empty?).flatten}
+        [mat[pos.first], mat.transpose[pos.last], area.(mat, pos)].
+          map(&amp;:compact).none?(&amp;:uniq!)
+      end
+      def succ(i,j)#get the successor of the position coordinate
+        if    (0...@size-1).include?(j) then [i, j+1]
+        elsif (0...@size-1).include?(i) then [i+1, 0]
+        else nil end
+      end
+      def renew(mat, pos, val)
+        mat[pos.first][pos.last] ? mat :
+          scan(mat){|row| row.map{|x,p| pos == p ? val : x}}
+      end
+      def scan(mat) #scan the matrix with index
+        mat.each_with_index.map{|row,i|
+          yield row.each_with_index.map{|x,j| [x, [i,j]]}}
+      end
+      def pp(mat)
+        puts mat.map{|row| row.map{|x| x ? x : '-'}}.
+          each_slice(@n).map{|area|
+          area.map{|x| x.each_slice(@n).map(&amp;:join).join("\s")}.
+          join("\n") + "\n"}.join("\n"), "\n"
+      end
+    end
+    np = NumPlace.new
+    out = np.solve
+    p out.size
+  :tags:
+  - 1.9.0
+  :references:
+    :url: 
+    :title: 
+- :id: '8130'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8130
+  :user_name: manzo
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/980/
+  :language: Ruby
+  :time: 2008/12/10 22:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  数独はやったことがないので、答え方もわからなかったのですが、ｓｗａｓさんの答えと同じだったので、上げてみます。\r<br><br>遅くて、ものぐさな方法です。\r<br><br><br>１）Array#permutationで順列を得て、\r<br>２）そのうち縦目、２×２ブロックのそれぞれのsortがすべてが[1,2,3,4]であるものを探す。\r<br><br>というやり方でやりました。\r<br>Ruby 1.8.7\n\t"
+  :code: |
+    #結果を入れる配列。
+    total = []
+
+    #Array#permutationで順列を作る。255024
+    b = [1,2,3,4].permutation(4).to_a.permutation(4).to_a
+
+    #それぞれのパターンについて縦目、２×２を作ります。
+    for i in b
+      ret = []
+
+    #2×2のパターンを作る。
+      ret &lt;&lt; i[0][0,2] + i[1][0,2]
+      ret &lt;&lt; i[0][2,2] + i[1][2,2]
+      ret &lt;&lt; i[2][0,2] + i[3][0,2]
+      ret &lt;&lt; i[2][2,2] + i[3][2,2]
+
+    #縦目のパターンを作る。
+    for j in i.transpose
+      ret &lt;&lt; j
+    end
+
+    #2×2のパターンと縦目のパターンのすべてがuniqすると[1,2,3,4]のみの場合にtotalに入れる。
+        if ret.map(&amp;:sort).uniq.flatten == [1,2,3,4]
+          total &lt;&lt; i
+        end
+    end
+
+    #集められたパターンの総数
+    puts total.size #=&gt; 288
+
+    #以下は、集められたパターンの出力
+    n = "0"
+
+    for i in total
+      puts ""
+      puts "#" + n.next!
+      c = 1
+
+      for j in i
+        puts [j[0],j[1],"|",j[2],j[3]].join(" ")
+        puts "----+----" if c == 2
+        c += 1
+      end
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8131'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8131
+  :user_name: sumim
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/12/10 23:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。Ruby に倣ってとりあえず解答数だけ。問題数の数え上げは折を見て。</p>\n\n\t"
+  :code: |
+    | elems mat1 mat2 mat3 mat4 arr1 arr2 arr3 arr4 check results |
+    elems := (1 to: 4) asSet.
+    mat1 := Matrix rows: 2 columns: 2 contents: (arr1 := elems asArray).
+    mat2 := Matrix rows: 2 columns: 2 contents: (arr2 := elems asArray).
+    mat3 := Matrix rows: 2 columns: 2 contents: (arr3 := elems asArray).
+    mat4 := Matrix rows: 2 columns: 2 contents: (arr4 := elems asArray).
+
+    results := OrderedCollection new.
+
+    check := [:mt |
+       (1 to: mt rowCount) allSatisfy: [:idx |
+           ((mt atRow: idx) includesAllOf: elems)
+               and: [(mt atColumn: idx) includesAllOf: elems]]].
+
+    arr1 permutationsStartingAt: 1 do: [:dummy1 |
+       arr2 permutationsStartingAt: 1 do: [:dummy2 |
+           arr3  permutationsStartingAt: 1 do: [:dummy3 |
+               arr4 permutationsStartingAt: 1 do: [:dummy4 |
+                   | mat |
+                   mat := (mat1, mat2),, (mat3, mat4).
+                   (check value: mat) ifTrue: [results add: mat]]]]].
+
+    results inspect; size   "=&gt; 288 "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '8134'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8134
+  :user_name: 匿名
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/12/11 08:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">試行錯誤の結果、とりあえず完成させましたがあってるのかどうか。\r\n\r\nアルゴリズムとしては、\r\n\r\nすべての解答面を列挙\r\n面ごとに他面との違いを保存、ある面の問題の初期数字が他面との違いのリストの\r\nそれぞれに一つでも入っていれば、問題の一意性が確定する\r\nそれを初期文字数1から15まですべての可能な組み合わせと比較する\r\n\r\n答えは\r\n\r\n1
+    0\r\n2 0\r\n3 0\r\n4 25728\r\n5 284160\r\n6 1041408\r\n7 2141184\r\n8 2961024\r\n9
+    2958336\r\n10 2204928\r\n11 1239552\r\n12 522624\r\n13 161280\r\n14 34560\r\n15
+    4608\r\n\r\nとなりました。\r\n\r\n取り合えず簡単に確かめられる初期文字数15はあってます。\r\n(全解答面288)×(一面の組み合わせ数16)
+    = 4608\r\n\r\nなぜかバージョン3.0で書いてしまいました。注意してください。\r\n</pre>\n\t"
+  :code: |
+    f = lambda s: [[i] + j for i in s for j in f(s - {i})] if len(s) &gt; 1 else [list(s)]
+
+    L = f({1,2,3,4})
+
+    cond = lambda a, b: sum([a[j] in [i[j] for i in b] and 1 or 0 for j in range(4)])
+    F = []
+    for i in L:
+      for j in L:
+        if set(i[:2]) &amp; set(j[:2]) or set(i[2:]) &amp; set(j[2:]): continue
+        for k in L:
+          if cond(k, [i, j]): continue
+          for l in L:
+            if set(k[:2]) &amp; set(l[:2]) or set(k[2:]) &amp; set(l[2:]): continue
+            if cond(l, [i, j, k]): continue
+            F.append(i + j + k + l)
+
+    D = []
+    for i in F:
+      x = []
+      for j in F:
+        if i == j: continue
+        x.append([k for k, (l, m) in enumerate(zip(i, j)) if l != m])
+
+      y = []
+      for a in x:
+        for b in x:
+          if a == b: continue
+          if set(a) &gt; set(b): break
+        else:
+          y.append(set(a))
+      D.append(y)
+
+    def C(l, n):
+      if n == 0: yield []
+      else:
+        for i in range(len(l)):
+          for j in C(l[i+1:], n - 1):
+            yield [l[i]] + j
+
+    for i in range(1, 16):
+      s = 0
+      for j in C(list(range(16)), i):
+        j = set(j)
+        for k in D:
+          for l in k:
+            if not j &amp; l: break
+          else:
+            s += 1
+      print(i, s)
+  :tags:
+  - python3.0
+  :references:
+    :url: 
+    :title: 
+- :id: '8135'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8135
+  :user_name: 匿名
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/12/12 03:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">すべての２個空きと３個空きもユニークに初期数字が復元できるので\r\n３個空きまでは簡単に確かめられます。\r\n１個空きの組み合わせ数
+    16C1 = 16/1! = 16\r\n２個空きの組み合わせ数 16C2 = 16*15/2! = 120\r\n３個空きの組み合わせ数 16C3 = 16*15*14/3!
+    = 560\r\nなので\r\n15: 4608   = 288 * 16\r\n14: 34560  = 288 * 120\r\n13: 161280
+    = 288 * 560\r\n\r\n４個空きからがややこしい。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8137'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8137
+  :user_name: taninsw
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/973/
+  :language: Haskell
+  :time: 2008/12/12 16:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>問題数の数え上げはわからないので、他の方にならって解答数だけ。</p>\n\n\t"
+  :code: "import List\n\ntate   lines = transpose lines\nsikaku lines = let a = map
+    (splitAt 2) lines\n                   b = [take 2 a,drop 2 a]\n               in
+    concatMap (\\x-&gt;[concatMap fst x,concatMap snd x]) b\n  \ncheck lines = and
+    $ map (\\f-&gt; and $ map all_different (f lines)) [tate,sikaku]\nall_different
+    xs = nub xs == xs  \n\neveryline  = filter all_different $ sequence $ replicate
+    4 [1..4]\nanswers = filter check $ sequence $ replicate 4 everyline\n\nmain =
+    print $ length $ answers\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8145'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8145
+  :user_name: nyoro2
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/960/
+  :language: Java
+  :time: 2008/12/13 01:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">288通りの最終盤面を取得し（Sudoku2x2#next()）、\r\n各マスの数字の有無の全パターン（2^16-2通り）について\r\n問題が解けるかどうか（SudokuSolver2x2#solve()）調べています。\r\n要は総当たりです。\r\n\r\n私の環境では、実行完了まで3分以上かかっています。\r\n\r\nエレガントからはほど遠いコードですが\r\n答えまで出る投稿が少ないので、参考までに。\r\n\r\n$
+    time java Sudoku2x2\r\n1 0\r\n2 0\r\n3 0\r\n4 25728\r\n5 284160\r\n6 1041408\r\n7
+    2141184\r\n8 2961024\r\n9 2958336\r\n10 2204928\r\n11 1239552\r\n12 522624\r\n13
+    161280\r\n14 34560\r\n15 4608\r\n\r\nreal    3m7.374s\r\nuser    3m6.433s\r\nsys
+    \    0m0.334s</pre>\n\t"
+  :code: "import java.util.*;\n\npublic class Sudoku2x2 implements Iterator&lt;int[]&gt;,
+    SudokuCommon2x2 {\n\n    private int count;\n    private final int maxCount;\n
+    \   private int[] nextValue;\n\n    public static void main(String[] args) {\n
+    \       countUpAll();\n    }\n\n    public static void countUpAll() {\n        Sudoku2x2
+    sudoku = new Sudoku2x2();\n        SudokuSolver2x2 solver = new SudokuSolver2x2();\n
+    \       int[] counter = new int[16];\n        int[] nums, nums2 = new int[16];\n
+    \       \n        while (sudoku.hasNext()) {\n            nums = sudoku.next();\n
+    \           \n            for (int i = 1; i &lt; 0xffff; ++i) {\n                int
+    n = 0;\n                Arrays.fill(nums2, 0);\n                for (int j = 0;
+    j &lt; 16; ++j) {\n                    if(0&lt;(i&amp;(1&lt;&lt;j))) {\n                        nums2[j]
+    = nums[j];\n                        ++n;\n                    }\n                }\n
+    \               if(solver.solve(nums2)) ++counter[n];\n            }\n        }\n
+    \       \n        for (int i = 1; i &lt;= 15; ++i) {\n            System.out.println(i
+    + \" \" + counter[i]);\n        }\n    }\n\n    public Sudoku2x2() {\n        count
+    = 0;\n        maxCount = (int) Math.pow(DIGITS_PATTERN.length, 4);\n        nextValue
+    = new int[16];\n        generateNext();\n    }\n\n    public boolean hasNext()
+    {\n        return nextValue!=null;\n    }\n\n    public int[] next() {\n        if(hasNext())
+    {\n            int[] returnValue = new int[16];\n            System.arraycopy(nextValue,
+    0, returnValue, 0, 16);\n            generateNext();\n            return returnValue;\n
+    \       }\n        throw new NoSuchElementException();\n    }\n\n    private void
+    generateNext() {\n        do {\n            for (int c0 = count, i = 0; i &lt;
+    4; ++i) {\n                System.arraycopy(DIGITS_PATTERN[c0%24], 0, nextValue,
+    i*4, 4);\n                if(i==1) {\n                    if(!containsAllNumbers(nextValue,
+    BOX[0])) break;\n                    if(!containsAllNumbers(nextValue, BOX[1]))
+    break;\n                }\n                c0 = c0 / 24;\n            }\n            ++count;\n
+    \       } while(\n            (\n            !containsAllNumbers(nextValue, BOX[2])\n
+    \           || !containsAllNumbers(nextValue, BOX[3])\n            || !containsAllNumbers(nextValue,
+    COLUMN[0])\n            || !containsAllNumbers(nextValue, COLUMN[1])\n            ||
+    !containsAllNumbers(nextValue, COLUMN[2])\n            || !containsAllNumbers(nextValue,
+    COLUMN[3])\n            ) &amp;&amp; count &lt; maxCount\n        );\n        if(maxCount
+    &lt;= count) nextValue = null;\n    }\n    \n    private static boolean containsAllNumbers(int[]
+    block, int[] index) {\n        int test = 0;\n        for(int i=0;i&lt;index.length;++i)
+    {\n            test |= 1&lt;&lt;(block[index[i]]-1);\n        }\n        return
+    test==15;\n    }\n\n    public void remove() { throw new UnsupportedOperationException();
+    }\n}\n\nclass SudokuSolver2x2 implements SudokuCommon2x2 {\n    SudokuCell[] grid;\n
+    \   SudokuCell[][] allBlocks;\n    int status;\n    \n    SudokuSolver2x2() {\n
+    \       grid = new SudokuCell[16];\n        for(int i=0;i&lt;grid.length;++i)
+    grid[i] = new SudokuCell();\n        allBlocks = new SudokuCell[][] {\n            getBlock(BOX[0]),\n
+    \           getBlock(BOX[1]),\n            getBlock(BOX[2]),\n            getBlock(BOX[3]),\n
+    \           getBlock(COLUMN[0]),\n            getBlock(COLUMN[1]),\n            getBlock(COLUMN[2]),\n
+    \           getBlock(COLUMN[3]),\n            getBlock(ROW[0]),\n            getBlock(ROW[1]),\n
+    \           getBlock(ROW[2]),\n            getBlock(ROW[3])\n        };\n    }\n
+    \       \n    public boolean solve(int[] nums) {\n        status = 0;\n        for(int
+    i=0;i&lt;grid.length;++i) {\n            grid[i].value = i&lt;nums.length?nums[i]:0;\n
+    \           grid[i].possibleList = 0&lt;grid[i].value?0:15;\n        }\n        while(true)
+    {\n            solveInner();\n            switch(status) {\n                case
+    -1: return false; // logical error\n                case  1: return true;  //
+    solved\n            }\n        }\n    }\n    \n    protected void solveInner()
+    {\n        boolean modified = false, solved = true;\n        int test = 0;\n        for(int
+    i=0;i&lt;allBlocks.length;++i) {\n            for(int j=0;j&lt;allBlocks[i].length;++j)
+    {\n                modified |= allBlocks[i][j].updatePossibleList(allBlocks[i]);\n
+    \               test |= 1&lt;&lt;(allBlocks[i][j].value-1);\n            }\n            solved
+    &amp;= (test==15);\n        }\n        if(!modified&amp;&amp;!solved) status =
+    -1;\n        if(solved) status = 1;\n    }\n    \n    protected SudokuCell[] getBlock(int[]
+    indexes) {\n        SudokuCell[] returnValue = new SudokuCell[indexes.length];\n
+    \       for(int i=0;i&lt;indexes.length;++i)\n            returnValue[i] = grid[indexes[i]];\n
+    \       return returnValue;\n    }\n\n    protected class SudokuCell {\n        int
+    value;\n        int possibleList;\n        \n        public boolean isPossible(int
+    i) {\n            return 0&lt;i &amp;&amp; (0&lt;(possibleList &amp; 1&lt;&lt;(i-1)));\n
+    \       }\n\n        private void setValue(int i) {\n            value = i;\n
+    \           possibleList = 0;\n        }\n        \n        public boolean updatePossibleList(SudokuCell[]
+    sp) {\n            boolean updated = false;\n            for(int i=0;i&lt;sp.length;++i)
+    {\n                if(this==sp[i]) continue;\n                if(isPossible(sp[i].value))
+    {\n                    possibleList &amp;= ~(1&lt;&lt;(sp[i].value-1));\n                    updated
+    = true;\n                }\n            }\n            if(updated) check();\n
+    \           return updated;\n        }\n        \n        public void check()
+    {\n            if(value==0) {\n                switch(possibleList) {\n                    case
+    1: setValue(1); break;\n                    case 2: setValue(2); break;\n                    case
+    4: setValue(3); break;\n                    case 8: setValue(4); break;\n                }\n
+    \           }\n        }\n    }\n}\n\ninterface SudokuCommon2x2 {\n    public
+    static final int[][] COLUMN = {\n        { 0, 4, 8, 12 }, { 1, 5, 9, 13 }, { 2,
+    6, 10, 14 }, { 3, 7, 11, 15 }\n    };\n    public static final int[][] ROW = {\n
+    \       { 0, 1, 2, 3 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 }, { 12, 13, 14, 15 }\n
+    \   };\n    public static final int[][] BOX = {\n        { 0, 1, 4, 5 }, { 2,
+    3, 6, 7 }, { 8, 9, 12, 13 }, { 10, 11, 14, 15 }\n    };\n    public static final
+    int[][] DIGITS_PATTERN = {\n        {1, 2, 3, 4}, {1, 2, 4, 3}, {1, 3, 2, 4},\n
+    \       {1, 3, 4, 2}, {1, 4, 2, 3}, {1, 4, 3, 2},\n        {2, 1, 3, 4}, {2, 1,
+    4, 3}, {2, 3, 1, 4},\n        {2, 3, 4, 1}, {2, 4, 1, 3}, {2, 4, 3, 1},\n        {3,
+    1, 2, 4}, {3, 1, 4, 2}, {3, 2, 1, 4},\n        {3, 2, 4, 1}, {3, 4, 1, 2}, {3,
+    4, 2, 1},\n        {4, 1, 2, 3}, {4, 1, 3, 2}, {4, 2, 1, 3},\n        {4, 2, 3,
+    1}, {4, 3, 1, 2}, {4, 3, 2, 1}\n    };\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8180'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8180
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2008/12/15 08:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">総当りで遅いですがシンプルさで勝負。\r\n目新しいのは配置を整数に対応させて整数の演算ですましている点です。\r\n\r\n・マスに素数を対応させ配置を整数化する。\r\n
+    \ （例えば [[4,1,3,2],[2,3,1,4],...] は 2^4*3^1*5^3*7^2*11^2*13^3*17^1*19^4*... に整数化）\r\n・全解答288パターンは基本3パターン\r\n
+    \  [[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]]\r\n   [[1,2,3,4],[3,4,1,2],[2,3,4,1],[4,1,2,3]]\r\n
+    \  [[1,2,3,4],[3,4,2,1],[2,1,4,3],[4,3,1,2]]\r\n  から３行目と４行目の交換、３列目と４列目の交換、\r\n
+    \ [1,2,3,4]の順列的交換で生成。(288 = 3*2*2*24)\r\n・必要なマスだけ取り出すには素数の４乗の積との最大公約数を使う。\r\n
+    \ （例えば左上４つを取り出すには (2*3*7*11)^4 との最大公約数）\r\n</pre>\n\t"
+  :code: |
+    import Data.List (group,sort,permutations)
+
+    ps = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53]
+    ps4 = map (^4) ps
+    perm = permutations [0..3]
+    exch rows cols js = [js, [js!!(4*i+j)| i &lt;- rows, j &lt;- cols]]
+    bs = do
+      as &lt;- [[0,1,2,3,2,3,0,1,1,0,3,2,3,2,1,0],
+             [0,1,2,3,2,3,0,1,1,2,3,0,3,0,1,2],
+             [0,1,2,3,2,3,1,0,1,0,3,2,3,2,0,1]]
+             &gt;&gt;= exch [0,1,3,2] [0..3] &gt;&gt;= exch [0..3] [0,1,3,2]
+      js &lt;- perm
+      return $ product $ zipWith (^) ps $ map ((1+).(js!!)) as
+    comb 0 _ = [[]]
+    comb _ [] = []
+    comb n (x:xs) = map (x:) (comb (n-1) xs) ++ comb n xs
+
+    solnum n = length $ filter (null.tail)
+      $ group.sort.(`map` bs).gcd.product =&lt;&lt; comb n ps4
+
+    main = mapM (\i -&gt; print $ (i,solnum i)) [1..15]
+
+    {-
+    &gt; main
+    (1,0)
+    (2,0)
+    (3,0)
+    (4,25728)
+    (5,284160)
+    (6,1041408)
+    (7,2141184)
+    (8,2961024)
+    (9,2958336)
+    (10,2204928)
+    (11,1239552)
+    (12,522624)
+    (13,161280)
+    (14,34560)
+    (15,4608)
+    -}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8202'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8202
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2008/12/18 03:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#8180 の方法のままでは極小問題に挑むには時間がかかりすぎるので\r\n高速化しました。[1,2,3,4]の順列的交換で移り合える配置は数独の\r\n問題になるならないが一致するので配置を\r\n[iが配置されているマスの素数の積
+    | i &lt;- [1..4]]\r\nをソートした４つの整数に対応させます。\r\n３０倍くらい高速化しました。\r\n</pre>\n\t"
+  :code: |
+    import Data.List (group,sort,elemIndices )
+
+    ps = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53]
+    exch rows cols js = [js, [js!!(4*i+j)| i &lt;- rows, j &lt;- cols]]
+    bs = do
+      as &lt;- [[1,2,3,4,3,4,1,2,2,1,4,3,4,3,2,1],
+             [1,2,3,4,3,4,1,2,2,3,4,1,4,1,2,3],
+             [1,2,3,4,3,4,2,1,2,1,4,3,4,3,1,2]]
+            &gt;&gt;= exch [0,1,3,2] [0..3] &gt;&gt;= exch [0..3] [0,1,3,2]
+      return [product $ map (ps!!) $ elemIndices i as| i &lt;- [1..4]]
+
+    comb 0 _ = [[]]
+    comb _ [] = []
+    comb n (x:xs) = map (x:) (comb (n-1) xs) ++ comb n xs
+
+    solnum n = (24*) $ length $ filter (null.tail) $ concat
+      [group $ filter ((/=1).(!!1)) $ sort $
+        map (sort.map (gcd (product x))) bs| x &lt;- comb n ps]
+
+    main = mapM (¥i -&gt; print $ (i,solnum i)) [1..15]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8206'
+  :parent_id: '220'
+  :url: http://ja.doukaku.org/comment/8206
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20090512171057/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2008/12/19 04:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">極小配置問題数まで求めました。\r\n\r\n・マスに素数を対応させ配置を４つの整数からなる組に対応させる。\r\n・順列的交換で移り合うものは基本的に同一視する。\r\n
+    \ （同一視が問題となる処理は filter ((/=1).(!!1).snd) の部分だけ）\r\n  最終的には24(=4!)倍したものを問題個数とする。\r\n・（同一視したうえでの）全解答12パターンは次の3パターン\r\n
+    \  [[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]]\r\n   [[1,2,3,4],[3,4,1,2],[2,3,4,1],[4,1,2,3]]\r\n
+    \  [[1,2,3,4],[3,4,2,1],[2,1,4,3],[4,3,1,2]]\r\n  から３行目と４行目の交換、３列目と４列目の交換で生成する。\r\n・必要なマスだけ取り出すにはマスに対応する素数の積との\r\n
+    \ 最大公約数を使う。（例えば左上４つを取り出すには 2*3*7*11 との最大公約数）\r\n・各問題に対してその問題の解答が１２パターンのうちのどれに\r\n
+    \ 属するか記録しておく。\r\n・問題はその問題のヒント個数より少ないヒント個数を持つどの\r\n  極小配置も含まなければその問題も極小配置である。\r\n・配置Ａが配置Ｂを含むかどうかはＡとＢの解答パターンが一致し\r\n
+    \ Ａの４つの整数の積がＢの４つの整数の積で割り切れるかどうかで\r\n  判断できる。\r\n\r\n手元の Windowsマシンでの実行時間は約１０秒。\r\n\r\nこの結果が正しければ極小配置2×2数独問題のヒント個数は\r\n４個から６個ということになります。\r\n</pre>\n\t"
+  :code: "import Data.List (group,sort,elemIndices,mapAccumL,sortBy,groupBy)\nimport
+    Data.Array (accumArray,elems)\nimport Data.Ord (comparing)\n\nps = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53]\nexch
+    rows cols js = [js, [js!!(4*i+j)| i &lt;- rows, j &lt;- cols]]\nbs = do\n  as
+    &lt;- [[1,2,3,4,3,4,1,2,2,1,4,3,4,3,2,1],\n         [1,2,3,4,3,4,1,2,2,3,4,1,4,1,2,3],\n
+    \        [1,2,3,4,3,4,2,1,2,1,4,3,4,3,1,2]]\n        &gt;&gt;= exch [0,1,3,2]
+    [0..3] &gt;&gt;= exch [0..3] [0,1,3,2]\n  return [product $ map (ps!!) $ elemIndices
+    i as| i &lt;- [1..4]]\n\ncomb 0 _ = [[]]\ncomb _ [] = []\ncomb n (x:xs) = map
+    (x:) (comb (n-1) xs) ++ comb n xs\n\nproblem :: Int -&gt; [(Int,[Integer])]\nproblem
+    n = map head $ filter (null.tail) $ concat\n  [groupBy (\\a b -&gt; snd a == snd
+    b) $ sortBy (comparing snd)\n    $ filter ((/=1).(!!1).snd) $ zip [0..]\n    $
+    map (sort.map (gcd (product x))) bs| x &lt;- comb n ps]\n\nminimalProblem :: [(Int,Int,Int)]\nminimalProblem
+    = snd $ mapAccumL f (replicate 12 []) [0..16] where\n  f xss n = (zipWith (++)
+    xss zss, (n, 24*length ys,  24*length (concat zss))) where \n    ys = problem
+    n\n    zss = zipWith g xss $ elems\n           $ accumArray (\\a b -&gt; product
+    b: a) [] (0,11) ys\n  g xs ys = [y| y &lt;- ys, and [y `mod` x /= 0| x &lt;- xs]]\n\nmain
+    = mapM_ print minimalProblem \n\n{-\n&gt; main\n(0,0,0)\n(1,0,0)\n(2,0,0)\n(3,0,0)\n(4,25728,25728)\n(5,284160,58368)\n(6,1041408,1536)\n(7,2141184,0)\n(8,2961024,0)\n(9,2958336,0)\n(10,2204928,0)\n(11,1239552,0)\n(12,522624,0)\n(13,161280,0)\n(14,34560,0)\n(15,4608,0)\n(16,288,0)\n-}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

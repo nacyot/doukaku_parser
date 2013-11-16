@@ -1,0 +1,2585 @@
+---
+:id: '33'
+:title: RFC 4180対応版 CSVレコードの分解
+:comments:
+- :id: '3389'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/3389
+  :user_name: raynstard
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2007/07/27 14:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre>\r\nある関数(splitCSV)に渡された文字列を配列に分解して列ごとに表示してください。\r\n渡される文字列は、CSVデータの1レコードが設定されているとします。\r\n\r\n使用するデータはK3形式が元になっている仕様で\r\nエクセルが出力しているような形式です。\r\n\r\n書式には次のような特徴があります。\r\n1.
+    各レコードは「改行」によって区切られている。\r\n2. 各列は「,」によって区切られている。\r\n3. 列のデータは「\"」によって囲んでも良い。\r\n4.
+    列に「,」「改行」「\"」いずれかを含む場合「\"」で\r\n   囲わなければならない。\r\n5. 列データに「\"」を含める場合「\"\"」とする。\r\n\r\n本来、改行コードはCRLFですが今回は特に指定しません。\r\n\r\n次の入力があった場合\r\n\"aaa\",\"b\r\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx\r\n\r\n出力は\r\n1
+    =&gt; aaa\r\n2 =&gt; b\r\nbb\r\n3 =&gt; ccc\r\n4 =&gt; zzz\r\n5 =&gt; y\"Y\"y\r\n6
+    =&gt; xxx\r\n\r\nとなります。\r\n</pre>\r\nこのお題はraynstardさんの投稿によるものです。ご投稿ありがとうございます。助かります。\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1506'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1506
+  :user_name: cats
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/07/27 14:55 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    class Program
+    {
+      static void Main()
+      {
+        string s = "\"aaa\",\"b\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx";
+        string[] ss = splitCSV(s);
+        for (int i = 0; i &lt; ss.Length; ++i)
+        Console.WriteLine("{0} =&gt; {1}",i+1,ss[i]);
+      }
+      static string[] splitCSV(string s)
+      {
+        if (s == null) return null;
+        List&lt;string&gt; a = new List&lt;string&gt;();
+        int i = 0, j;
+        string t;
+        StringBuilder h = new StringBuilder();
+        while (i &lt; s.Length)
+        {
+          bool b = s[i] == '"';
+          if (b) ++i;
+          j = s.IndexOf(b ? '"' : ',', i);
+          if (j &lt; 0) j = s.Length;
+          t = s.Substring(i, j - i);
+          if (b &amp;&amp; j &lt; s.Length - 1 &amp;&amp; s[j + 1] == '"')
+          {
+            h.Append(t);
+            h.Append('"');
+            i = j + 1;
+          }
+          else
+          {
+            a.Add(h + t);
+            h.Length = 0;
+            i = j + (b ? 2 : 1);
+          }
+        }
+        return a.ToArray();
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1508'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1508
+  :user_name: 沢渡 みかげ
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/101/
+  :language: Perl
+  :time: 2007/07/27 15:14 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Text::CSV_XSでさくっと．</pre>\n\t"
+  :code: |
+    perl -MText::CSV_XS -le '$csv = Text::CSV_XS-&gt;new({binary=&gt;1}); $csv-&gt;parse("\"aaa\",\"b\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx"); map { print ++$i, " =&gt; $_" } $csv-&gt;fields()'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1509'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1509
+  :user_name: lany
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/314/
+  :language: Delphi
+  :time: 2007/07/27 15:29 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    program splitter;
+
+    {$APPTYPE CONSOLE}
+
+    uses
+        Classes;
+
+    procedure splitCSV(const Text: String);
+    var
+        i: Integer;
+        sl: TStringList;
+    begin
+        sl := TStringList.Create;
+        try
+            sl.CommaText := Text;
+            for i := 0 to sl.Count-1 do
+                Writeln(i+1, ' =&gt; ', sl[i]);
+        finally
+            sl.Free;
+        end;
+    end;
+
+    begin
+        splitCSV('"aaa","b'#13#10'bb","ccc",zzz,"y""Y""y",xxx');
+    end.
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1510'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1510
+  :user_name: rubikitch
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/105/
+  :language: Ruby
+  :time: 2007/07/27 15:51 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    require 'csv'
+    def splitCSV(str)
+      CSV::Reader.parse(str) do |x|
+        i=0; x.each{|d| puts "#{i.succ} =&gt; #{d}" }
+      end
+    end
+    splitCSV('"aaa","b
+    bb","ccc",zzz,"y""Y""y",xxx')
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1513'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1513
+  :user_name: yuin
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/82/
+  :language: Python
+  :time: 2007/07/27 16:10 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  これでいいのかな？\n\t"
+  :code: |
+    import csv
+    from StringIO import StringIO
+
+    data = """"aaa","b
+    bb","ccc",zzz,"y""Y""y",xxx"""
+
+    for row in csv.reader(StringIO(data)):
+      for i,v in enumerate(row):
+        print i+1, "=&gt;", v
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1514'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1514
+  :user_name: rubikitch
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/105/
+  :language: Common
+  :time: 2007/07/27 16:38 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  arnesi:parse-csv-stringはyYyとなるバグがあって使えない\n\t"
+  :code: |
+    (require :fare-csv)
+    (defun splitCSV (line)
+      (loop for elt in (with-input-from-string (inn line)
+                         (fare-csv:read-csv-line inn))
+         for i from 1 do
+         (format t "~a =&gt; ~a~%" i elt)))
+
+    (splitCSV "\"aaa\",\"b
+    bb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx
+    ")
+    ;; 1 =&gt; aaa
+    ;; 2 =&gt; b
+    ;; bb
+    ;; 3 =&gt; ccc
+    ;; 4 =&gt; zzz
+    ;; 5 =&gt; y"Y"y
+    ;; 6 =&gt; xxx
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1515'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1515
+  :user_name: rubikitch
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/105/
+  :language: Scheme
+  :time: 2007/07/27 16:49 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  \n\t"
+  :code: |
+    (use text.csv)
+    (use srfi-42)
+    (define (parse-csv line)
+      (call-with-input-string line
+        (lambda (port) ((make-csv-reader #\,) port))))
+    (define (splitCSV line)
+      (do-ec (: elt (parse-csv line))
+             (: i 1)
+             (format #t "~a =&gt; ~a~%" i elt)))
+
+    (splitCSV "\"aaa\",\"b
+    bb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx
+    ")
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '1516'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1516
+  :user_name: kkobayashi
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2007/07/27 16:50 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Rはこういうの得意で、外部ライブラリーは不要です。\r\nread.csvだとうまく行かなかったのでread.tableを使っています。\r\n</pre>\n\t"
+  :code: |
+    splitCSV &lt;- function(str){
+        table &lt;- read.table(textConnection(str), sep=",", colClasses="character")
+        cat(paste(1:length(table), rep("=&gt;", length(table)), table), sep="\n")
+    }
+
+    splitCSV('"aaa","b
+    bb","ccc",zzz,"y""Y""y",xxx')
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1518'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1518
+  :user_name: es
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/147/
+  :language: Scheme
+  :time: 2007/07/27 16:53 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  \n\t"
+  :code: |
+    (use text.csv)
+
+    (define (splitCSV str)
+      (define (numberling l)
+        (let loop ((l l) (n 1))
+          (unless (null? l)
+                  (format #t "~d =&gt; ~a~%" n (car l))
+                  (loop (cdr l) (+ n 1)))))
+      (call-with-input-string str
+        (lambda (in)
+          (port-for-each
+           (pa$ numberling)
+           (pa$ (make-csv-reader #\,) in)))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '1519'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1519
+  :user_name: ocean
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/07/27 17:01 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  ｃｓｖモジュールを使うのが常道だと思いますが、あえて自前で処理してみました。cStringIOは初めて使いましたが、undoみたいな処理をするには便利かも。（seek
+    の前の if c: が必要なのに気づかず少しはまりましたが）\n\t"
+  :code: |
+    import cStringIO
+    import os
+
+    def split_csv(csv):
+        io = cStringIO.StringIO(csv)
+        while not io.closed:
+            def f():
+                quoted = False
+                while 1:
+                    c = io.read(1)
+                    if not c: # eof
+                        io.close()
+                        break
+                    elif not(quoted) and c == ',':
+                        break
+                    elif not(quoted) and c in ('\r', '\n'):
+                        io.close() # ignore second record
+                        break
+                    elif c == '"':
+                        c = io.read(1)
+                        if c == '"':
+                            yield c
+                        else:
+                            quoted = not(quoted)
+                            if c:
+                                io.seek(-1, os.SEEK_CUR)
+                    else:
+                        yield c
+                if quoted:
+                    raise ValueError("unterminated quotation")
+            yield "".join(f())
+
+    def main():
+        for i, s in enumerate(split_csv("""\
+    "aaa","b
+    bb","ccc",zzz,"y""Y""y",xxx
+    """)):
+            print "%d =&gt; %s" % (i + 1, s)
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1520'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1520
+  :user_name: shiro
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/07/27 17:03 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">call-with-input-stringには「portを引数に取る手続き」であれば何でも渡せるので、\r\n(make-csv-reader
+    #\\,) の結果をそのまま渡すことができます。\r\nlambdaにくるむ必要はありません。\r\n\r\nそれから、単純なインデックスつきループであれば\r\nfor-each-with-indexというのがあります。\r\n\r\nなので、こんなふうに書けます：</pre>\n\t"
+  :code: |
+    (use text.csv)
+    (use gauche.sequence)
+
+    (define (splitCSV line)
+      (for-each-with-index (cut print &lt;&gt;" =&gt; "&lt;&gt;)
+          (call-with-input-string line (make-csv-reader #\,))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '1521'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1521
+  :user_name: shiro
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/07/27 17:09 GMT
+  :vote_count: '3'
+  :vote_score: '1'
+  :body: "\n\t  おっと、カラムの表示は1からスタートでしたか。そしたらcutは使えないですね。\r\n\n\t"
+  :code: |
+    (use text.csv)
+    (use gauche.sequence)
+
+    (define (splitCSV line)
+      (for-each-with-index
+       (lambda (i e) (print (+ i 1)" =&gt; "e))
+       (call-with-input-string line (make-csv-reader #\,))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '1522'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1522
+  :user_name: nkmrtks
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/155/
+  :language: Common
+  :time: 2007/07/27 17:35 GMT
+  :vote_count: '3'
+  :vote_score: '-1'
+  :body: "\n\t  【これはひどい】\n\t"
+  :code: |
+    (defun splitCSV (csv)
+      (let ((len (length csv))
+            (lst '(())))
+        (labels
+            ((field (h n i &amp;optional (esc nil))
+               (when (&gt; len i)
+                 (if h
+                   (princ (format nil "~D =&gt; " n)))
+                 (let ((it (char csv i)))
+                   (case it
+                     (#\" (if esc
+                              (case (char csv (incf i))
+                                (#\" (princ #\" ) (field nil n (1+ i) t))
+                                (#\, (princ #\newline) (field t (1+ n) (1+ i))))
+                            (field nil n (1+ i) t)))
+                     (#\newline (if esc
+                                (progn (princ it) (field nil n (1+ i) t))
+                              (progn (princ it) (field t 1 (1+ i)))))
+                     (#\, (princ #\newline) (field t (1+ n) (1+ i)))
+                     (t (princ it) (field nil n (1+ i) esc)))))))
+          (field t 1 0 nil))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1523'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1523
+  :user_name: nkmrtks
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/155/
+  :language: 
+  :time: 2007/07/27 17:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  あ、ごみが残ってる。３行目のlstは要りません。orz\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1524'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1524
+  :user_name: nkmrtks
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/155/
+  :language: 
+  :time: 2007/07/27 17:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  む、インデントもおかしい…もう、なんちゅーかダメorz\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1525'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1525
+  :user_name: shiro
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/41/
+  :language: Haskell
+  :time: 2007/07/27 19:00 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  まずは愚直にparseしてみた。\r\nmapM putStrLn のあたりが気持ち悪い?\r\nshowField中で出力しちゃう方がいいんだろうか。\n\t"
+  :code: |
+    import List
+
+    parseF [] r        = reverse r
+    parseF ('\"':cs) r = parseE cs [] r
+    parseF cs r        = parseN cs [] r
+
+    parseE [] f r             = parseF [] $ reverse f:r
+    parseE ('\"':',':cs) f r  = parseF cs $ reverse f:r
+    parseE ('\"':'\n':cs) f r = parseF cs $ reverse f:r
+    parseE ('\"':'\"':cs) f r = parseE cs ('\"':f) r
+    parseE ('\"':c:cs) f r    = parseE ('\"':cs) f r -- should be an error?
+    parseE (c:cs) f r         = parseE cs (c:f) r
+
+    parseN [] f r        = parseF [] $ reverse f:r
+    parseN ('\n':cs) f r = parseF [] $ reverse f:r
+    parseN (',':cs) f r  = parseF cs $ reverse f:r
+    parseN (c:cs) f r    = parseN cs (c:f) r
+
+    splitCVS record = mapM putStrLn $ snd $ mapAccumL showField 1 $ parseF record []
+      where showField i f = (i+1, (show i)++" =&gt; "++f)
+
+    main = do splitCVS "\"aaa\",\"b\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx\n"; return ()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1526'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1526
+  :user_name: yuin
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/07/27 19:03 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">寝る前にもいっちょ。今度は自分でパース。</pre>\n\t"
+  :code: |
+    import scala.collection.mutable.ListBuffer
+    def parseCSV(s:String):Array[Array[String]] = {
+      def split(s:String, c:String) = {
+        val buf = new ListBuffer[String]
+        val result = new ListBuffer[String]
+        s.split(c).foreach(p =&gt; p.filter(_ =='"').length%2 match{
+          case 0 if  buf.isEmpty  =&gt; result += p
+          case 0 if !buf.isEmpty  =&gt; buf    += p
+          case 1 if  buf.isEmpty  =&gt; buf    += p
+          case 1 if !buf.isEmpty  =&gt;
+            buf += p
+            result += buf.mkString(c)
+            buf.clear
+        })
+        result
+      }
+      split(s,"\n").map(line =&gt; {
+        split(line, ",").map(col =&gt; {
+          col.replaceAll("\"\"", "\"").replaceAll("^(\")", "")
+             .replaceAll("(\")$", "")
+        }).toArray
+      }).toArray
+    }
+
+    val data = """"aaa","b
+    bb","ccc",zzz,"y""Y""y",xxx"""
+
+    parseCSV(data).foreach(line =&gt; {
+      (1 to line.length).foreach(i =&gt; {
+        println(i + " =&gt; " + line(i-1))
+      })
+    })
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1527'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1527
+  :user_name: rubikitch
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/105/
+  :language: 
+  :time: 2007/07/27 19:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  どうも、勉強になります。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1528'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1528
+  :user_name: shiro
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/41/
+  :language: Haskell
+  :time: 2007/07/27 19:35 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  つづいてParsecに挑戦\n\t"
+  :code: |
+    import Text.ParserCombinators.Parsec
+
+    record = do fields &lt;- sepBy field (char ',')
+                char '\n'
+                return fields
+
+    field = between (char '\"') (char '\"') quotedField
+        &lt;|&gt; many (noneOf ",\n")
+
+    quotedField = many $ (try $ do string "\"\""; return '\"') &lt;|&gt; noneOf "\""
+
+    splitCVS line = case (runParser record () "" line) of
+                     Left err     -&gt; print err
+                     Right fields -&gt; do mapM putStrLn fields; return ()
+
+    main = splitCVS "\"aaa\",\"b\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx\n"
+  :tags:
+  - Parsec
+  :references:
+    :url: 
+    :title: 
+- :id: '1531'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1531
+  :user_name: 匿名
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/07/28 02:16 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">お題に対応する最小限のチェックをしたつもりですが\r\n入力文字列によっては見逃しがあるかも。\r\n</pre>\n\t"
+  :code: |
+    def splitCVS(s):
+      a = []
+      b = s.split(',')
+      while b:
+        c = b.pop(0)
+        while c.startswith('"') and c.count('"') % 2:
+          c += b.pop(0)
+        if c.startswith('"') and c.endswith('"'):
+          c = c[1:-1].replace('""', '"')
+        elif c.find('"') != -1 or c.find('\n') != -1:
+          raise 'invalid'
+        a.append(c)
+      return a
+
+    l = splitCVS('"abc","b\nbb","cc,c",zzz,"y""Y""y",xxx')
+    for i, s in zip(range(len(l)), l):
+      print '%2d = %s' % (i+1, s)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1535'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1535
+  :user_name: 匿名
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/07/28 08:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \"a,b\",のように、エントリにコンマを含む場合に正しく動かない気がしますが、6行目のあたりはうまいやりかたですね。そうか、仕様通りのcsvならこれでいいのか・・・\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1536'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1536
+  :user_name: rucker
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/07/28 09:03 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  一旦','で分割してしまってから'\"'が奇数個含まれるフィールドに偶数になるまで後ろのフィールドを繋ぎ直す様な感じでやってみた。\n\t"
+  :code: |
+    &lt;?php
+    function splitcsv($line){
+      $r=array();
+      $a=explode(",",$line);
+      while(list(,$v)=each($a))
+      { if(strpos($v,'"')!==false)
+        { while(substr_count($v,'"')&amp;1)
+          { if(!(list(,$v1)=each($a)))
+              return false;
+            $v.=','.$v1;
+          }
+          ereg('"(.*)"',$v,$regs);
+          $v=str_replace('""','"',$regs[1]);
+        }
+        $r[]=$v;
+      }
+      return $r;
+    }
+
+    $line='"aaa","b
+    bb","ccc",zzz,"y""Y""y",xxx';
+
+    print_r(splitcsv($line));
+    ?&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1538'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1538
+  :user_name: odz
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/212/
+  :language: Haskell
+  :time: 2007/07/28 11:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Parsec の出番！UnitTest 付きで。\n\t"
+  :code: |
+    import Text.ParserCombinators.Parsec
+    import Test.HUnit
+
+    line :: Parser [String]
+    line = do columns &lt;- sepBy1 column comma
+              optional (char '\n')
+              return columns
+
+    column :: Parser String
+    column = do b &lt;- char '"'
+                c &lt;- many ((satisfy (/= '"')) &lt;|&gt; try escapedQuote)
+                d &lt;- char '"'
+                return c
+             &lt;|&gt;
+             many1 (noneOf [',', '"', '\n'])
+             &lt;?&gt; "escapedQuote"
+
+    escapedQuote :: Parser Char
+    escapedQuote = do string "\"\"" &lt;?&gt; "escapedQuote"
+                      return '"'
+
+    comma :: Parser ()
+    comma = skipMany1 (char ',' &lt;?&gt; "comma")
+
+    splitCSV :: String -&gt; [String]
+    splitCSV s = case (parse line "" s) of
+                 Left err -&gt; error ("parse error at " ++ (show err))
+                 Right x -&gt; x
+
+    testData :: [Test]
+    testData = [
+                ["abc", "def"] ~=? splitCSV "abc,def\n",
+                ["abc", "def"] ~=? splitCSV "\"abc\",def",
+                ["a,bc", "def"] ~=? splitCSV "\"a,bc\",\"def\"\n",
+                ["abc", "b\nbb", "ccc", "zzz", "y\"Y\"y", "xxx"] ~=? splitCSV "\"abc\",\"b\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx\n"
+               ]
+
+    main :: IO Counts
+    main = runTestTT (test testData)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1540'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1540
+  :user_name: odz
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/212/
+  :language: Haskell
+  :time: 2007/07/28 11:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  あ、カラム番号とともに出力するところまでが課題なのね。\r\n\n\t"
+  :code: |
+    import Text.ParserCombinators.Parsec
+    import Test.HUnit
+
+    line :: Parser [String]
+    line = do columns &lt;- sepBy1 column comma
+              optional (char '\n')
+              return columns
+
+    column :: Parser String
+    column = do b &lt;- char '"'
+                c &lt;- many ((satisfy (/= '"')) &lt;|&gt; try escapedQuote)
+                d &lt;- char '"'
+                return c
+             &lt;|&gt;
+             many1 (noneOf [',', '"', '\n'])
+             &lt;?&gt; "escapedQuote"
+
+    escapedQuote :: Parser Char
+    escapedQuote = do string "\"\"" &lt;?&gt; "escapedQuote"
+                      return '"'
+
+    comma :: Parser ()
+    comma = skipMany1 (char ',' &lt;?&gt; "comma")
+
+    splitCSV :: String -&gt; [String]
+    splitCSV s = case (parse line "" s) of
+                 Left err -&gt; error ("parse error at " ++ (show err))
+                 Right x -&gt; x
+
+    testData :: [Test]
+    testData = [
+                ["abc", "def"] ~=? splitCSV "abc,def\n",
+                ["abc", "def"] ~=? splitCSV "\"abc\",def",
+                ["a,bc", "def"] ~=? splitCSV "\"a,bc\",\"def\"\n",
+                ["abc", "b\nbb", "ccc", "zzz", "y\"Y\"y", "xxx"] ~=? splitCSV "\"abc\",\"b\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx\n"
+               ]
+
+    main :: IO ()
+    main = do cs &lt;- getContents
+              mapM_ output (zip [1..] $ splitCSV cs)
+      where output (n, col) = putStrLn $ (show n) ++ " =&gt; " ++ col
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1541'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1541
+  :user_name: shiro
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/07/28 11:39 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">ああ、私は出力を忘れてました。\r\n\r\nところでcolumnの区切りをskipMany1
+    (char ',') としてしまうと、\r\n空のcolumnを含む次のようなデータで困りませんか。\r\n\r\n\"a,,b\\n\"\r\n=&gt;
+    should be [\"a\", \"\", \"b\"]\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1542'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1542
+  :user_name: 匿名
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/07/28 12:06 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  無理矢理、正規表現でやってみました。\n\t"
+  :code: "import java.util.regex.*;\nimport java.util.*;\n\npublic class Sample {\n
+    \   private static final Pattern spliter = \n        Pattern.compile(\"((\\\"[^\\\"]*+\\\")+|[^,]*+),?\");\n
+    \   private static final Pattern doubleQuote = Pattern.compile(\"\\\"\\\"\");\n\n
+    \   public static String[] splitCSV(String rec) {\n        Matcher m = spliter.matcher(rec);\n
+    \       ArrayList&lt;String&gt; cols = new ArrayList&lt;String&gt;();\n        while
+    (m.find()) {\n            String col = m.group(1);\n            if (col != null)
+    {\n                if (col.startsWith(\"\\\"\")) {\n                    col =
+    col.substring(1, col.length() - 1);\n                }\n                col =
+    doubleQuote.matcher(col).replaceAll(\"\\\"\");\n                cols.add(col);\n
+    \           }\n            if (m.end() &gt;= rec.length())\n                break;\n
+    \       }\n        return cols.toArray(new String[cols.size()]);\n    }\n\n    public
+    static void main(String[] args) throws Exception {\n        String sample = \"\\\"aaa\\\",\\\"b\\nbb\\\",\\\"ccc\\\",zzz,\\\"y\\\"\\\"Y\\\"\\\"y\\\",xxx\";\n
+    \       String[] cols = splitCSV(sample);\n        for (int i = 0; i &lt; cols.length;
+    i++) {\n            System.out.printf(\"%d =&gt; %s%n\", i + 1, cols[i]);\n        }\n
+    \   }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1543'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1543
+  :user_name: odz
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/212/
+  :language: 
+  :time: 2007/07/28 14:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  おっしゃる通りですね。\r\nというかなんで、skipMany1 にしたんだろ。try に気づかず、試行錯誤した傷跡かな。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1544'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1544
+  :user_name: sumim
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/07/28 16:39 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">Squeak Smalltalk で。\r\n\r\n手近に CSV 解析器が見あたらなかったので、よく似た作業をする\r\nSmalltalk
+    処理系の字句解析器のインスタンスをハックして\r\nなんちゃって CSV 解析器(^_^;)を仕立ててみました。\r\n\r\n具体的には、カンマをデリミタに、スペースを通常の文字に、\r\nCR
+    を閉じ括弧、LF を開く括弧に見立てるよう、スキャナのテーブルを\r\n書き換え騙して仕事をさせます。なお、ダブルクオートは Smalltalk では\r\nコメントアウトになってしまうので、文字列リテラルを表す\r\nシングルクオートに差し替え、解析後、ダブルクオートに戻しています。</pre>\n\t"
+  :code: |
+    | scanner typeTable data dataFile dataString |
+    scanner := Scanner new.
+    typeTable := scanner instVarNamed: #typeTable.
+    typeTable := scanner instVarNamed: #typeTable put: typeTable copy.
+    typeTable at: $, asciiValue put: #xDelimiter.
+    typeTable at: $  asciiValue put: #xLetter.
+    typeTable at: Character lf asciiValue put: #leftParenthesis.
+    typeTable at: Character cr asciiValue put: #rightParenthesis.
+    dataFile := FileStream fileNamed: 'data.txt'.
+    dataString := dataFile contents replaceAll: $" with: $'; copyWithFirst: $(.
+    data := scanner scanTokens: dataString.
+    World findATranscript: nil.
+    data do: [:record |
+        record doWithIndex: [:field :index |
+            field replaceAll: $' with: $".
+            field := field copyWithout: Character lf.
+            Transcript cr; show: ('{1} =&gt; {2}' format: {index. field})]]
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '1545'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1545
+  :user_name: nori
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/59/
+  :language: Python
+  :time: 2007/07/28 17:26 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  csvをつかっても面白くないので正規表現でやってみました。\r\n\n\t"
+  :code: |
+    import re
+
+    quoted = r'("((""|[^"])+)")'
+    naked = r'([^,"\n]+)'
+    enclosed = r'("(?P&lt;enclosed&gt;' + naked + r')")'
+    record = quoted + '|' + enclosed + '|' + naked
+    r = re.compile(record)
+
+    def unescape(s):
+      return re.sub('["](?!")', '', s)
+
+    def parse(s):
+      for i, t in enumerate(r.finditer(s)):
+        print i+1, '=&gt;', unescape(s[t.start():t.end()])
+
+
+    parse('''"aaa","b
+    bb","ccc",zzz,"y""Y""y",xxx''')
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1546'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1546
+  :user_name: ココサブ
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/24/
+  :language: C
+  :time: 2007/07/28 17:29 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">なんか微妙。\r\n\r\n$ ./a.out &lt; data\r\nのような感じで実行するのを想定しています。</pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;string.h&gt;
+
+    enum { false, true };
+    int print_one_value();
+
+    int main()
+    {
+        int c;
+        int ret;
+        int count = 1;
+
+        while (true) {
+            printf("%d =&gt; ", count);
+            ret = print_one_value();
+            puts("");
+            if (ret) {
+                break;
+            }
+            count++;
+        }
+
+        return 0;
+    }
+
+    int print_one_value(int count)
+    {
+        int c;
+        int quote_in     = false;
+        int quote_before = false;
+
+        c = getchar();
+        if (c == '"') {
+            quote_in = true;
+        }
+        else {
+            putchar(c);
+        }
+
+        while ((c = getchar()) != EOF) {
+            if      (c == ',')               return false;
+            else if (c == '\n' &amp;&amp; !quote_in) return true;
+
+            if ((c == ',' || c == '\n' || c == '"')
+             &amp;&amp; quote_before) {
+                putchar(c);
+                quote_before = false;
+            }
+            else if (c == '"') {
+                quote_before = true;
+            }
+            else {
+                putchar(c);
+                quote_before = false;
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1547'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1547
+  :user_name: nori
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/59/
+  :language: 
+  :time: 2007/07/28 17:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  あ、\\nと\"\"が混在できない・・・。orz\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1548'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1548
+  :user_name: nori
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/59/
+  :language: 
+  :time: 2007/07/28 17:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  勘違い。寝よう。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1549'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1549
+  :user_name: nori
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/59/
+  :language: Python
+  :time: 2007/07/28 23:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \"\"\"\"の処理がおかしかった。\r\n\r\nunescapeが美しくない。\n\t"
+  :code: |
+    '''
+    &gt;&gt;&gt; parse('aaa')
+    1 =&gt; aaa
+    &gt;&gt;&gt; parse('"aaa"')
+    1 =&gt; aaa
+    &gt;&gt;&gt; parse('"a\\naa"')
+    1 =&gt; a\naa
+    &gt;&gt;&gt; parse('"a""aa"')
+    1 =&gt; a"aa
+    &gt;&gt;&gt; parse('"a""""aa"')
+    1 =&gt; a""aa
+    &gt;&gt;&gt; parse('aaa,bbb')
+    1 =&gt; aaa
+    2 =&gt; bbb
+    &gt;&gt;&gt; parse('aaa, bbb')
+    1 =&gt; aaa
+    2 =&gt;  bbb
+    &gt;&gt;&gt; parse('aaa,"b\\nbb"')
+    1 =&gt; aaa
+    2 =&gt; b\nbb
+    &gt;&gt;&gt; parse('aaa,"b\\n""bb"')
+    1 =&gt; aaa
+    2 =&gt; b\n"bb
+    '''
+    import re
+
+    quoted = r'("((""|[^"])+)")'
+    naked = r'([^,"\n]+)'
+    enclosed = r'("(?P&lt;enclosed&gt;' + naked + r')")'
+    record = quoted + '|' + enclosed + '|' + naked
+    r = re.compile(record)
+
+    def unescape(s):
+      if s.startswith('"'):
+        return re.sub('""', r'"', s[1:-1])
+      else:
+        return re.sub('""', r'"', s)
+
+    def parse(s):
+      for i, t in enumerate(r.finditer(s)):
+        print i+1, '=&gt;', unescape(s[t.start():t.end()])
+
+
+    parse('''"aaa","b
+    b""b","ccc",zzz,"y""Y""y",xxx''')
+
+    import doctest
+    doctest.testmod()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1550'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1550
+  :user_name: raynstard
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2007/07/28 23:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  すでに何人か指摘してくれていますが、\r\nサンプルのデータが足りなかったですねorz\r\nテストするときには「,\"eee,EEE\",,,」\r\nというのも最後に付け足してあげてください。\r\n\r\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1551'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1551
+  :user_name: nori
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/59/
+  :language: Python
+  :time: 2007/07/28 23:58 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  名前つきの正規表現を使ってみた。\r\nget orの連続とrecordの定義が重複していて美しくない。\n\t"
+  :code: |
+    '''
+    &gt;&gt;&gt; parse('aaa')
+    1 =&gt; aaa
+    &gt;&gt;&gt; parse('"aaa"')
+    1 =&gt; aaa
+    &gt;&gt;&gt; parse('"a\\naa"')
+    1 =&gt; a\naa
+    &gt;&gt;&gt; parse('"a""aa"')
+    1 =&gt; a"aa
+    &gt;&gt;&gt; parse('"a""""aa"')
+    1 =&gt; a""aa
+    &gt;&gt;&gt; parse('aaa,bbb')
+    1 =&gt; aaa
+    2 =&gt; bbb
+    &gt;&gt;&gt; parse('aaa, bbb')
+    1 =&gt; aaa
+    2 =&gt;  bbb
+    &gt;&gt;&gt; parse('aaa,"b\\nbb"')
+    1 =&gt; aaa
+    2 =&gt; b\nbb
+    &gt;&gt;&gt; parse('aaa,"b\\n""bb"')
+    1 =&gt; aaa
+    2 =&gt; b\n"bb
+    '''
+    import re
+
+    quoted = r'("(?P&lt;quoted&gt;(""|[^"])+)")'
+    naked = r'[^,"\n]+'
+    enclosed = r'("(' + '?P&lt;enclosed&gt;' + naked + '' + r')")'
+    record = quoted + '|' + enclosed + '|' + '(?P&lt;naked&gt;' + naked + ')'
+    r = re.compile(record)
+
+    def unescape(s):
+      return re.sub('""', r'"', s)
+
+    def parse(s):
+      for i, t in enumerate(r.finditer(s)):
+        #print i+1, '=&gt;', unescape(s[t["body"].start:t["body"].end])
+        d= t.groupdict()
+        print i+1, '=&gt;', unescape(d.get('naked') or d.get('enclosed') or d.get('quoted'))
+
+    parse('''"aaa","b
+    b""b","ccc",zzz,"y""Y""y",xxx''')
+
+    import doctest
+    doctest.testmod()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1552'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1552
+  :user_name: raynstard
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2007/07/29 00:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ファイル読み込み形式ですかー\r\n結構な行になると思って、お題には含めなかったのですが、\r\n時間があればファイル読み込み型の複数レコード対応なんていうのも\r\nやってみるとおもしろいかもしれませんね。\r\nこのときは改行処理が結構めんどくさいことになります(笑\r\n\r\nCSVデータ読み込み方法を見てみたいだけでしたけど\r\nたいていの言語でライブラリあるみたいだし\r\nあとでお題投稿してみます～^^；\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1553'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1553
+  :user_name: kkobayashi
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2007/07/29 02:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  念のため、実行結果です（&gt;と+はR Consoleのプロンプトです）\n\t"
+  :code: "&gt; splitCSV('\"aaa\",\"b\n+ bb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx,\"eee,EEE\",,,')\n1
+    =&gt; aaa\n2 =&gt; b\nbb\n3 =&gt; ccc\n4 =&gt; zzz\n5 =&gt; y\"Y\"y\n6 =&gt; xxx\n7
+    =&gt; eee,EEE\n8 =&gt; \n9 =&gt; \n10 =&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1571'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1571
+  :user_name: nkmrtks
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/155/
+  :language: Common
+  :time: 2007/07/30 00:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">色々修正版\r\n\r\n(splitCSV \"\\\"aaa\\\",\\\"b\r\nbb\\\",\\\"ccc\\\",zzz,\\\"y\\\"\\\"Y\\\"\\\"y\\\",xxx,\\\"eee,EEE\\\",,,\")\r\n1
+    =&gt; aaa\r\n2 =&gt; b\r\nbb\r\n3 =&gt; ccc\r\n4 =&gt; zzz\r\n5 =&gt; y\"Y\"y\r\n6
+    =&gt; xxx\r\n7 =&gt; eee,EEE\r\n8 =&gt; \r\n9 =&gt; \r\nnil\r\n</pre>\n\t"
+  :code: |
+    (defun splitCSV (csv)
+      (let ((len (length csv)))
+        (labels
+            ((field (h n i &amp;optional (esc nil))
+               (when (&gt; len i)
+                 (and h (princ (format nil "~D =&gt; " n)))
+                 (let ((it (char csv i)))
+                   (case it
+                     (#\" (if esc
+                              (case (char csv (incf i))
+                                (#\" (princ #\" ) (field nil n (1+ i) t))
+                                (#\, (princ #\newline) (field t (1+ n) (1+ i))))
+                            (field nil n (1+ i) t)))
+                     (#\newline (if esc
+                                    (progn (princ it) (field nil n (1+ i) t))
+                                  (progn (princ it) (field t 1 (1+ i)))))
+                     (#\, (if esc
+                              (progn (princ it) (field nil n (1+ i) t))
+                            (progn (princ #\newline) (field t (1+ n) (1+ i)))))
+                     (t (princ it) (field nil n (1+ i) esc)))))))
+          (field t 1 0 nil))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1572'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1572
+  :user_name: nkmrtks
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/155/
+  :language: Common
+  :time: 2007/07/30 02:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">やっちゃった＞＜\r\n\r\n相互呼び出しの再帰で実装してみた。\r\nこれって、10
+    =&gt; まで出るのが正しいんだよね？\r\n\r\n[sample.csv]\r\n\"aaa\",\"b\r\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx,\"eee,EEE\",,,\r\n\r\n(splitCSV
+    \"sample.csv\")\r\n1 =&gt; aaa\r\n2 =&gt; b\r\nbb\r\n3 =&gt; ccc\r\n4 =&gt; zzz\r\n5
+    =&gt; y\"Y\"y\r\n6 =&gt; xxx\r\n7 =&gt; eee,EEE\r\n8 =&gt; \r\n9 =&gt; \r\n10
+    =&gt; \r\nt\r\n</pre>\n\t"
+  :code: |
+    (defun splitCSV (csv-file)
+      (labels
+          ((in-esc (csv header col)
+             (let ((it (read-char csv nil)))
+               (case it
+                 ((#\") (let ((it (read-char csv nil)))
+                          (case it
+                            (#\" (princ it) (in-esc csv nil col))
+                            (#\, (princ #\newline) (out-esc csv t (1+ col))))))
+                 ((nil) nil)
+                 (t (princ it) (in-esc csv nil col)))))
+           (out-esc (csv header col)
+             (let ((it (read-char csv nil)))
+               (and header it (format t "~D =&gt; " col))
+               (case it
+                 ((#\") (in-esc csv nil col))
+                 ((#\newline) (princ it) (out-esc csv t 1))
+                 ((#\,) (princ #\newline) (out-esc csv t (1+ col)))
+                 ((nil) t)
+                 (t (princ it) (out-esc csv nil col))))))
+        (with-open-file (csv csv-file)
+          (out-esc csv t 1))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1581'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1581
+  :user_name: 匿名
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/4/
+  :language: JavaScript
+  :time: 2007/07/30 08:52 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  JavaScriptでの投稿が無いようなので。ちょっと修正すれば複数レコードのパーズも対応できるはず。\n\t"
+  :code: |
+    function unquote(val) {
+      return (val.indexOf('"') == 0) ? val.substring(1, val.length-1).replace(/""/g, '"')
+                                     : val;
+    }
+    function splitCsv(csv) {
+      // カラム分離用パターン
+      //   グループ1⇒ 行頭 or カンマ or 改行
+      //   グループ2⇒ 空文字列 or 非quoted文字列 or quoted文字列
+      //     非quoted文字列⇒ 改行, カンマ, " を含まない1文字 +
+      //                     改行, カンマを含まない文字を0文字以上
+      //     quoted文字列⇒ " + ( "" or " 以外の1文字 ) を0回以上 + "
+      //   (?=,|\\r?\\n|$)⇒ 次に カンマ, 改行, 行末が続くこと(幅0肯定先読み)
+      var reg = new RegExp('(^|,|\\r?\\n)(|[^"\\r\\n,][^\\r\\n,]*|(?:"(?:""|[^"])*"))(?=,|\\r?\\n|$)', 'g');
+
+      var ary = [];
+      var match = null;
+      while(match = reg.exec(csv)) {
+        ary.push(unquote(match[2]));
+      }
+      return ary;
+    }
+
+    function printCsv(input) {
+      var values = splitCsv(input);
+      var ary = [];
+
+      for(var i=0; i&lt;values.length; i++) {
+        ary.push((i+1) + ' =&gt; ' + values[i]);
+      }
+      alert(ary.join("\n"));
+    }
+
+    printCsv('"aaa","b\n\
+    bb","ccc",zzz,"y""Y""y",xxx');
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1585'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1585
+  :user_name: yuin
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/07/30 10:26 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <pre class=\"compact\">Scala 2.6.0-RC1でscala.util.parsing.combinatorパッケージが標準ライブラリになりました。\r\n\r\nということでScalaでパーサコンビネータ。ほとんど資料がないので手探りですが。</pre>\n\t"
+  :code: |
+    import scala.util.parsing.combinator.{Parsers, ImplicitConversions, ~, mkTilde}
+    import scala.util.parsing.input.CharArrayReader
+    import Character.isISOControl
+
+    object CSVParser {
+     trait Base
+     case class Field(s:String) extends Base {
+       override def toString = s
+     }
+     case class Record(fields: List[Field]) extends Base
+     case class File(records :List[Record]) extends Base
+
+     def mkString(cs :List[Any]) = cs.mkString("")
+     class CSVParser extends Parsers {
+       type Elem = Char
+       def notMeta(c:Elem) = c!=',' &amp;&amp; c!='\n' &amp;&amp; c!='"' &amp;&amp; !isISOControl(c)
+
+       lazy val file   = record.*('\n') ^^ File
+       lazy val record = (field|quotedField|nullableField).*(',') ^^ Record
+       lazy val field = chars.+ ^^ {cs =&gt; Field(mkString(cs))}
+       lazy val nullableField = chars.* ^^ {cs =&gt; Field("")}
+       lazy val quotedField = '"' ~ (charsInQuote|quoteInQuote).* ~ '"' ^^ {cs =&gt; Field(mkString(cs))}
+       lazy val charsInQuote = elem("chars in field", _!='"')
+       lazy val quoteInQuote = repN(2, quote) ^^ {cs =&gt; '"'}
+       lazy val quote  = '"' ^^ success
+       lazy val chars  = elem("chars", notMeta)
+     }
+    }
+
+    val data = """
+    "aaa","b
+    bb","ccc",zzz,"y""Y""y",xxx
+    """.trim
+
+    (new CSVParser.CSVParser).file(new
+    CharArrayReader(data.toCharArray)).map(file =&gt; {
+     file.records.map({record =&gt;
+       val fields = record.fields
+       (1 to fields.length).foreach(i =&gt; println(i +" =&gt; " + fields(i-1)))
+     })
+    })
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1589'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1589
+  :user_name: ココサブ
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/24/
+  :language: C
+  :time: 2007/07/30 10:58 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">ファイルからの読み込みまでやってみました。\r\nあと、CSVデータを列データに別ける部分がおかしかったので修正しています。(\"の中の'\\n'と','の取り扱い方)\r\n\r\n実行結果\r\n%
+    cat data.txt\r\n\"aaa\",\"b\r\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx,\"eee,EEE\",,,\r\ndddd,eee\r\n%
+    ./a.out data.txt\r\n1 =&gt; aaa\r\n2 =&gt; b\r\nbb\r\n3 =&gt; ccc\r\n4 =&gt; zzz\r\n5
+    =&gt; y\"Y\"y\r\n6 =&gt; xxx\r\n7 =&gt; eee,EEE\r\n8 =&gt;\r\n9 =&gt;\r\n10 =&gt;\r\n1
+    =&gt; dddd\r\n2 =&gt; eee\r\n1 =&gt;\r\n</pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+
+    enum { false, true, eof };
+    int print_one_value(FILE *fp);
+
+    int main(int argc, char **argv)
+    {
+        int  ret;
+        int  count = 1;
+        FILE *fp;
+
+        if (argc &lt; 2) {
+            fprintf(stderr, "usage: %s file_name\n", argv[0]);
+            return 2;
+        }
+
+        fp = fopen(argv[1], "r");
+        if (fp == NULL) {
+            fprintf(stderr, "Error\n");
+            return 1;
+        }
+
+        while (true) {
+            printf("%d =&gt; ", count);
+            ret = print_one_value(fp);
+            puts("");
+            if (ret == eof) {
+                break;
+            }
+            else if (ret == true) {
+                count = 0;
+            }
+            count++;
+        }
+
+        fclose(fp);
+        return 0;
+    }
+
+    int print_one_value(FILE *fp)
+    {
+        int c;
+        int quote_in = false;
+
+        while ((c = fgetc(fp)) != EOF) {
+            if      (c == ','  &amp;&amp; (!quote_in)) return false;
+        int quote_in = false;
+
+        while ((c = fgetc(fp)) != EOF) {
+            if      (c == ','  &amp;&amp; (!quote_in)) return false;
+            else if (c == '\n' &amp;&amp; (!quote_in)) return true;
+
+            if (c == '"') {
+                c = fgetc(fp);
+                if (c == '"' &amp;&amp; quote_in) {
+                    putchar(c);
+                }
+                else {
+                    quote_in ^= 1;
+                    ungetc(c, fp);
+                }
+            }
+            else {
+                putchar(c);
+            }
+        }
+
+        return eof;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1594'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1594
+  :user_name: nkmrtks
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/155/
+  :language: 
+  :time: 2007/07/30 13:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  あ、ちなみにコレは複数レコードに対応してます。（１７行目がソレ）\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1616'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1616
+  :user_name: nkmrtks
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/155/
+  :language: Common
+  :time: 2007/07/31 05:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">題意に沿うバージョンと、ファイルから読み込むバージョンとに分けてみた。\r\n＃終端処理が微妙なことに気づいたので微妙に修正…</pre>\n\t"
+  :code: |
+    (defun splitCSV (csv-stream)
+      (labels
+          ((in-esc (csv header col)
+             (let ((it (read-char csv nil)))
+               (case it
+                 ((#\") (let ((it (read-char csv nil)))
+                          (case it
+                            (#\" (princ it) (in-esc csv nil col))
+                            (#\, (princ #\newline) (out-esc csv t (1+ col))))))
+                 ((nil) nil)
+                 (t (princ it) (in-esc csv nil col)))))
+           (out-esc (csv header col)
+             (let ((it (read-char csv nil)))
+               (and header (or (&gt; col 1) it) (format t "~D =&gt; " col))
+               (case it
+                 ((#\") (in-esc csv nil col))
+                 ((#\newline) (princ it) (out-esc csv t 1))
+                 ((#\,) (princ #\newline) (out-esc csv t (1+ col)))
+                 ((nil) t)
+                 (t (princ it) (out-esc csv nil col))))))
+        (and (streamp csv-stream)
+             (out-esc csv-stream t 1))))
+
+    (defun splitCSV-from-file (csv-file)
+      (with-open-file (stream csv-file)
+        (splitCSV stream)))
+
+    (defun splitCSV-from-string (csv-string)
+      (with-input-from-string (stream csv-string)
+        (splitCSV stream)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1639'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1639
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2007/08/01 04:18 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">mapAccumL を使ってみました。\r\n状態遷移表という感じ。\r\n</pre>\n\t"
+  :code: |
+    import List
+    import Maybe
+
+    data State = F | E | G | Z
+
+    parse (F,xs) '\"' = ((E,xs),       Nothing)
+    parse (F,xs) '\n' = ((Z,[]),       Just xs)
+    parse (F,xs) ','  = ((F,[]),       Just xs)
+    parse (F,xs) c    = ((F,xs++[c]),  Nothing)
+
+    parse (E,xs) '\"' = ((G,xs),       Nothing)
+    parse (E,xs) c    = ((E,xs++[c]),  Nothing)
+
+    parse (G,xs) ','  = ((F,[]),       Just xs)
+    parse (G,xs) '\n' = ((F,[]),       Just xs)
+    parse (G,xs) '\"' = ((E,xs++"\""), Nothing)
+    parse (G,xs) c    = ((F,xs++[c]),  Nothing)
+
+    parse (Z,_)  c    = ((Z,[]),       Nothing)
+
+    splitCVS record = mapM_ putStrLn $ zipWith showFiled [1..]
+      $ case s of
+          (F, xs) -&gt; fs ++ [xs]
+          (E, xs) -&gt; fs ++ [xs]
+          _ -&gt; fs
+      where
+        showFiled i f = (show i)++" =&gt; "++f
+        (s, xss) = mapAccumL parse (F,[]) record
+        fs = catMaybes xss
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1646'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1646
+  :user_name: iakio
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/77/
+  :language: C
+  :time: 2007/08/01 07:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  あまり自信ありませんが、flexです。\n\t"
+  :code: |
+    %option main
+    %x q
+    %{
+    int i = 1;
+    int start = 1;
+    void p(char c)
+    {
+            if (start) { start = 0; printf("%d =&gt; ", i++); }
+            putchar(c);
+    }
+    %}
+    %%
+    &lt;INITIAL&gt;\"     { BEGIN(q); }
+    &lt;INITIAL&gt;,      { p('\n'); start = 1; }
+    &lt;INITIAL&gt;"\n"   { p('\n'); start = 1; i = 1; }
+    &lt;q&gt;\"\"         { p('\"'); }
+    &lt;q&gt;\"           { BEGIN(INITIAL); }
+    &lt;*&gt;.|\n         { p(*yytext); }
+
+    %%
+  :tags:
+  - flex
+  :references:
+    :url: 
+    :title: 
+- :id: '1683'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1683
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2007/08/02 05:53 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">入力文字列を Maybe列（Nothing が EOF的役割）に変換してから\r\n処理させてコードをすっきりさせました。\r\n\r\nさらに
+    Maybe を組み合わせて '\\n' を認識したところで処理を\r\n打ち切るようにさせたいのですが Maybe の嵐になるのでこのへんで\r\nやめておきます。</pre>\n\t"
+  :code: |
+    import List
+    import Maybe
+
+    data State = F | E | G | Z
+
+    parse (F,xs) (Just '\"') = ((E,xs),       Nothing)
+    parse (F,xs) (Just '\n') = ((Z,[]),       Just xs)
+    parse (F,xs) (Just ',')  = ((F,[]),       Just xs)
+    parse (F,xs) (Just c)    = ((F,xs++[c]),  Nothing)
+    parse (F,xs) Nothing     = ((Z,[]),       Just xs)
+
+    parse (E,xs) (Just '\"') = ((G,xs),       Nothing)
+    parse (E,xs) (Just c)    = ((E,xs++[c]),  Nothing)
+    parse (E,xs) Nothing     = ((Z,[]),       Just xs)
+
+    parse (G,xs) (Just ',')  = ((F,[]),       Just xs)
+    parse (G,xs) (Just '\n') = ((F,[]),       Just xs)
+    parse (G,xs) (Just '\"') = ((E,xs++"\""), Nothing)
+    parse (G,xs) (Just c)    = ((F,xs++[c]),  Nothing)
+    parse (G,xs) Nothing     = ((Z,[]),       Just xs)
+
+    parse (Z,_)  _           = ((Z,[]),       Nothing)
+
+    splitCVS record = mapM_ putStrLn $ zipWith showFiled [1..]
+        $ catMaybes $ snd
+        $ mapAccumL parse (F,[]) $ map Just record ++ [Nothing]
+      where
+        showFiled i f = (show i)++" =&gt; "++f
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1685'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1685
+  :user_name: nobsun
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/02 06:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">手抜き版。相互再帰lexer</pre>\n\t"
+  :code: "main = putStr \n     . unlines\n     . map (uncurry $ flip ((.) . (++) .
+    show) (\" =&gt; \"++))\n     . zip [1..]\n     . splitCSV =&lt;&lt; getContents\n\nsplitCSV
+    = lex0 [] \"\"\n\nlex0 cs c \"\" = reverse (c:cs)\nlex0 cs c ('\"' :xs) = lex1
+    cs c xs\nlex0 cs c (',' :xs) = lex0 (reverse c:cs) \"\" xs\nlex0 cs c (x   :xs)
+    = lex0 cs (x:c) xs\nlex1 cs c ('\"':',':xs) = lex0 (reverse c:cs) \"\" xs\nlex1
+    cs c ('\"':'\"':xs) = lex1 cs ('\"':c) xs\nlex1 cs c (x      :xs) = lex1 cs (x
+    \ :c) xs\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1696'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1696
+  :user_name: ocean
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/177/
+  :language: C
+  :time: 2007/08/02 11:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  上のコードをC++に移植しました。カバレッジ稼ぎ。\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;vector&gt;
+    #include &lt;string&gt;
+    #include &lt;iterator&gt;
+
+    std::vector&lt;std::string&gt; split_csv(const std::string&amp; csv)
+    {
+        std::vector&lt;std::string&gt; v;
+
+        std::string::const_iterator it = csv.begin();
+
+        while (it != csv.end())
+        {
+            std::string s;
+
+            bool quoted = false;
+
+            while (it != csv.end())
+            {
+                if (!quoted &amp;&amp; *it == ',')
+                {
+                    ++it;
+
+                    break;
+                }
+                else if (!quoted &amp;&amp; (*it == '\r' || *it == '\n'))
+                {
+                    it = csv.end(); // ignore second record
+
+                    break;
+                }
+                else if (*it == '"' &amp;&amp; (++it == csv.end() || *it != '"'))
+                {
+                    quoted = !quoted;
+                }
+                else
+                {
+                    s.append(1, *it++);
+                }
+            }
+
+            v.push_back(s);
+        }
+
+        return v;
+    }
+
+    int main()
+    {
+        const char csv[] = "\"aaa\",\"b\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx";
+
+        std::vector&lt;std::string&gt; v = split_csv(csv);
+
+        for (size_t i = 0; i &lt; v.size(); ++i)
+        {
+            std::cout &lt;&lt; (i + 1) &lt;&lt; " =&gt; " &lt;&lt; v[i] &lt;&lt; std::endl;
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1725'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1725
+  :user_name: tomatsu
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/323/
+  :language: Pnuts
+  :time: 2007/08/02 12:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">別途csvモジュールが必要。\r\n\r\nhttp://pnuts.org/extensions/csv/</pre>\n\t"
+  :code: |
+    use("csv")
+    for (columns: readCSV("csv.txt")){
+       i=0
+       for(c:columns) println(++i, " =&gt; ", c)
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1911'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1911
+  :user_name: naoya_t
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/348/
+  :language: awk
+  :time: 2007/08/06 04:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">% cat test.csv\r\n\"aaa\",\"b\r\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx\r\n\"aaa\",\"\"\"\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx,\"u,v\"\r\n%
+    awk -f csv.awk test.csv\r\n1 =&gt; aaa\r\n2 =&gt; b\r\nbb\r\n3 =&gt; ccc\r\n4
+    =&gt; zzz\r\n5 =&gt; y\"Y\"y\r\n6 =&gt; xxx\r\n\r\n1 =&gt; aaa\r\n2 =&gt; \"\r\n3
+    =&gt; ccc\r\n4 =&gt; zzz\r\n5 =&gt; y\"Y\"y\r\n6 =&gt; xxx\r\n7 =&gt; u,v\r\n</pre>\n\t"
+  :code: "BEGIN {\n\ts = \"\" # バッファ\n\tr = 0 # フィールド番号\n\tt = 2 # バッファのどこから \" を探すか（覚えておくため）\n}\n\n{\n\ts
+    = s $0\n\twhile (s !‾ /^$/) {\n\n\t\tif (s ‾ /^\"/) {\t# \"で始まる\n\t\t\t\n\t\t\tif
+    (match(substr(s,t), /\"/)) {\n\t\t\t\tif (substr(s,t+RSTART-1) ‾ /^\"\"/) { #
+    次が\"ならスキップしたい\n\t\t\t\t\tt += RSTART + 1 ; continue\n\t\t\t\t}\n\t\t\t\t# 閉じる\"を検出.\n\t\t\t}
+    else {\n\t\t\t\t# 閉じる\"がなければ１行追加\n\t\t\t\tgetline nextline\n\t\t\t\ts = s \"¥n\"
+    nextline\n\t\t\t\tcontinue\n\t\t\t}\n\t\t\t\n\t\t\t# \"で囲まれた部分 (\"\" が含まれている場合がある)\n\t\t\ts0
+    = substr(s,2,t+RSTART-3)\n\t\t\tgsub(/\"\"/,\"¥\"\", s0)\n\t\t\tprintf(\"%d =&gt;
+    %s¥n\", ++r, s0)\n\t\t\ts = substr(s, t+RSTART)\n\n\t\t\tt = 2 # 戻しておく\n\n\t\t\tif
+    (s ‾ /^,/) {\n\t\t\t\ts = substr(s,2)\n\t\t\t} else if (s ‾ /^$/) {\n\t\t\t\tprintf(\"¥n\")\n\t\t\t\tr
+    = 0\n\t\t\t\ts = \"\"\n\t\t\t}\n\t\t} else {\n\t\t\tif (match(s, /,/)) {\n\t\t\t\tprintf(\"%d
+    =&gt; %s¥n\", ++r, substr(s,1,RSTART-1))\n\t\t\t\ts = substr(s,RSTART+1)\n\t\t\t}
+    else {\n\t\t\t\tprintf(\"%d =&gt; %s¥n\", ++r, s)\n\t\t\t\ts = \"\"\n\t\t\t}\n\t\t}\n\t}\n\n\tr
+    = 0\n\tprintf \"¥n\"\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1934'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1934
+  :user_name: raynstard
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2007/08/06 12:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">awkなら手元でも確認できるのでやってみました。\r\n最後の列がNULLの場合(カンマ終端)にちょっと足りないみたいです。\r\n#
+    ccc,  とか\r\n\r\nL：43が原因なのはわかるんですけど\r\nどうするのが一番かっこいいんだろう(笑\r\n直すだけならL：42の次にifを足せば良いだけみたいだけど。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1959'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/1959
+  :user_name: yooskeh
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/91/
+  :language: Prolog
+  :time: 2007/08/07 03:37 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">PrologでDCG使って書いてみました。\r\n\r\n?- print_record('\"aaa\",\"b\\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx').\r\n1
+    =&gt; aaa\r\n2 =&gt; b\r\nbb\r\n3 =&gt; ccc\r\n4 =&gt; zzz\r\n5 =&gt; y\"Y\"y\r\n6
+    =&gt; xxx\r\n</pre>\n\t"
+  :code: "csv([R|Rs]) --&gt; record(R), \"\\n\", csv(Rs), !.\ncsv([R])    --&gt; record(R),
+    !.\ncsv([])     --&gt; [].\n\nrecord([D|Ds]) --&gt; field(D), \",\", record(Ds),
+    !.\nrecord([D])    --&gt; field(D), !.\nrecord([])     --&gt; [].\n\nfield(D)
+    --&gt; \"\\\"\", quoted(D), \"\\\"\" ; naked(D).\n\nnaked([C|Cs]) --&gt; [C],
+    { \\+ member(C, \"\\\",\\n\") }, naked(Cs), !.\nnaked([])     --&gt; [].\n\nquoted([0'\"|Cs])
+    --&gt; \"\\\"\\\"\", quoted(Cs), !.\nquoted([C|Cs])   --&gt; [C], { C \\==  0'\"
+    }, quoted(Cs), !.\nquoted([])       --&gt; [].\n\nprint_record(Atom) :-\n\tname(Atom,
+    CSV),\n\tphrase(csv([Record]), CSV),\n\tforall(nth1(N, Record, Data), writef('%w
+    =&gt; %s\\n', [N, Data])).\n"
+  :tags:
+  - SWI-Prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '2159'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/2159
+  :user_name: miyamuko
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/382/
+  :language: xtal
+  :time: 2007/08/14 12:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">汚いなぁ。。。\r\nfiber 便利。</pre>\n\t"
+  :code: |
+    Iterator::with_peek: method fiber {
+        prev, curr: null, null;
+        noloop: true;
+        this {|next|
+            if (curr) {
+                yield prev, curr, next;
+            }
+            prev, curr = curr, next;
+            noloop = false;
+        }
+        if (!noloop) {
+            yield prev, curr, null;
+        }
+    }
+
+    CSVParser: class {
+        - _iter;
+        - _finish;
+
+        initialize: method(string) {
+            _iter = string.split("").each.with_peek;
+            _finish = false;
+        }
+
+        flush: method(field) {
+            r: field.join("");
+            field.clear();
+            return r;
+        }
+
+        line_parser: method fiber {
+            in_quote: false;
+            field: [];
+            _iter {|prev,it,next|
+                if (in_quote) {
+                    if (it == "\"") {
+                        if (prev == "\"") {
+                            // ignore
+                        } else if (next == "\"") {
+                            field.push_back(it);
+                        } else {
+                            in_quote = false;
+                        }
+                    } else {
+                        field.push_back(it);
+                    }
+                } else {
+                    if (field.empty() &amp;&amp; it == "\"") {
+                        in_quote = true;
+                    } else if (it == "\n") {
+                        yield flush(field);
+                        break;
+                    } else if (it == ",") {
+                        yield flush(field);
+                    } else {
+                        field.push_back(it);
+                    }
+                }
+            } nobreak {
+                _finish = true;
+            }
+            if (!field.empty()) {
+                yield flush(field);
+            }
+        }
+
+        parse: method fiber {
+            while (!_finish) {
+                yield line_parser();
+            }
+        }
+    }
+
+
+    parser: CSVParser(
+        [%!"aaa","b\nbb","ccc",zzz,"y""Y""y",xxx!,
+         %!a,b,c,d!,
+         %!a,b,c,!,
+         %!a!,
+         %!!,
+         ].join("\n"));
+
+    format: %f[%(line)d:%(col)d: %(cell)s];
+    parser.parse.with_index {|lineno,line|
+        line.with_index {|colno,it|
+            format(line: lineno, col: colno, cell: it).p;
+        }
+    }
+  :tags:
+  - xtal0.9.7
+  :references:
+    :url: 
+    :title: 
+- :id: '2195'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/2195
+  :user_name: naoya_t
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/348/
+  :language: 
+  :time: 2007/08/15 05:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">コメント頂いていることに気づかずすみません。\r\n確かに、これでは行末がカンマだと42行目で
+    s が空文字列になって、\r\n9行目で while ループを抜けてしまうので空フィールドが出力されませんね。\r\n34行目も同様です。\r\n\r\nwhile
+    ループをそのままにするのであれば\r\n34行目と43行目の後に、s が空なら空フィールドを出力するように\r\n  if (s ~ /^$/) printf(\"%d
+    =&gt; %s\\n\", ++r, \"\")\r\nのような１行を加えれば良さそうです。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2282'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/2282
+  :user_name: lkr
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/393/
+  :language: Ruby
+  :time: 2007/08/17 13:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あえて自力でやってみました。</pre>\n\t"
+  :code: "def parse_csv(d)\n\trecords = []\n\tcolumns = []\n\tbuffer = \"\"\n\tin_quote
+    = false\n\n\ti = 0\n\twhile i &lt; d.size\n\t\tif d[i] == ?\"\n\t\t\tif d[i+1]
+    != ?\"\n\t\t\t\tin_quote = !in_quote\n\t\t\t\ti += 1\n\t\t\t\tnext\n\t\t\telse\n\t\t\t\ti
+    += 1\n\t\t\tend\n\t\tend\n\t\t\n\t\tunless in_quote\n\t\t\tif d[i] == ?, || d[i]
+    == ?\\n\n\t\t\t\tcolumns &lt;&lt; buffer\n\t\t\t\tbuffer = \"\"\n\n\t\t\t\tif
+    d[i] == ?\\n\n\t\t\t\t\trecords &lt;&lt; columns\n\t\t\t\t\tcolumns = []\n\t\t\t\tend\n\t\t\t\ti
+    += 1\n\t\t\t\tnext\n\t\t\tend\n\t\tend\n\n\t\tbuffer += d[i].chr\n\t\ti += 1\n\tend\n\n\trecords\nend\n\ndata=&lt;&lt;EOT\n\"aaa\",\"b\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx\nEOT\n\nrecords=parse_csv(data)\nrecords.first.each_with_index{
+    |r,index|\n\tputs \"#{index+1} =&gt; #{r}\"\n}\n"
+  :tags:
+  - ruby
+  :references:
+    :url: 
+    :title: 
+- :id: '2296'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/2296
+  :user_name: raynstard
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/127/
+  :language: Perl
+  :time: 2007/08/18 04:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">昔書いたコードってホントよくわからないものですね(笑\r\nサンプル出力するとうまく出るのでちゃんと機能しているはず^^；；\r\n\r\n\"aaa\",\"b\r\nbb\",\"ccc\",\"\",zzz,\"y\"\"Y\"\"y\",\"xx,x\",,,\r\n\r\n1
+    =&gt; aaa\r\n2 =&gt; b\r\nbb\r\n3 =&gt; ccc\r\n4 =&gt;\r\n5 =&gt; zzz\r\n6 =&gt;
+    y\"Y\"y\r\n7 =&gt; xx,x\r\n8 =&gt;\r\n9 =&gt;\r\n10 =&gt;\r\n</pre>\n\t"
+  :code: "sub splitCSV($@)\n{\n    my $work = shift || ''; # CSV形式の１レコードの文字列\n    my
+    $sepCHAR = shift || ',';     # 区切り文字 \n    my $quoteCHAR = shift || '\"';   #
+    引用符\n    return 0 if( $work eq '' );\n\n    $work .= $sepCHAR; # レコードの最後に , を追加\n
+    \   # とりあえず列の取り出し;\n    my @result = ($work =~ m/((?:$quoteCHAR$quoteCHAR|$quoteCHAR.*?[^$quoteCHAR]$quoteCHAR)[
+    \\t]*|(?:.*?))$sepCHAR/sg);\n    ######################\n    # レコードのデータに\n    #
+    引用符 が含まれていた場合\n    # 引用符 を はずして 引用符二個で一つに変換する\n    if( $work =~ m/$quoteCHAR/
+    ){\n        my $count = 0;\n        foreach $work ( @result ){\n            #######################\n
+    \           # 取り出した列の整形\n            # \"\"のみはデータ無しで空白に置換\n            $work =
+    '' if( !defined($work) || $work eq \"$quoteCHAR$quoteCHAR\" );\n            $work
+    =~ s/$quoteCHAR(.+)$quoteCHAR/$1/s;       # \" で囲まれていた場合 \"を取り外す\n            $work
+    =~ s/$quoteCHAR$quoteCHAR/$quoteCHAR/g;   # \"\" は \" に変換\n            $result[
+    $count ++ ] = $work;                   # 変換後の結果で更新\n        }\n    }\n    return
+    @result;\n}\n\nmy @field;\nmy $record = &lt;&lt;CSV;\n\"aaa\",\"b\nbb\",\"ccc\",\"\",zzz,\"y\"\"Y\"\"y\",\"xx,x\",,,\nCSV\n\nprint
+    \"$record\\n\";\n@field = &amp;splitCSV($record);\nfor( my $n=0; $n&lt;=$#field;
+    $n ++)\n{\n\tprint \"$n =&gt; $field[$n]\\n\";\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4201'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/4201
+  :user_name: ocaml-nagoya
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/514/
+  :language: OCaml
+  :time: 2007/11/18 11:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  自前パースの戦略です。\r\nOCamlではこの手のパースはストリームパーサを利用すると少しだけ楽かもしれません。\r\n\n\t"
+  :code: "(* strの中にcharはあるか? *)\nlet mem_string char str =\n  try\n    let _ = \n
+    \     String.index str char \n    in \n    true\n  with\n    Not_found -&gt; \n
+    \     false\n\n(* 一文字バッファに貯めて次へ *)    \nlet next buf strm loop = \n  match Stream.peek
+    strm with\n    Some c -&gt;\n      Buffer.add_char buf (Stream.next strm);\n      loop
+    strm\n  | _ -&gt;\n      if Buffer.length buf &gt; 0 then \n        Buffer.contents
+    buf\n      else \n        raise Stream.Failure\n\n(* 区切り文字が出るまでバッファに文字を貯めていく *)
+    \     \nlet rec until_sep ?(buf = Buffer.create 80) strm =\n  match Stream.peek
+    strm with\n    Some c when mem_string c \",\\r\\n\" -&gt; \n      Buffer.contents
+    buf\n  | _ -&gt;\n      next buf strm (until_sep ~buf)\n\n(* 括り文字が出るまでバッファに文字を貯めていく
+    *)\nlet rec until_quote ?(buf = Buffer.create 80) strm =\n  match Stream.peek
+    strm with\n    Some c when c = '\"' -&gt; begin\n      match Stream.npeek 2 strm
+    with\n        '\"' :: '\"' :: [] -&gt;\n          Buffer.add_char buf (Stream.next
+    strm);\n          Stream.junk strm;\n          until_quote ~buf strm\n      |
+    _ -&gt;\n          Buffer.contents buf\n    end\n  | _ -&gt;\n      next buf strm
+    (until_quote ~buf)\n\n(* 一つのフィールドを認識。括られている奴と括られていない奴 *)\nlet parse_field = parser\n
+    \   [&lt; 'fq when fq = '\"'; field = until_quote; 'sq when sq = '\"' &gt;] -&gt;
+    \n      field\n  | [&lt; field = until_sep &gt;] -&gt; \n      field\n\n(* フィールドを切り取りつつ表示
+    *)    \nlet _ =\n  let print_field =\n    let counter = \n      ref 1 \n    in\n
+    \   fun str -&gt;\n      Printf.printf \"%d =&gt; %s\\n\" !counter str;\n      incr
+    counter\n  in\n  let rec parse = parser\n      [&lt; field = parse_field; strm
+    &gt;] -&gt;\n    print_field field;\n    begin match strm with parser\n          [&lt;
+    'c when c = ','; rest &gt;] -&gt; \n        parse rest\n    | [&lt; &gt;] -&gt;
+    \n        ()\n        end\n    | [&lt; &gt;] -&gt; \n    ()\n  in\n  parse (Stream.of_string
+    \"\\\"aaa\\\",\\\"b\\nbb\\\",\\\"ccc\\\",zzz,\\\"y\\\"\\\"Y\\\"\\\"y\\\",xxx\\n\")\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4219'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/4219
+  :user_name: horiuchi
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2007/11/19 04:59 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Javaらしく（？）Readerクラスで処理してみました。\r\n\n\t"
+  :code: "import java.io.BufferedReader;\nimport java.io.IOException;\nimport java.io.Reader;\nimport
+    java.io.StringReader;\n\npublic class Answer33 {\n    public static void main(String[]
+    args) {\n        String str = \"\\\"aaa\\\",\\\"b\\nbb\\\",\\\"ccc\\\",zzz,\\\"y\\\"\\\"Y\\\"\\\"y\\\",xxx\";\n
+    \       CSVDataReader reader = new CSVDataReader(new StringReader(str));\n        try
+    {\n            while (true) {\n                int cell = reader.getCellNumber();\n
+    \               String s = reader.readCell();\n                if (s == null)
+    break;\n                \n                System.out.println(cell + \" =&gt; \"
+    + s);\n            }\n        } catch (IOException e) {\n            e.printStackTrace();\n
+    \       }\n    }\n}\n\nclass CSVDataReader extends BufferedReader {\n    private
+    int cellCount_;\n    \n    public CSVDataReader(Reader reader) {\n        super(reader);\n
+    \       cellCount_ = 1;\n    }\n\n    public int getCellNumber() {\n        return
+    cellCount_;\n    }\n\n    public String readCell() throws IOException {\n        int
+    c = read();\n        if (c &lt; 0) return null;\n        cellCount_++;\n\n        StringBuilder
+    builder = new StringBuilder();\n        boolean quote = (c == '\"');\n        if
+    (!quote) {\n            if (c == '\\r' || c == '\\n') return \"\";\n            builder.append((char)
+    c);\n        }\n        OUTER: while ((c = read()) &gt;= 0) {\n            if
+    (quote) {\n                INNER: switch (c) {\n                case '\"':\n                    int
+    next = read();\n                    switch (next) {\n                    case
+    '\"':\n                        builder.append('\"');\n                        break
+    INNER;\n                    case ',':\n                        break OUTER;\n
+    \                   default:\n                        throw new IllegalStateException();\n
+    \                   }\n                default:\n                    builder.append((char)
+    c);\n                }\n            } else {\n                switch (c) {\n                case
+    ',':\n                case '\\r':\n                case '\\n':\n                    break
+    OUTER;\n                case '\"':\n                    throw new IllegalStateException();\n
+    \               default:\n                    builder.append((char) c);\n                }\n
+    \           }\n        }\n        return builder.toString();\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4394'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/4394
+  :user_name: jijixi
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/582/
+  :language: OCaml
+  :time: 2007/11/25 10:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Genlex という OCaml に付属の簡易字句解析モジュールを使ってみました。\r<br>非常に手抜きな作りなので、サンプルは正しく出力できますが、きちんと CSV に対応はしていません。\n\t"
+  :code: |
+    open Genlex
+
+    let string_of_token token =
+       match token with
+       | Ident  s
+       | String s -&gt; s
+       | Int    i -&gt; string_of_int i
+       | Float  f -&gt; string_of_float f
+       | Char   c -&gt; String.make 1 c
+       | _ -&gt; failwith "not use Kwd"
+
+    let columns_of_tokens str =
+       let tokens = Genlex.make_lexer [","] (Stream.of_string str) in
+       let peek () = Stream.peek tokens
+       and junk () = Stream.junk tokens in
+       let rec loop acc =
+          match peek () with
+          | None -&gt; List.rev acc
+          | Some (Kwd _) -&gt;
+               junk ();
+               loop acc
+          | Some token -&gt;
+               junk ();
+               let column = string_of_token token in
+               let rec concat col =
+                  match peek () with
+                  | None
+                  | Some (Kwd _) -&gt; col
+                  | Some tok -&gt;
+                       junk ();
+                       concat (col ^ "\"" ^ (string_of_token tok))
+               in
+               loop ((concat column) :: acc)
+       in
+       loop []
+
+    let parse_and_print str =
+       match columns_of_tokens str with
+       | [] -&gt; print_newline ()
+       | x::xs -&gt;
+            Printf.printf "1 =&gt; %s\n" x;
+            ignore begin
+               List.fold_left begin fun index str -&gt;
+                  Printf.printf "%d =&gt; %s\n" index str;
+                  succ index
+               end 2 xs
+            end
+
+    let main () =
+       let sample =
+          match Sys.argv with
+          | [|_; input |] -&gt; input
+          | _ -&gt; "\"aaa\",\"b\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx"
+       in
+       parse_and_print sample
+
+    let () = if not !Sys.interactive then main ()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4545'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/4545
+  :user_name: sumim
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/88/
+  :language: Other
+  :time: 2007/12/01 16:36 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  PEG (Parsing expression grammar) ベースのパターンマッチ OOPL である OMeta で。\r<br><br>OMeta には、COLA（Combined Object-Lambda Architecture; aka, Pepsi&amp;Coke）、Squeak Smalltalk、JavaScript での実装がありますが、ここでは Squeak OMeta を用い、Doukaku33 として定義しました。\r<br><br>実行例\r<br>| in record |\r<br>in := '\"aaa\",\"b\r<br>bb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx'.\r<br>record := (Doukaku33 onTree: nil) apply: #レコード withArguments: in.\r<br>World findATranscript: nil.\r<br>record doWithIndex: [:field :idx | Transcript cr; show: idx; show: ' =&gt; ', field]\r<br><br>出力\r<br>1 =&gt; aaa\r<br>2 =&gt; b\r<br>bb\r<br>3 =&gt; ccc\r<br>4 =&gt; zzz\r<br>5 =&gt; y\"Y\"y\r<br>6 =&gt; xxx\n\t"
+  :code: |
+    レコード     ::= &lt;列&gt;:first ($, &lt;列&gt;)*:rest =&gt; [rest addFirst: first; yourself]
+    列           ::= (&lt;クオートあり&gt; | &lt;クオートなし&gt;):xs =&gt; [String withAll: xs]
+    クオートあり ::= $" ($" $" =&gt; [$"] | ~$" &lt;char&gt;)+:xs $" =&gt; [xs]
+    クオートなし ::= (~(&lt;改行&gt; | $, | $") &lt;char&gt;)*
+    改行         ::= &lt;exactly (Character cr)&gt;
+  :tags:
+  - Squeak_OMeta
+  :references:
+    :url: /web/20090108233720/http://www.cs.ucla.edu/~awarth/ometa/
+    :title: 'OMeta: an Object-Oriented Language for Pattern Matching'
+- :id: '5152'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/5152
+  :user_name: saws
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/01/03 15:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>単にデータを加工して出力しただけです.\n題意を満たしているかどうか自信がありませんが.</p>\n\n\t"
+  :code: |
+    STR = &lt;&lt;EOS
+    "aaa","b
+    bb","ccc",zzz,"y""Y""y",xxx
+    EOS
+    def splitCSV(str)
+      str.split(/,/).
+        map{|x| x.match(/\A"?([^"](?:.|\s)+[^"])"?\z/)[1].gsub('""', '"')}.
+        each_with_index{|x, i| print "#{i+1} =&gt; #{x}\n"}
+    end
+    splitCSV(STR)
+    exit
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6179'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/6179
+  :user_name: aileron
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/467/
+  :language: PHP
+  :time: 2008/04/17 01:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>PHP 入出力ストリームと\nfgetcsvを使って簡単にやってみた</p>\n\n\t"
+  :code: |
+    &lt;?php
+    function csv2array($csv)
+    {
+        $fp = fopen('php://temp/maxmemory:'.(5*1024*1024), 'r+');
+        fputs($fp, $csv);
+        rewind($fp);
+        return fgetcsv($fp);
+    }
+
+    $csv='"aaa","b
+    bb","ccc",zzz,"y""Y""y",xxx';
+
+    var_dump(csv2array($csv));
+  :tags:
+  - PHP5.1.0
+  :references:
+    :url: 
+    :title: 
+- :id: '6180'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/6180
+  :user_name: 虹原いんく
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/787/
+  :language: C
+  :time: 2008/04/18 11:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">CSV解析用ステートマシンつくってみました。\r\n(とりあえずmain()では標準入力からとるようにしていますが、適時書き換えてください。)\r\n\r\n$
+    gcc main.c\r\n$ cat &gt; csv.txt\r\n\"aaa\",\"b\r\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx\r\n\"aaa\",\"b\r\nbb\",\"cc\r\nc\",zzz,\"y\"\"\"\"\"\"y\",xxx\r\n\r\n$
+    ./a.out &lt; csv.txt\r\n1 =&gt; aaa\r\n2 =&gt; b\r\nbb\r\n3 =&gt; ccc\r\n4 =&gt;
+    zzz\r\n5 =&gt; y\"Y\"y\r\n6 =&gt; xxx\r\n\r\n1 =&gt; aaa\r\n2 =&gt; b\r\nbb\r\n3
+    =&gt; cc\r\nc\r\n4 =&gt; zzz\r\n5 =&gt; y\"\"\"y\r\n6 =&gt; xxx\r\n\r\n</pre>\n\t"
+  :code: "/*-\n * The MIT License\n * \n * Copyright (c) 2008 虹原いんく\n * \n * Permission
+    is hereby granted, free of charge, to any person obtaining a copy\n * of this
+    software and associated documentation files (the \"Software\"), to deal\n * in
+    the Software without restriction, including without limitation the rights\n *
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n *
+    copies of the Software, and to permit persons to whom the Software is\n * furnished
+    to do so, subject to the following conditions:\n * \n * The above copyright notice
+    and this permission notice shall be included in\n * all copies or substantial
+    portions of the Software.\n * \n * THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT
+    WARRANTY OF ANY KIND, EXPRESS OR\n * IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+    WARRANTIES OF MERCHANTABILITY,\n * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE\n * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+    DAMAGES OR OTHER\n * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+    ARISING FROM,\n * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN\n * THE SOFTWARE.\n */\n/* csv.state : http://ja.doukaku.org/33/ 寄稿用
+    */\n\n#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n\n/*
+    \\&lt;TAB&gt; \\, を無視する。 = 1 */\n#define ENABLE_ENTAB       0\n/* 列データに「\"」を含める場合「\\\"」とする。
+    = 1 */\n#define ENABLE_ENQUOT      0\n/* 列データに「\"」を含める場合「\"\"」とする。 = 1 */\n#define
+    ENABLE_QUOTQUOT    1\n\n#define MODE_CSV          0x0001\n#define MODE_TSV          0x0002\n#define
+    MODE_FIXROWS      0x0040\n\n#define STATE_CSV_WAIT_QUOT    0\n#define STATE_CSV_NEXT_QUOT
+    \   1\n#define STATE_CSV_NEXT_TAB     2\n#define STATE_CSV_DONE         3\n#define
+    STATE_CSV_BUFFEROVER   4\n\nstatic char *_state[] = {\n    \"STATE_CSV_WAIT_QUOT
+    \ \",\n    \"STATE_CSV_NEXT_QUOT  \",\n    \"STATE_CSV_NEXT_TAB   \",\n    \"STATE_CSV_DONE
+    \      \",\n    \"STATE_CSV_BUFFEROVER \",\n};\n\n/* ------------------------------------------------------------------
+    */\nstruct csv_work\n{\n    int state;\n    int mode;\n    int rows;\n\n    char
+    **x; /* テンポラリポインタ\n               - read_csv で渡したバッファを解放しない場合利用可能 */\n\n    char
+    **node; /* 要素 */\n    int node_pos; /* 現在の要素数 */\n    int node_max; /* 要素最大サイズ
+    */\n\n};\n\n/* ------------------------------------------------------------------
+    */\nvoid csv_free( struct csv_work* csv )\n{\n    int i;\n    for( i = 0; i &lt;
+    csv-&gt;node_max; i++ )\n        if(csv-&gt;node[i]) free(csv-&gt;node[i]);\n\n
+    \   free( csv-&gt;x );\n    free( csv );\n}\n\n/* ------------------------------------------------------------------
+    */\nstruct csv_work* csv_init( int node )\n{\n    int i;\n    unsigned int x_buffsize;\n
+    \   struct csv_work* csv;\n\n    csv = (struct csv_work*)malloc( sizeof(struct
+    csv_work) );\n    \n    csv-&gt;state = STATE_CSV_WAIT_QUOT;\n    csv-&gt;mode
+    \ = 0;\n    csv-&gt;rows  = 1;\n\n    x_buffsize = sizeof(char*) * node;\n    csv-&gt;node_max
+    = node;\n    csv-&gt;node_pos   = 0;\n    csv-&gt;x = (char**)malloc(x_buffsize);\n
+    \   csv-&gt;node = (char**)malloc(x_buffsize);\n\n    for( i = 0; i &lt; node;
+    i++ )\n        csv-&gt;node[i] = NULL;\n\n    return csv;\n}\n\n/* ------------------------------------------------------------------
+    */\nvoid csv_read_cat( struct csv_work* csv, char * p )\n{\n    if(csv-&gt;node[csv-&gt;node_pos]
+    == NULL)\n        csv-&gt;node[csv-&gt;node_pos] = strdup(csv-&gt;x[csv-&gt;node_pos]);\n\n
+    \   /* 既にdup されている場合、前回途中で止まっている */\n    /* 前回の分と連結 */\n    else {\n        char
+    *cat;\n\n        cat = (char *)malloc(( strlen(p) +\n          strlen(csv-&gt;node[csv-&gt;node_pos])
+    + 1) * sizeof(char) );\n\n        strcpy( cat, csv-&gt;node[csv-&gt;node_pos]
+    );\n        strcat( cat, p );\n        free(csv-&gt;node[csv-&gt;node_pos]);\n
+    \       csv-&gt;node[csv-&gt;node_pos] = cat;\n    }\n    return ;\n}\n\n/* ------------------------------------------------------------------
+    */\nvoid csv_read( struct csv_work* csv, char * buff )\n{\n    int i, before;\n
+    \   char *p;\n    char *q;\n\n    p = buff;\n    before = csv-&gt;node_pos;\n\n
+    \   for(;*p != '\\0';) {\n\n//        printf(\"%s[%x](%d/%d):%s\\n\", _state[csv-&gt;state],
+    csv-&gt;mode, csv-&gt;node_pos, csv-&gt;rows, p);\n\n        switch(csv-&gt;state)\n
+    \       {\n        case STATE_CSV_WAIT_QUOT:\n            /* skip space */\n            for
+    (q = p;*q != '\\0';q++) {\n                if(*q != ' ') break;\n            }\n\n
+    \           /* quote? */\n            if ( *q != '\\\"' ) {\n                /*
+    p = space とばす前 */\n                /* カンマまたは タブを捜す*/\n                csv-&gt;state
+    = STATE_CSV_NEXT_TAB;\n            }\n            else {\n                p =
+    q;\n                /* \" \" 間で囲まれている */\n                p++; /* \" を飛ばす */\n
+    \               csv-&gt;state = STATE_CSV_NEXT_QUOT;\n            }\n\n            if(
+    csv-&gt;node_pos &gt; csv-&gt;node_max )\n                csv-&gt;state = STATE_CSV_BUFFEROVER;\n\n
+    \           csv-&gt;x[csv-&gt;node_pos] = p;\n        break;\n\n        /* 次の
+    \" まで移動 */\n        case STATE_CSV_NEXT_QUOT:\n            for (q = p;*q != '\\0';q++)
+    {\n                if (*q == '\\\"') {\n#if ENABLE_QUOTQUOT\n                    if(\n
+    \                   /* \"\" は無視する */\n                        ( *(q + 1) == '\\\"'
+    )) {\n                        q = q + 1;\n                        continue;\n
+    \                   }\n#endif /* ENABLE_QUOTQUOT */\n#if ENABLE_ENQUOT\n                    if
+    (( q != p ) &amp;&amp;\n                    /* \\\" は無視する */\n                        (
+    *(q - 1) == '\\\\' )) {\n                        continue;\n                    }\n#endif
+    /* ENABLE_ENQUOT */\n\n                    *q = '\\0';\n                    /*
+    次のノードに移動する */\n                    q++;\n                    csv_read_cat( csv,
+    p );\n                    p = q;\n                    csv-&gt;state = STATE_CSV_NEXT_TAB;\n
+    \                   break;\n                }\n            }\n            if(
+    *q == '\\0' ) {\n                csv_read_cat( csv, p );\n                p =
+    q;\n            }\n        break;\n\n        /* タブまたはカンマ区切りを捜す */\n        case
+    STATE_CSV_NEXT_TAB:\n            for (q = p;*q != '\\0';q++) {\n                if
+    ((*q == ',') ||\n                    /* 既にCSVとして読み込んでいるのであれば、\n                       TABはそのまま取り込みます。
+    */\n                    ((*q == '\\t') &amp;&amp; (!(csv-&gt;mode &amp; MODE_CSV)))
+    || \n                    (*q == '\\r') || (*q == '\\n')) {\n#if ENABLE_ENTAB\n
+    \                   /* 先頭で区切り発見 */\n                    if( ( q == p ) ||\n                    /*
+    \\, \\\\t は無視する */\n                       ( *(q - 1) != '\\\\' ) ) {\n#endif
+    /* ENABLE_ENTAB */\n                        if(*q == ',')  csv-&gt;mode |= MODE_CSV;\n
+    \                       if(*q == '\\t') csv-&gt;mode |= MODE_TSV;\n                        /*
+    ノード数が決定しました */\n                        if(*q == '\\r' || *q == '\\n') {\n                            csv-&gt;mode
+    |= MODE_FIXROWS;\n                            if( *(q +1) == '\\r' || *(q +1)
+    == '\\n' )\n                                *q++ = '\\0';\n                        }\n
+    \                       /* 区切り文字によってノード数を推測します */\n                        if(!(csv-&gt;mode
+    &amp; MODE_FIXROWS)) csv-&gt;rows++;\n\n                        *q++ = '\\0';\n
+    \                       p = q;\n\n                        csv-&gt;state = STATE_CSV_DONE;\n
+    \                       break;\n#if ENABLE_ENTAB\n                    }\n#endif
+    /* ENABLE_ENTAB */\n                }\n            }\n            if( *q == '\\0'
+    ) {\n                csv_read_cat( csv, p );\n                p = q;\n            }\n
+    \       break;\n\n        case STATE_CSV_DONE:\n/*            printf( \"DONE.
+    %d: %s\\n\", csv-&gt;node_pos, csv-&gt;x[csv-&gt;node_pos]);*/\n            if(csv-&gt;node[csv-&gt;node_pos]
+    == NULL)\n                csv-&gt;node[csv-&gt;node_pos] = strdup(csv-&gt;x[csv-&gt;node_pos]);\n
+    \           csv-&gt;node_pos++;\n\n            csv-&gt;state = STATE_CSV_WAIT_QUOT;\n
+    \       break;\n\n        case STATE_CSV_BUFFEROVER:\n            perror(\"buffer
+    over!\");\n        break;\n        }\n    }\n\n    return ;\n}\n\n/* ------------------------------------------------------------------
+    */\nvoid csv_print( struct csv_work* csv, int row )\n{\n    int i;\n\n    if(row
+    == -1)\n        row = csv-&gt;rows;\n\n    for( i = 0; i &lt;= csv-&gt;node_pos;
+    i++ )\n    {\n        printf( \"%d =&gt; %s\\n\", i % row + 1, csv-&gt;node[i]);\n/*\n
+    *        printf( \"要素 %d行%d桁: %s\\n\", i / row + 1, i % row + 1, csv-&gt;node[i]);\n
+    */\n        if( (i+1) % (row) == 0)\n            printf( \"\\n\");\n    }\n\n
+    \   return ;\n}\n\n/* ------------------------------------------------------------------
+    */\n/* 辻褄 */\nvoid csv_fix( struct csv_work* csv )\n{\n    char *p, *q;\n    int
+    i;\n\n    for( i = 0; i &lt;= csv-&gt;node_pos; i++ ) {\n        /* 5. 列データに「\"」を含める場合「\"\"」とする。
+    */\n        p = csv-&gt;node[i];\n        q = csv-&gt;node[i];\n        for( q
+    = p ; *p != '\\0';) {\n#if ENABLE_QUOTQUOT\n            if( *q == '\\\"' &amp;&amp;
+    \ *(q +1) == '\\\"') q++;\n#endif /* ENABLE_QUOTQUOT */\n#if ENABLE_ENQUOT\n            else
+    if( *q == '\\\\' &amp;&amp;  *(q +1) == '\\\"') q++;\n#endif /* ENABLE_ENQUOT
+    */\n            *p++ = *q++;\n        }\n    }\n\n    return ;\n}\n\n/* ------------------------------------------------------------------
+    */\nint main()\n{\n    char buff[256];\n    int len;\n    int before_pos;\n    struct
+    csv_work * csv;\n\n    csv = csv_init( 400 );\n\n/* fgets: \\n か 256 読み込んだ文字列の最後に、\\0を付加します
+    */\n    while (fgets(buff, 256 - 1, stdin) != NULL) {\n        csv_read( csv,
+    buff );\n    }\n\n    csv_fix( csv );\n    csv_print( csv, -1 );\n    \n    csv_free(
+    csv );\n\n    return 0;\n}\n\n\n/**\n\n------------= csv.txt =------------------\n\"aaa\",\"b\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx\n-----------------------------------------\n\ncsv&gt;gcc
+    main.c\ncsv&gt;a.exe &lt; csv.txt\n1 =&gt; aaa\n2 =&gt; b\nbb\n3 =&gt; ccc\n4
+    =&gt; zzz\n5 =&gt; y\"Y\"y\n6 =&gt; xxx\n-----------------------------------------\n\n**/\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6183'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/6183
+  :user_name: 虹原いんく
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/787/
+  :language: C
+  :time: 2008/04/19 01:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>csv-&gt;node の解放が抜けていました。</p>\n\n\t"
+  :code: |
+    void csv_free( struct csv_work* csv )
+    {
+        int i;
+        for( i = 0; i &lt; csv-&gt;node_max; i++ )
+            if(csv-&gt;node[i]) free(csv-&gt;node[i]);
+
+        free( csv-&gt;node );
+        free( csv-&gt;x );
+        free( csv );
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6518'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/6518
+  :user_name: turugina
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/760/
+  :language: C
+  :time: 2008/06/16 05:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">変態的と名高い(?) Boost.Spirit で解析。</pre>\n\t"
+  :code: |
+    #include &lt;vector&gt;
+    #include &lt;string&gt;
+    #include &lt;exception&gt;
+    #include &lt;stdexcept&gt;
+
+    #include &lt;boost/spirit.hpp&gt;
+    #include &lt;boost/spirit/actor/push_back_actor.hpp&gt;
+    #include &lt;boost/spirit/actor/clear_actor.hpp&gt;
+
+    typedef std::vector&lt;std::string&gt; csv_elem_t;
+
+    std::vector&lt;csv_elem_t&gt;
+    parse_csv(
+        std::string lines
+        )
+    {
+      using namespace boost::spirit;
+
+      std::vector&lt;csv_elem_t&gt; csv;
+      csv_elem_t e;
+
+      rule&lt;&gt; element_r = *((anychar_p - ch_p('"')) | str_p("\"\""));
+      rule&lt;&gt; quoted_r = ch_p('"') &gt;&gt; element_r[push_back_a(e)] &gt;&gt; ch_p('"');
+
+      rule&lt;&gt; naked_r = (*(anychar_p - ch_p('"') - ch_p(',') - eol_p))[push_back_a(e)];
+
+      rule&lt;&gt; record_r = list_p((quoted_r|naked_r), ch_p(','));
+      rule&lt;&gt; csv_r = list_p(record_r[push_back_a(csv,e)][clear_a(e)], eol_p) &gt;&gt; end_p;
+
+      parse_info&lt;&gt; result = parse(lines.c_str(), csv_r);
+
+      if ( !result.full ) {
+        throw std::runtime_error("failed to parse");
+      }
+
+      typedef std::vector&lt;csv_elem_t&gt;::iterator csv_list_iter;
+      typedef csv_elem_t::iterator csv_iter;
+      for ( csv_list_iter clit = csv.begin(); clit != csv.end(); ++clit ) {
+        for ( csv_iter cit = clit-&gt;begin(); cit != clit-&gt;end(); ++cit ) {
+          std::string::size_type idx=0;
+          while ( (idx = cit-&gt;find("\"\"", idx)) != std::string::npos ) {
+            cit-&gt;replace(idx, 2, "\""); ++idx;
+          }
+        }
+      }
+
+      return csv;
+    }
+
+    int main()
+    {
+      try {
+        std::vector&lt;csv_elem_t&gt; csv =
+          parse_csv("\"aaa\",\"b\nbb\",\"ccc\",zzz,\"y\"\"Y\"\"y\",xxx");
+
+        std::cout &lt;&lt; "total records: " &lt;&lt; csv.size() &lt;&lt; "\n";
+
+        typedef std::vector&lt;csv_elem_t&gt;::const_iterator csv_list_iter;
+        typedef csv_elem_t::const_iterator csv_iter;
+        int l = 1;
+        for ( csv_list_iter clit = csv.begin(); clit != csv.end(); ++clit,++l ) {
+          std::cout &lt;&lt; "#" &lt;&lt; l &lt;&lt; "\n";
+          int i = 1;
+          for ( csv_iter cit = clit-&gt;begin(); cit != clit-&gt;end(); ++cit,++i ) {
+            std::cout &lt;&lt; i &lt;&lt; " =&gt; " &lt;&lt; *cit &lt;&lt; "\n";
+          }
+        }
+      }
+      catch ( std::exception&amp; e ) {
+        std::cerr &lt;&lt; e.what() &lt;&lt; "\n";
+      }
+      return 0;
+    }
+  :tags:
+  - Boost.Spirit
+  - boost
+  :references:
+    :url: 
+    :title: 
+- :id: '7788'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/7788
+  :user_name: susu
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/218/
+  :language: OCaml
+  :time: 2008/10/12 23:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "(*  ocaml camlp4rf.cma もしくは\n    ocamlc -pp \"camlp4rf\" a.ml  *)\n\nvalue
+    add_opened_csv_string =\n  let rec loop buf = parser\n    [ [: `'\"'; st:] -&gt;
+    \n        if (Stream.peek st &lt;&gt; Some '\"') then ()\n        else (Buffer.add_char
+    buf (Stream.next st); loop buf st)\n    | [: `c ; st :] -&gt; (Buffer.add_char
+    buf c; loop buf st) ]\n  in fun buf st -&gt; loop buf st;\n\nvalue record_iteri
+    =\n  let use_buffer f buf = \n    (f (Buffer.contents buf); Buffer.clear buf)
+    in\n  let rec loop f pos buf  = parser\n    [ [: `','; st:] -&gt; (use_buffer
+    (f pos) buf; loop f (pos+1) buf st)\n    | [: `'\\n'; st:] -&gt; use_buffer (f
+    pos) buf \n    | [: `'\"'; st:] -&gt; (add_opened_csv_string buf st; loop f pos
+    buf st)\n    | [: `c ; st:] -&gt; (Buffer.add_char buf c; loop f pos buf st)\n
+    \   | [: :] -&gt; use_buffer (f pos) buf ]\n  in fun st f buf -&gt; loop f 1 buf
+    st;\n\n(*\nvalue t = Stream.of_string \"\\\n  \\\"aaa\\\",\\\"b\\n\\\n  bb\\\",\\\"ccc\\\",zzz,\\\"y\\\"\\\"Y\\\"\\\"y\\\",xxx\";\n\nrecord_iteri
+    t (Printf.printf \"%2d =&gt; %s\\n\") (Buffer.create 8);\n*)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7876'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/7876
+  :user_name: しらたま
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/607/
+  :language: 
+  :time: 2008/10/27 23:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>なでしこでは「CSV取得」命令で配列に変換できます。</p>\n</div>\n\t"
+  :code: |
+    「"aaa","b
+    bb","ccc",zzz,"y""Y""y",xxx」をCSV取得
+    反復
+    　反復
+    　　回数＆「 =&gt; 」＆対象を表示
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8039'
+  :parent_id: '33'
+  :url: http://ja.doukaku.org/comment/8039
+  :user_name: emasaka
+  :user_url: /web/20090108233720/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/11/15 06:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>標準入力→標準出力です。</p>\n\n\t"
+  :code: |
+    function splitCSV() {
+        local c in_dq after_dq
+        local -i count=0
+
+        while read -n 1 c; do
+            if [ -z "$in_req" ]; then
+                in_req=1
+                echo -n "$((++count)) =&gt; "
+            fi
+
+            : ${c:=$'\n'}   # 改行は空文字として読まれる
+
+            if [ "$c" = \" ]; then
+                if [ -n "$after_dq" ]; then
+                    echo -n \"
+                    after_dq=''
+                else
+                    after_dq=1
+                fi
+            else
+                if [ -n "$after_dq" ]; then
+                    after_dq=''
+                    if [ -n "$in_dq" ]; then
+                        in_dq=''
+                    else
+                        in_dq=1
+                    fi
+                fi
+
+                if [ -z "$in_dq" -a \( "$c" = , -o "$c" = $'\n' \) ]; then
+                    in_req=''
+                    echo
+                else
+                    echo -n "$c"
+                fi
+            fi
+        done
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 

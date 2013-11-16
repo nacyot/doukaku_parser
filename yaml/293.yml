@@ -1,0 +1,549 @@
+---
+:id: '293'
+:title: 階層的なキーの連想配列化
+:comments:
+- :id: '10464'
+  :parent_id: '293'
+  :url: http://ja.doukaku.org/comment/10464
+  :user_name: sawa
+  :user_url: /web/20100706191624/http://ja.doukaku.org/user/1052/
+  :language: Ruby
+  :time: 2010/04/25 04:00 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">間違ってトピックにも同じものを投稿しました。投稿はこちらにお願いします。\r\n\r\n住所のように任意の深さの階層性をなすキーとそれに対応したオブジェクトを\r\n\r\n['東京都',
+    '区部', '千代田区', object1]\r\n\r\nのように配列で表すとします。このような配列からなる配列\r\n\r\n[['東京都', '区部',
+    '千代田区', object1],\r\n['東京都', '区部', '中央区', object2],\r\n['東京都', '区部', '港区', object3],\r\n[東京都',
+    '多摩地域', '支部', '昭島市', object4],\r\n['東京都', '多摩地域', '支部', 'あきる野市', object5],\r\n['東京都',
+    '多摩地域', '西多摩郡', '奥多摩町', object6],\r\n['東京都', '島嶼部', '大島支庁', '大島町', object7],\r\n['東京都',
+    '島嶼部', '三宅支庁', '三宅村', object8]]\r\n\r\nを階層的な連想配列に変換して下さい。可能なら、各連想配列をキーにしたがって並べてください。\r\nもっとよいデータがあれば、それを使ってください。</pre>\r\n\t"
+  :code: |
+    #!/usr/bin/ruby1.9.1 -Ku
+    class Array
+        def hashtree
+            sort_by {|a| a.first}
+            .each_with_object({}) do |a, h|
+                if a.length &gt; 2
+                    h[a.first] ||= []
+                    h[a.first].push(a[1..-1])
+                else
+                    h[a.first] = a[1]
+                end
+            end
+            .each_with_object({}) do |(k, v), h|
+                h[k] = v.instance_of?(Array)? v.hashtree : v
+            end
+        end
+    end
+
+    require 'pp'
+    pp [%w(東京都 区部 千代田区 object1),
+    %w(東京都 区部 中央区 object2),
+    %w(東京都 区部 港区 object3),
+    %w(東京都 多摩地域 支部 昭島市 object4),
+    %w(東京都 多摩地域 支部 あきる野市 object5),
+    %w(東京都 多摩地域 西多摩郡 奥多摩町 object6),
+    %w(東京都 島嶼部 大島支庁 大島町 object7),
+    %w(東京都 島嶼部 三宅支庁 三宅村 object8)].hashtree
+
+    # =&gt;
+    {"東京都"=&gt;
+      {"区部"=&gt;{"中央区"=&gt;"object2", "千代田区"=&gt;"object1", "港区"=&gt;"object3"},
+       "多摩地域"=&gt;
+        {"支部"=&gt;{"あきる野市"=&gt;"object5", "昭島市"=&gt;"object4"},
+         "西多摩郡"=&gt;{"奥多摩町"=&gt;"object6"}},
+       "島嶼部"=&gt;{"三宅支庁"=&gt;{"三宅村"=&gt;"object8"}, "大島支庁"=&gt;{"大島町"=&gt;"object7"}}}}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10465'
+  :parent_id: '293'
+  :url: http://ja.doukaku.org/comment/10465
+  :user_name: athos
+  :user_url: /web/20100706191624/http://ja.doukaku.org/user/755/
+  :language: Other
+  :time: 2010/04/25 07:21 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: "(defn coll-&gt;map [coll]\n  (reduce (fn [val key] {key val}) (reverse coll)))\n
+    \ \n(defn merge-recursively [x y]\n  (merge-with #(merge-recursively %1 %2) x
+    y))\n\n(defn solve [x]\n  (reduce merge-recursively {} (map coll-&gt;map x)))\n\n(def
+    addresses\n  '[[東京都 区部 千代田区 object1]\n    [東京都 区部 中央区 object2]\n    [東京都 区部 港区
+    object3]\n    [東京都 多摩地域 支部 昭島市 object4]\n    [東京都 多摩地域 支部 あきる野市 object5]\n    [東京都
+    多摩地域 西多摩郡 奥多摩町 object6]\n    [東京都 島嶼部 大島支庁 大島町 object7]\n    [東京都 島嶼部 三宅支庁 三宅村
+    object8]])\n\n(println (solve addresses))\n"
+  :tags:
+  - Clojure
+  :references:
+    :url: 
+    :title: 
+- :id: '10467'
+  :parent_id: '293'
+  :url: http://ja.doukaku.org/comment/10467
+  :user_name: turugina
+  :user_url: /web/20100706191624/http://ja.doukaku.org/user/760/
+  :language: Perl
+  :time: 2010/04/25 08:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>こんな感じでいいのかな。無駄にkeyとobjectが重なった場合の処理も書いてますが</p>\n\n\t"
+  :code: "use strict;\nuse warnings;\n\nuse Data::Dumper;\n\nsub make_tree\n{\n    my
+    $h = shift;\n    my $ar = shift;\n\n    die if @$ar &lt; 2;\n    my $k = shift
+    @$ar;\n    if ( exists $h-&gt;{$k} ) {\n        if ( !ref $h-&gt;{$k} ) {\n            $h-&gt;{$k}
+    = { $h-&gt;{$k} =&gt; undef };\n        }\n    }\n    else {\n        $h-&gt;{$k}
+    = +{};\n    }\n\n    if ( @$ar == 1 ) {\n        if ( keys %{$h-&gt;{$k}} ) {\n
+    \           $h-&gt;{$k}{$ar-&gt;[0]} = undef;\n        }\n        else {\n            $h-&gt;{$k}
+    = $ar-&gt;[0];\n        }\n    }\n    else {\n        make_tree($h-&gt;{$k}, $ar);\n
+    \   }\n}\n\nmy $data = \n[\n['東京都', '区部', '千代田区', 'object1'],\n['東京都', '区部', '中央区',
+    'object2'],\n['東京都', '区部', '港区', 'object3'],\n['東京都', '多摩地域', '支部', '昭島市', 'object4'],\n['東京都',
+    '多摩地域', '支部', 'あきる野市', 'object5'],\n['東京都', '多摩地域', '西多摩郡', '奥多摩町', 'object6'],\n['東京都',
+    '島嶼部', '大島支庁', '大島町', 'object7'],\n['東京都', '島嶼部', '三宅支庁', '三宅村', 'object8'],\n];\n\nmy
+    $tree = +{};\nmake_tree($tree, $_) for @$data;\n\nprint Dumper($tree);\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10468'
+  :parent_id: '293'
+  :url: http://ja.doukaku.org/comment/10468
+  :user_name: sekia
+  :user_url: /web/20100706191624/http://ja.doukaku.org/user/588/
+  :language: Perl
+  :time: 2010/04/25 09:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    #!/usr/bin/env perl
+
+    use strict;
+    use warnings;
+
+    sub hashtree {
+      my $result = +{};
+      _hashtree($result, $_) for @_;
+      $result;
+    }
+
+    sub _hashtree {
+      my ($tree, $entry) = @_;
+      return $tree-&gt;{$entry-&gt;[0]} = $entry-&gt;[1] if @$entry &lt;= 2;
+      my ($car, @cdr) = @$entry;
+      my $subtree = $tree-&gt;{$car} ||= +{};
+      _hashtree($subtree, \@cdr);
+    }
+
+    use YAML qw//;
+
+    my @entries = (
+      [qw/東京都 区部 千代田区 object1/],
+      [qw/東京都 区部 中央区 object2/],
+      [qw/東京都 区部 港区 object3/],
+      [qw/東京都 多摩地域 支部 昭島市 object4/],
+      [qw/東京都 多摩地域 支部 あきる野市 object5/],
+      [qw/東京都 多摩地域 西多摩郡 奥多摩町 object6/],
+      [qw/東京都 島嶼部 大島支庁 大島町 object7/],
+      [qw/東京都 島嶼部 三宅支庁 三宅村 object8/]
+    );
+
+    print YAML::Dump(hashtree(@entries));
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10469'
+  :parent_id: '293'
+  :url: http://ja.doukaku.org/comment/10469
+  :user_name: 匿名
+  :user_url: /web/20100706191624/http://ja.doukaku.org/user/4/
+  :language: Perl
+  :time: 2010/04/27 03:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">末尾から先頭に辿れるように、リファレンスで繋いでみました。題意に沿っているか\r\n心配なのですが...。\r\n</pre>\n\t"
+  :code: |
+    use strict;
+    my %leaf;
+
+    my @data = (
+    ['東京都', '区部', '千代田区', 'object1'],
+    ['東京都', '区部', '中央区', 'object2'],
+    ['東京都', '区部', '港区', 'object3'],
+    ['東京都', '多摩地域', '支部', '昭島市', 'object4'],
+    ['東京都', '多摩地域', '支部', 'あきる野市', 'object5'],
+    ['東京都', '多摩地域', '西多摩郡', '奥多摩町', 'object6'],
+    ['東京都', '島嶼部', '大島支庁', '大島町', 'object7'],
+    ['東京都', '島嶼部', '三宅支庁', '三宅村', 'object8']);
+
+    foreach my $i (0 .. $#data) {
+      foreach my $j (0 .. $#{$data[$i]}) {
+        if ($j == $#{$data[$i]}) {
+           $leaf{$data[$i]-&gt;[$j]-&gt;[0]} = $data[$i]-&gt;[$j]-&gt;[1];
+        } else {
+          my ($ref, $item);
+          if (ref($data[$i]-&gt;[$j]) ne 'ARRAY') {
+            $item = $data[$i]-&gt;[$j];
+            $ref = [$item];
+            $data[$i]-&gt;[$j + 1] = [$data[$i]-&gt;[$j + 1], $ref];
+            foreach my $k ($i + 1 .. $#data) {
+              if ($data[$k]-&gt;[0] eq $item) {
+                shift @{$data[$k]};
+                $data[$k]-&gt;[0] = [$data[$k]-&gt;[0], $ref];
+              }
+            }
+          } else {
+            $ref = $data[$i]-&gt;[$j];
+            $data[$i]-&gt;[$j + 1] = [$data[$i]-&gt;[$j + 1], $ref];
+            $item = $data[$i]-&gt;[$j]-&gt;[0];
+            foreach my $k ($i + 1 .. $#data) {
+              next if ref($data[$k]-&gt;[0]) ne 'ARRAY';
+              if ($data[$k]-&gt;[0]-&gt;[0] eq $item and $data[$k]-&gt;[0]-&gt;[1] eq $data[$i]-&gt;[$j]-&gt;[1]) {
+                shift @{$data[$k]};
+                $data[$k]-&gt;[0] = [$data[$k]-&gt;[0], $ref];
+              }
+            }
+          }
+        }
+      }
+    }
+
+    sub query {
+      foreach my $key (@_) {
+        my ($ref, @list) = ($leaf{$key}, $key);
+        while ($ref) {
+          unshift @list, $ref-&gt;[0];
+          $ref = @$ref == 2 ? $ref-&gt;[1] : 0;
+        }
+        print "@list\n";
+      }
+    }
+
+    query('object2', 'object6');
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10471'
+  :parent_id: '293'
+  :url: http://ja.doukaku.org/comment/10471
+  :user_name: 匿名
+  :user_url: /web/20100706191624/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/04/27 12:37 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>That’s unquestioned that the distinguished &lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100706191624/http://www.essaysprofessors.com/paper-writing-service.html\">http://www.essaysprofessors.com/paper-writing-service.html</a>\"&gt;paper
+    writing service&lt;/a&gt; will create the premium quality &lt;a href=\"<a class=\"reference\"
+    href=\"/web/20100706191624/http://www.essaysprofessors.com/custom-essay-writing.html\">http://www.essaysprofessors.com/custom-essay-writing.html</a>\"&gt;custom
+    essay writing&lt;/a&gt; for people which don’t have writing skills. It would be
+    the easiest way for such people, I do opine!</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10472'
+  :parent_id: '293'
+  :url: http://ja.doukaku.org/comment/10472
+  :user_name: 匿名
+  :user_url: /web/20100706191624/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/04/27 12:50 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>Usually, college students do not like the term research paper composing,
+    but they still need to present their writing technique! Hence, the &lt;a href=\"<a
+    class=\"reference\" href=\"/web/20100706191624/http://primeessays.com/index.php?mode=main\">http://primeessays.com/index.php?mode=main</a>\"&gt;buy
+    essay&lt;/a&gt; writing service should be a great helper for custom research papers
+    writing.</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10490'
+  :parent_id: '293'
+  :url: http://ja.doukaku.org/comment/10490
+  :user_name: Lost_dog
+  :user_url: /web/20100706191624/http://ja.doukaku.org/user/1129/
+  :language: Haskell
+  :time: 2010/05/03 14:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>木構造っぽかったので、木にしました。</p>\n<p>Haskellの実行環境がない方もいると思うので、実行結果を載せておきます。</p>\n<pre
+    class=\"literal-block\">\nroot\n|\n`- 東京都\n   |\n   +- 区部\n   |  |\n   |  +- 中央区\n
+    \  |  |  |\n   |  |  `- object2\n   |  |\n   |  +- 千代田区\n   |  |  |\n   |  |  `-
+    object1\n   |  |\n   |  `- 港区\n   |     |\n   |     `- object3\n   |\n   +- 多摩地域\n
+    \  |  |\n   |  +- 支部\n   |  |  |\n   |  |  +- あきる野市\n   |  |  |  |\n   |  |  |
+    \ `- object5\n   |  |  |\n   |  |  `- 昭島市\n   |  |     |\n   |  |     `- object4\n
+    \  |  |\n   |  `- 西多摩郡\n   |     |\n   |     `- 奥多摩町\n   |        |\n   |        `-
+    object6\n   |\n   `- 島嶼部\n      |\n      +- 三宅支庁\n      |  |\n      |  `- 三宅村\n
+    \     |     |\n      |     `- object8\n      |\n      `- 大島支庁\n         |\n         `-
+    大島町\n            |\n            `- object7\n</pre>\n\n\t"
+  :code: |
+    import List
+    import Data.Tree
+    import Data.Function
+    import qualified System.IO.UTF8 as U
+
+    test = U.writeFile "out.txt" $ drawTree $ mkTree tab1
+
+    mkTree :: [[String]] -&gt; Tree String
+    mkTree = unfoldTree f.map ("root":) where
+      f xss = (xss!!0!!0, filter(not.all null) $ groupBy((==)`on`take 1) $ sort $ map(drop 1) xss)
+
+    tab1 = [ ["東京都", "区部", "千代田区", "object1"]
+           , ["東京都", "区部", "中央区", "object2"]
+           , ["東京都", "区部", "港区", "object3"]
+           , ["東京都", "多摩地域", "支部", "昭島市", "object4"]
+           , ["東京都", "多摩地域", "支部", "あきる野市", "object5"]
+           , ["東京都", "多摩地域", "西多摩郡", "奥多摩町", "object6"]
+           , ["東京都", "島嶼部", "大島支庁", "大島町", "object7"]
+           , ["東京都", "島嶼部", "三宅支庁", "三宅村", "object8"]
+           ]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10492'
+  :parent_id: '293'
+  :url: http://ja.doukaku.org/comment/10492
+  :user_name: 匿名
+  :user_url: /web/20100706191624/http://ja.doukaku.org/user/4/
+  :language: Smalltalk
+  :time: 2010/05/04 00:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。4.1 以降では copy fixTemps は不要です。</p>\n\n\t"
+  :code: "| data treeOf |\ndata := #(\n    ('東京都' '区部' '千代田区' object1)\n    ('東京都'
+    '区部' '中央区' object2)\n    ('東京都' '区部' '港区' object3)\n    ('東京都' '多摩地域' '支部' '昭島市'
+    object4)\n    ('東京都' '多摩地域' '支部' 'あきる野市' object5)\n    ('東京都' '多摩地域' '西多摩郡' '奥多摩町'
+    object6)\n    ('東京都' '島嶼部' '大島支庁' '大島町' object7)\n    ('東京都' '島嶼部' '三宅支庁' '三宅村'
+    object8)).\n\ntreeOf := nil.\ntreeOf := [:list |\n    | set | \n    set := (list
+    collect: [:each | each first]) asSet collect: [:key |\n        | val |\n        val
+    := list select: [:each | each size &gt; 1 and: [each first = key]]\n            thenCollect:
+    [:each | each allButFirst].\n        val := treeOf copy fixTemps value: val.\n
+    \       val ifEmpty: [key]\n            ifNotEmpty: [key -&gt; (val size = 1 ifTrue:
+    [val first] ifFalse: [val])]].\n    set asArray].\n^treeOf copy fixTemps value:
+    data\n\n\"=&gt; {\n'東京都'-&gt;{\n    '区部'-&gt;{'港区'-&gt;#object3 . '千代田区'-&gt;#object1
+    . '中央区'-&gt;#object2} . \n    '多摩地域'-&gt;{\n        '支部'-&gt;{'昭島市'-&gt;#object4
+    . 'あきる野市'-&gt;#object5} . \n        '西多摩郡'-&gt;'奥多摩町'-&gt;#object6} . \n    '島嶼部'-&gt;{'大島支庁'-&gt;'大島町'-&gt;#object7
+    . '三宅支庁'-&gt;'三宅村'-&gt;#object8}}} \"\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '10493'
+  :parent_id: '293'
+  :url: http://ja.doukaku.org/comment/10493
+  :user_name: 匿名
+  :user_url: /web/20100706191624/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/05/04 15:40 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>Such good &lt;a href=\"<a class=\"reference\" href=\"/web/20100706191624/http://www.topdissertations.com/\">http://www.topdissertations.com</a>\"&gt;dissertation&lt;/a&gt;
+    about this topic is the thing that people should purchase from the dissertation
+    writers, thence  every time they get the &lt;a href=\"<a class=\"reference\" href=\"/web/20100706191624/http://www.topdissertations.com/\">http://www.topdissertations.com</a>\"&gt;buy
+    thesis&lt;/a&gt; and custom writing.</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10494'
+  :parent_id: '293'
+  :url: http://ja.doukaku.org/comment/10494
+  :user_name: 匿名
+  :user_url: /web/20100706191624/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/05/04 17:20 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>It is time to confess that you impressed us with your superior
+    theme related to this good topic. Thence, we will attempt to complete the thesis
+    mba on the base of your stuff. Or believably, this is real to detect the &lt;a
+    href=\"<a class=\"reference\" href=\"/web/20100706191624/http://www.exclusivethesis.com/\">http://www.exclusivethesis.com</a>\"&gt;dissertation&lt;/a&gt;
+    service.</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10500'
+  :parent_id: '293'
+  :url: http://ja.doukaku.org/comment/10500
+  :user_name: fumokmm
+  :user_url: /web/20100706191624/http://ja.doukaku.org/user/856/
+  :language: Groovy
+  :time: 2010/05/11 12:28 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Collection#groupByを使って再帰呼び出しで定義してみました。</p>\n<p>assert hashTree(data.sort{
+    Math.random()}) == hashTree(data.sort{ Math.random() })\n部に関しては、ランダムにソートしたデータ同士で作ったハッシュの結果が同等であることをテストしています。</p>\n\n\t"
+  :code: |
+    def data = [
+      ['東京都', '区部',     '千代田区', 'object1'],
+      ['東京都', '区部',     '中央区',   'object2'],
+      ['東京都', '区部',     '港区',     'object3'],
+      ['東京都', '多摩地域', '支部',     '昭島市',     'object4'],
+      ['東京都', '多摩地域', '支部',     'あきる野市', 'object5'],
+      ['東京都', '多摩地域', '西多摩郡', '奥多摩町',   'object6'],
+      ['東京都', '島嶼部',   '大島支庁', '大島町',     'object7'],
+      ['東京都', '島嶼部',   '三宅支庁', '三宅村',     'object8'],
+    ]
+
+    def hashTree = this.&amp;toHashMap.curry(0)
+    def result = hashTree(data)
+
+    // 以下テスト
+    assert result.toString() == '[東京都:[区部:[中央区:object2, 千代田区:object1, 港区:object3], 多摩地域:[支部:[あきる野市:object5, 昭島市:object4], 西多摩郡:[奥多摩町:object6]], 島嶼部:[三宅支庁:[三宅村:object8], 大島支庁:[大島町:object7]]]]'
+    assert hashTree(data.sort{ Math.random()}) == hashTree(data.sort{ Math.random() })
+
+    // ハッシュマップに変換するメソッド
+    def toHashMap(idx, list) {
+      if (idx == list.first().size() - 1) return list.first()[idx]
+      def result = [:] as TreeMap // キーで並べ替えるマップ
+      list.groupBy{ it[idx] }.each {
+        result[it.key] = toHashMap(idx + 1, it.value)
+      }
+      result
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10502'
+  :parent_id: '293'
+  :url: http://ja.doukaku.org/comment/10502
+  :user_name: uehaj
+  :user_url: /web/20100706191624/http://ja.doukaku.org/user/959/
+  :language: Other
+  :time: 2010/05/14 21:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>平凡です。</p>\n\n\t"
+  :code: |
+    data = [['東京都', '区部', '千代田区', "object1"],
+            ['東京都', '区部', '中央区', "object2"],
+            ['東京都', '区部', '港区', "object3"],
+            ['東京都', '多摩地域', '支部', '昭島市', "object4"],
+            ['東京都', '多摩地域', '支部', 'あきる野市', "object5"],
+            ['東京都', '多摩地域', '西多摩郡', '奥多摩町', "object6"],
+            ['東京都', '島嶼部', '大島支庁', '大島町', "object7"],
+            ['東京都', '島嶼部', '三宅支庁', '三宅村', "object8"]]
+
+    def putHashTree(hash, list) {
+      if (list.size() == 2) {
+        hash.put(list[0], list[-1])
+        return hash
+      }
+      else if (hash.containsKey(list[0])) {
+        def v = hash.get(list[0])
+        if (v instanceof Map) {
+          putHashTree(v, list[1..-1])
+          return hash
+        }
+      }
+      hash.put(list[0], putHashTree([:], list[1..-1]))
+      return hash
+    }
+
+    hashTree = [:]
+
+    data.each {
+      putHashTree(hashTree, it)
+    }
+
+    println hashTree
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10503'
+  :parent_id: '293'
+  :url: http://ja.doukaku.org/comment/10503
+  :user_name: uehaj
+  :user_url: /web/20100706191624/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2010/05/14 21:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>言語指定を間違えたので再投稿です。\nすみません。</p>\n\n\t"
+  :code: |
+    data = [['東京都', '区部', '千代田区', "object1"],
+            ['東京都', '区部', '中央区', "object2"],
+            ['東京都', '区部', '港区', "object3"],
+            ['東京都', '多摩地域', '支部', '昭島市', "object4"],
+            ['東京都', '多摩地域', '支部', 'あきる野市', "object5"],
+            ['東京都', '多摩地域', '西多摩郡', '奥多摩町', "object6"],
+            ['東京都', '島嶼部', '大島支庁', '大島町', "object7"],
+            ['東京都', '島嶼部', '三宅支庁', '三宅村', "object8"]]
+
+    def putHashTree(hash, list) {
+      if (list.size() == 2) {
+        hash.put(list[0], list[-1])
+        return hash
+      }
+      else if (hash.containsKey(list[0])) {
+        def v = hash.get(list[0])
+        if (v instanceof Map) {
+          putHashTree(v, list[1..-1])
+          return hash
+        }
+      }
+      hash.put(list[0], putHashTree([:], list[1..-1]))
+      return hash
+    }
+
+    hashTree = [:]
+
+    data.each {
+      putHashTree(hashTree, it)
+    }
+
+    println hashTree
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10876'
+  :parent_id: '293'
+  :url: http://ja.doukaku.org/comment/10876
+  :user_name: ivoryworks
+  :user_url: /web/20100706191624/http://ja.doukaku.org/user/647/
+  :language: PHP
+  :time: 2010/06/29 09:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">配列を&amp;で渡しているのがポイント。\r\n終端にobjectを格納するところがスマートじゃないかもしれない。\r\n</pre>\n\t"
+  :code: "$tokyo = array(\n        array('東京都', '区部', '千代田区', 'object1')\n        ,array('東京都',
+    '区部', '中央区', 'object2')\n        ,array('東京都', '区部', '港区', 'object3')\n        ,array('東京都',
+    '多摩地域', '支部', '昭島市', 'object4')\n        ,array('東京都', '多摩地域', '支部', 'あきる野市',
+    'object5')\n        ,array('東京都', '多摩地域', '西多摩郡', '奥多摩町', 'object6')\n        ,array('東京都',
+    '島嶼部', '大島支庁', '大島町', 'object7')\n        ,array('東京都', '島嶼部', '三宅支庁', '三宅村',
+    'object8')\n        );\n\n$tokyo_tree = array();\n\nforeach ( $tokyo as $obs )
+    {\n    $w = &amp;$tokyo_tree;\n    $cnt = count( $obs );\n    for ( $i = 0; $i
+    &lt; $cnt; $i++ ) {\n        if ( $i == $cnt-1 ) {\n            $w = $obs[$i];\n
+    \       }\n        else {\n            $w = &amp;$w[$obs[$i]];\n        }\n    }\n}\n\nprint_r(
+    $tokyo_tree );\n\n\n/*** 結果 ***/\nArray\n(\n    [東京都] =&gt; Array\n        (\n
+    \           [区部] =&gt; Array\n                (\n                    [千代田区] =&gt;
+    object1\n                    [中央区] =&gt; object2\n                    [港区] =&gt;
+    object3\n                )\n \n            [多摩地域] =&gt; Array\n                (\n
+    \                   [支部] =&gt; Array\n                        (\n                            [昭島市]
+    =&gt; object4\n                            [あきる野市] =&gt; object5\n                        )\n
+    \n                    [西多摩郡] =&gt; Array\n                        (\n                            [奥多摩町]
+    =&gt; object6\n                        )\n \n                )\n \n            [島嶼部]
+    =&gt; Array\n                (\n                    [大島支庁] =&gt; Array\n                        (\n
+    \                           [大島町] =&gt; object7\n                        )\n \n
+    \                   [三宅支庁] =&gt; Array\n                        (\n                            [三宅村]
+    =&gt; object8\n                        )\n \n                )\n \n        )\n
+    \n)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

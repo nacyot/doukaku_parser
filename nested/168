@@ -1,0 +1,4204 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja"> 
+  <head>
+
+<script type="text/javascript" src="/static/js/analytics.js" ></script>
+<link type="text/css" rel="stylesheet" href="/static/css/banner-styles.css"/>
+
+
+
+
+    <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+    <title>
+ポリゴンを表示するプログラム
+どう書く？org </title>
+
+    <link rel="stylesheet" type="text/css"
+	href="/web/20100323043152cs_/http://ja.doukaku.org/static/style/reset-fonts-grids.css" />
+    <link rel="stylesheet" type="text/css"
+	href="/web/20100323043152cs_/http://ja.doukaku.org/static/style/style.css?20071211?20071207" />
+	
+    <link rel="stylesheet" type="text/css"
+	href="/web/20100323043152cs_/http://ja.doukaku.org/static/style/pygments.css" />
+
+
+	
+    <!--<script src="/web/20100323043152/http://ja.doukaku.org/static/js/ieerbug/ieerbug.js" type="text/javascript"></script>-->
+
+
+<!--<script src="/web/20100323043152/http://ja.doukaku.org/static/js/ieerbug/ieerbug.js" type="text/javascript"></script>-->
+<script src="/web/20100323043152js_/http://ja.doukaku.org/static/js/jquery-1.1.3.1.js" type="text/javascript"></script>
+<script src="/web/20100323043152js_/http://ja.doukaku.org/static/js/rating.js" type="text/javascript"></script>
+<script src="/web/20100323043152js_/http://ja.doukaku.org/static/js/addtag.js?20071129" type="text/javascript"></script>
+
+<script type="text/javascript">
+is_key_navigation_enable = true;
+</script>
+<script src="/web/20100323043152js_/http://ja.doukaku.org/static/js/utils.js?~~~" type="text/javascript"></script>
+
+</head>
+
+
+<body id="doukaku_org">
+<!-- BEGIN WAYBACK TOOLBAR INSERT -->
+<script> if (window.archive_analytics) { window.archive_analytics.values['server_name']="wwwb-app1.us.archive.org";}; </script>
+
+<script type="text/javascript" src="/static/js/disclaim-element.js" ></script>
+<script type="text/javascript" src="/static/js/graph-calc.js" ></script>
+<script type="text/javascript" src="/static/jflot/jquery.min.js" ></script>
+<script type="text/javascript">
+//<![CDATA[
+var firstDate = 820454400000;
+var lastDate = 1388534399999;
+var wbPrefix = "/web/";
+var wbCurrentUrl = "http:\/\/ja.doukaku.org\/168\/nested\/";
+
+var curYear = -1;
+var curMonth = -1;
+var yearCount = 18;
+var firstYear = 1996;
+var imgWidth = 450;
+var yearImgWidth = 25;
+var monthImgWidth = 2;
+var trackerVal = "none";
+var displayDay = "23";
+var displayMonth = "Mar";
+var displayYear = "2010";
+var prettyMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function showTrackers(val) {
+	if(val == trackerVal) {
+		return;
+	}
+	if(val == "inline") {
+		document.getElementById("displayYearEl").style.color = "#ec008c";
+		document.getElementById("displayMonthEl").style.color = "#ec008c";
+		document.getElementById("displayDayEl").style.color = "#ec008c";		
+	} else {
+		document.getElementById("displayYearEl").innerHTML = displayYear;
+		document.getElementById("displayYearEl").style.color = "#ff0";
+		document.getElementById("displayMonthEl").innerHTML = displayMonth;
+		document.getElementById("displayMonthEl").style.color = "#ff0";
+		document.getElementById("displayDayEl").innerHTML = displayDay;
+		document.getElementById("displayDayEl").style.color = "#ff0";
+	}
+   document.getElementById("wbMouseTrackYearImg").style.display = val;
+   document.getElementById("wbMouseTrackMonthImg").style.display = val;
+   trackerVal = val;
+}
+function getElementX2(obj) {
+	var thing = jQuery(obj);
+	if((thing == undefined) 
+			|| (typeof thing == "undefined") 
+			|| (typeof thing.offset == "undefined")) {
+		return getElementX(obj);
+	}
+	return Math.round(thing.offset().left);
+}
+function trackMouseMove(event,element) {
+
+   var eventX = getEventX(event);
+   var elementX = getElementX2(element);
+   var xOff = eventX - elementX;
+	if(xOff < 0) {
+		xOff = 0;
+	} else if(xOff > imgWidth) {
+		xOff = imgWidth;
+	}
+   var monthOff = xOff % yearImgWidth;
+
+   var year = Math.floor(xOff / yearImgWidth);
+	var yearStart = year * yearImgWidth;
+   var monthOfYear = Math.floor(monthOff / monthImgWidth);
+   if(monthOfYear > 11) {
+       monthOfYear = 11;
+   }
+   // 1 extra border pixel at the left edge of the year:
+   var month = (year * 12) + monthOfYear;
+   var day = 1;
+	if(monthOff % 2 == 1) {
+		day = 15;
+	}
+	var dateString = 
+		zeroPad(year + firstYear) + 
+		zeroPad(monthOfYear+1,2) +
+		zeroPad(day,2) + "000000";
+
+	var monthString = prettyMonths[monthOfYear];
+	document.getElementById("displayYearEl").innerHTML = year + 1996;
+	document.getElementById("displayMonthEl").innerHTML = monthString;
+	// looks too jarring when it changes..
+	//document.getElementById("displayDayEl").innerHTML = zeroPad(day,2);
+
+	var url = wbPrefix + dateString + '/' +  wbCurrentUrl;
+	document.getElementById('wm-graph-anchor').href = url;
+
+   //document.getElementById("wmtbURL").value="evX("+eventX+") elX("+elementX+") xO("+xOff+") y("+year+") m("+month+") monthOff("+monthOff+") DS("+dateString+") Moy("+monthOfYear+") ms("+monthString+")";
+   if(curYear != year) {
+       var yrOff = year * yearImgWidth;
+       document.getElementById("wbMouseTrackYearImg").style.left = yrOff + "px";
+       curYear = year;
+   }
+   if(curMonth != month) {
+       var mtOff = year + (month * monthImgWidth) + 1;
+       document.getElementById("wbMouseTrackMonthImg").style.left = mtOff + "px";
+       curMonth = month;
+   }
+}
+//]]>
+</script>
+
+<style type="text/css">body{margin-top:0!important;padding-top:0!important;min-width:800px!important;}#wm-ipp a:hover{text-decoration:underline!important;}</style>
+<div id="wm-ipp" lang="en" class="__wb_banner_div" style="display:none; position:relative;padding:0 5px;min-height:70px;min-width:800px">
+
+
+<div id="wm-ipp-inside" class="__wb_banner_div" style="position:fixed;padding:0!important;margin:0!important;width:97%;min-width:780px;border:5px solid #000;border-top:none;background-image:url(/static/images/toolbar/wm_tb_bk_trns.png);text-align:center;-moz-box-shadow:1px 1px 3px #333;-webkit-box-shadow:1px 1px 3px #333;box-shadow:1px 1px 3px #333;font-size:11px!important;font-family:'Lucida Grande','Arial',sans-serif!important;">
+   <table style="border-collapse:collapse;margin:0;padding:0;width:100%;"><tbody><tr>
+   <td style="padding:10px;vertical-align:top;min-width:110px;">
+   <a href="/web/" title="Wayback Machine home page" style="background-color:transparent;border:none;"><img src="/static/images/toolbar/wayback-toolbar-logo.png" alt="Wayback Machine" width="110" height="39" border="0"/></a>
+   </td>
+   <td style="padding:0!important;text-align:center;vertical-align:top;width:100%;">
+
+       <table style="border-collapse:collapse;margin:0 auto;padding:0;width:570px;"><tbody><tr>
+       <td style="padding:3px 0;" colspan="2">
+       <form target="_top" method="get" action="/web/form-submit.jsp" name="wmtb" id="wmtb" style="margin:0!important;padding:0!important;"><input type="text" name="url" id="wmtbURL" value="http://ja.doukaku.org/168/nested/" style="width:400px;font-size:11px;font-family:'Lucida Grande','Arial',sans-serif;" onfocus="javascript:this.focus();this.select();" /><input type="hidden" name="type" value="replay" /><input type="hidden" name="date" value="20100323043152" /><input type="submit" value="Go" style="font-size:11px;font-family:'Lucida Grande','Arial',sans-serif;margin-left:5px;width: inherit !important" /><span id="wm_tb_options" style="display:block;"></span></form>
+       </td>
+       <td style="vertical-align:bottom;padding:5px 0 0 0!important;" rowspan="2">
+           <table style="border-collapse:collapse;width:110px;color:#99a;font-family:'Helvetica','Lucida Grande','Arial',sans-serif;"><tbody>
+			
+           <!-- NEXT/PREV MONTH NAV AND MONTH INDICATOR -->
+           <tr style="width:110px;height:16px;font-size:10px!important;">
+           	<td style="padding-right:9px;font-size:11px!important;font-weight:bold;text-transform:uppercase;text-align:right;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+		                <a href="/web/20081203204538/http://ja.doukaku.org/168/nested/" style="text-decoration:none;color:#33f;font-weight:bold;background-color:transparent;border:none;" title="3 Dec 2008"><strong>DEC</strong></a>
+		                
+               </td>
+               <td id="displayMonthEl" style="background:#000;color:#ff0;font-size:11px!important;font-weight:bold;text-transform:uppercase;width:34px;height:15px;padding-top:1px;text-align:center;" title="You are here: 4:31:52 Mar 23, 2010">MAR</td>
+				<td style="padding-left:9px;font-size:11px!important;font-weight:bold;text-transform:uppercase;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+                       Apr
+                       
+               </td>
+           </tr>
+
+           <!-- NEXT/PREV CAPTURE NAV AND DAY OF MONTH INDICATOR -->
+           <tr>
+               <td style="padding-right:9px;white-space:nowrap;overflow:visible;text-align:right!important;vertical-align:middle!important;" nowrap="nowrap">
+               
+		                <a href="/web/20081203204538/http://ja.doukaku.org/168/nested/" title="20:45:38 Dec 3, 2008" style="background-color:transparent;border:none;"><img src="/static/images/toolbar/wm_tb_prv_on.png" alt="Previous capture" width="14" height="16" border="0" /></a>
+		                
+               </td>
+               <td id="displayDayEl" style="background:#000;color:#ff0;width:34px;height:24px;padding:2px 0 0 0;text-align:center;font-size:24px;font-weight: bold;" title="You are here: 4:31:52 Mar 23, 2010">23</td>
+				<td style="padding-left:9px;white-space:nowrap;overflow:visible;text-align:left!important;vertical-align:middle!important;" nowrap="nowrap">
+               
+                       <img src="/static/images/toolbar/wm_tb_nxt_off.png" alt="Next capture" width="14" height="16" border="0"/>
+                       
+			    </td>
+           </tr>
+
+           <!-- NEXT/PREV YEAR NAV AND YEAR INDICATOR -->
+           <tr style="width:110px;height:13px;font-size:9px!important;">
+				<td style="padding-right:9px;font-size:11px!important;font-weight: bold;text-align:right;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+		                <a href="/web/20081203204538/http://ja.doukaku.org/168/nested/" style="text-decoration:none;color:#33f;font-weight:bold;background-color:transparent;border:none;" title="3 Dec 2008"><strong>2008</strong></a>
+		                
+               </td>
+               <td id="displayYearEl" style="background:#000;color:#ff0;font-size:11px!important;font-weight: bold;padding-top:1px;width:34px;height:13px;text-align:center;" title="You are here: 4:31:52 Mar 23, 2010">2010</td>
+				<td style="padding-left:9px;font-size:11px!important;font-weight: bold;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+                       2011
+                       
+				</td>
+           </tr>
+           </tbody></table>
+       </td>
+
+       </tr>
+       <tr>
+       <td style="vertical-align:middle;padding:0!important;">
+           <a href="/web/20100323043152*/http://ja.doukaku.org/168/nested/" style="color:#33f;font-size:11px;font-weight:bold;background-color:transparent;border:none;" title="See a list of every capture for this URL"><strong>4 captures</strong></a>
+           <div class="__wb_banner_div" style="margin:0!important;padding:0!important;color:#666;font-size:9px;padding-top:2px!important;white-space:nowrap;" title="Timespan for captures of this URL">31 Mar 08 - 23 Mar 10</div>
+       </td>
+       <td style="padding:0!important;">
+       <a style="position:relative; white-space:nowrap; width:450px;height:27px;" href="" id="wm-graph-anchor">
+       <div class="__wb_banner_div" id="wm-ipp-sparkline" style="position:relative; white-space:nowrap; width:450px;height:27px;background-color:#fff;cursor:pointer;border-right:1px solid #ccc;" title="Explore captures for this URL">
+			<img id="sparklineImgId" style="position:absolute; z-index:9012; top:0px; left:0px;"
+				onmouseover="showTrackers('inline');" 
+				onmouseout="showTrackers('none');"
+				onmousemove="trackMouseMove(event,this)"
+				alt="sparklines"
+				width="450"
+				height="27"
+				border="0"
+				src="/web/jsp/graph.jsp?graphdata=450_27_1996:-1:000000000000_1997:-1:000000000000_1998:-1:000000000000_1999:-1:000000000000_2000:-1:000000000000_2001:-1:000000000000_2002:-1:000000000000_2003:-1:000000000000_2004:-1:000000000000_2005:-1:000000000000_2006:-1:000000000000_2007:-1:000000000000_2008:-1:001000000001_2009:-1:000000000000_2010:2:002000000000_2011:-1:000000000000_2012:-1:000000000000_2013:-1:000000000000"></img>
+			<img id="wbMouseTrackYearImg" 
+				style="display:none; position:absolute; z-index:9010;"
+				width="25" 
+				height="27"
+				border="0"
+				src="/static/images/toolbar/transp-yellow-pixel.png"></img>
+			<img id="wbMouseTrackMonthImg"
+				style="display:none; position:absolute; z-index:9011; " 
+				width="2"
+				height="27" 
+				border="0"
+				src="/static/images/toolbar/transp-red-pixel.png"></img>
+       </div>
+		</a>
+
+       </td>
+       </tr></tbody></table>
+   </td>
+   <td style="text-align:right;padding:5px;width:65px;font-size:11px!important;">
+       <a href="javascript:;" onclick="document.getElementById('wm-ipp').style.display='none';" style="display:block;padding-right:18px;background:url(/static/images/toolbar/wm_tb_close.png) no-repeat 100% 0;color:#33f;font-family:'Lucida Grande','Arial',sans-serif;margin-bottom:23px;background-color:transparent;border:none;" title="Close the toolbar">Close</a>
+       <a href="http://faq.web.archive.org/" style="display:block;padding-right:18px;background:url(/static/images/toolbar/wm_tb_help.png) no-repeat 100% 0;color:#33f;font-family:'Lucida Grande','Arial',sans-serif;background-color:transparent;border:none;" title="Get some help using the Wayback Machine">Help</a>
+   </td>
+   </tr></tbody></table>
+
+</div>
+</div>
+<script type="text/javascript">
+ var wmDisclaimBanner = document.getElementById("wm-ipp");
+ if(wmDisclaimBanner != null) {
+   disclaimElement(wmDisclaimBanner);
+ }
+</script>
+<!-- END WAYBACK TOOLBAR INSERT -->
+
+
+<div id="page_head" class="compact">
+  <h1 class="compact">
+    <a href="/web/20100323043152/http://ja.doukaku.org/">どう書く？org</a><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/beta.png" alt="beta">
+  </h1>
+</div>
+
+<div id="page_body" class="compact">
+<div id="content" class="compact">
+
+
+
+
+<h2 class="compact">
+<img src='/web/20100323043152im_/http://ja.doukaku.org/static/image/star_gold.png' alt=お題(出題済み)>
+<a href="/web/20100323043152/http://ja.doukaku.org/168/">ポリゴンを表示するプログラム</a>
+</h2>
+
+    
+
+
+
+
+
+<div class="comment" id="comment5940">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/166/" target="_top">ところてん</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/5940/">#5940</a>(<script language="JavaScript">print_time(new Date("2008/03/05 08:38 GMT"));</script><noscript>2008/03/05 08:38 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffbf;">0/4=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>適当なポリゴンを表示させて、描画するプログラムを書いてください。
+ポリゴンは回転させてください。
+
+2D処理だけなら、標準ライブラリで大体いけますが、
+3D処理は追加でライブラリを利用すると思うので、
+何のライブラリを利用したのか書いてください。</pre>
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/5940/addtag/" class="addtag" id="addtag_5940">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffbf;"
+  >0/4=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_5940"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_5940"
+  >0</span><span 
+  class="button green"
+  id="rating_p_5940"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/5940/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+
+<div class="indent">
+<a href="/web/20100323043152/http://ja.doukaku.org/168/post_comment/">
+投稿する
+</a>
+</div>
+
+
+<h2>投稿されたコメント - ネスト表示</h2>
+<a href="/web/20100323043152/http://ja.doukaku.org/168/flatten/">フラット表示</a> 
+<a href="/web/20100323043152/http://ja.doukaku.org/168/">非表示</a> 
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment6007">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/760/" target="_top">turugina</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6007/">#6007</a>(<script language="JavaScript">print_time(new Date("2008/03/13 04:06 GMT"));</script><noscript>2008/03/13 04:06 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/perl/">
+	  Perl
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #cfffcf;">3/3=1.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>ネタ回答～
+適当なポリゴンを表示してしかもポリゴンは回っています</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52</pre></td><td class="code"><div class="highlight"><pre><span class="k">use</span> <span class="n">strict</span><span class="p">;</span>
+
+<span class="k">my</span> <span class="nv">@pos</span> <span class="o">=</span> <span class="p">(</span>
+<span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">]],</span>
+<span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]],</span>
+<span class="p">[[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]],</span>
+<span class="p">[[</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">]],</span>
+<span class="p">[[</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]],</span>
+<span class="p">[[</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]],</span>
+<span class="p">[[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]],</span>
+<span class="p">[[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]],</span>
+<span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">]],</span>
+<span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">]],</span>
+<span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">]],</span>
+<span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">]],</span>
+<span class="p">);</span>
+
+<span class="k">my</span> <span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">my</span> <span class="nv">$cpos</span> <span class="o">=</span> <span class="nv">$pos</span><span class="p">[</span><span class="nv">$i</span><span class="p">];</span>
+  <span class="k">my</span> <span class="nv">@cell</span><span class="p">;</span>
+  <span class="nv">$cell</span><span class="p">[</span><span class="nv">$cpos</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="nv">$cpos</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="s">&#39;ポ&#39;</span><span class="p">;</span>
+  <span class="nv">$cell</span><span class="p">[</span><span class="nv">$cpos</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="nv">$cpos</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="s">&#39;リ&#39;</span><span class="p">;</span>
+  <span class="nv">$cell</span><span class="p">[</span><span class="nv">$cpos</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="nv">$cpos</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="s">&#39;ゴ&#39;</span><span class="p">;</span>
+  <span class="nv">$cell</span><span class="p">[</span><span class="nv">$cpos</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="nv">$cpos</span><span class="o">-&gt;</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="s">&#39;ン&#39;</span><span class="p">;</span>
+
+  <span class="n">clear_screen</span><span class="p">();</span>
+  <span class="k">print</span> <span class="s">&quot;適当な\n&quot;</span><span class="p">;</span>
+  <span class="k">foreach</span> <span class="k">my</span> <span class="nv">$c</span> <span class="p">(</span> <span class="nv">@cell</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="k">foreach</span> <span class="k">my</span> <span class="nv">$cc</span> <span class="p">(</span> <span class="nv">@$c</span> <span class="p">)</span> <span class="p">{</span>
+      <span class="k">print</span> <span class="nv">$cc</span> <span class="p">?</span> <span class="nv">$cc</span> <span class="p">:</span> <span class="s">&#39;  &#39;</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">print</span> <span class="s">&quot;\n&quot;</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="nb">sleep</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span> <span class="k">continue</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span> <span class="o">++</span><span class="nv">$i</span> <span class="o">==</span> <span class="nv">@pos</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">sub </span><span class="nf">clear_screen</span>
+<span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span> <span class="vg">$^O</span> <span class="o">=~</span><span class="sr"> /Win32/</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="nb">system</span><span class="p">(</span><span class="s">&#39;cls&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">else</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">system</span><span class="p">(</span><span class="s">&#39;clear&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">print</span> <span class="s">&quot;\x1b[2J&quot;</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6007/addtag/" class="addtag" id="addtag_6007">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/perl/">
+		Perl
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6007/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6007/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #cfffcf;"
+  >3/3=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6007"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6007"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6007"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6007/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment6009">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/507/" target="_top">fujidig</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_bronze.png" border=0/></a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6009/">#6009</a>(<script language="JavaScript">print_time(new Date("2008/03/13 08:55 GMT"));</script><noscript>2008/03/13 08:55 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/hsp/">
+	  HSP
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  HSP 3.1以降に標準添付のライブラリ d3module を使って。
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23</pre></td><td class="code"><div class="highlight"><pre>#include &quot;d3m.hsp&quot;
+    
+    xs = -1, 1, 1,-1
+    ys = -1,-1, 1, 1
+    
+    repeat
+        redraw 0
+        color 255, 255, 255 : boxf
+        d3setcam 1500, 0, 500
+        color
+        d3initlineto
+        rad = 0.05 * cnt
+        repeat 5
+            x = xs(cnt\4) * 500
+            y = ys(cnt\4) * 500
+            d3rotate x, y, x, y, rad
+            d3lineto x, y, 0
+            d3line x, y, 0, 0, 0, 700
+            d3line x, y, 0, 0, 0, -700
+        loop
+        redraw
+        await 40
+    loop
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6009/addtag/" class="addtag" id="addtag_6009">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/hsp/">
+		HSP
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6009/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6009/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6009"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6009"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6009"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6009/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment6010">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/88/" target="_top">sumim</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6010/">#6010</a>(<script language="JavaScript">print_time(new Date("2008/03/13 10:49 GMT"));</script><noscript>2008/03/13 10:49 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/smalltalk/">
+	  Smalltalk
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Squeak Smalltalk で。Balloon3D というパッケージを用いて正十二面体を回転させました。</p>
+
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20100323043152/http://wiki.squeak.org/squeak/2713">Balloon3D - a tutorial</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td><td class="code"><div class="highlight"><pre>| sceneObj view solid colors |
+solid := B3DRegularSolid dodekahedron.
+colors := (Color wheel: 12) collect: [:each | each asB3DColor].
+solid setFaceColors: colors.
+sceneObj := B3DSceneObject named: &#39;solid&#39;.
+sceneObj geometry: solid.
+view := AdvancedB3DSceneMorph new.
+view scene objects: (OrderedCollection with: sceneObj).
+view beRotating; openInHand
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6010/addtag/" class="addtag" id="addtag_6010">タグ</a>:
+	
+    
+    <a href="/web/20100323043152/http://ja.doukaku.org/tag/Squeak_Smalltalk/">Squeak_Smalltalk</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/smalltalk/">
+		Smalltalk
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6010/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6010/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6010"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6010"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6010"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6010/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment6015">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6015/">#6015</a>(<script language="JavaScript">print_time(new Date("2008/03/15 13:03 GMT"));</script><noscript>2008/03/15 13:03 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>ポリゴン(多角形) でよいのでしょうか?
+それともポリヘドロン(多面体)?
+ポリゴンを面内で回す分には3次元ライブラリは要らなそうですが....</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6015/addtag/" class="addtag" id="addtag_6015">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6015"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6015"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6015"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  <a href="/web/20100323043152/http://ja.doukaku.org/comment/6015/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6015/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+    <div class="indent compact" style="position: relative;">
+      <img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/1x1dark_green.png" width=10 style="position: absolute;top:-10px;margin-left:8px;">
+      
+
+
+
+
+
+<div class="comment" id="comment6018">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/1/" target="_top">にしお</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6018/">#6018</a>(<script language="JavaScript">print_time(new Date("2008/03/17 09:22 GMT"));</script><noscript>2008/03/17 09:22 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>たぶん題意は「ポリゴンを3次元的に回す(面内で回すのではなく)」と言うことでしょう。</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6018/addtag/" class="addtag" id="addtag_6018">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6018"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6018"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6018"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+    <a href="/web/20100323043152/http://ja.doukaku.org/comment/6015/"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20100323043152/http://ja.doukaku.org/comment/6018/root/"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6018/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+    </div>
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment6016">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/428/" target="_top">Y</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_silver.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6016/">#6016</a>(<script language="JavaScript">print_time(new Date("2008/03/17 03:25 GMT"));</script><noscript>2008/03/17 03:25 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/mathematica/">
+	  Mathematica
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>以下の手順で描いています(Mathematica 6)。
+
+1. 頂点を定義
+2. ポリゴンを定義
+3. 描画
+
+マウスでドラッグすると回転します。
+
+特別なライブラリは使っていません。
+（Mathematica 5だと「&lt;&lt; RealTime3D`」が必要です。）</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></td><td class="code"><div class="highlight"><pre>a = {1, 0, 0};
+b = {-1/2, Sqrt@3/2, 0};
+c = {-1/2, -Sqrt@3/2, 0};
+d = {0, 0, Sqrt@2};
+
+tetra = {
+   Polygon[{a, b, c}],
+   Polygon[{a, b, d}],
+   Polygon[{b, c, d}],
+   Polygon[{c, a, d}]
+  };
+
+Show[Graphics3D[tetra]]
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6016/addtag/" class="addtag" id="addtag_6016">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/mathematica/">
+		Mathematica
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6016/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6016/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6016"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6016"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6016"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6016/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment6022">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6022/">#6022</a>(<script language="JavaScript">print_time(new Date("2008/03/18 18:55 GMT"));</script><noscript>2008/03/18 18:55 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/python/">
+	  Python
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>VPython</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>1
+2
+3</pre></td><td class="code"><div class="highlight"><pre><span class="k">from</span> <span class="nn">visual</span> <span class="k">import</span> <span class="o">*</span>
+<span class="n">redbox</span><span class="o">=</span><span class="n">box</span><span class="p">()</span>
+<span class="k">while</span> <span class="mi">1</span><span class="p">:</span> <span class="n">redbox</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6022/addtag/" class="addtag" id="addtag_6022">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/python/">
+		Python
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6022/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6022/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6022"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6022"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6022"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6022/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment6023">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6023/">#6023</a>(<script language="JavaScript">print_time(new Date("2008/03/20 09:20 GMT"));</script><noscript>2008/03/20 09:20 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/java/">
+	  Java
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #efffef;">1/1=1.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  題意を、<br/><br/>・ポリゴンによって任意の立体を表示する。<br/>・立体は回転させる。<br/><br/>という意味と解釈しました。<br/><br/>Java3Dによって立方体を回転させています。回転はY軸方向とX軸方向のそれぞれで行っています（Y軸方向だけでも良かったのですが、それでは全部の面が見えないのでX軸方向の回転を追加しました）。
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55</pre></td><td class="code"><div class="highlight"><pre><span class="k">import</span> <span class="nn">javax.swing.*</span><span class="o">;</span>
+<span class="k">import</span> <span class="nn">java.awt.*</span><span class="o">;</span>
+<span class="k">import</span> <span class="nn">javax.media.j3d.*</span><span class="o">;</span>
+<span class="k">import</span> <span class="nn">javax.vecmath.*</span><span class="o">;</span>
+<span class="k">import</span> <span class="nn">com.sun.j3d.utils.universe.*</span><span class="o">;</span>
+<span class="k">import</span> <span class="nn">com.sun.j3d.utils.geometry.ColorCube</span><span class="o">;</span>
+
+<span class="nd">@SuppressWarnings</span><span class="o">(</span><span class="s">&quot;serial&quot;</span><span class="o">)</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">Sample3D</span> <span class="k">extends</span> <span class="n">JFrame</span> <span class="o">{</span>
+    <span class="k">public</span> <span class="n">BranchGroup</span> <span class="n">createSceneGraph</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">BranchGroup</span> <span class="n">objRoot</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BranchGroup</span><span class="o">();</span>
+
+        <span class="n">TransformGroup</span> <span class="n">objTrans</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TransformGroup</span><span class="o">();</span>
+        <span class="n">objTrans</span><span class="o">.</span><span class="na">setCapability</span><span class="o">(</span><span class="n">TransformGroup</span><span class="o">.</span><span class="na">ALLOW_TRANSFORM_WRITE</span><span class="o">);</span>
+        <span class="n">objRoot</span><span class="o">.</span><span class="na">addChild</span><span class="o">(</span><span class="n">objTrans</span><span class="o">);</span>
+
+        <span class="n">Transform3D</span> <span class="n">axis</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Transform3D</span><span class="o">();</span>
+        <span class="n">axis</span><span class="o">.</span><span class="na">rotZ</span><span class="o">(</span><span class="n">Math</span><span class="o">.</span><span class="na">PI</span> <span class="o">/</span> <span class="mi">2</span><span class="o">);</span>
+        <span class="n">BoundingSphere</span> <span class="n">bounds</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BoundingSphere</span><span class="o">(</span><span class="k">new</span> <span class="n">Point3d</span><span class="o">(),</span> <span class="mf">100.0</span><span class="o">);</span>
+        <span class="n">RotationInterpolator</span> <span class="n">rotator</span> <span class="o">=</span> <span class="k">new</span> <span class="n">RotationInterpolator</span><span class="o">(</span><span class="k">new</span> <span class="n">Alpha</span><span class="o">(-</span><span class="mi">1</span><span class="o">,</span>
+                <span class="mi">20</span> <span class="o">*</span> <span class="mi">4000</span><span class="o">),</span> <span class="n">objTrans</span><span class="o">,</span> <span class="n">axis</span><span class="o">,</span> <span class="mf">0.0f</span><span class="o">,</span> <span class="o">(</span><span class="kt">float</span><span class="o">)</span> <span class="n">Math</span><span class="o">.</span><span class="na">PI</span> <span class="o">*</span> <span class="mf">2.0f</span><span class="o">);</span>
+        <span class="n">rotator</span><span class="o">.</span><span class="na">setSchedulingBounds</span><span class="o">(</span><span class="n">bounds</span><span class="o">);</span>
+        <span class="n">objRoot</span><span class="o">.</span><span class="na">addChild</span><span class="o">(</span><span class="n">rotator</span><span class="o">);</span>
+
+        <span class="n">TransformGroup</span> <span class="n">objTrans2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TransformGroup</span><span class="o">();</span>
+        <span class="n">objTrans2</span><span class="o">.</span><span class="na">setCapability</span><span class="o">(</span><span class="n">TransformGroup</span><span class="o">.</span><span class="na">ALLOW_TRANSFORM_WRITE</span><span class="o">);</span>
+        <span class="n">objTrans</span><span class="o">.</span><span class="na">addChild</span><span class="o">(</span><span class="n">objTrans2</span><span class="o">);</span>
+        <span class="n">rotator</span> <span class="o">=</span> <span class="k">new</span> <span class="n">RotationInterpolator</span><span class="o">(</span><span class="k">new</span> <span class="n">Alpha</span><span class="o">(-</span><span class="mi">1</span><span class="o">,</span> <span class="mi">4000</span><span class="o">),</span> <span class="n">objTrans2</span><span class="o">);</span>
+        <span class="n">rotator</span><span class="o">.</span><span class="na">setSchedulingBounds</span><span class="o">(</span><span class="n">bounds</span><span class="o">);</span>
+        <span class="n">objRoot</span><span class="o">.</span><span class="na">addChild</span><span class="o">(</span><span class="n">rotator</span><span class="o">);</span>
+
+        <span class="n">objTrans2</span><span class="o">.</span><span class="na">addChild</span><span class="o">(</span><span class="k">new</span> <span class="n">ColorCube</span><span class="o">(</span><span class="mf">0.4</span><span class="o">));</span>
+        <span class="n">objRoot</span><span class="o">.</span><span class="na">compile</span><span class="o">();</span>
+        <span class="k">return</span> <span class="n">objRoot</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="k">public</span> <span class="n">Sample3D</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">getContentPane</span><span class="o">().</span><span class="na">setLayout</span><span class="o">(</span><span class="k">new</span> <span class="n">BorderLayout</span><span class="o">());</span>
+        <span class="n">GraphicsConfiguration</span> <span class="n">config</span> <span class="o">=</span> <span class="n">SimpleUniverse</span><span class="o">.</span><span class="na">getPreferredConfiguration</span><span class="o">();</span>
+        <span class="n">Canvas3D</span> <span class="n">canvas</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Canvas3D</span><span class="o">(</span><span class="n">config</span><span class="o">);</span>
+        <span class="n">getContentPane</span><span class="o">().</span><span class="na">add</span><span class="o">(</span><span class="n">canvas</span><span class="o">,</span> <span class="n">BorderLayout</span><span class="o">.</span><span class="na">CENTER</span><span class="o">);</span>
+        <span class="n">BranchGroup</span> <span class="n">scene</span> <span class="o">=</span> <span class="n">createSceneGraph</span><span class="o">();</span>
+        <span class="n">SimpleUniverse</span> <span class="n">universe</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SimpleUniverse</span><span class="o">(</span><span class="n">canvas</span><span class="o">);</span>
+        <span class="n">universe</span><span class="o">.</span><span class="na">getViewingPlatform</span><span class="o">().</span><span class="na">setNominalViewingTransform</span><span class="o">();</span>
+        <span class="n">universe</span><span class="o">.</span><span class="na">addBranchGraph</span><span class="o">(</span><span class="n">scene</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="kt">void</span> <span class="n">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Sample3D</span> <span class="n">sample</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Sample3D</span><span class="o">();</span>
+
+        <span class="n">sample</span><span class="o">.</span><span class="na">setBounds</span><span class="o">(</span><span class="mi">10</span><span class="o">,</span> <span class="mi">10</span><span class="o">,</span> <span class="mi">480</span><span class="o">,</span> <span class="mi">480</span><span class="o">);</span>
+        <span class="n">sample</span><span class="o">.</span><span class="na">setDefaultCloseOperation</span><span class="o">(</span><span class="n">JFrame</span><span class="o">.</span><span class="na">EXIT_ON_CLOSE</span><span class="o">);</span>
+        <span class="n">sample</span><span class="o">.</span><span class="na">setVisible</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6023/addtag/" class="addtag" id="addtag_6023">タグ</a>:
+	
+    
+    <a href="/web/20100323043152/http://ja.doukaku.org/tag/Java3D/">Java3D</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/java/">
+		Java
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6023/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6023/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #efffef;"
+  >1/1=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6023"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6023"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6023"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  <a href="/web/20100323043152/http://ja.doukaku.org/comment/6023/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6023/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+    <div class="indent compact" style="position: relative;">
+      <img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/1x1dark_green.png" width=10 style="position: absolute;top:-10px;margin-left:8px;">
+      
+
+
+
+
+
+<div class="comment" id="comment9154">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/1064/" target="_top">yamamoto</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/9154/">#9154</a>(<script language="JavaScript">print_time(new Date("2009/06/13 18:03 GMT"));</script><noscript>2009/06/13 18:03 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/scala/">
+	  Scala
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>#6023をscalaに移植しました。
+またしても、java--&gt;scala移植の暗黒面に・・・</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64</pre></td><td class="code"><div class="highlight"><pre>import scala.swing._
+
+import javax.media.j3d._
+import javax.vecmath._
+import com.sun.j3d.utils.universe._
+import com.sun.j3d.utils.geometry.ColorCube
+
+@SuppressWarnings(Array(&quot;serial&quot;))
+object Sample3D {
+    def createSceneGraph() :BranchGroup = {
+        val objRoot = new BranchGroup();
+
+        val objTrans = new TransformGroup();
+        objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        objRoot.addChild(objTrans);
+
+        val axis = new Transform3D();
+        axis.rotZ(Math.Pi / 2);
+        val bounds = new BoundingSphere(new Point3d(), 100.0);
+        
+        var rotator = new RotationInterpolator(
+                new Alpha(-1,20 * 4000) , 
+                objTrans , 
+                axis     , 
+                0.0F     , 
+                (Math.Pi * 2.0).toFloat);
+        rotator.setSchedulingBounds(bounds);
+        objRoot.addChild(rotator);
+
+        val objTrans2 = new TransformGroup();
+        objTrans2.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        objTrans.addChild(objTrans2);
+        rotator = new RotationInterpolator(new Alpha(-1, 4000), objTrans2);
+        rotator.setSchedulingBounds(bounds);
+        objRoot.addChild(rotator);
+
+        objTrans2.addChild(new ColorCube(0.4));
+        objRoot.compile();
+        return objRoot;
+    }
+}
+
+object Main extends SimpleGUIApplication {
+    val config = SimpleUniverse.getPreferredConfiguration();
+    val canvas = new Canvas3D(config);
+    
+    //create frame window
+    def top=new MainFrame{
+      peer.setBounds(10, 10, 480, 480)
+      //caption
+      title = &quot;Sample3D with Scala/Java3D&quot;
+      
+      val contentPane = peer.getContentPane()
+      contentPane.setLayout(new java.awt.BorderLayout());
+      contentPane.add(canvas,java.awt.BorderLayout.CENTER)
+      
+    } // end of MainFrame
+    
+    val scene = Sample3D.createSceneGraph();
+    val universe = new SimpleUniverse(canvas);
+    universe.getViewingPlatform().setNominalViewingTransform();
+    universe.addBranchGraph(scene);
+    
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/9154/addtag/" class="addtag" id="addtag_9154">タグ</a>:
+	
+    
+    <a href="/web/20100323043152/http://ja.doukaku.org/tag/scala.swing/">scala.swing</a>
+    
+    <a href="/web/20100323043152/http://ja.doukaku.org/tag/%E7%A7%BB%E6%A4%8D/">移植</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/scala/">
+		Scala
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/9154/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/9154/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_9154"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_9154"
+  >0</span><span 
+  class="button green"
+  id="rating_p_9154"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+    <a href="/web/20100323043152/http://ja.doukaku.org/comment/6023/"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20100323043152/http://ja.doukaku.org/comment/9154/root/"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/9154/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+    </div>
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment6036">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/664/" target="_top">tenka</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6036/">#6036</a>(<script language="JavaScript">print_time(new Date("2008/03/21 13:26 GMT"));</script><noscript>2008/03/21 13:26 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/csharp/">
+	  C#
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffefef;">-1/1=-1.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>DirectXを使いました～。
+平面ポリゴンを回転させてるだけです。</pre>
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20100323043152/http://sorceryforce.com/index.html">ソーサリーフォース</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152</pre></td><td class="code"><div class="highlight"><pre><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Drawing</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Windows.Forms</span><span class="p">;</span>
+
+<span class="k">using</span> <span class="nn">Microsoft.DirectX</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">Microsoft.DirectX.Direct3D</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">ViewPoly</span> <span class="p">:</span> <span class="n">Form</span>
+<span class="k">{</span>
+    <span class="k">private</span> <span class="n">Device</span> <span class="n">dev</span><span class="p">;</span>
+    <span class="k">private</span> <span class="n">VertexBuffer</span> <span class="n">vertex</span><span class="p">;</span>
+    <span class="k">private</span> <span class="kt">float</span> <span class="n">polyTheta</span> <span class="p">=</span> <span class="m">0.0f</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="kt">bool</span> <span class="nf">Init</span><span class="p">()</span>
+    <span class="k">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">Text</span> <span class="p">=</span> <span class="s">&quot;ポリゴン回ります&quot;</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">MaximizeBox</span> <span class="p">=</span> <span class="k">false</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">FormBorderStyle</span> <span class="p">=</span> <span class="n">FormBorderStyle</span><span class="p">.</span><span class="n">FixedSingle</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">Size</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Size</span><span class="p">(</span><span class="m">480</span><span class="p">,</span> <span class="m">480</span><span class="p">);</span>
+
+        <span class="n">PresentParameters</span> <span class="n">pp</span> <span class="p">=</span> <span class="k">new</span> <span class="n">PresentParameters</span><span class="p">();</span>
+        <span class="n">pp</span><span class="p">.</span><span class="n">Windowed</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
+        <span class="n">pp</span><span class="p">.</span><span class="n">SwapEffect</span> <span class="p">=</span> <span class="n">SwapEffect</span><span class="p">.</span><span class="n">Discard</span><span class="p">;</span>
+        <span class="n">pp</span><span class="p">.</span><span class="n">EnableAutoDepthStencil</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
+        <span class="n">pp</span><span class="p">.</span><span class="n">AutoDepthStencilFormat</span> <span class="p">=</span> <span class="n">DepthFormat</span><span class="p">.</span><span class="n">D16</span><span class="p">;</span>
+
+        <span class="k">try</span>
+        <span class="k">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="n">dev</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Device</span><span class="p">(</span>
+                <span class="m">0</span><span class="p">,</span> 
+                <span class="n">DeviceType</span><span class="p">.</span><span class="n">Reference</span><span class="p">,</span>
+                <span class="k">this</span><span class="p">.</span><span class="n">Handle</span><span class="p">,</span>
+                <span class="n">CreateFlags</span><span class="p">.</span><span class="n">SoftwareVertexProcessing</span><span class="p">,</span>
+                <span class="n">pp</span>
+            <span class="p">);</span>
+        <span class="k">}</span>
+        <span class="k">catch</span>
+        <span class="k">{</span>
+            <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+        <span class="k">}</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="n">vertex</span> <span class="p">=</span> <span class="k">new</span> <span class="n">VertexBuffer</span><span class="p">(</span>
+            <span class="k">typeof</span><span class="p">(</span><span class="n">CustomVertex</span><span class="p">.</span><span class="n">PositionColored</span><span class="p">),</span>
+            <span class="m">4</span><span class="p">,</span>
+            <span class="k">this</span><span class="p">.</span><span class="n">dev</span><span class="p">,</span>
+            <span class="n">Usage</span><span class="p">.</span><span class="n">None</span><span class="p">,</span>
+            <span class="n">CustomVertex</span><span class="p">.</span><span class="n">PositionColored</span><span class="p">.</span><span class="n">Format</span><span class="p">,</span>
+            <span class="n">Pool</span><span class="p">.</span><span class="n">Managed</span>
+        <span class="p">);</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="n">dev</span><span class="p">.</span><span class="n">Transform</span><span class="p">.</span><span class="n">View</span> <span class="p">=</span> <span class="n">Matrix</span><span class="p">.</span><span class="n">LookAtLH</span><span class="p">(</span>
+            <span class="k">new</span> <span class="n">Vector3</span><span class="p">(</span><span class="m">0.0f</span><span class="p">,</span> <span class="m">0.0f</span><span class="p">,</span> <span class="p">-</span><span class="m">15.0f</span><span class="p">),</span>
+            <span class="k">new</span> <span class="n">Vector3</span><span class="p">(</span><span class="m">0.0f</span><span class="p">,</span> <span class="m">0.0f</span><span class="p">,</span> <span class="m">0.0f</span><span class="p">),</span>
+            <span class="k">new</span> <span class="n">Vector3</span><span class="p">(</span><span class="m">0.0f</span><span class="p">,</span> <span class="m">1.0f</span><span class="p">,</span> <span class="m">0.0f</span><span class="p">)</span>
+        <span class="p">);</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="n">dev</span><span class="p">.</span><span class="n">Transform</span><span class="p">.</span><span class="n">Projection</span> <span class="p">=</span> <span class="n">Matrix</span><span class="p">.</span><span class="n">PerspectiveFovLH</span><span class="p">(</span>
+            <span class="n">Geometry</span><span class="p">.</span><span class="n">DegreeToRadian</span><span class="p">(</span><span class="m">60.0f</span><span class="p">),</span>
+            <span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="k">this</span><span class="p">.</span><span class="n">dev</span><span class="p">.</span><span class="n">Viewport</span><span class="p">.</span><span class="n">Width</span> <span class="p">/</span> <span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="k">this</span><span class="p">.</span><span class="n">dev</span><span class="p">.</span><span class="n">Viewport</span><span class="p">.</span><span class="n">Height</span><span class="p">,</span>
+            <span class="m">1.0f</span><span class="p">,</span>
+            <span class="m">100.0f</span>
+        <span class="p">);</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="n">dev</span><span class="p">.</span><span class="n">RenderState</span><span class="p">.</span><span class="n">Lighting</span> <span class="p">=</span> <span class="k">false</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">dev</span><span class="p">.</span><span class="n">RenderState</span><span class="p">.</span><span class="n">CullMode</span> <span class="p">=</span> <span class="n">Cull</span><span class="p">.</span><span class="n">None</span><span class="p">;</span>
+
+        <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+    <span class="k">}</span>
+
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">Render</span><span class="p">()</span>
+    <span class="k">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">dev</span><span class="p">.</span><span class="n">Clear</span><span class="p">(</span><span class="n">ClearFlags</span><span class="p">.</span><span class="n">Target</span> <span class="p">|</span> <span class="n">ClearFlags</span><span class="p">.</span><span class="n">ZBuffer</span><span class="p">,</span> <span class="n">Color</span><span class="p">.</span><span class="n">DarkBlue</span><span class="p">,</span> <span class="m">1.0f</span><span class="p">,</span> <span class="m">0</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">dev</span><span class="p">.</span><span class="n">BeginScene</span><span class="p">();</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">RollingPoly</span><span class="p">();</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">dev</span><span class="p">.</span><span class="n">EndScene</span><span class="p">();</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">dev</span><span class="p">.</span><span class="n">Present</span><span class="p">();</span>
+
+    <span class="k">}</span>
+
+    <span class="k">private</span> <span class="k">void</span> <span class="nf">RollingPoly</span><span class="p">()</span>
+    <span class="k">{</span>
+        <span class="kt">float</span> <span class="n">theta</span> <span class="p">=</span> <span class="n">Geometry</span><span class="p">.</span><span class="n">DegreeToRadian</span><span class="p">(</span>
+            <span class="p">(</span><span class="kt">float</span><span class="p">)((</span><span class="n">polyTheta</span> <span class="p">-=</span> <span class="m">10.0f</span><span class="p">)</span> <span class="p">%</span> <span class="m">360.0f</span><span class="p">)</span>
+        <span class="p">);</span>
+
+        <span class="n">CustomVertex</span><span class="p">.</span><span class="n">PositionColored</span><span class="p">[]</span> <span class="n">vertexPc</span>
+            <span class="p">=</span> <span class="k">new</span> <span class="n">CustomVertex</span><span class="p">.</span><span class="n">PositionColored</span><span class="p">[</span><span class="m">4</span><span class="p">];</span>
+
+        <span class="n">vertexPc</span><span class="p">[</span><span class="m">0</span><span class="p">]</span> <span class="p">=</span> <span class="k">new</span> <span class="n">CustomVertex</span><span class="p">.</span><span class="n">PositionColored</span><span class="p">(</span>
+            <span class="p">-</span><span class="m">4.0f</span> <span class="p">*</span> <span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">Math</span><span class="p">.</span><span class="n">Sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)),</span>
+            <span class="m">4.0f</span><span class="p">,</span>
+            <span class="p">-</span><span class="m">4.0f</span> <span class="p">*</span> <span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">Math</span><span class="p">.</span><span class="n">Cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span>
+            <span class="n">Color</span><span class="p">.</span><span class="n">Red</span><span class="p">.</span><span class="n">ToArgb</span><span class="p">()</span>
+        <span class="p">);</span>
+        <span class="n">vertexPc</span><span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="p">=</span> <span class="k">new</span> <span class="n">CustomVertex</span><span class="p">.</span><span class="n">PositionColored</span><span class="p">(</span>
+            <span class="m">4.0f</span> <span class="p">*</span> <span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">Math</span><span class="p">.</span><span class="n">Sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)),</span>
+            <span class="m">4.0f</span><span class="p">,</span>
+            <span class="m">4.0f</span> <span class="p">*</span> <span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">Math</span><span class="p">.</span><span class="n">Cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span>
+            <span class="n">Color</span><span class="p">.</span><span class="n">Blue</span><span class="p">.</span><span class="n">ToArgb</span><span class="p">()</span>
+        <span class="p">);</span>
+        <span class="n">vertexPc</span><span class="p">[</span><span class="m">2</span><span class="p">]</span> <span class="p">=</span> <span class="k">new</span> <span class="n">CustomVertex</span><span class="p">.</span><span class="n">PositionColored</span><span class="p">(</span>
+            <span class="p">-</span><span class="m">4.0f</span> <span class="p">*</span> <span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">Math</span><span class="p">.</span><span class="n">Sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)),</span>
+            <span class="p">-</span><span class="m">4.0f</span><span class="p">,</span>
+            <span class="p">-</span><span class="m">4.0f</span> <span class="p">*</span> <span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">Math</span><span class="p">.</span><span class="n">Cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span>
+            <span class="n">Color</span><span class="p">.</span><span class="n">Red</span><span class="p">.</span><span class="n">ToArgb</span><span class="p">()</span>
+        <span class="p">);</span>
+        <span class="n">vertexPc</span><span class="p">[</span><span class="m">3</span><span class="p">]</span> <span class="p">=</span> <span class="k">new</span> <span class="n">CustomVertex</span><span class="p">.</span><span class="n">PositionColored</span><span class="p">(</span>
+            <span class="m">4.0f</span> <span class="p">*</span> <span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">Math</span><span class="p">.</span><span class="n">Sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)),</span>
+            <span class="p">-</span><span class="m">4.0f</span><span class="p">,</span>
+            <span class="m">4.0f</span> <span class="p">*</span> <span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">Math</span><span class="p">.</span><span class="n">Cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span>
+            <span class="n">Color</span><span class="p">.</span><span class="n">Blue</span><span class="p">.</span><span class="n">ToArgb</span><span class="p">()</span>
+        <span class="p">);</span>
+
+        <span class="k">using</span> <span class="p">(</span><span class="n">GraphicsStream</span> <span class="n">gs</span>
+            <span class="p">=</span> <span class="k">this</span><span class="p">.</span><span class="n">vertex</span><span class="p">.</span><span class="n">Lock</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="n">LockFlags</span><span class="p">.</span><span class="n">None</span><span class="p">))</span>
+        <span class="k">{</span>
+            <span class="n">gs</span><span class="p">.</span><span class="n">Write</span><span class="p">(</span><span class="n">vertexPc</span><span class="p">);</span>
+            <span class="k">this</span><span class="p">.</span><span class="n">vertex</span><span class="p">.</span><span class="n">Unlock</span><span class="p">();</span>
+        <span class="k">}</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="n">dev</span><span class="p">.</span><span class="n">SetStreamSource</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="n">vertex</span><span class="p">,</span> <span class="m">0</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">dev</span><span class="p">.</span><span class="n">VertexFormat</span> <span class="p">=</span> <span class="n">CustomVertex</span><span class="p">.</span><span class="n">PositionColored</span><span class="p">.</span><span class="n">Format</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">dev</span><span class="p">.</span><span class="n">DrawPrimitives</span><span class="p">(</span><span class="n">PrimitiveType</span><span class="p">.</span><span class="n">TriangleStrip</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">2</span><span class="p">);</span>
+    <span class="k">}</span>
+
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">dispose</span><span class="p">()</span>
+    <span class="k">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="n">vertex</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span>
+            <span class="k">this</span><span class="p">.</span><span class="n">vertex</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="n">dev</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span>
+            <span class="k">this</span><span class="p">.</span><span class="n">dev</span><span class="p">.</span><span class="n">Dispose</span><span class="p">();</span>
+    <span class="k">}</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+    <span class="k">{</span> 
+        <span class="k">using</span> <span class="p">(</span><span class="n">ViewPoly</span> <span class="n">vp</span> <span class="p">=</span> <span class="k">new</span> <span class="n">ViewPoly</span><span class="p">())</span>
+        <span class="k">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">vp</span><span class="p">.</span><span class="n">Init</span><span class="p">())</span>
+            <span class="k">{</span>
+                <span class="n">vp</span><span class="p">.</span><span class="n">Show</span><span class="p">();</span>
+                <span class="k">while</span> <span class="p">(</span><span class="n">vp</span><span class="p">.</span><span class="n">Created</span><span class="p">)</span>
+                <span class="k">{</span>
+                    <span class="n">vp</span><span class="p">.</span><span class="n">Render</span><span class="p">();</span>
+                    <span class="n">Application</span><span class="p">.</span><span class="n">DoEvents</span><span class="p">();</span>
+                    <span class="n">System</span><span class="p">.</span><span class="n">Threading</span><span class="p">.</span><span class="n">Thread</span><span class="p">.</span><span class="n">Sleep</span><span class="p">(</span><span class="m">50</span><span class="p">);</span>
+                <span class="k">}</span>
+                <span class="n">vp</span><span class="p">.</span><span class="n">dispose</span><span class="p">();</span>
+            <span class="k">}</span>
+        <span class="k">}</span>
+    <span class="k">}</span>
+<span class="k">}</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6036/addtag/" class="addtag" id="addtag_6036">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/csharp/">
+		C#
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6036/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6036/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffefef;"
+  >-1/1=-1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6036"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6036"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6036"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6036/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment6041">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6041/">#6041</a>(<script language="JavaScript">print_time(new Date("2008/03/22 09:40 GMT"));</script><noscript>2008/03/22 09:40 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  プログラムと呼ぶのかはわかりませんが、マウスでぐりぐりっと回転できます.<br/>VRMLビューアが必要です.
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20100323043152/http://www.km.kongsberg.com/sim">VRMLview</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17</pre></td><td class="code"><div class="highlight"><pre>#VRML V2.0 utf8
+Shape {
+  geometry IndexedFaceSet {
+    coord Coordinate {
+      point [ 0 0 0.3, 0 2 0, 1.73 -1 0, -1.73 -1 0 ]
+    }
+    coordIndex [
+     0 1 2 -1
+     0 2 3 -1
+     0 3 1 -1
+    ]
+    solid FALSE
+  }
+  appearance Appearance {
+    material Material {}
+  }
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6041/addtag/" class="addtag" id="addtag_6041">タグ</a>:
+	
+    
+    <a href="/web/20100323043152/http://ja.doukaku.org/tag/VRML/">VRML</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6041/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6041/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6041"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6041"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6041"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6041/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment6047">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/646/" target="_top">silverwire</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_silver.png" border=0/></a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6047/">#6047</a>(<script language="JavaScript">print_time(new Date("2008/03/22 20:00 GMT"));</script><noscript>2008/03/22 20:00 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/javascript/">
+	  JavaScript
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>ありふれた環境でもできないものかと、 ECMA Script + SVGで書きました。
+
+ tetrahedron.svgなどの名前でファイルを保存し、ブラウザにドラッグアンドドロップす
+ることで、回転する四面体が表示されます。
+
+Adobe SVG Viewerでは動作しません。 Firefox 2.0.0.8, Opera 9.26, Safari 3.1で動作
+を確認しました。</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106</pre></td><td class="code"><div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">xml</span> <span class="nx">version</span><span class="o">=</span><span class="s2">&quot;1.0&quot;</span> <span class="nx">encoding</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span><span class="o">?&gt;</span>
+<span class="o">&lt;!</span><span class="nx">DOCTYPE</span> <span class="nx">svg</span> <span class="nx">PUBLIC</span> <span class="s2">&quot;-//W3C//DTD SVG 20010904//EN&quot;</span> <span class="s2">&quot;http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd&quot;</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="nx">svg</span> <span class="nx">xmlns</span><span class="o">=</span><span class="s2">&quot;http://www.w3.org/2000/svg&quot;</span> <span class="nx">onload</span><span class="o">=</span><span class="s2">&quot;new Tetrahedron(100).rotate(1, 1)&quot;</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="nx">script</span> <span class="nx">type</span><span class="o">=</span><span class="s2">&quot;text/ecmascript&quot;</span><span class="o">&gt;</span>
+    <span class="o">&lt;!</span><span class="p">[</span><span class="nx">CDATA</span><span class="p">[</span>
+        <span class="k">var</span> <span class="nx">NS</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">documentElement</span><span class="p">.</span><span class="nx">getAttribute</span><span class="p">(</span><span class="s1">&#39;xmlns&#39;</span><span class="p">);</span> <span class="c">// 名前空間</span>
+
+        <span class="nb">Function</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">_setInterval</span> <span class="o">=</span> 
+        <span class="k">function</span> <span class="p">(</span><span class="nx">t</span><span class="o">,</span> <span class="nx">o</span><span class="o">,</span> <span class="nx">v</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">var</span> <span class="nx">_</span> <span class="o">=</span> <span class="k">this</span><span class="o">;</span>
+            <span class="k">return</span> <span class="nx">setInterval</span><span class="p">(</span><span class="k">function</span> <span class="p">()</span> <span class="p">{</span> <span class="nx">_</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">o</span><span class="o">,</span> <span class="nx">v</span><span class="p">);</span> <span class="p">}</span><span class="o">,</span> <span class="nx">t</span><span class="p">);</span>
+        <span class="p">};</span>
+
+        <span class="k">var</span> <span class="nx">Tetrahedron</span> <span class="o">=</span> 
+        <span class="k">function</span> <span class="p">(</span><span class="nx">n</span> <span class="c">/* 一辺の長さ */</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">u</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span> <span class="c">// 上面</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">l</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span> <span class="c">// 下面</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">s</span> <span class="o">=</span> <span class="p">[</span>  <span class="p">];</span> <span class="c">// 側面</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">x</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">y</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">R</span> <span class="o">=</span> <span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">PI</span> <span class="sr">/ 180).toFixed(2); /</span><span class="o">/</span> <span class="err">ラジアン角</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">S</span> <span class="o">=</span> <span class="nx">n</span><span class="o">;</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">X</span> <span class="o">=</span> <span class="p">[</span> <span class="mi">0</span><span class="o">,</span> <span class="nx">n</span><span class="o">,</span> <span class="nx">n</span><span class="o">,</span> <span class="mi">0</span> <span class="p">];</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">Z</span> <span class="o">=</span> <span class="p">[</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="nx">n</span><span class="o">,</span> <span class="nx">n</span> <span class="p">];</span>
+
+            <span class="c">// 正四面体</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElementNS</span><span class="p">(</span><span class="nx">NS</span><span class="o">,</span> <span class="s1">&#39;g&#39;</span><span class="p">);</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;transform&#39;</span><span class="o">,</span> <span class="s1">&#39;translate(250, 250)&#39;</span><span class="p">);</span>
+            <span class="nb">document</span><span class="p">.</span><span class="nx">rootElement</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_</span><span class="p">);</span>
+            <span class="c">// 上面</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">u</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElementNS</span><span class="p">(</span><span class="nx">NS</span><span class="o">,</span> <span class="s1">&#39;path&#39;</span><span class="p">);</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">u</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;stroke&#39;</span><span class="o">,</span> <span class="s1">&#39;none&#39;</span><span class="p">);</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">u</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;fill&#39;</span><span class="o">,</span> <span class="s1">&#39;#000000&#39;</span><span class="p">);</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">u</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;opacity&#39;</span><span class="o">,</span> <span class="mf">0.4</span><span class="p">);</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">u</span><span class="p">);</span>
+            <span class="c">// 下面</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">l</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElementNS</span><span class="p">(</span><span class="nx">NS</span><span class="o">,</span> <span class="s1">&#39;path&#39;</span><span class="p">);</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">l</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;stroke&#39;</span><span class="o">,</span> <span class="s1">&#39;none&#39;</span><span class="p">);</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">l</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;fill&#39;</span><span class="o">,</span> <span class="s1">&#39;#000000&#39;</span><span class="p">);</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">l</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;opacity&#39;</span><span class="o">,</span> <span class="mf">0.4</span><span class="p">);</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">l</span><span class="p">);</span>
+            <span class="c">// 側面</span>
+            <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="o">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">s</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElementNS</span><span class="p">(</span><span class="nx">NS</span><span class="o">,</span> <span class="s1">&#39;path&#39;</span><span class="p">);</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">s</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;stroke&#39;</span><span class="o">,</span> <span class="s1">&#39;none&#39;</span><span class="p">);</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">s</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;fill&#39;</span><span class="o">,</span> <span class="s1">&#39;#000000&#39;</span><span class="p">);</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">s</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;opacity&#39;</span><span class="o">,</span> <span class="mf">0.5</span><span class="p">);</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">_</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">s</span><span class="p">[</span><span class="nx">i</span><span class="p">]);</span>
+            <span class="p">}</span>
+            <span class="c">// ビューポート</span>
+            <span class="nb">document</span><span class="p">.</span><span class="nx">rootElement</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;width&#39;</span> <span class="o">,</span> <span class="mi">500</span><span class="p">);</span>
+            <span class="nb">document</span><span class="p">.</span><span class="nx">rootElement</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;height&#39;</span><span class="o">,</span> <span class="mi">500</span><span class="p">);</span>
+            <span class="c">// ビューボックス</span>
+            <span class="nb">document</span><span class="p">.</span><span class="nx">rootElement</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;viewBox&#39;</span><span class="o">,</span> <span class="s1">&#39;0 0 500 500&#39;</span><span class="p">);</span>
+            <span class="nb">document</span><span class="p">.</span><span class="nx">rootElement</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;preserveAspectRatio&#39;</span><span class="o">,</span> <span class="s1">&#39;xMinYMin slice&#39;</span><span class="p">);</span>
+        <span class="p">};</span>
+
+        <span class="nx">Tetrahedron</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">move</span> <span class="o">=</span> 
+        <span class="k">function</span> <span class="p">(</span><span class="nx">v</span> <span class="c">/* 垂直方向の増分 */</span><span class="o">,</span> <span class="nx">h</span> <span class="c">/* 水平方向の増分 */</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">var</span> <span class="nx">U</span> <span class="o">=</span> <span class="p">[]</span><span class="o">,</span> <span class="nx">L</span> <span class="o">=</span> <span class="p">[];</span>
+            <span class="k">var</span> <span class="nx">l</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">,</span> <span class="nx">u</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">,</span> <span class="nx">s</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">;</span>
+            <span class="k">var</span> <span class="nx">i</span><span class="o">,</span> <span class="nx">j</span><span class="o">;</span>
+
+            <span class="k">this</span><span class="p">.</span><span class="nx">x</span> <span class="o">+=</span> <span class="nx">v</span><span class="o">;</span> <span class="k">this</span><span class="p">.</span><span class="nx">y</span> <span class="o">+=</span> <span class="nx">h</span><span class="o">;</span>
+
+            <span class="c">// 上面, 下面</span>
+            <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="o">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">U</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">transform</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">x</span> <span class="o">*</span> <span class="k">this</span><span class="p">.</span><span class="nx">R</span><span class="o">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">y</span> <span class="o">*</span> <span class="k">this</span><span class="p">.</span><span class="nx">R</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">X</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span><span class="o">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">S</span><span class="o">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">Z</span><span class="p">[</span><span class="nx">i</span><span class="p">]);</span>
+                <span class="nx">L</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">transform</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">x</span> <span class="o">*</span> <span class="k">this</span><span class="p">.</span><span class="nx">R</span><span class="o">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">y</span> <span class="o">*</span> <span class="k">this</span><span class="p">.</span><span class="nx">R</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">X</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span><span class="o">,</span>      <span class="mi">0</span><span class="o">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">Z</span><span class="p">[</span><span class="nx">i</span><span class="p">]);</span>
+                <span class="nx">u</span> <span class="o">+=</span> <span class="p">((</span><span class="nx">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;M&#39;</span> <span class="o">:</span> <span class="s1">&#39;L&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nx">U</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">x</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nx">U</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">y</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">;</span>
+                <span class="nx">l</span> <span class="o">+=</span> <span class="p">((</span><span class="nx">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;M&#39;</span> <span class="o">:</span> <span class="s1">&#39;L&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nx">L</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">x</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nx">L</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">y</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">;</span>
+            <span class="p">}</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">u</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="o">,</span> <span class="nx">u</span> <span class="o">+</span> <span class="s1">&#39;Z&#39;</span><span class="p">);</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">l</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="o">,</span> <span class="nx">l</span> <span class="o">+</span> <span class="s1">&#39;Z&#39;</span><span class="p">);</span>
+            <span class="c">// 側面</span>
+            <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">,</span> <span class="nx">j</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="o">;</span> <span class="nx">i</span><span class="o">++,</span> <span class="nx">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">j</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span> <span class="nx">j</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+                <span class="nx">s</span> <span class="o">=</span> <span class="s1">&#39;M &#39;</span> <span class="o">+</span> <span class="nx">L</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">x</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nx">L</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">y</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
+                  <span class="o">+</span> <span class="s1">&#39;L &#39;</span> <span class="o">+</span> <span class="nx">U</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">x</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nx">U</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">y</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
+                  <span class="o">+</span> <span class="s1">&#39;L &#39;</span> <span class="o">+</span> <span class="nx">U</span><span class="p">[</span><span class="nx">j</span><span class="p">].</span><span class="nx">x</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nx">U</span><span class="p">[</span><span class="nx">j</span><span class="p">].</span><span class="nx">y</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
+                  <span class="o">+</span> <span class="s1">&#39;L &#39;</span> <span class="o">+</span> <span class="nx">L</span><span class="p">[</span><span class="nx">j</span><span class="p">].</span><span class="nx">x</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nx">L</span><span class="p">[</span><span class="nx">j</span><span class="p">].</span><span class="nx">y</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">;</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">s</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="o">,</span> <span class="nx">s</span> <span class="o">+</span> <span class="s1">&#39;Z&#39;</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">};</span>
+
+        <span class="nx">Tetrahedron</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">transform</span> <span class="o">=</span> 
+        <span class="k">function</span> <span class="p">(</span><span class="nx">_x</span><span class="o">,</span> <span class="nx">_y</span><span class="o">,</span> <span class="nx">_z</span><span class="o">,</span> <span class="nx">x</span><span class="o">,</span> <span class="nx">y</span><span class="o">,</span> <span class="nx">z</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">var</span> <span class="nx">__x</span><span class="o">,</span> <span class="nx">__y</span><span class="o">,</span> <span class="nx">__z</span><span class="o">;</span>
+
+            <span class="nx">__x</span> <span class="o">=</span> <span class="nx">x</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">cos</span><span class="p">(</span><span class="nx">_y</span><span class="p">)</span> <span class="o">+</span>   <span class="nx">z</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">_y</span><span class="p">);</span>
+            <span class="nx">__z</span> <span class="o">=</span> <span class="nx">z</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">cos</span><span class="p">(</span><span class="nx">_y</span><span class="p">)</span> <span class="o">-</span>   <span class="nx">x</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">_y</span><span class="p">);</span>
+            <span class="nx">__y</span> <span class="o">=</span> <span class="nx">y</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">cos</span><span class="p">(</span><span class="nx">_x</span><span class="p">)</span> <span class="o">-</span> <span class="nx">__z</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">_x</span><span class="p">);</span>
+
+            <span class="k">return</span> <span class="p">{</span> <span class="s1">&#39;x&#39;</span> <span class="o">:</span> <span class="nx">__x</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">cos</span><span class="p">(</span><span class="nx">_z</span><span class="p">)</span> <span class="o">-</span> <span class="nx">__y</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">_z</span><span class="p">)</span>
+                   <span class="o">,</span> <span class="s1">&#39;y&#39;</span> <span class="o">:</span> <span class="nx">__x</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sin</span><span class="p">(</span><span class="nx">_z</span><span class="p">)</span> <span class="o">+</span> <span class="nx">__y</span> <span class="o">*</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">cos</span><span class="p">(</span><span class="nx">_z</span><span class="p">)</span>
+                   <span class="p">};</span> <span class="c">// アフィン変換</span>
+        <span class="p">};</span>
+
+        <span class="nx">Tetrahedron</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">rotate</span> <span class="o">=</span> 
+        <span class="k">function</span> <span class="p">(</span><span class="nx">h</span><span class="o">,</span> <span class="nx">v</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">move</span><span class="p">.</span><span class="nx">_setInterval</span><span class="p">(</span><span class="mi">50</span><span class="o">,</span> <span class="k">this</span><span class="o">,</span> <span class="p">[</span> <span class="nx">h</span><span class="o">,</span> <span class="nx">v</span> <span class="p">]);</span>
+        <span class="p">};</span>
+    <span class="p">]]</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="nx">script</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="nx">svg</span><span class="o">&gt;</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6047/addtag/" class="addtag" id="addtag_6047">タグ</a>:
+	
+    
+    <a href="/web/20100323043152/http://ja.doukaku.org/tag/SVG/">SVG</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/javascript/">
+		JavaScript
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6047/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6047/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6047"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6047"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6047"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6047/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment6078">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/771/" target="_top">M.Suzuki</a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6078/">#6078</a>(<script language="JavaScript">print_time(new Date("2008/03/27 23:19 GMT"));</script><noscript>2008/03/27 23:19 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/haskell/">
+	  Haskell
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>昔どこかのページを参考に作った奴です。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45</pre></td><td class="code"><div class="highlight"><pre><span class="kr">module</span> <span class="n">Main</span> <span class="kr">where</span>
+
+<span class="kr">import</span> <span class="n">System</span>
+<span class="kr">import</span> <span class="n">Graphics</span><span class="o">.</span><span class="n">UI</span><span class="o">.</span><span class="n">GLUT</span>
+<span class="kr">import</span> <span class="n">System</span><span class="o">.</span><span class="n">Random</span>
+
+<span class="nv">display</span> <span class="nv">n</span> <span class="o">=</span> <span class="kr">do</span>
+    <span class="nv">clear</span> <span class="p">[</span> <span class="n">ColorBuffer</span> <span class="p">]</span>
+    <span class="nv">color</span> <span class="o">$</span> <span class="n">Color3</span> <span class="p">(</span><span class="mf">0.6</span><span class="o">::</span><span class="n">Double</span><span class="p">)</span> <span class="mf">0.6</span> <span class="mf">0.6</span>
+    <span class="nv">preservingMatrix</span> <span class="o">$</span> <span class="kr">do</span>
+        <span class="nv">renderPrimitive</span> <span class="n">Polygon</span> <span class="o">$</span> <span class="nv">mapM_</span> <span class="nv">vertex</span> <span class="p">(</span><span class="nv">nlist</span> <span class="nv">n</span><span class="p">)</span>
+    <span class="nv">flush</span>
+    <span class="kr">where</span>
+        <span class="nv">nlist</span> <span class="nv">n</span> <span class="o">=</span> <span class="nv">nVertex</span> <span class="nv">n</span> <span class="nv">du</span>
+        <span class="nv">du</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="nv">pi</span> <span class="o">/</span> <span class="nv">fromIntegral</span> <span class="nv">n</span>
+
+<span class="nv">nVertex</span> <span class="nv">n</span> <span class="nv">du</span>
+    <span class="o">|</span> <span class="nv">n</span> <span class="o">==</span> <span class="mi">0</span>        <span class="o">=</span> <span class="p">[</span> <span class="nv">point</span> <span class="p">]</span>
+    <span class="o">|</span> <span class="nv">otherwise</span>     <span class="o">=</span> <span class="nv">point</span> <span class="o">:</span> <span class="nv">nVertex</span> <span class="p">(</span><span class="nv">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="nv">du</span>
+    <span class="kr">where</span>
+        <span class="nv">radius</span> <span class="o">=</span> <span class="mf">0.75</span>
+        <span class="nv">x</span> <span class="o">=</span> <span class="nv">toRational</span> <span class="p">(</span><span class="nv">radius</span> <span class="o">*</span> <span class="nv">cos</span> <span class="p">(</span><span class="nv">pi</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="nv">fromIntegral</span> <span class="nv">n</span> <span class="o">*</span> <span class="nv">du</span><span class="p">))</span>
+        <span class="nv">y</span> <span class="o">=</span> <span class="nv">toRational</span> <span class="p">(</span><span class="nv">radius</span> <span class="o">*</span> <span class="nv">sin</span> <span class="p">(</span><span class="nv">pi</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="nv">fromIntegral</span> <span class="nv">n</span> <span class="o">*</span> <span class="nv">du</span><span class="p">))</span>
+        <span class="nv">point</span> <span class="o">=</span> <span class="n">Vertex3</span> <span class="p">(</span><span class="nv">fromRational</span> <span class="nv">x</span><span class="p">)</span> <span class="p">(</span><span class="nv">fromRational</span> <span class="nv">y</span><span class="p">)</span> <span class="p">(</span><span class="mf">0.0</span> <span class="o">::</span> <span class="n">GLfloat</span><span class="p">)</span>
+
+
+<span class="nv">timer</span> <span class="nv">n</span> <span class="o">=</span> <span class="kr">do</span>
+        <span class="nv">rotate</span> <span class="p">(</span><span class="mi">1</span><span class="o">::</span><span class="n">Double</span><span class="p">)</span> <span class="p">(</span><span class="n">Vector3</span> <span class="mi">0</span> <span class="mi">1</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="nv">display</span> <span class="nv">n</span>
+        <span class="nv">finish</span>
+        <span class="nv">addTimerCallback</span> <span class="mi">10</span> <span class="p">(</span><span class="nv">timer</span> <span class="nv">n</span><span class="p">)</span>
+
+<span class="nv">inputKey</span> <span class="p">(</span><span class="n">Char</span> <span class="sc">&#39;q&#39;</span><span class="p">)</span> <span class="kr">_</span> <span class="kr">_</span> <span class="kr">_</span>  <span class="o">=</span> <span class="nv">exitWith</span> <span class="n">ExitSuccess</span>
+<span class="nv">inputKey</span> <span class="kr">_</span> <span class="kr">_</span> <span class="kr">_</span> <span class="kr">_</span>            <span class="o">=</span> <span class="nv">return</span> <span class="p">()</span>
+
+<span class="nv">main</span> <span class="o">=</span> <span class="kr">do</span>
+    <span class="p">(</span><span class="nv">fileName</span><span class="p">,</span> <span class="nv">args</span><span class="p">)</span> <span class="o">&lt;-</span> <span class="nv">getArgsAndInitialize</span>
+    <span class="kr">let</span> <span class="nv">n</span> <span class="o">=</span> <span class="kr">case</span> <span class="nv">args</span> <span class="kr">of</span>
+        <span class="p">[]</span> <span class="o">-&gt;</span> <span class="mi">3</span>
+        <span class="kr">_</span> <span class="o">-&gt;</span> <span class="nv">max</span> <span class="mi">3</span> <span class="o">$</span> <span class="nv">read</span> <span class="o">$</span> <span class="nv">head</span> <span class="nv">args</span>
+    <span class="nv">createWindow</span> <span class="s">&quot;Haskell OpenGL&quot;</span>
+    <span class="nv">displayCallback</span> <span class="o">$=</span> <span class="nv">display</span> <span class="nv">n</span>
+    <span class="nv">addTimerCallback</span> <span class="mi">1000</span> <span class="p">(</span><span class="nv">timer</span> <span class="nv">n</span><span class="p">)</span>
+    <span class="nv">keyboardMouseCallback</span> <span class="o">$=</span> <span class="n">Just</span> <span class="p">(</span><span class="nv">inputKey</span><span class="p">)</span>
+    <span class="nv">mainLoop</span>
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6078/addtag/" class="addtag" id="addtag_6078">タグ</a>:
+	
+    
+    <a href="/web/20100323043152/http://ja.doukaku.org/tag/Haskell/">Haskell</a>
+    
+    <a href="/web/20100323043152/http://ja.doukaku.org/tag/OpenGL/">OpenGL</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/haskell/">
+		Haskell
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6078/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6078/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6078"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6078"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6078"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6078/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment6080">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/685/" target="_top">Nemo</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6080/">#6080</a>(<script language="JavaScript">print_time(new Date("2008/03/28 14:34 GMT"));</script><noscript>2008/03/28 14:34 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/postscript/">
+	  PostScript
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #dfffdf;">2/2=1.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <pre class='compact'>PostScript で。
+2次元なら簡単なんですが、3次元は手頃なライブラリが見当らないので力技で。
+動画というわけにはいかないので、パラパラ漫画を出力します。
+シェーダーを実装する元気はないので、立体感は強引な陰線処理と
+ステレオ図の出力で勘弁しといて下さい。
+# どっかにレイトレースする PS のコードがあったような....
+前半分はひたすら行列計算用のコードです。
+
+このままプリンタ出力すると 36枚で立方体がぐるっと一周まわります。
+ghostscriptかAcrobat でページをすばやく切り替えて眺めてやると
+回っているように見えるかなぁ.....</pre>
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273</pre></td><td class="code"><div class="highlight"><pre>%!PS
+
+% Tiny Vector Library
+/DotProduct { % [Vector1] [Vector2]  DotProduct scaler
+    [ 3 1 roll
+    dup length 1 sub 0 1 3 -1 roll {
+        3 copy get 3 1 roll exch get mul 3 1 roll
+    } for
+    pop pop
+    ]
+
+    0 exch
+    { add } forall
+} bind def
+
+/VectorAdd { % [Vector1] [Vector2]   VectorMul  [NewVector]
+    [ 3 1 roll
+    dup length 1 sub 0 1 3 -1 roll {
+    3 copy get 3 1 roll exch get add 3 1 roll
+    } for
+    pop pop
+    ]
+} bind def
+
+/VectorScale { % [Vector] scale  VectorScale  [Vector&#39;]
+    0 1 3 index length 1 sub {
+        2 index 1 index get
+        2 index mul
+        3 index 3 1 roll put
+    } for
+    pop
+} bind def
+
+/VectorCopy { % [Vector]  VectorScale  [NewVector]
+    aload length array astore
+} bind def
+
+
+% Tiny Matrix Library
+/MatrixTranspose { % [Matrix1] MatrixTranspose [NewMatrix]
+    [ exch
+    dup 0 get length 1 sub 0 1 3 -1 roll
+    {
+        [ exch 2 index
+        {
+            1 index get
+            exch
+        } forall
+        pop ]
+        exch
+    } for
+    pop
+    ]
+} bind def
+
+/MatrixMul { % [[Matrix1]] [[Matrix2]]  MatrixMul  [[NewMatrix]]
+    MatrixTranspose exch
+    [ 3 1 roll
+    {
+        [ exch 2 index
+        {
+            1 index DotProduct exch
+        } forall
+        pop
+    ] exch
+    } forall
+    pop
+    ]
+} bind def
+
+/MatrixCopy { % [[Matrix]] MatrixCopy [[NewMatrix]]
+    [ exch
+    {
+        VectorCopy
+    } forall
+    ]
+} bind def
+
+/Matrix3Copy { % [[[Matrix]]] Matrix3Copy [[[NewMatrix]]]
+    [ exch
+    {
+        MatrixCopy
+    } forall
+    ]
+} bind def
+
+/VectorZero { % [Vector] VectorZero [Vector&#39;]
+    0 1 2 index length 1 sub {
+        1 index exch 0 put
+    } for
+} bind def
+/VectorRoll { % [Vector] roll_count VectorRoll [Vector&#39;]
+    mark 2 index aload length counttomark 1 add index roll
+    counttomark 2 add index astore pop pop pop
+} bind def
+
+/MatrixIdentity { % size MatrixIdentity [[NewMatrix]]
+    [ exch dup array VectorZero dup 0 1 put
+    % [ size [1 0 ... 0]
+    exch {
+        dup VectorCopy 1 VectorRoll
+    } repeat
+    pop
+    ]
+} bind def
+
+% End of Matrix Library
+% --------------------------------------
+/VY { [ exch ] MatrixTranspose } bind def
+/VX { MatrixTranspose 0 get } bind def
+
+/RotateMatrixX { % theta(degree)   RotateMatrixX   [Matrix]
+    dup cos exch sin 2 copy neg % cos sin cos -sin
+    [
+        [ 1 0 0]
+        [ 0 6 -2 roll ]
+        [ 0 7 -2 roll exch ]
+    ]
+} bind def
+
+/RotateMatrixY { % theta(degree)   RotateMatrixY   [Matrix]
+    dup cos exch sin 2 copy neg % cos sin cos -sin
+    [
+        [ 6 -1 roll 0 7 -1 roll ]
+        [ 0 1 0 ]
+        [ 5 -1 roll 0 7 -1 roll ]
+    ]
+} bind def
+
+/RotateMatrixZ { % theta(degree)   RotateMatrixZ   [Matrix]
+    dup cos exch sin 2 copy neg % cos sin cos -sin
+    [
+        [ 4 -2 roll 0 ]
+        [ 5 -2 roll exch 0 ]
+        [ 0 0 1 ]
+    ]
+} bind def
+
+/CompareDistance { % [x1 y1 z1] [x2 y2 z2] CompareDistance [] [] z1-z2
+    dup 0 get 2 get 3 -1 roll dup 0 get 2 get
+    % [V2] z2 [V1] z1
+    exch 4 1 roll sub
+} bind def
+
+/Sort { % [[x y] [x1 y1] Array Data ] {CompareFunction}  Sort [ArrayData]
+    cvx [ 3 -1 roll
+    aload length
+    % func -mark[- [] [] [] [] [] len
+    -1 2 { % func -mark[- [] [] [] [] [] len2
+        -1 2 {
+            3 1 roll
+            counttomark 1 add index exec  %% Compare
+            0 lt { exch } if
+            3 -1 roll
+            1 roll
+        } for
+        counttomark 1 roll
+    } for
+    counttomark 1 roll
+    ] exch pop
+} bind def
+
+/CalcVertex { % [Vect] distance scale  CalcVertex  x y
+        3 -1 roll aload pop
+        % distance scale x y z
+        5 -2 roll exch
+        % x y z scale  distance
+        dup 0 eq {
+            pop  exch pop
+        } {
+            3 -1 roll add div
+        } ifelse
+        % x y scale
+        dup 3 -1 roll mul
+        % x scale scale*y
+        3 1 roll mul exch
+} bind def
+
+
+/DrawPolygon { % [[GC] [Vertex1] [Vertex2] ...] distance scale
+    3 -1 roll mark exch aload pop
+    counttomark 2 add index counttomark 1 add index CalcVertex
+    moveto
+
+    counttomark 1 sub {
+        counttomark 2 add index counttomark 1 add index CalcVertex
+        lineto
+    } repeat
+    closepath
+    gsave 0.5 setgray fill  grestore
+    0.1 setlinewidth stroke
+    pop pop pop pop
+} bind def
+
+/Projection {
+    % distance scale [[Object]] view_matrix Projection
+    %                 distance scale [[Object]] view_matrix 
+    4 1 roll dup Matrix3Copy dup {
+        % vmt dist scale [[Obj]] [[NewObj]] [[Polygon-n]]
+        {
+            % vmt dist scale [[Obj]] [[NewObj]] [[Vertex-n]]
+            dup 6 index exch VY MatrixMul VX
+            0 exch putinterval
+        } forall
+    } forall
+    /CompareDistance Sort
+    % vmt dist scale [[Obj]] [[NewObj&#39;]] 
+    {
+        % vmt dist scale [[Obj]] [[NewPolygon-n]]
+        3 index 3 index DrawPolygon
+    } forall
+    4 -1 roll
+} bind def
+
+
+/Translate { % [[[Object]]] [dx dy dz]  Translate [[[Object&#39;]]]
+    1 index {
+        % [[[Object]]] [dx dy dz] [[Polygon]]
+        {
+            % [[[Object]]] [dx dy dz] [x y z]
+            dup 2 index VectorAdd
+            % [[[Object]]] [dx dy dz] [x y z] [nx ny nz]
+            0 exch putinterval
+        } forall
+    } forall
+    pop
+} bind def
+
+% ---------------- Test Code -------------------
+
+/Cube [
+    % Gravity Center, Vertex1, 2, .... 
+    [[0.5 0.5 0] [0 0 0] [1 0 0] [1 1 0] [0 1 0]]
+    [[0.5 0.5 1] [0 0 1] [1 0 1] [1 1 1] [0 1 1]]
+    [[0 0.5 0.5] [0 0 0] [0 1 0] [0 1 1] [0 0 1]]
+    [[1 0.5 0.5] [1 0 0] [1 1 0] [1 1 1] [1 0 1]]
+    [[0.5 0 0.5] [0 0 0] [0 0 1] [1 0 1] [1 0 0]]
+    [[0.5 1 0.5] [0 1 0] [0 1 1] [1 1 1] [1 1 0]]
+] def
+
+
+/Demo {
+    % Projection Distance  &amp; Scale
+    5   400
+    % Object
+    Cube [-0.5 -0.5 -0.5] Translate
+    % Initial View Matrix
+    3 MatrixIdentity
+    -20 RotateMatrixX MatrixMul
+    20 RotateMatrixY MatrixMul
+    5 RotateMatrixZ MatrixMul
+
+    % Rotation
+    36 {
+        gsave
+        200 200 translate
+        1 1 scale
+        0.1 setlinewidth
+        Projection
+%---- Stereo Projection ----
+        200 0 translate
+        5 RotateMatrixY MatrixMul
+        Projection
+        -5 RotateMatrixY MatrixMul
+%---- End Stereo Projection ----
+        grestore
+        showpage
+        10 RotateMatrixY MatrixMul
+    } repeat
+    4 { pop } repeat
+} bind def
+
+Demo
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6080/addtag/" class="addtag" id="addtag_6080">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/postscript/">
+		PostScript
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6080/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6080/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #dfffdf;"
+  >2/2=1.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6080"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6080"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6080"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6080/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment6816">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/849/" target="_top">yoggy</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6816/">#6816</a>(<script language="JavaScript">print_time(new Date("2008/07/23 20:45 GMT"));</script><noscript>2008/07/23 20:45 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  Ruby/SDLとOpenGLでベタに書いてみました。
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20100323043152/http://www.kmc.gr.jp/~ohai/rubysdl.html">Ruby/SDL</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39</pre></td><td class="code"><div class="highlight"><pre>require &#39;sdl&#39;
+require &#39;opengl&#39;
+
+vertices = [
+  [[1.0, 0.0, 0.0], [-1.0, -1.0, 0.0]],
+  [[0.0, 1.0, 0.0], [ 1.0, -1.0, 0.0]],
+  [[0.0, 0.0, 1.0], [ 1.0,  1.0, 0.0]],
+  [[1.0, 1.0, 1.0], [-1.0,  1.0, 0.0]]
+]
+
+SDL.init(SDL::INIT_VIDEO)
+SDL::Screen.open(600, 600, 16, SDL::OPENGL)
+
+GL.ClearColor(0.0, 0.0, 0.2, 1.0);
+GL::Ortho(-2.0, 2.0, -2.0, 2.0, -2.0, 2.0)
+GL::MatrixMode(GL::MODELVIEW);
+
+loop {
+  GL.Clear(GL::COLOR_BUFFER_BIT);
+  
+  GL::Rotate(1.0, 2.0, 3.0, 1.0);
+  
+  GL::Begin(GL::QUADS)
+  vertices.each {|v|
+    GL::Color(v[0])
+    GL::Vertex(v[1])
+  }  
+  GL::End()
+  
+  SDL::GL.swap_buffers
+  
+  evt = SDL::Event.poll
+  case evt
+  when SDL::Event::Quit
+    exit
+  when SDL::Event::KeyUp
+    exit if evt.sym == SDL::Key::ESCAPE
+  end
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6816/addtag/" class="addtag" id="addtag_6816">タグ</a>:
+	
+    
+    <a href="/web/20100323043152/http://ja.doukaku.org/tag/opengl/">opengl</a>
+    
+    <a href="/web/20100323043152/http://ja.doukaku.org/tag/ruby/">ruby</a>
+    
+    <a href="/web/20100323043152/http://ja.doukaku.org/tag/sdl/">sdl</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6816/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6816/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6816"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6816"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6816"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6816/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment6877">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/4/" target="_top">匿名</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6877/">#6877</a>(<script language="JavaScript">print_time(new Date("2008/07/29 09:33 GMT"));</script><noscript>2008/07/29 09:33 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/other/">
+	  Other
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>Processing で。
+可視化が本分の Processing で、
+python より長いのがちょっと残念ですが。</p>
+
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20100323043152/http://www.processing.org/"></a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></td><td class="code"><div class="highlight"><pre>float theta = 0.0;
+
+void setup() {
+  size(200, 200, P3D);
+}
+
+void draw() {
+  background(0);
+  lights();
+  translate(width/2, height/2, 0);
+  rotateX(PI/3+theta);
+  rotateY(theta);
+  box(100);
+  theta += PI/256;
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6877/addtag/" class="addtag" id="addtag_6877">タグ</a>:
+	
+    
+    <a href="/web/20100323043152/http://ja.doukaku.org/tag/Processing/">Processing</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/other/">
+		Other
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6877/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/6877/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6877"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6877"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6877"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  <a href="/web/20100323043152/http://ja.doukaku.org/comment/6877/">
+    1
+    reply
+  </a>
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6877/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+    <div class="indent compact" style="position: relative;">
+      <img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/1x1dark_green.png" width=10 style="position: absolute;top:-10px;margin-left:8px;">
+      
+
+
+
+
+
+<div class="comment" id="comment6878">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/458/" target="_top">crane</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6878/">#6878</a>(<script language="JavaScript">print_time(new Date("2008/07/29 09:34 GMT"));</script><noscript>2008/07/29 09:34 GMT</noscript>)
+	
+	
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>ログインし忘れました</p>
+
+	</div>
+	
+	
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/6878/addtag/" class="addtag" id="addtag_6878">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_6878"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_6878"
+  >0</span><span 
+  class="button green"
+  id="rating_p_6878"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+    <a href="/web/20100323043152/http://ja.doukaku.org/comment/6877/"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/gotoparent.png" alt="parent"></a>
+    <a href="/web/20100323043152/http://ja.doukaku.org/comment/6878/root/"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/gotoroot.png" alt="thread root"></a>
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/6878/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+    </div>
+  
+
+
+  
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment7292">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/35/" target="_top">ytakenaka</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_gold.png" border=0/></a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/7292/">#7292</a>(<script language="JavaScript">print_time(new Date("2008/08/21 17:46 GMT"));</script><noscript>2008/08/21 17:46 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/commonlisp/">
+	  Common Lisp
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  <p>cl-glfwを利用しています。付属のサンプルを少し改造しただけです。</p>
+
+	</div>
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></td><td class="code"><div class="highlight"><pre>require &#39;#:asdf)
+(asdf:oos &#39;asdf:load-op &#39;#:cl-glfw)
+(asdf:oos &#39;asdf:load-op &#39;#:cl-glfw-opengl)
+(asdf:oos &#39;asdf:load-op &#39;#:cl-glfw-glu)
+
+(glfw:do-window (&quot;A Polygon Example&quot;)
+    ((gl:with-setup-projection
+       (glu:perspective 45 4/3 0.1 50)))
+  (gl:clear gl:+color-buffer-bit+)
+  (gl:load-identity)
+  (gl:translate-f 0 0 -5)
+  (gl:rotate-f (* 10 (glfw:get-time)) 1 1 0)
+  (gl:rotate-f (* 90 (glfw:get-time)) 0 0 1)
+  (gl:with-begin gl:+line-loop+ ;+triangle-strip+
+    (gl:color-3f 0 1 0) (gl:vertex-3f -1  1 0)
+    (gl:color-3f 0 0 1) (gl:vertex-3f -1 -1 0)
+    (gl:color-3f 0 1 0) (gl:vertex-3f -1  0 1)
+    (gl:color-3f 0 1 0) (gl:vertex-3f -1  1 0)
+    (gl:color-3f 1 0 0) (gl:vertex-3f  1  0 0)
+    (gl:color-3f 0 1 0) (gl:vertex-3f -1  0 1)
+    (gl:color-3f 1 0 0) (gl:vertex-3f  1  0 0)
+    (gl:color-3f 0 0 1) (gl:vertex-3f -1 -1 0)))
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/7292/addtag/" class="addtag" id="addtag_7292">タグ</a>:
+	
+	タグなし
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/commonlisp/">
+		Common Lisp
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/7292/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/7292/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_7292"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_7292"
+  >0</span><span 
+  class="button green"
+  id="rating_p_7292"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/7292/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+  
+
+  
+    
+
+
+
+
+
+<div class="comment" id="comment9735">
+  <p class="banner"><a href="/web/20100323043152/http://ja.doukaku.org/user/641/" target="_top">seri</a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#medal" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/star_bronze.png" border=0/></a><a href="/web/20100323043152/http://ja.doukaku.org/qa/#anomark" target="_top"><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/anomark.png" border=0/></a>
+
+	
+	&nbsp;
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/9735/">#9735</a>(<script language="JavaScript">print_time(new Date("2009/12/22 16:01 GMT"));</script><noscript>2009/12/22 16:01 GMT</noscript>)
+	
+	
+	
+	[<a href="/web/20100323043152/http://ja.doukaku.org/lang/actionscript/">
+	  ActionScript
+	</a>]
+	
+	
+	
+	&nbsp;
+
+<span class="rating">評価<span style="background-color: #ffffff;">0/0=0.00</span></span>
+  </p>
+  <div class="comment_content" >
+	<div class="comment_body">
+	  Papervision3Dを使用。wonderflにも置いておきました。
+	</div>
+	
+	<p class="link">
+	  参考: <a href="/web/20100323043152/http://wonderfl.net/code/237e1262ad7e6d5fc809b24c77b7d693a2a36ed9">ポリゴンを表示するプログラム(http://ja.doukaku.org/168/) | wonderfl build flash online</a>
+	</p>  
+	
+	
+	
+    <div class="compact">
+      <table><tr><td class="linenos"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28</pre></td><td class="code"><div class="highlight"><pre>package {
+  import flash.events.Event;
+  import org.papervision3d.view.BasicView;
+  import org.papervision3d.objects.primitives.Cube;
+  import org.papervision3d.materials.WireframeMaterial;
+  import org.papervision3d.materials.utils.MaterialsList;
+  
+  [SWF(width=&quot;400&quot;, height=&quot;300&quot;, backgroundColor=&quot;#eeffee&quot;, frameRate=&quot;15&quot;)] 
+  public class RotatePolygon extends BasicView {
+    private var cube:Cube;
+    
+    public function RotatePolygon() {
+      super(0, 0, true);
+      var wfm:WireframeMaterial = new WireframeMaterial(0x009900);
+      var m:MaterialsList = new MaterialsList({all:wfm});
+      cube = new Cube(m, 500, 500, 500, 3, 3, 3);
+      scene.addChild(cube)
+      stage.addEventListener(Event.ENTER_FRAME, enterFrameHandler);
+    }
+
+    private function enterFrameHandler(e:Event):void {
+      cube.pitch(3);
+      cube.yaw(2);
+      cube.roll(6);
+      startRendering();
+    }
+  }
+}
+</pre></div>
+</td></tr></table>
+    </div>
+	
+
+  
+  <div align = "right" class="banner">
+	
+	<a href="/web/20100323043152/http://ja.doukaku.org/comment/9735/addtag/" class="addtag" id="addtag_9735">タグ</a>:
+	
+    
+    <a href="/web/20100323043152/http://ja.doukaku.org/tag/Papervision3D/">Papervision3D</a>
+    
+	&nbsp;
+
+	
+      [<a href="/web/20100323043152/http://ja.doukaku.org/lang/actionscript/">
+		ActionScript
+      </a>]
+	  
+      [<a href="/web/20100323043152/http://ja.doukaku.org/comment/9735/download/">
+		ダウンロード
+      </a>]
+	  [<a href="/web/20100323043152/http://ja.doukaku.org/comment/9735/download_html/">
+		HTML
+      </a>]<p>
+	
+
+  
+  <span class="rating">
+  評価<span style="background-color: #ffffff;"
+  >0/0=0.00</span
+  ><span class="buttons"><span 
+  class="button red"
+  id="rating_n_9735"
+  >-</span><span
+  class="button yellow"
+  id="rating_z_9735"
+  >0</span><span 
+  class="button green"
+  id="rating_p_9735"
+  >+</span></span></span>
+  
+
+<p>
+
+  
+
+  
+
+  [<a href="/web/20100323043152/http://ja.doukaku.org/168/reply_to/9735/">
+  返信
+  </a>]
+  </div>
+</div>
+</div>
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+</div>
+
+<div id="side_menu" class="compact">
+
+<iframe src="/web/20100323043152if_/http://ja.doukaku.org/login_info/" frameborder=0 width=100% id="login_info">
+iframe required
+</iframe>
+
+<h4 class="semi_compact">一覧</h4>
+
+<ul>
+<!--<li><a href="/web/20100323043152/http://ja.doukaku.org/user/">ユーザ</a>-->
+<li><a href="/web/20100323043152/http://ja.doukaku.org/lang/">言語</a>
+<li><a href="/web/20100323043152/http://ja.doukaku.org/challenge/">お題</a>
+<li><a href="/web/20100323043152/http://ja.doukaku.org/topic/">トピック</a>
+<li><a href="/web/20100323043152/http://ja.doukaku.org/comment/">投稿</a>
+<li><a href="/web/20100323043152/http://ja.doukaku.org/good_comments/">評価の高い投稿</a>
+<li><a href="/web/20100323043152/http://ja.doukaku.org/tag/">タグ</a>
+</ul>
+
+<h4 class="compact">フィード</h4>
+<ul>
+<li><a href="/web/20100323043152/http://ja.doukaku.org/feeds/challenges/">最新のお題</a><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/feed_icon.png">
+<li><a href="/web/20100323043152/http://ja.doukaku.org/feeds/topics/">最新のトピック</a><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/feed_icon.png">
+<li><a href="/web/20100323043152/http://ja.doukaku.org/feeds/comments/">新着投稿</a><img src="/web/20100323043152im_/http://ja.doukaku.org/static/image/feed_icon.png">
+</ul>
+
+
+
+
+
+
+
+<h4 class="compact">その他</h4>
+<ul>
+<li><a href="/web/20100323043152/http://ja.doukaku.org/qa/">Q&A</a>
+<li><a href="/web/20100323043152/http://ja.doukaku.org/feedback/">フィードバック</a>
+<!--<li><a href="/web/20100323043152/http://ja.doukaku.org/terms">用語集</a>-->
+</ul>
+
+
+<h4 class="compact">リンク</h4>
+<ul>
+<li><a href="/web/20100323043152/http://www.lingr.com/room/doukaku_ja">チャットルーム(Lingr)</a>
+<li><a href="/web/20100323043152/http://labs.cybozu.co.jp/">サイボウズ・ラボ</a>
+<li><a href="/web/20100323043152/http://www.djangoproject.com/">Django</a>
+</ul>
+
+<h4 id="pathtraq" class="compact"><a href="/web/20100323043152/http://pathtraq.com/analytics?url=http%3A%2F%2Fja.doukaku.org%2Fcomment%2F*%2F%20desc%3A%E3%81%A9%E3%81%86%E6%9B%B8%E3%81%8Forg&m=popular">Pathtraq</a></h4>
+<div class="indent">
+<span id="pathtraq_sentinel">loading...</span>
+</div>
+
+
+</div>
+</div>
+
+
+<div id="page_foot" class="bordered">
+
+<a rel="license" href="/web/20100323043152/http://creativecommons.org/licenses/by/2.1/jp/">
+<img alt="Creative Commons License" style="border-width:0" src="/web/20100323043152im_/http://i.creativecommons.org/l/by/2.1/jp/88x31.png" /></a>
+このサイトの内容は、
+<a rel="license" href="/web/20100323043152/http://creativecommons.org/licenses/by/2.1/jp/">クリエイティブ・コモンズ・ライセンス</a>の下でライセンスされています。
+<a href="/web/20100323043152/http://ja.doukaku.org/qa/#licence">[詳細]</a>
+
+</div>
+
+</body>
+
+
+
+
+<script type="text/javascript">
+$(document).ready(function(){$("#doukaku_org").after("<script src='/web/20100323043152/http://api.pathtraq.com/pages?url=http%3A%2F%2Fja.doukaku.org%2Fcomment%2F*%2F%20desc%3A%E3%81%A9%E3%81%86%E6%9B%B8%E3%81%8Forg&api=json&callback=addPathtraq'><" + "/script>")});
+</script>
+
+<script src="/web/20100323043152js_/http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-2136157-1";
+urchinTracker();
+</script>
+
+
+
+
+</html>
+
+
+
+
+
+<!--
+     FILE ARCHIVED ON 4:31:52 Mar 23, 2010 AND RETRIEVED FROM THE
+     INTERNET ARCHIVE ON 14:46:49 Nov 16, 2013.
+     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+     SECTION 108(a)(3)).
+-->

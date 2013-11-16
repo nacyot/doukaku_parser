@@ -1,0 +1,860 @@
+---
+:id: '96'
+:title: 自然数の分割（別表現）
+:comments:
+- :id: '4328'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4328
+  :user_name: nobsun
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/11/22 07:20 GMT
+  :vote_count: '4'
+  :vote_score: '2'
+  :body: "\r\n\t  <pre class=\"compact\">正整数の分割といったとき，同じ組み合わせのもの同じ分割とみなし，\r\n0 を除いて降順に並べたものを指すことも多いのではないかと思います．\r\n\r\nたとえば，\r\n\r\npartitions
+    1  ⇒ [[1]]\r\npartitions 2  ⇒ [[2],[1,1]]\r\npartitions 3  ⇒ [[3],[2,1],[1,1,1]]\r\npartitions
+    4  ⇒ [[4],[3,1],[2,2],[2,1,1],[1,1,1,1]]\r\npartitions 5  ⇒ [[5],[4,1],[3,2],[3,1,1],[2,2,1],[2,1,1,1],[1,1,1,1,1]]\r\npartitions
+    6  ⇒ [[6],[5,1],[4,2],[3,3],[4,1,1],[3,2,1],[2,2,2],[3,1,1,1]\r\n                 ,[2,2,1,1],[2,1,1,1,1],[1,1,1,1,1,1]]\r\n\r\nすなわち，\r\n\r\n-
+    1つの分割は非増加列\r\n- 分割は長さが短いものが先\r\n- 同じ長さの分割では辞書順で大きいものが先\r\n\r\nという規則でならべたものです．一つの分割に一つのヤング図形が対応します．\r\nたとえば、5
+    の分割に対応するヤング図形を列挙すると以下 7 つのようになります．\r\n\r\n□□□□□\r\n               \r\n□□□□\r\n□\r\n\r\n□□□\r\n□□\r\n\r\n□□□\r\n□\r\n□\r\n\r\n□□\r\n□□\r\n□\r\n\r\n□□\r\n□\r\n□\r\n□\r\n\r\n□\r\n□\r\n□\r\n□\r\n□\r\n\r\nお題：\r\n正整数を与えられたとき上の意味での分割に対応するヤング図形をすべて\r\n標準出力に印字する関数
+    young を定義してください．ヤング図形の出力は\r\n上の例のように文字'□'を並べてください．\r\n\r\nyoung 50 の出力をファイルにリダイレクトしたときの処理時間はどの程度\r\nかかったかもCPUスペックとあわせt教えてください．\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20081201183415/http://ja.wikipedia.org/wiki/%E3%83%A4%E3%83%B3%E3%82%B0%E5%9B%B3%E5%BD%A2
+    :title: ヤング図形
+- :id: '4492'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4492
+  :user_name: shiro
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/41/
+  :language: Haskell
+  :time: 2007/11/30 02:50 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  ナイーブに、分割してから長さでソート。時間とファイルサイズはこんな感じ (on Pen4 2GHz, Linux, GHC6.6.1, compiled)。なお50の場合の解の総数は204226個でした。合ってる?\r<br><br>[shiro@scherzo ~]$ time ./Main &gt; /dev/null\r<br><br>real\t0m17.715s\r<br>user\t0m16.241s\r<br>sys\t0m0.489s\r<br>[shiro@scherzo ~]$ time ./Main &gt; x\r<br><br>real\t0m20.210s\r<br>user\t0m17.327s\r<br>sys\t0m1.230s\r<br>[shiro@scherzo ~]$ ls -l x\r<br>-rw-rw-r-- 1 shiro shiro 33643344 Nov 29 16:43 x\r<br>"
+  :code: |
+    module Main where
+    import Data.List
+    import qualified System.IO.UTF8 as U
+
+    partitionNum n = sortBy cmp $ pttn n n
+      where cmp a b | length a &lt; length b  = LT
+                    | length a == length b = EQ
+                    | otherwise            = GT
+            pttn 0 _ = [[]]
+            pttn n k = [(n-x):xs | x &lt;- [max (n-k) 0..n-1], xs &lt;- pttn x (n-x)]
+
+    main = U.putStr $ unlines $ foldr chunk [] $ partitionNum 50
+      where chunk ns r = map (\n -&gt; replicate n '□') ns ++ [""] ++ r
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4493'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4493
+  :user_name: uho
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/498/
+  :language: C
+  :time: 2007/11/30 03:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Pen4 2.8Ghz, WinXP, VS2008 Beta2</p>\n<p>合計204226件</p>\n<p>ファイルリダイレクト\n23.109375秒でした。</p>\n<p>出力にやたら時間がかかってます。</p>\n\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
+    namespace 自然数
+    {
+        class Program
+        {
+            static void Main(string[] args)
+            {
+                DateTime prev = DateTime.Now;
+                young(50);
+                Console.WriteLine((DateTime.Now - prev).TotalSeconds);
+            }
+
+            static void young(int n)
+            {
+                List&lt;int[]&gt; youngList = new List&lt;int[]&gt;();
+                Stack&lt;int&gt; stack = new Stack&lt;int&gt;();
+
+                for( int i = n ; i &gt; 0 ; --i )
+                    subYoung( youngList, stack, i, n-i );
+
+                var x = from y in youngList
+                        orderby y.Count() ascending
+                        select y;
+
+                foreach (int[] list in x)
+                {
+                    foreach (int i in list)
+                        Console.WriteLine( new string( '□', i ) );
+
+                    Console.WriteLine();
+                }
+
+                Console.WriteLine(youngList.Count());
+            }
+
+            static void subYoung( List&lt;int[]&gt; youngList, Stack&lt;int&gt; stack, int num, int zan )
+            {
+                stack.Push(num);
+
+                if (zan == 0)
+                {
+                    youngList.Add(stack.Reverse().ToArray());
+                }
+                else
+                {
+                    for (int i = zan &gt;= num ? num : zan; i &gt; 0; --i)
+                    {
+                        subYoung(youngList, stack, i, zan - i);
+                    }
+                }
+
+                stack.Pop();
+            }
+        }
+    }
+  :tags:
+  - LINQ
+  :references:
+    :url: 
+    :title: 
+- :id: '4494'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4494
+  :user_name: みよ
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/510/
+  :language: Java
+  :time: 2007/11/30 03:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Javaでやってみました。\nMacOSX 10.5、2.5GHz PowerPC G5です。</p>\n<p>java -Xmx256m
+    Yang 50 &gt; result  52.79s user 58.27s system 97% cpu 1:53.38 total</p>\n<p>出力ルーチンが遅いようで列挙するだけの場合の処理時間は、</p>\n<p>java
+    -Xmx256m Yang 50  4.34s user 0.49s system 98% cpu 4.882 total</p>\n<p>総数は、204226個でした。\nメモリの使用効率はもう少し考えないといけません...</p>\n\n\t"
+  :code: |
+    import java.util.*;
+
+    public class Yang{
+
+      ArrayList[] table;
+
+      public Yang(int a){
+        table = new ArrayList[a+1];
+      }
+
+      public ArrayList partitions(int value){
+        ArrayList list = new ArrayList();
+        ArrayList l0;
+        l0 = new ArrayList();
+        l0.add(new Integer(value));
+        list.add(l0);
+        for(int i = 1; i &lt; value; i++){
+          int v = value  - i;
+          ArrayList l;
+          if(table[i] != null){
+         l = table[i];
+          }else{
+         l = partitions(i);
+        table[i] = l;
+          }
+          Iterator it = l.iterator();
+          while(it.hasNext()){
+        l0 = (ArrayList)(it.next());
+        if(((Integer)(l0.get(0))).intValue() &lt;= v){
+          ArrayList l1 = new ArrayList();
+          l1.addAll(l0);
+          l1.add(0, new Integer(v));
+          list.add(l1);
+        }
+          }
+        }
+        return list;
+      }
+
+      public static void output(ArrayList list){
+        Iterator it = list.iterator();
+        while(it.hasNext()){
+          int v = ((Integer)(it.next())).intValue();
+          for(int i = 0; i &lt; v; i++){
+        System.out.print("□");
+          }
+          System.out.println();
+        }
+      }
+
+      public static void main(String[] args){
+        int a = Integer.parseInt(args[0]);
+        Yang yang = new Yang(a);
+        ArrayList l = yang.partitions(a);
+        //System.err.println(l.size());
+        Iterator it = l.iterator();
+        while(it.hasNext()){
+          output((ArrayList)(it.next()));
+          System.out.println();
+        }
+      }
+
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4498'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4498
+  :user_name: odz
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/212/
+  :language: Python
+  :time: 2007/11/30 07:19 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>ソートしたら負けな気がした。</p>\n\n\t"
+  :code: |
+    # -*- coding: utf-8 -*-
+
+    import sys
+
+    def m_partitions(n, m, l):
+        if m == 1:
+            if n &lt;= l:
+                yield [n]
+        else:
+            for i in xrange(min(n - m + 1, l), 0, - 1):
+                for p in m_partitions(n - i, m - 1, min(i, l)):
+                    yield [i] + p
+
+    def partitions(n):
+        for i in xrange(1, 1 + n):
+            for p in m_partitions(n, i, n - i + 1):
+                yield p
+
+    def young(n):
+        for pattern in partitions(n):
+            for m in pattern:
+                print 'â–¡' * m
+            print
+
+    def main(args):
+        if len(args) == 1:
+            n = int(args[0])
+        else:
+            n = 5
+
+        young(n)
+
+    if __name__ == '__main__':
+        main(sys.argv[1:])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4499'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4499
+  :user_name: odz
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/212/
+  :language: 
+  :time: 2007/11/30 07:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>実行時間を書くのを忘れてた。\nAMD Athlon 64 X2 4400+ で 17.839 sec です。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4501'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4501
+  :user_name: 梅紫蘇
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/596/
+  :language: C
+  :time: 2007/11/30 08:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>C++ STL。出力だけでなく、イテレータまわしてるとこも遅いかも。</p>\n<p>Pen4 3.06GHz, WinXP
+    SP2, VS2005\ncount:204226\ntime[s]:19.937</p>\n\n\t"
+  :code: |
+    #include &lt;time.h&gt;
+    #include &lt;iostream&gt;
+    #include &lt;vector&gt;
+
+    int young_sub(int n, int d, std::vector&lt;int&gt;&amp; stack)
+    {
+        if (n &lt;= 0)
+        {
+            for (std::vector&lt;int&gt;::iterator li = stack.begin(); li != stack.end(); li++)
+            {
+                int n = *li;
+                while (n--) { std::cout &lt;&lt; "□"; }
+                std::cout &lt;&lt; std::endl;
+            }
+            std::cout &lt;&lt; std::endl;
+            return 1;
+        }
+
+        int count = 0;
+        for (int i = ((n &lt; d) ? n: d); i &gt; 0; i--)
+        {
+            stack.push_back(i);
+            count += young_sub(n - i, i, stack);
+            stack.pop_back();
+        }
+        return count;
+    }
+
+    int young(int n)
+    {
+        if (n &lt; 1)
+            return 0;
+        std::vector&lt;int&gt; stack;
+        stack.reserve(n);
+        return young_sub(n, n, stack);
+    }
+
+    int main(int argc, char* argv[])
+    {
+        if (argc &lt; 2)
+            return -1;
+        int v = atoi(argv[1]);
+
+        clock_t s = clock();
+        int count = young(v);
+        clock_t e = clock();
+
+        std::cout &lt;&lt; "count:"   &lt;&lt; count &lt;&lt; std::endl;
+        std::cout &lt;&lt; "time[s]:" &lt;&lt; ((double)(e-s)/CLOCKS_PER_SEC) &lt;&lt; std::endl;
+        return count;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4502'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4502
+  :user_name: yohei
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/415/
+  :language: C
+  :time: 2007/11/30 09:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>再帰＆yieldで\nn=50で204226件、3375 msでした。</p>\n<p>Core2 Duo 6300 @ 1.86GHz,
+    WinXP Pro, VS2005</p>\n\n\t"
+  :code: "using System;\nusing System.Collections.Generic;\n\nclass Program {\n    static
+    IEnumerable&lt;string&gt; Young2(int n, int m) {\n        if (n &lt;= m) yield
+    return new string('□', n) + '\\n';\n\n        for (int i = Math.Min(n - 1, m);
+    i &gt; 0; i--)\n            foreach (string s in Young2(n - i, i))\n                yield
+    return new string('□', i) + '\\n' + s;\n    }\n    static IEnumerable&lt;string&gt;
+    Young(int n) {\n        return (n &lt;= 0) ? new string[] {} : Young2(n, n);\n
+    \   }\n    static void Main(string[] args) {\n        foreach (string s in Young(50))\n
+    \           Console.WriteLine(s);\n    }   \n}\n"
+  :tags:
+  - C#2.0
+  :references:
+    :url: 
+    :title: 
+- :id: '4503'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4503
+  :user_name: uho
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/498/
+  :language: 
+  :time: 2007/11/30 09:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>出力文字列をStringBuilder.Appendして一気に書き出すようにかえたら3.671875秒になった。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4506'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4506
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2007/11/30 10:17 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">\"□\"の代わりに\"[]\"にした。\r\n\r\nWindows XP\r\nシステムのプロパティ\r\n
+    \ Pentium(R) 4 CPU 2.40GHz\r\n  2.41 GHz, 0.99 GB RAM\r\nghc -O3 (GHC6.8.1)\r\nファイルにリダイレクトで５秒くらい。\r\n\r\nnulにリダイレクトしたら１分くらいかかった。\r\nnulへの出力は時間がかかるのね。\r\n</pre>\n\t"
+  :code: |
+    main = putStr $ unlines $ map (unlines . map (bou!!))
+      $ partitions 50 where
+      bou = iterate ("[]"++) ""
+
+    partitions n = f n n where
+      f 0 _ = [[]]
+      f n m = [m',m'-1..1] &gt;&gt;= (\x -&gt; map (x:) (f (n-x) x)) where m' = min m n
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4508'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4508
+  :user_name: satooM
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/424/
+  :language: 
+  :time: 2007/11/30 10:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  私（#4505,#4507）と同じ間違いですよね？(^_^;\r<br><br>降順リストは [m',m'-1..1] って書けばいいんですね。なるほど。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4510'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4510
+  :user_name: shiro
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/11/30 10:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  スピードをちょっと気にしてみた。\r<br><br>ソート無しだとむしろ再帰回数が増えてしまうような。で考えてみたらあり得る分割数は分かっているのだから、素直再帰+バケツソートで良いのではなかろうか。\r<br><br>途中でひとつGauche 0.8.12の欠点発見。出力がリダイレクトされてても標準出力がラインバッファリングになってるためにめちゃくちゃシステムコールに時間をとられる。今回はフルバッファリングに変えるコードを足してある。あとwith-port-lockingは普段は気にする必要がないと思うけど、今回のケースでは0.5秒くらい速くなった。\r<br><br>スペックはPen4 2GHz, Linux, Gauche-0.8.12.\r<br><br>[shiro@scherzo ~]$ time gosh ./tt.scm 50 &gt; x\r<br><br>real\t0m6.261s\r<br>user\t0m5.664s\r<br>sys\t0m0.399s\r<br>"
+  :code: ";; -*- coding: utf-8 -*-\n(use srfi-43)\n\n(define (partition-num n)\n  (define
+    bins (make-vector n '()))\n  (define (rec n k r)\n    (if (= n 0)\n      (let1
+    k (- (length r) 1)\n        (vector-set! bins k (cons (reverse r) (vector-ref
+    bins k))))\n      (let loop ((x (clamp (- n k) 0)))\n        (unless (= x n)\n
+    \         (rec x (- n x) (cons (- n x) r))\n          (loop (+ x 1))))))\n  (rec
+    n n '())\n  bins)\n\n(define (show bins)\n  (define bars\n    (vector-map (lambda
+    (i _) (string-append (make-string (+ i 1) #\\□) \"\\n\"))\n                bins))\n
+    \ (vector-for-each (lambda (i bss)\n                     (dolist (bs (reverse
+    bss))\n                       (dolist (b bs)\n                         (display
+    (vector-ref bars (- b 1))))\n                       (newline)))\n                   bins))\n
+    \                  \n(define (main args)\n  (set! (port-buffering (current-output-port))
+    :full)\n  (with-port-locking (current-output-port)\n    (cut show (partition-num
+    (x-&gt;integer (cadr args)))))\n  0)\n"
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '4511'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4511
+  :user_name: minke
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/28/
+  :language: Ruby
+  :time: 2007/11/30 10:47 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>単純に再帰。\nWindows上のVM、Intel Core2 2.4GHz で 14秒でした。</p>\n\n\t"
+  :code: |
+    def part(n, mx, a, i)
+      if n == 0
+        i.times {|j| puts '□'*a[j] }
+        puts
+      else
+        [n, mx].min.downto(1) do |k|
+          a[i] = k
+          part(n-k, k, a, i+1)
+        end
+      end
+    end
+
+    def young(n)
+      part(n, n, Array.new(n), 0)
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4512'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4512
+  :user_name: xsd
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/154/
+  :language: OCaml
+  :time: 2007/11/30 10:51 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">□の代わりに'O'にしてます。\r\n\r\nPentium M 1.73MHz, Fedora
+    7という環境で/dev/nullへのリダイレクトで0.681秒、ファイルへのリダイレクトで0.726秒です。\r\n\r\n[xsd@celldev dk96]$
+    time ./dk96 50 &gt; /dev/null\r\n\r\nreal    0m0.681s\r\nuser    0m0.679s\r\nsys
+    \    0m0.001s\r\n\r\n[xsd@celldev dk96]$ time ./dk96 50 &gt; out.txt\r\n\r\nreal
+    \   0m0.726s\r\nuser    0m0.691s\r\nsys     0m0.036s\r\n\r\nちなみに、n=80のときで69秒でした。\r\n\r\n[yamaken@celldev
+    dk96]$ time ./dk96 80 &gt; /dev/null\r\n\r\nreal    1m9.190s\r\nuser    1m9.100s\r\nsys
+    \    0m0.077s</pre>\n\t"
+  :code: |
+    let young n =
+      let makeO x acc = ((String.make x 'O') ^ "\n") :: acc in
+      let rec out = function [] -&gt; print_char '\n' | hd :: tl -&gt; let _ = out tl in print_string hd in
+      let rec loop r c acc =
+        if c &lt;&gt; 0 then match r - c with
+          | 0            -&gt; let _ = out      (makeO c acc) in loop r (c-1) acc
+          | x when x &gt; 0 -&gt; let _ = loop x c (makeO c acc) in loop r (c-1) acc
+          | _            -&gt; loop r r acc in
+        loop n n []
+
+    let _ = young (int_of_string Sys.argv.(1))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4513'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4513
+  :user_name: minke
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/28/
+  :language: 
+  :time: 2007/11/30 10:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">&gt; - 分割は長さが短いものが先\r\nすみません、見落としてましたorz\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4514'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4514
+  :user_name: xsd
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/154/
+  :language: 
+  :time: 2007/11/30 10:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>＞Pentium M 1.73MHz</p>\n<p>すいません。Pentium M 1.73GHzの間違いでした。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4515'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4515
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2007/11/30 11:14 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">&gt; - 分割は長さが短いものが先\r\n\r\nご指摘どうもです。（先ほどのは自分で減点しておきました）\r\n\r\nもともと今回のアルゴリスムでやるつもりだったのが\r\nmap
+    t $ reverse する前の n == 5 のときの結果を見たら\r\n答えと合っていたので「あれ、map t $ reverse する必要ないのかな？」\r\nと省いてました。\r\n\r\n「n
+    を『長さが m』より短くなるように」分割したヤング図形\r\nを転置したものは\r\n「n を一つ一つが『m 以下の数』になるように」分割したヤング図形\r\nに対応しています。\r\n\r\n改めて\r\n\r\nWindows
+    XP\r\nシステムのプロパティ\r\n  Pentium(R) 4 CPU 2.40GHz\r\n  2.41 GHz, 0.99 GB RAM\r\nghc
+    -O3 (GHC6.8.1)\r\nファイルにリダイレクトで７秒くらい。\r\n</pre>\n\t"
+  :code: |
+    main = putStr $ unlines $ map (unlines . map (bou!!))
+      $ partitions 50 where
+      bou = iterate ("[]"++) ""
+
+    partitions n = map t $ reverse $ f n n where
+      f 0 _ = [[]]
+      f n m = [x:xs| x &lt;- [m',m'-1..1], xs &lt;- f (n-x) x] where m' = min m n
+      t [] = []
+      t xs = length xs: t (filter (&gt;0) $ map (subtract 1) xs)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4518'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4518
+  :user_name: dankogai
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/30 12:44 GMT
+  :vote_count: '3'
+  :vote_score: '1'
+  :body: "\n\t  \n<p>grep()の使い方に注目。Memoizeとの合わせ技で10秒ちょっと。ちなみにozdさんの<a href=\"/web/20081201183415/http://ja.doukaku.org/comment/4498/\">#4498</a>が同じ環境(MacBook
+    Pro 2.33GHz; Mac OS X v10.4.11)で22秒。\n</p>\n<p>Dan the Perl Monger\n</p>\n\n\n\n\t"
+  :code: |
+    #!/usr/local/bin/perl
+    use strict;
+    use warnings;
+    use Memoize;
+
+    sub young {
+        my $n = shift;
+        die 'young($n); # where $n is an integer' unless $n;
+        return [1] if $n == 1;
+        my @result = ( [$n] );
+        for my $k ( reverse 1 .. $n - 1 ) {
+            push @result,
+              map { [ $k, @$_ ] } grep { $k &gt;= $_-&gt;[0] } young( $n - $k );
+        }
+        @result;
+    }
+
+    memoize 'young';
+
+    sub print_young{
+        my $n = shift;
+        local $\ = "\n";
+        for my $a (young($n)){
+            print '#' x $_ for @$a;
+            print "=" x $n;
+        }
+    }
+
+    my ($n, $quiet) = @ARGV;
+    $quiet ? young($n) : print_young($n);
+    __END__
+    % perl young.pl 5
+    #####
+    =====
+    ####
+    #
+    =====
+    ###
+    ##
+    =====
+    ###
+    #
+    #
+    =====
+    ##
+    ##
+    #
+    =====
+    ##
+    #
+    #
+    #
+    =====
+    #
+    #
+    #
+    #
+    #
+    =====
+    % time perl young.pl 50 1
+    9.390u 0.783s 0:10.29 98.8%     0+0k 0+1io 0pf+0w
+    % time sh -c 'perl young.pl 50 | grep = | wc'
+      204226  204226 10415526
+    10.903u 0.894s 0:11.82 99.7%    0+0k 0+3io 0pf+0w
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4519'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4519
+  :user_name: kozima
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/164/
+  :language: C
+  :time: 2007/11/30 12:54 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>再帰なしに挑戦。たぶんできたけど可読性がダメかも。</p>\n<p>実行時間は Celeron 2.66 GHz で 0.8
+    秒弱ぐらいです。ほとんどの時間は出力にかかってます。□ の代わりに 'O' を使うと 0.45 秒ぐらいに。</p>\n\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;time.h&gt;
+    #include &lt;string.h&gt;
+    #define N_MAX 256
+    #define BOXWIDTH (sizeof("□") - 1)
+
+    void print_young (int m, int a[]) {
+      int i, j;
+      char buf[4 * N_MAX], *p;
+      for (p = buf, i = 0; i &lt; m; i++) {
+        for (j = 0; j &lt; a[i]; j++, p += BOXWIDTH)
+          memcpy(p, "□",  BOXWIDTH);
+        *p++ = '\n';
+      }
+      *p = '\0';
+      puts(buf);
+    }
+
+    void young (int n) {
+      int buf[N_MAX], m;
+
+      for (m = 1; m &lt;= n; m++) {
+        int *p = buf, *q = buf + m - 1, *r;
+
+        *p = n - m + 1;
+        for (r = p + 1; r &lt;= q; r++) *r = 1;
+        while (1) {
+          int a, s, t;
+          print_young (m, buf);
+          if (*p - *q &lt; 2) break;
+
+          for (a = *q + 2, r = q, s = 0; *r &lt; a; r--)
+            s += *r - 1, *r = 1;
+          s++, (*r)--, t = *r - 1, r++;
+          for (; s &gt;= t; r++) { *r += t; s -= t; }
+          *r += s;
+        }
+      }
+    }
+
+    int main (int argc, char* argv[]) {
+      clock_t start, end;
+      start = clock();
+      young ((argc &gt;= 2) ? atoi(argv[1]) : 50);
+      end = clock();
+
+      fprintf(stderr, "%f sec.\n", (double)(end - start) / CLOCKS_PER_SEC);
+      return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4521'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4521
+  :user_name: satooM
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/424/
+  :language: 
+  :time: 2007/11/30 13:48 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  なるほど！と思ったのですが、partitions 9で辞書式順序との不一致が生じるようです。\r<br>(...,[5,3,1],[4,4,1],[5,2,2],...)\r<br>実は私も考え直していて、同じく 9 で失敗したところでした。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4522'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4522
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/304/
+  :language: 
+  :time: 2007/11/30 14:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">&gt; partitions 9で辞書式順序との不一致が生じるようです。\r\n&gt;
+    (...,[5,3,1],[4,4,1],[5,2,2],...) \r\n\r\nありゃ、そうですか。考え直します。\r\n度々のご指摘感謝です。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4523'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4523
+  :user_name: minke
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/28/
+  :language: C
+  :time: 2007/11/30 15:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>(高さ) × (□の総数) × (その高さにある□の数の上下限) をテーブルにしてDP。\r</p>\n<p>\r</p>\n<p>Core2
+    Duo 2.4GHz で2.366秒。</p>\n</div>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #define MIN(a,b) ((a)&lt;(b) ? (a) : (b))
+    #define N 256
+
+    int table[N][N][2];
+    int seq[N];
+    int cnt = 0;
+
+    void print_young(int d, int k, int m, int h, int n) {
+      int i,j;
+      if (d &gt; 0) {
+        for (i = MIN(m, table[d][k][1]); i &gt;= table[d][k][0]; i--) {
+          seq[h-d] = i;
+          print_young(d-1, k-i, i, h, n);
+        }
+      } else {
+        for (i = 0; i &lt; h; i++) {
+          for (j = 0; j &lt; seq[i]; j++)
+            printf("□");
+          putchar('\n');
+        }
+        putchar('\n');
+        ++cnt;
+      }
+    }
+
+    void young(int n) {
+      int i, j;
+      for (i = 0; i &lt; N; i++)
+        table[1][i][0] = table[1][i][1] = i;
+      for (i = 2; i &lt; N; i++) {
+        for (j = i; j &lt; N; j++) {
+          table[i][j][0] = (j-1) / i + 1; /* lower bound */
+          table[i][j][1] = j - i + 1;     /* upper bound */
+        }
+      }
+      for (i = 1; i &lt;= n; i++) {
+        print_young(i, n, n, i, n);
+      }
+    }
+
+    int main(int argc, char **argv) {
+      young((argc &gt;= 2) ? atoi(argv[1]) : 50);
+      printf("\n\n# %d\n", cnt);
+      return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4524'
+  :parent_id: '96'
+  :url: http://ja.doukaku.org/comment/4524
+  :user_name: minke
+  :user_url: /web/20081201183415/http://ja.doukaku.org/user/28/
+  :language: C
+  :time: 2007/11/30 15:55 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <div class=\"section\">\n<p>テーブルとか要らなかったですねorz\r</p>\n<p>ちなみに実行時間の99%はファイル書き込み時間でした。</p>\n</div>\n\t"
+  :code: |-
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #define MIN(a,b) ((a)&lt;(b) ? (a) : (b))
+    #define N 256
+    int seq[N];
+    int height;
+
+    void print_young(int d, int n, int ceil) {
+      int i,j;
+      int upper, lower;
+      if (d &gt; 0) {
+        upper = n - d + 1;
+        lower = (n-1) / d + 1;
+        for (i = MIN(ceil, upper); i &gt;= lower; i--) {
+          seq[height-d] = i;
+          print_young(d-1, n-i, i);
+        }
+      } else {
+        for (i = 0; i &lt; height; i++) {
+          for (j = 0; j &lt; seq[i]; j++)
+            printf("□");
+          putchar('\n');
+        }
+        putchar('\n');
+      }
+    }
+
+    int main(int argc, char **argv) {
+      int n = (argc &gt;= 2) ? atoi(argv[1]) : 50;
+      for (height = 1; height
+
+
+
+
+    <!--
+         FILE ARCHIVED ON 18:34:15 Dec 1, 2008 AND RETRIEVED FROM THE
+         INTERNET ARCHIVE ON 13:30:59 Nov 16, 2013.
+         JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+         ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+         SECTION 108(a)(3)).
+    -->
+  :tags: []
+  :references:
+    :url: 
+    :title: 

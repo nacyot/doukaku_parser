@@ -1,0 +1,1226 @@
+---
+:id: '36'
+:title: 「組合せ型の最小完全ハッシュ関数」の逆関数
+:comments:
+- :id: '3392'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/3392
+  :user_name: shuyo
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/84/
+  :language: 
+  :time: 2007/08/01 07:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  まずは<a href=\"/web/20100225114335/http://www.ic-net.or.jp/home/takaken/nt/slide/hash.html\">最小完全ハッシュ関数の作り方</a>の後半部分をご覧ください。\r\n<p>\r\n「組み合わせ型の最小完全ハッシュ関数」とは\r\n下のような「n個の値のうちm個が1で残りが0であるようなデータ」と整数とを対応づける関数です。下の例ではn=5でm=2になっています。\r\n(「0以上n未満の整数から重複しないm個を選んだ組み合わせ」もデータとしては同じです)\r\n\r\n</p>\n<pre>\r\n&gt;&gt;&gt;
+    for xs in make_perm(5, 2):\r\n\tprint xs, \"=&gt;\", hash(xs, 5, 2)\r\n\r\n\t\r\n[1,
+    1, 0, 0, 0] =&gt; 9\r\n[1, 0, 1, 0, 0] =&gt; 8\r\n[1, 0, 0, 1, 0] =&gt; 7\r\n[1,
+    0, 0, 0, 1] =&gt; 6\r\n[0, 1, 1, 0, 0] =&gt; 5\r\n[0, 1, 0, 1, 0] =&gt; 4\r\n[0,
+    1, 0, 0, 1] =&gt; 3\r\n[0, 0, 1, 1, 0] =&gt; 2\r\n[0, 0, 1, 0, 1] =&gt; 1\r\n[0,
+    0, 0, 1, 1] =&gt; 0\r\n</pre>\r\n<p>\r\n「ハッシュ関数」というとデータが文字列であるものを連想しやすいですが、\r\nここで扱う対象データは文字列ではありません。(ちなみに文字列のハッシュ関数は、異なる文字列が同じハッシュ値になることがあるので「完全」ではありません。)\r\n</p>\n<p>\r\nさて、ここからが本題です。\r\n組み合わせのデータを与えると整数を返すのがこのハッシュ関数でした。\r\nこの逆の関数、「整数xを与えると、hash(data)
+    == xになるような組み合わせのデータdataを返す関数」を作ってください。\r\n</p>\n<p>\r\nこのお題はshuyoさんの提案を元に作成しました。ありがとうございました。\r\n\t</p>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1647'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1647
+  :user_name: cats
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/08/01 08:27 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  make_permやhashはgivenとして、、、\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    class Program
+    {
+      static void Main()
+      {
+        int[][] dt = {
+          new int[]{1, 1, 0, 0, 0},
+          new int[]{1, 0, 1, 0, 0},
+          new int[]{1, 0, 0, 1, 0},
+          new int[]{1, 0, 0, 0, 1},
+          new int[]{0, 1, 1, 0, 0},
+          new int[]{0, 1, 0, 1, 0},
+          new int[]{0, 1, 0, 0, 1},
+          new int[]{0, 0, 1, 1, 0},
+          new int[]{0, 0, 1, 0, 1},
+          new int[]{0, 0, 0, 1, 1}};
+        RevHash rv = new RevHash(5, 2, dt);
+        for (int i = 0; i &lt;= 9; ++i)
+        {
+          Console.Write("{0} [", i);
+          foreach (int j in rv.Calc(i))
+            Console.Write("{0}, ", j);
+          Console.WriteLine("]");
+        }
+        /* output
+          0 [0, 0, 0, 1, 1, ]
+          1 [0, 0, 1, 0, 1, ]
+          2 [0, 0, 1, 1, 0, ]
+          3 [0, 1, 0, 0, 1, ]
+          4 [0, 1, 0, 1, 0, ]
+          5 [0, 1, 1, 0, 0, ]
+          6 [1, 0, 0, 0, 1, ]
+          7 [1, 0, 0, 1, 0, ]
+          8 [1, 0, 1, 0, 0, ]
+          9 [1, 1, 0, 0, 0, ] */
+      }
+      static int hash(int[] data, int n, int m)
+      {
+        int[][] PASCAL = {
+          new int[]{1, 0, 0},
+          new int[]{1, 1, 0},
+          new int[]{1, 2, 1},
+          new int[]{1, 3, 3},
+          new int[]{1, 4, 6}};
+        int h = 0;
+
+        --n;
+        for (int i = 0; n &gt;= m &amp;&amp; m &gt; 0; i++, n--)
+          if (data[i] &gt; 0) h += PASCAL[n][m--];
+        return h;
+      }
+      class RevHash
+      {
+        Dictionary&lt;int, int[]&gt; dic;
+        public RevHash(int n, int m, int[][] dt)
+        {
+          dic = new Dictionary&lt;int, int[]&gt;();
+          foreach (int[] ii in dt) dic[hash(ii,n,m)] = ii;
+        }
+        public int[] Calc(int val) { return dic[val]; }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1648'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1648
+  :user_name: ocean
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/08/01 08:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    def iter_data(n, m):
+        data = []
+        def f(n, m):
+            if n == 0:
+                yield data
+                return
+            for diff in (0, 1):
+                if 0 &lt;= m - diff &lt;= n - 1:
+                    data.append(diff)
+                    for the_data in f(n - 1, m - diff):
+                        yield the_data
+                    data.pop()
+        return f(n, m)
+
+    def find_data(x, n, m):
+        it = iter_data(n, m)
+        for _ in xrange(x):
+            it.next()
+        return it.next()
+
+    def main():
+        for x in xrange(10):
+            print x, "=&gt;", find_data(x, 5, 2)
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1649'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1649
+  :user_name: nobsun
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/01 09:23 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">組合せを最初から生成するので効率の悪い素朴な実装</pre>\n\t"
+  :code: |
+    mkperm :: Int -&gt; Int -&gt; [[Int]]
+    mkperm n m
+      | n &lt;  m    = []
+      | m == 0    = [replicate n 0]
+      | n == m    = [replicate n 1]
+      | otherwise = map (0:) (mkperm (n-1) m) ++ map (1:) (mkperm (n-1) (m-1))
+
+    revhash :: Int -&gt; Int -&gt; Int -&gt; [Int]
+    revhash = ((!!) .) . mkperm
+
+    {-
+    *Main&gt; revhash 5 2 9
+    [1,1,0,0,0]
+    -}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1652'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1652
+  :user_name: rem
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/187/
+  :language: C
+  :time: 2007/08/01 10:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">第4引数にn以上のサイズのint型配列の先頭アドレスを与えるとその配列にデータが格納されるようになってます。</pre>\n\t"
+  :code: |
+    #include &lt;stdlib.h&gt;
+    #include &lt;string.h&gt;
+
+    void rev_hash(int dt, int n, int m, int *buf){
+        int *selected, i, j;
+        selected = (int *)malloc(sizeof(int) * m);
+        for(i = 0; i &lt; m; i++){
+            selected[i] = i;
+        }
+        for(i = 0; i &lt; dt; i++){
+            int moveup = 0;
+            for(j = 0; j &lt; m - 1; j++, moveup++){
+                if(selected[j] + 1 != selected[j + 1]){
+                    selected[j]++;
+                    break;
+                }
+            }
+            if(j == m - 1){
+                selected[j]++;
+            }
+            for(j = 0; j &lt; moveup; j++){
+                selected[j] = j;
+            }
+        }
+        memset(buf, 0, sizeof(int) * n);
+        for(i = 0; i &lt; m; i++){
+            buf[n - selected[i] - 1] = 1;
+        }
+        free(selected);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1653'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1653
+  :user_name: sumim
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/01 10:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk で。\n\t"
+  :code: |
+    | n r val pas ans pat |
+    n := 5. r := 2. val := 8.
+    pas := OrderedCollection with: (0 to: n - r).
+    (r - 1) timesRepeat: [
+        pas addFirst: (
+            pas first inject: #(0) into: [:new :each | new, {each + new last}])].
+    ans := OrderedCollection new.
+    pas do: [:arr | val := val - (arr at: (ans add: (arr findLast: [:m | val &gt;= m])))].
+    pat := Array new: n withAll: 0.
+    ans do: [:idx | pat at: (n - idx + 1) put: 1].
+    ^pat   "=&gt; #(1 0 1 0 0) "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '1658'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1658
+  :user_name: kkobayashi
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2007/08/01 15:17 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">統計解析パッケージであるRの出番ですね（？）\r\n例と出力を合せるために少し変な書き方をしています。\r\n\r\n&gt;
+    for(i in 9:0){\r\n+     cat(i, \"=&gt;\", rev.hash(i, 5, 2), \"\\n\")\r\n+ }\r\n9
+    =&gt; 1 1 0 0 0 \r\n8 =&gt; 1 0 1 0 0 \r\n7 =&gt; 1 0 0 1 0 \r\n6 =&gt; 1 0 0
+    0 1 \r\n5 =&gt; 0 1 1 0 0 \r\n4 =&gt; 0 1 0 1 0 \r\n3 =&gt; 0 1 0 0 1 \r\n2 =&gt;
+    0 0 1 1 0 \r\n1 =&gt; 0 0 1 0 1 \r\n0 =&gt; 0 0 0 1 1\r\n</pre>\n\t"
+  :code: |
+    rev.hash &lt;- function(x, n, m){
+        data &lt;- rep(1, n)
+        data[combn(n, n-m)[,x+1]] &lt;- 0
+        return(data)
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1667'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1667
+  :user_name: mimizu
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/103/
+  :language: Java
+  :time: 2007/08/01 16:27 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "public class Hash {\n    \n    public static int[] inverseHash(int x, int
+    n, int m) {\n        int[][] c = combinationTable(n - 1, m);\n        int[] data
+    = new int[n];\n        for (int i = n - 1; i &gt;= 0; i--) {\n            if (c[i][m]
+    &lt;= x) {\n                x -= c[i][m--];\n                data[n - 1 - i] =
+    1;\n            }\n        }\n        return data;\n    }\n    \n    private static
+    int[][] combinationTable(int n, int m) {\n        int[][] combination = new int[n
+    + 1][m + 1];\n        for (int i = 0; i &lt;= n; i++) {\n            combination[i][0]
+    = 1;\n        }\n        for (int i = 1; i &lt;= n; i++) {\n            for (int
+    j = 1; j &lt;= m; j++) {\n                combination[i][j] = combination[i -
+    1][j - 1]\n                                     +  combination[i - 1][j];\n            }\n
+    \       }\n        return combination;\n    }\n    \n    public static void main(String[]
+    arg) {\n        for (int i = 9; i &gt;= 0; i--) {\n            int[] data = inverseHash(i,
+    5, 2);\n            System.out.print(i + \" =&gt; [\" + data[0]);\n            for
+    (int j = 1; j &lt; data.length; j++) {\n                System.out.print(\", \"
+    + data[j]);\n            }\n            System.out.println(\"]\");\n        }\n
+    \   }\n    \n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1669'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1669
+  :user_name: sumim
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/01 17:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  テーブル（パスカルの三角形）を用意せず、富豪的に。\n\t"
+  :code: |
+    | n r val pat |
+    n := 6. r := 3. val := 18.
+    pat := Array new: n withAll: 0.
+    r to: 1 by: -1 do: [:r0 |
+        | idx last |
+        idx := (1 to: n - (r - r0)) findLast: [:n0 | val &gt;= (last := n0 - 1 take: r0)].
+        pat at: n - idx + 1 put: 1.
+        val := val - last].
+    ^pat   "=&gt; #(1 1 0 1 0 0) "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '1670'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1670
+  :user_name: shiro
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/08/01 19:53 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <pre class=\"compact\">2分探索みたいな感じかな。境界値がnCrで刻々と変わってゆくだけで。\r\nコンパクトさを優先して書いてみました。nCrの計算が何度も行われるので\r\nメモ化すると高速化できると思われます。\r\n\r\n実行例:\r\ngosh&gt;
+    (for-each (lambda (k) (print k \" =&gt; \" (rev-hash k 5 2))) (iota 10))\r\n0
+    =&gt; (0 0 0 1 1)\r\n1 =&gt; (0 0 1 0 1)\r\n2 =&gt; (0 0 1 1 0)\r\n3 =&gt; (0
+    1 0 0 1)\r\n4 =&gt; (0 1 0 1 0)\r\n5 =&gt; (0 1 1 0 0)\r\n6 =&gt; (1 0 0 0 1)\r\n7
+    =&gt; (1 0 0 1 0)\r\n8 =&gt; (1 0 1 0 0)\r\n9 =&gt; (1 1 0 0 0)\r\n</pre>\n\t"
+  :code: |
+    (define (nCr n r)
+      (define (! n k) (if (&lt;= n k) 1 (* n (! (- n 1) k))))
+      (/ (! n (- n r)) (! r 0)))
+
+    (define (rev-hash k n m)
+      (cond [(= m 0) (make-list n 0)]
+            [(= n m) (make-list n 1)]
+            [(&lt;= (nCr (- n 1) m) k)
+             (cons 1 (rev-hash (- k (nCr (- n 1) m)) (- n 1) (- m 1)))]
+            [else
+             (cons 0 (rev-hash k (- n 1) m))]))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '1671'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1671
+  :user_name: shiro
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/08/01 20:54 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">メモ化をちょっと試してみた。\r\n単純にnCrの引数だけでメモ化するのはあまり効果が無い。\r\n同じ(n,r)の組み合わせは1回しか使わないから
+    (上のrev-hashの\r\nコードでは手抜きで2回使われる箇所もあるけど)。\r\nnCr = n-1Cr + n-1Cr-1 を使えば、最初のnCrの計算で\r\nその後に使う組み合わせは全て計算してしまうのでメモ化の\r\n効果は出る。ただ、これは要するにpascalのテーブルを最初に\r\n(ほぼ)全部計算するってことだから、まだ無駄なことをしている\r\n感じはある。\r\n\r\ngosh&gt;
+    (time (begin ((rev-hash-test nCr-memo) (expt 10 599) 2000 1000) (values)))\r\n;(time
+    (begin ((rev-hash-test nCr-memo) (expt 10 599) 2000 1000) (values)))\r\n; real
+    \  7.703\r\n; user   7.470\r\n; sys    0.210\r\ngosh&gt; (time (begin ((rev-hash-test
+    nCr) (expt 10 599) 2000 1000) (values)))\r\n;(time (begin ((rev-hash-test nCr)
+    (expt 10 599) 2000 1000) (values)))\r\n; real  35.341\r\n; user  34.710\r\n; sys
+    \   0.500\r\n\r\nもちろん2度目からはメモ化版は激速だけど。\r\n\r\ngosh&gt; (time (begin ((rev-hash-test
+    nCr-memo) (expt 10 599) 2000 1000) (values)))\r\n;(time (begin ((rev-hash-test
+    nCr-memo) (expt 10 599) 2000 1000) (values)))\r\n; real   0.014\r\n; user   0.010\r\n;
+    sys    0.000\r\n\r\nテストコードを貼り付けておく。</pre>\n\t"
+  :code: |
+    (define (nCr n r)
+      (define (! n k) (if (&lt;= n k) 1 (* n (! (- n 1) k))))
+      (/ (! n (- n r)) (! r 0)))
+
+    (define nCr-memo
+      (let1 tab (make-hash-table 'equal?)
+        (define (memo n r v) (hash-table-put! tab (cons n r) v) v)
+        (lambda (n r)
+          (cond [(or (= n r) (= r 0)) 1]
+                [(hash-table-get tab (cons n r) #f)]
+                [(&gt; r (quotient n 2)) (nCr-memo n (- n r))]
+                [else (memo n r (+ (nCr-memo (- n 1) (- r 1))
+                                   (nCr-memo (- n 1) r)))]))))
+
+    (define (rev-hash-test nCr)
+      (define (rev-hash k n m)
+        (cond [(= m 0) (make-list n 0)]
+              [(= n m) (make-list n 1)]
+              [(&lt;= (nCr (- n 1) m) k)
+               (cons 1 (rev-hash (- k (nCr (- n 1) m)) (- n 1) (- m 1)))]
+              [else
+               (cons 0 (rev-hash k (- n 1) m))]))
+      rev-hash)
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '1672'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1672
+  :user_name: tell
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/228/
+  :language: Ruby
+  :time: 2007/08/01 21:53 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">定義通りに実装，これで合っているはず，大丈夫かな？\r\ncomb(n,k)がn&lt;kのときに0を返すのがミソかも．</pre>\n\t"
+  :code: "def prod( n )\n  if n == 0\n    1\n  else\n    n * prod( n - 1 )\n  end\nend\n\ndef
+    comb( n, k )\n  if n &lt; k\n    0\n  else\n    prod( n ) / ( prod( k ) * prod(
+    n - k ) )\n  end\nend\n\ndef inv_comb_hash( x, n, k )\n  return [] if n == 0\n
+    \ n_k_comb = comb( n - 1, k )\n  if x &gt;= n_k_comb\n    [1] + inv_comb_hash(
+    x - n_k_comb, n - 1, k - 1 )\n  else\n    [0] + inv_comb_hash( x, n - 1, k )\n
+    \ end\nend\n\n## 以下テスト\n\n[ [1,1],\n  [2,1],\n  [2,2],\n  [5,2],\n  [10, 5],\n].each
+    {| test |\n  \n  comb( test[0], test[1] ).times {| i |\n    puts( (\"inv_comb_hash(%3d,
+    %3d, %3d) = %s\" % \\\n           [ i, test[0], test[1],\n             inv_comb_hash(i,
+    test[0], test[1]).inspect, ]) )\n  }\n  puts\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1673'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1673
+  :user_name: tell
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/228/
+  :language: 
+  :time: 2007/08/01 21:56 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  あ，それと「組合せ型」だから，関数名はpermじゃなくて，combでは？\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1674'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1674
+  :user_name: tell
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/228/
+  :language: 
+  :time: 2007/08/01 22:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">prodは階乗を計算しているから，\r\nfactがわかりやすい…ミスった…\r\n一応説明↓:\r\n\r\nprod
+    = 階乗 n!\r\ncomb = 組合せ nCk\r\ninv_comb_hash = 問題の解答</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1677'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1677
+  :user_name: sumim
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/02 01:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  shiro さん、tell さんのを読んで、上のは少々冗長だと遅まきながら気づきました(^_^;)。\n\t"
+  :code: |
+    | val n r pat c |
+    n := 5.  r := 2.  val := 8.
+    pat := Array new: n withAll: 0.
+    1 to: n do: [:idx |
+        val &gt;= (c := n - idx take: r) ifTrue: [
+            pat at: idx put: 1.
+            r := r - 1.
+            val := val - c]].
+    ^pat   "=&gt; #(1 0 1 0 0) "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '1678'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1678
+  :user_name: にしお
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/02 02:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">make_combだと[(0, 1), (0, 2), (0, 3), ...]を返しそう…\r\nまぁ、別に深く考えてpermにしたわけでもないのですが、\r\nmake_objectsくらいにしておいたほうがよかったかもですね。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1679'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1679
+  :user_name: にしお
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/02 02:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  そうですね、実はお題で「組合せを最初から生成するので効率の悪い」(から禁止)と書くかどうかは、しばらく悩みました。結局「禁止にすると難易度が高くなりすぎるのかな」と思ったので伏せておいて、効率に言及したり効率のいいアルゴリズムを使った投稿にプラス評価をつけることにしてみました。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1680'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1680
+  :user_name: ocean
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/177/
+  :language: C
+  :time: 2007/08/02 02:19 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  せっかくC++には順列生成アルゴリズムがあることだし（std::next_permutation）使ってみました。\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;stdexcept&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;iterator&gt;
+    #include &lt;vector&gt;
+
+    std::vector&lt;int&gt; get_perm(size_t x, size_t n, size_t m)
+    {
+        if (!(0 &lt;= m &amp;&amp; m &lt;= n))
+        {
+            throw std::runtime_error("invalid arugument");
+        }
+
+        std::vector&lt;int&gt; v(n, 1);
+
+        for (size_t i = 0; i &lt; n - m; ++i)
+        {
+            v[i] = 0;
+        }
+
+        for (size_t i = 0; i &lt; x; ++i)
+        {
+            if (! std::next_permutation(v.begin(), v.end()))
+            {
+                throw std::runtime_error("out of range");
+            }
+        }
+
+        return v;
+    }
+
+    int main()
+    {
+        try
+        {
+            for (size_t x = 0; x &lt; 10; ++x)
+            {
+                std::vector&lt;int&gt; v = get_perm(x, 5, 2);
+
+                std::cout &lt;&lt; x &lt;&lt; " =&gt; [";
+
+                std::copy(v.begin(), v.end(), std::ostream_iterator&lt;int&gt;(std::cout, ", "));
+
+                std::cout &lt;&lt; "]" &lt;&lt; std::endl;
+            }
+        }
+        catch (std::exception&amp; e)
+        {
+            std::cerr &lt;&lt; e.what() &lt;&lt; std::endl;
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1684'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1684
+  :user_name: ocean
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/177/
+  :language: diff
+  :time: 2007/08/02 05:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  バグではないのですが、std::fill()というアルゴリズムがあることに気づいたので、リファクタリング。\n\t"
+  :code: |
+    --- main.orig   Thu Aug  2 14:52:35 2007
+    +++ main.cpp    Thu Aug  2 14:56:58 2007
+    @@ -13,10 +13,7 @@
+
+         std::vector&lt;int&gt; v(n, 1);
+
+    -    for (size_t i = 0; i &lt; n - m; ++i)
+    -    {
+    -        v[i] = 0;
+    -    }
+    +    std::fill(v.begin(), v.begin() + (n - m), 0);
+
+         for (size_t i = 0; i &lt; x; ++i)
+         {
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1686'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1686
+  :user_name: nobsun
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/02 06:06 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">効率を改良した版</pre>\n\t"
+  :code: "revhash n r = subtract 1 . rvh n r (n`c`r) \n\nrvh n r s []         = s\nrvh
+    _ 0 s _          = s\nrvh n r s _ | n == r = s\nrvh n r s (1:ps)     = rvh (n-1)
+    (r-1) s ps\nrvh n r s (0:ps)     = rvh (n-1) r (s - (n-1)`c`(r-1)) ps\n\nn `c`
+    r = foldl (\\ p (x,y) -&gt; (p * x) `div` y) 1 $ zip [n,n-1..n-r+1] [1..r]\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1687'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1687
+  :user_name: ocean
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/177/
+  :language: diff
+  :time: 2007/08/02 06:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  と思ったらstd::fill_nがあるので、こっちの方が短いな・・・（度々すみません）\n\t"
+  :code: |
+    --- main.orig   Thu Aug  2 14:52:35 2007
+    +++ main.cpp    Thu Aug  2 15:07:37 2007
+    @@ -13,10 +13,7 @@
+
+         std::vector&lt;int&gt; v(n, 1);
+
+    -    for (size_t i = 0; i &lt; n - m; ++i)
+    -    {
+    -        v[i] = 0;
+    -    }
+    +    std::fill_n(v.begin(), n - m, 0);
+
+         for (size_t i = 0; i &lt; x; ++i)
+         {
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1690'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1690
+  :user_name: yuin
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/08/02 06:47 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  \n\t"
+  :code: |
+    def fact(s:int, e:int) = s.until(e,-1).foldLeft(1){_*_}
+    def invHash(x:int, m:int, n:int):List[int] = fact(m-1,m-1-n)/fact(n,0) match {
+      case v if x &gt;= v =&gt; 1::invHash(x-v,m-1,n-1)
+      case _ if m &gt; 0  =&gt; 0::invHash(x,m-1,n)
+      case _  =&gt; Nil
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1695'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1695
+  :user_name: rucker
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/08/02 10:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: "&lt;?php\n\tfunction factorial($x)\n\t{\t$r=1;\n\t\tfor(;$x&gt;1;--$x)\n\t\t\t$r*=$x;\n\t\treturn
+    $r;\n\t}\n\tfunction combination($n,$m)\n\t{\treturn factorial($n)/(factorial($m)*factorial($n-$m));\n\t}\n\tfunction
+    invperm($i,$n,$m)\n\t{\n\t\t$a='';\n\t\tfor(;$m&lt;$n;--$n)\n\t\t{\t$c=combination($n-1,$m);\n\t\t\tif($i&gt;=$c)\n\t\t\t{\t$a.='1';\n\t\t\t\t$i-=$c;\n\t\t\t\tif(--$m&lt;0)\n\t\t\t\t\treturn
+    false;\n\t\t\t}\n\t\t\telse\n\t\t\t\t$a.='0';\n\t\t}\n\t\t$a.=str_repeat('1',$n);\n\t\treturn
+    $a;\n\t}\n\tfor($i=0;($a=invperm($i,5,2))!==false;++$i)\n\t\techo \"$i,$a\\n\";;\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1730'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1730
+  :user_name: tomatsu
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/323/
+  :language: Pnuts
+  :time: 2007/08/02 13:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    function c(n, r){
+       k = 1
+       for (i = (r+1); i &lt;= n; i++) k *= i
+       for (i = 2; i &lt;= (n-r); i++) k /= i
+       k
+    }
+
+    function d(n, r, val){
+      pat = int[n]
+      for (idx : 1 .. n){
+        x = c(n - idx, r)
+        if (val &gt;= x){
+            pat[idx - 1] = 1
+            r--
+            val -= x
+        }
+      }
+      pat
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1732'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1732
+  :user_name: tsekine
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/124/
+  :language: awk
+  :time: 2007/08/02 13:29 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  けっこう効率よく解いてるつもりです。GNU AWK じゃなくても、けっこう古めの AWK (nawk)でも動くと思います。\r\n\r\n実際に解いているのは
+    rev_hash() だけなんですが、他が妙に長くなってしまいました。\n\t"
+  :code: |
+    function make_pascal (n, m, pascal,       i, j) {
+      pascal[0, 0] = 1;
+      for (j = 1; j &lt;= m; j++) {
+        pascal[0, j] = 0;
+      }
+      for (i = 1; i &lt; n; i++) {
+        pascal[i, 0] = 1;
+
+        for (j = 1; j &lt;= m; j++) {
+          pascal[i, j] = pascal[i-1, j-1] + pascal[i-1, j];
+        }
+      }
+    }
+
+    function rev_hash (hash, n, m, pascal, data,     i, j) {
+      j = m;
+      for (i = n - 1; i &gt;= 0; i--) {
+        if (hash &gt;= pascal[i, j]) {
+          data[n - i - 1] = 1;
+          hash -= pascal[i, j];
+          j--;
+        } else {
+          data[n - i - 1] = 0;
+        }
+      }
+    }
+
+    function print_rev_hash(hash, n, m, pascal,     i) {
+      rev_hash(hash, n, m, pascal, data);
+
+      printf("%d =&gt; [", hash);
+      for (i = 0; i &lt; n; i++) {
+        printf("%d, ", data[i]);
+      }
+      printf("]\n");
+    }
+
+    function c(n, m,    i, ret) {
+      ret = 1;
+      for (i = 0; i &lt; m; i++) ret *= n--;
+      for (; m &gt; 0; m--) ret /= m;
+      return ret;
+    }
+
+    BEGIN {
+      if (n == 0) {
+        n = 5;
+      }
+      if (m == 0) {
+        m = 2;
+      }
+
+      make_pascal(n, m, pascal);
+
+      num_hash = c(n, m);
+      for (i = 0; i &lt; num_hash; i++) {
+        print_rev_hash(i, n, m, pascal);
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1737'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1737
+  :user_name: iwk
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/49/
+  :language: OCaml
+  :time: 2007/08/02 15:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  リフレクションの問題が解けないけれど、こちらをとりあえず・・・。効率は最悪。\n\t"
+  :code: |
+    #light
+    open LazyList
+
+    type LListBuilder() =
+        member l.Bind(v,f) = LazyList.concat (LazyList.map f v)
+        member l.Return x = LazyList.consf x LazyList.empty
+        member l.Let(v,f) = f v
+
+    let doLList = new LListBuilder()
+
+    let replicate n x = LazyList.take n (LazyList.repeat x)
+    let rec fact (n:int) = if n = 0 then 1 else n * fact (n-1)
+    let combination n m =
+        if n &lt; m then 0 else (fact n)/((fact m) * (fact (n-m)))
+
+    let rec make_perm n m =
+        match n,m with
+        | n,0 -&gt; doLList { return (replicate n 0) }
+        | n,m when n = m -&gt; doLList { return (replicate n 1)}
+        | n,m when n &lt; m -&gt; doLList { return (empty()) }
+        | n,m -&gt; let c = combination n m
+                 let d = combination (n-1) (m-1)
+                 append
+                     (map2 append (replicate d (consf 1 empty))
+                         (make_perm (n-1) (m-1)))
+                     (map2 append (replicate (c-d) (consf 0 empty))
+                         (make_perm (n-1) m))
+
+    let inv_hash (n,m) num =
+        let nth lls i = take i lls |&gt; hd
+        let c = (combination n m)
+        nth (make_perm n m) (c-num)
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '1789'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1789
+  :user_name: onjo
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/235/
+  :language: Common
+  :time: 2007/08/03 14:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  pascal の三角形の使いまわしすようにすれば効率化できると思います。とりあえず動いた版を投稿。\n\t"
+  :code: |
+    (defun reverse-hash (x n m)
+      (let ((pascal (let ((array (make-array (list n (1+ m)) :initial-element 0)))
+                      (flet ((ref (y x) (if (&lt; x 0) 0 (aref array y x))))
+                        (setf (aref array 0 0) 1)
+                        (loop for i from 1 below n do
+                             (loop for j from 0 below (1+ m) do
+                                  (setf (aref array i j)
+    　　　　　　　　　　　　　　 (+ (ref (1- i) (1- j)) (ref (1- i) j)))))
+                        array))))
+        (labels ((lookup (n m)
+                   (aref pascal n m))
+                 (iter (x n m)
+                   (cond ((= m 0) (make-list n :initial-element 0))
+                         ((= n m) (make-list n :initial-element 1))
+                         ((&lt;= (lookup (1- n) m) x)
+                          (cons 1 (iter (- x (lookup (1- n) m)) (1- n) (1- m))))
+                         (t
+                          (cons 0 (iter x (1- n) m))))))
+          (iter x n m))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1908'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1908
+  :user_name: '186'
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/352/
+  :language: Scheme
+  :time: 2007/08/06 04:41 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  この問題が出ているの知らなくってお題として投稿してしまいました.\r\n\r\nFischer and Stern \"An efficient
+    pseudo-random generator provably as secure as syndrome decoding\" (Eurocrypt '96)
+    のアルゴリズムに倣っています.\n\t"
+  :code: "(define (binom n m)\n  (define (perm n m c)\n    (if (= m 0)\n        c\n
+    \       (perm (- n 1) (- m 1) (* n c))))\n  (/ (perm n m 1) (perm m m 1)))\n\n(define
+    (enc n m i)\n  (define (enc-in n m i c x-list)\n    (if (= n 0)\n        (reverse
+    x-list)\n        (let ((c2 (/ (* c (- n m)) n)))\n          (if (&lt;= i c2) \n
+    \           (enc-in (- n 1) m i c2 (cons 0 x-list))\n            (enc-in (- n
+    1) (- m 1) (- i c2) (/ (* c m) n) (cons 1 x-list))))))\n  (enc-in n m (+ i 1)
+    (binom n m) '()))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1920'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1920
+  :user_name: sawat
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/322/
+  :language: JavaScript
+  :time: 2007/08/06 07:27 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">JavaScriptでまだ出てないので。\r\nx=0から順に求めるので効率は良くないです。</pre>\n\t"
+  :code: "function Bit(n, a, next) {\n  this.n = n; this.a = this.b = a; this.next
+    = next;\n}\nBit.prototype= {\n  up : function() {\n    this.b++;\n    if(this.next
+    &amp;&amp; this.next.b == this.b) {\n      this.b = this.a;\n      this.next.up();\n
+    \   }\n  }, \n  toData: function(flip) {\n    var data = this._tod([], 0, flip);\n
+    \   while(data.length &lt; this.n) data.push(0 ^ flip);\n    return flip ? data
+    : data.reverse();\n  }, \n  _tod: function(ary, a, flip) {\n    for(var i=a; i&lt;this.b;
+    i++) ary.push(0 ^ flip);\n    ary.push(1 ^ flip);\n    return this.next ? this.next._tod(ary,
+    this.b+1, flip) : ary;\n  }\n}\n\nfunction invert(x, n, m, flip) {\n  if(n-m &lt;
+    m) return invert(x, n, n-m, 1);\n\n  var bit;\n  for(var i=m-1; i&gt;=0; i--)
+    bit = new Bit(n, i, bit);\n  for(var i=0; i&lt;x; i++)  bit.up();\n  return bit.toData(flip);\n}\n\nfor(var
+    i=0; i&lt;10; i++) \n  alert(i + \" : \" + invert(i, 5, 2));\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1944'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1944
+  :user_name: yooskeh
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/91/
+  :language: Prolog
+  :time: 2007/08/06 14:49 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">hashは問題のハッシュ関数そのままの実装です。\r\n\r\n?- hash(5,
+    2, [0, 1, 0, 1, 0], X).\r\nX = 4\r\n\r\nPrologのパターンマッチとバックトラックにより\r\n逆関数としても使えます。\r\n\r\n?-
+    hash(5, 2, L, 4).\r\nL = [0, 1, 0, 1, 0]\r\n\r\nこれはこれで面白いのですが\r\n結局のところ順列を作りつつ調べていくので\r\nn,
+    mが大きくなると使い物になりません。\r\n\r\nその点unhashは双方向ではありませんが\r\ncombを考えなければ計算量は線形です。\r\n\r\nあと、combは一応メモ化してますが、\r\nたぶん計算方法が良くないです。</pre>\n\t"
+  :code: "%%\tcomb(+N, +K, ?C)\n\n:- dynamic comb/3.\n\ncomb(_, 0, 1) :- !.\ncomb(N,
+    K, X) :-\n\tN0 is N - 1,\n\tK0 is K - 1,\n\tcomb(N0, K0, X0),\n\tX is X0 * N /
+    K,\n\tasserta(comb(N, K, X) :- !).\n\n%%\thash(+N, +M, ?BitList, ?Hash)\n\nhash(0,
+    0, [], 0) :- !.\nhash(N, M, [1|Bs], H) :-\n\tsucc(M0, M),\n\tsucc(N0, N),\n\tcomb(N0,
+    M, C),\n\thash(N0, M0, Bs, H0),\n\tH is C + H0.\nhash(N, M, [0|Bs], H) :-\n\tsucc(N0,
+    N),\n\thash(N0, M, Bs, H).\n\n%%\tunhash(+N, +M, +Hash, ?BitList)\n\nunhash(0,
+    0, _, []) :- !.\nunhash(N, M, H, [B|Bs]) :-\n\tN0 is N - 1,\n\t(   N &gt; 0,\n\t
+    \   comb(N0, M, C),\n\t    H &gt;= C\n\t-&gt;  B = 1,\n\t    H0 is H - C,\n\t
+    \   M0 is M - 1,\n\t    unhash(N0, M0, H0, Bs)\n\t;   B = 0,\n\t    unhash(N0,
+    M, H, Bs)\n\t).\n"
+  :tags:
+  - SWI-Prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '1971'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1971
+  :user_name: shuyo
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/84/
+  :language: Erlang
+  :time: 2007/08/07 06:42 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">出題者です。\r\nわけあって Erlang で参戦。\r\nshiroさんのを参考にメモ化も試してみています。\r\n\r\n&gt;
+    c(comb_hash).\r\n&gt; comb_hash:comb_hash([1,0,1,0,0], 5, 2).\r\n8\r\n&gt; comb_hash:inv_comb_hash(8,
+    5, 2).\r\n[1,0,1,0,0]\r\n&gt; comb_hash:comb_hash(comb_hash:inv_comb_hash(123456,25,8),
+    25, 8).\r\n123456</pre>\n\t"
+  :code: "-module(comb_hash).\n-export([comb_hash/3, inv_comb_hash/3, combination/2]).\n\ncomb_hash(_,
+    _, 0) -&gt; 0;\ncomb_hash(_, N, R) when N=&lt;R -&gt; 0;\ncomb_hash([0|L], N,
+    R) -&gt; comb_hash(L, N-1, R);\ncomb_hash([1|L], N, R) -&gt; combination(N-1,
+    R) + comb_hash(L, N-1, R-1).\n\ninv_comb_hash(_, N, 0) -&gt; multiple_list(0,N);\ninv_comb_hash(_,
+    N, R) when N==R -&gt; multiple_list(1,N);\ninv_comb_hash(V, N, R) -&gt;\n\tC =
+    combination(N-1, R),\n\tif V &gt;= C -&gt;\n\t\t[1 | inv_comb_hash(V-C, N-1, R-1)];\n\ttrue
+    -&gt;\n\t\t[0 | inv_comb_hash(V, N-1, R)]\n\tend.\n\ncombination(_, 0) -&gt; 1;\ncombination(N,
+    R) when N=&lt;R -&gt; 1;\ncombination(N, R) -&gt; \n\tcase get({N,R}) of\n\tundefined
+    -&gt;\n\t\tV = combination(N-1, R) + combination(N-1, R-1),\n\t\tput({N,R}, V),\n\t\tV;\n\tV
+    -&gt; V\n\tend.\n\nmultiple_list(V,1) -&gt; [V];\nmultiple_list(V,N) -&gt; [V|multiple_list(V,N-1)].\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1999'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/1999
+  :user_name: tell
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/228/
+  :language: Ruby
+  :time: 2007/08/07 22:23 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">そうか，n=kを見れば別に末端まで再帰する必要は無いな．\r\nおれはまだまだ修行が足りなかったようだ．\r\n下に自分のコードを書き直してみた，エンバグしてなきゃいいけど．</pre>\n\t"
+  :code: |
+    def fact( n )
+      if n == 0
+        1
+      else
+        n * fact( n - 1 )
+      end
+    end
+
+    def comb( n, k )
+      fact( n ) / ( fact( k ) * fact( n - k ) )
+    end
+
+    def inv_comb_hash( x, n, k )
+      if n == 0
+        return []
+      elsif n == k
+        return [1] * n
+      end
+      nCk = comb( n - 1, k )
+      if x &gt;= nCk
+        [1] + inv_comb_hash( x - nCk, n - 1, k - 1 )
+      else
+        [0] + inv_comb_hash( x, n - 1, k )
+      end
+    end
+  :tags: []
+  :references:
+    :url: /web/20100225114335/http://ja.doukaku.org/comment/1672/
+    :title: ''
+- :id: '2000'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/2000
+  :user_name: tell
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/228/
+  :language: 
+  :time: 2007/08/07 22:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">う～ん，どうやら「どうかく.org」自体を参考URLに挙げることはできないようですね．\r\n書き直したコードというのは，#1672です．</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2068'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/2068
+  :user_name: '186'
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/352/
+  :language: 
+  :time: 2007/08/11 05:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  メモ化についてのメモ:\r\ni=0,...,nについて, binom(n,m)/iを計算している. 0だったらn-mを掛けて, 1だったらmを掛ける.\r\nなのでbinom(n,m)/iだけテーブルに入れておけば複数回利用するときに高速化が可能.\r\n\r\n#1671ではパスカルの三角形を全てメモするが,
+    0,1に従って掛け算をすることは無い.\r\nメモリ使用量とコストのトレードオフ.\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100225114335/http://ja.doukaku.org/comment/1671/
+    :title: '#1671'
+- :id: '2088'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/2088
+  :user_name: shg
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/383/
+  :language: Matlab
+  :time: 2007/08/12 23:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  とりあえず簡潔に。\n\t"
+  :code: |
+    function data = invoptcombhash(x, n, m)
+    combpos = nchoosek(1:n,m);
+    data = zeros(1,n);
+    data(combpos(x,:)) = 1;
+  :tags:
+  - MATLAB7.4
+  :references:
+    :url: 
+    :title: 
+- :id: '3788'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/3788
+  :user_name: dankogai
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/10 00:28 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">オーソドックスな実装。nCkの定義は、\r\nn C k = k C n\r\nにあわせました。\r\nDan
+    the Perl Monger</pre>\n\t"
+  :code: |
+    #!/usr/local/bin/perl
+    use strict;
+    use warnings;
+
+    sub fact{ $_[0] &lt;= 1 ? 1 : $_[0] * fact($_[0]-1) };
+    sub nCk {
+        my ($n, $k) = ($_[0] &gt; $_[1]) ? @_ : reverse @_;
+        fact($n) / fact($k) / fact($n - $k)
+    }
+
+    sub invhash {
+        my ( $x, $n, $k ) = @_;
+        return ()       if $n == 0;
+        return (1) x $n if $n == $k;
+        my $c = nCk( $n - 1, $k );
+        $x &gt;= $c ? (1, invhash( $x - $c, $n - 1, $k - 1 ))
+                 : (0, invhash( $x, $n - 1, $k ));
+    }
+
+    print $_, " =&gt; [", join(", ", invhash($_, 5, 2)), "]\n" for (0..9);
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5996'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/5996
+  :user_name: nori
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/59/
+  :language: Python
+  :time: 2008/03/10 15:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  いまさらながらpost。ただひたすら平明に。\n\t"
+  :code: |
+    class Combination:
+      def __init__(self):
+        self._cache = dict()
+        self._update(0, 0, 1) # C(0, 0)
+        self._size = 1
+
+      def _update(self, n, r, value):
+        self._cache.update({(n, r): value})
+
+      def _read(self, n, r):
+        if n &lt; 0 or r &lt; 0:
+          return 0
+        elif n &lt; r:
+          return 0
+        else:
+          return self._cache[(n, r)]
+
+      def _expand(self):
+        n = self._size
+        for i in range(0, n+1):
+          self._update(n=n, r=i, value=self._read(n=n-1, r=i-1)+self._read(n=n-1, r=
+    i))
+        self._size = n + 1
+
+      def __call__(self, n, r):
+        while self._size &lt; n + 1:
+          self._expand()
+        return self._read(n, r)
+    C = Combination()
+
+    def C_RHash(x, n, r):
+      '''
+    &gt;&gt;&gt; C_RHash(8, 5, 2)
+    [1, 0, 1, 0, 0]
+      '''
+      result = list()
+      for i in range(n, 0, -1):
+        if x &gt;= C(i - 1, r):
+          result.append(1)
+          x -= C(i - 1, r)
+          r -= 1
+        else:
+          result.append(0)
+      return result
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6540'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/6540
+  :user_name: 匿名
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/4/
+  :language: Erlang
+  :time: 2008/06/19 22:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  関数multiple_list/2は，Erlangのlistsモジュールにある関数duplicate/2で置き換え可能ですね．ご参考まで\r\nKenji
+    Rikitake, JJ1BDX\n\t"
+  :code: |
+    %% FYI
+    multiple_list(L,N) -&gt; lists:duplicate(N,L).
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9600'
+  :parent_id: '36'
+  :url: http://ja.doukaku.org/comment/9600
+  :user_name: uehaj
+  :user_url: /web/20100225114335/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2009/09/22 08:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">寝る前の30分で素朴に作ってみました。\r\n$ groovy revhash.groovy
+    \r\n9=&gt;[1, 1, 0, 0, 0]\r\n8=&gt;[1, 0, 1, 0, 0]\r\n7=&gt;[1, 0, 0, 1, 0]\r\n6=&gt;[1,
+    0, 0, 0, 1]\r\n5=&gt;[0, 1, 1, 0, 0]\r\n4=&gt;[0, 1, 0, 1, 0]\r\n3=&gt;[0, 1,
+    0, 0, 1]\r\n2=&gt;[0, 0, 1, 1, 0]\r\n1=&gt;[0, 0, 1, 0, 1]\r\n0=&gt;[0, 0, 0,
+    1, 1]\r\n</pre>\n\t"
+  :code: |
+    def revhash(M, N, x) {
+      def data = []
+      for (int i=1; i&lt;2**M; i++) {
+        def bs = Integer.toBinaryString(i)
+        if (bs.grep{it=="1"}.size()==N) {
+          data &lt;&lt; bs.padLeft(M, '0')
+        }
+      }
+      return data[x].toList().collect{Integer.parseInt(it)}
+    }
+
+    (9..0).each {
+      println it+"=&gt;"+revhash(5, 2, it)
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 

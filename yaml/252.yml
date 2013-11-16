@@ -1,0 +1,594 @@
+---
+:id: '252'
+:title: 手作業Grep
+:comments:
+- :id: '9015'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9015
+  :user_name: nobeer
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/1057/
+  :language: 
+  :time: 2009/05/28 00:31 GMT
+  :vote_count: '5'
+  :vote_score: '5'
+  :body: "\r\n\t  <p>標準入力を読み込んで、行選択のUIをだし、選択されたものだけを標準出力にだしてください。\n標準出力に出力するタイミングは選択終了をユーザーが報告したときです。(完了ボタンを想定してください)</p>\n<p>UIライブラリは何をつかってもかまいません。\n例えばncursesのようなコンソール上でのUIでもかまいませんし、GtkのようなGUIライブラリでもかまいません。</p>\n<p>想定される使い方としては、以下のような感じです。</p>\n<p>ps
+    aux | handgrep | xargs kill -9</p>\n<p>プロセスの一覧を表示、UI上で選択したものをkill</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9040'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9040
+  :user_name: 匿名
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/4/
+  :language: OCaml
+  :time: 2009/06/03 13:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">F# で、作ってみました。\r\n（FSharpSamplesのEditor.fsで、RichTextBoxをListBox
+    に変更したもの）\r\nコンパイルは、\r\nfsc HandGrep.fs -g\r\n--target:winexe にしてしまうと、stdin は、取れてもstdout
+    が、出力されなくなるので、注意。\r\n空行は無視される\r\n使用例：\r\n&gt;dir /B | HandGrep\r\nhandgrep.exe\r\nhandgrep.fs\r\nFile
+    メニューからQuit した場合stdoutに書き出す。\r\n×（閉じる）ボタンで終了すると、出力はされない。\r\nFile メニューからファイルの読み込みもできる\r\nパイプなど標準入力を指定しないで起動した場合は、コンソールから入力するかしないですぐにＣＴＲＬ＋Ｚ\r\n選択は、\r\nＣＴＲＬ＋マウスクリック\r\nまたは、\r\nＳＨＩＦＴ＋マウスクリック</pre>\n\t"
+  :code: "#light\n\nopen System\nopen System.IO  \nopen System.Windows.Forms\n\nlet
+    form = new Form(Width= 400, Height = 300, Visible = true, Text = \"HandGrep\",
+    Menu = new MainMenu())\n\n// menu bar and menus \nlet mFile = form.Menu.MenuItems.Add(\"&amp;File\")\nlet
+    mHelp = form.Menu.MenuItems.Add(\"&amp;Help\")\n\n// menu items \nlet miOpen  =
+    new MenuItem(\"&amp;Open...\")\nlet miQuit  = new MenuItem(\"&amp;Quit\")\nlet
+    miAbout = new MenuItem(\"&amp;About...\")\n\nmFile.MenuItems.Add(miOpen)  |&gt;
+    ignore\nmFile.MenuItems.Add(miQuit)  |&gt; ignore\nmHelp.MenuItems.Add(miAbout)
+    |&gt; ignore\n\n// ListBox\nlet listB = new ListBox(Dock=DockStyle.Fill)\nlistB.SelectionMode
+    &lt;- SelectionMode.MultiExtended\n\nlet in_ar = stdin.ReadToEnd().Split([|\"\\r\\n\"|],StringSplitOptions.RemoveEmptyEntries)\nfor
+    s in in_ar do\n    listB.Items.Add(s) |&gt; ignore //drop index\n\nform.Controls.Add(listB)\n\n//
+    filename state \nlet mutable filename = \"\"\nlet SetFilename f  = filename &lt;-
+    f; form.Text &lt;- \"HandGrep - \" ^ f\n\nSetFilename \"stdin\"\n\n// ReadFile
+    dialog \nlet ReadFile () =\n    let d = new OpenFileDialog() \n    d.Filter &lt;-
+    \"text files *.txt|*.txt|All files *.*|*.*\";\n    d.FilterIndex &lt;- 2;\n    if
+    d.ShowDialog() = DialogResult.OK then\n        let str  = new StreamReader(d.FileName)\n
+    \       let text = str.ReadToEnd ()\n        Some (d.FileName,text)\n    else\n
+    \       None\n\n\n// Read in File \nlet opLoadText _ = \n    match ReadFile ()
+    with\n    | Some (file,text) -&gt; \n        SetFilename file\n        listB.Items.Clear()\n
+    \       for s in text.Split([|\"\\r\\n\"|],StringSplitOptions.RemoveEmptyEntries)
+    do\n           listB.Items.Add(s) |&gt; ignore //drop index\n    | None -&gt;
+    ()\n\n\nlet opAbout _ = \n    MessageBox.Show(\"Selection StdIn\",\"About HandGrep\")
+    |&gt; ignore\n\nlet opExitForm _ =\n    for item in listB.SelectedItems do\n        stdout.WriteLine(string
+    item)\n    form.Close ()\n\n// callbacks \nlet _ = miOpen.Click.Add(opLoadText)\nlet
+    _ = miQuit.Click.Add(opExitForm)\nlet _ = miAbout.Click.Add(opAbout)\n\n[&lt;STAThread()&gt;]
+    \   \ndo Application.Run(form)\n"
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '9041'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9041
+  :user_name: 匿名
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/06/03 14:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>コンパイルオプション -g は、別に必要ないです。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9042'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9042
+  :user_name: egtra
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2009/06/03 14:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>WTLです。微妙にdecltypeを使っているので、Visual C++ 2010以上です、ごめんなさい。\n</p>\n<p>複数行選択可能なリストボックスに表示。手抜きUIなのでメニューとかありません。ウィンドウの×を押して閉じたときに選択されていた項目を出力するという作りです。\n</p>\n<p>Boost.Threadで読み取り用のスレッドを立てています。これにより、パイプの入力が時間の掛かる処理であっても、すぐにウィンドウが表示され、少しずつ項目が追加されるようになっています。\n</p>\n<p>なお、パイプの入力がまだあるのにウィンドウを閉じた場合、自プロセスは入力が終わるまで待つ羽目になりますが、コード中のコメントにあるとおり、Vista以降だと同期IOのキャンセルができるため、すぐに自プロセスの終了が可能です。初めて使いました。\n</p>\n\n\n\n\t"
+  :code: "// どうせVC10でビルドしたプログラムはWindows 2000以上でしか実行できない。\n#define WINVER 0x0500\n#define
+    _WIN32_WINNT 0x0500\n#define _WIN32_IE 0x0500\n\n#define _CRT_SECURE_NO_WARNINGS\n#define
+    _SCL_SECURE_NO_WARNINGS\n#define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1\n\n#define
+    WIN32_LEAN_AND_MEAN\n\n#define _ATL_NO_AUTOMATIC_NAMESPACE\n#define _WTL_NO_AUTOMATIC_NAMESPACE\n\n#define
+    BOOST_ALL_DYN_LINK\n\n#include &lt;tchar.h&gt;\n\n#include &lt;iostream&gt;\n#include
+    &lt;string&gt;\n#include &lt;functional&gt;\n#include &lt;iterator&gt;\n#include
+    &lt;algorithm&gt;\n#include &lt;memory&gt;\n\n#include &lt;tchar.h&gt;\n\n#include
+    &lt;windows.h&gt;\n\n#include &lt;atlbase.h&gt;\n#include &lt;atlwin.h&gt;\n#include
+    &lt;atlapp.h&gt;\n#include &lt;atlcrack.h&gt;\n#include &lt;atlctrls.h&gt;\n#include
+    &lt;atlmisc.h&gt;\n\n#include &lt;boost/thread.hpp&gt;\n\n#ifdef UNICODE\n#    define
+    tcout std::wcout\n#    define tcin std::wcin\n#else\n#    define tcout std::cout\n#
+    \   define tcin std::cin\n#endif\ntypedef std::basic_string&lt;TCHAR&gt; tstring;\n\nWTL::CAppModule
+    _Module;\n\nconst int POINT_SIZE = 9;\n\nclass MainWindow : public ATL::CWindowImpl&lt;MainWindow&gt;\n{\npublic:\n
+    \   // ウィンドウクラスの登録\n    DECLARE_WND_CLASS_EX(TEXT(\"HandGrep MainWindow\"), 0,
+    COLOR_3DFACE);\n    // メッセージマップ\n    BEGIN_MSG_MAP(MainWindow)\n        MSG_WM_SIZE(OnSize)\n
+    \       MSG_WM_CREATE(OnCreate)\n        MSG_WM_DESTROY(OnDestroy)\n    END_MSG_MAP()
+    \   \n    // 読み取った文字列をリストボックスへ追加する。\n    void AddLine(const tstring&amp; s)\n
+    \   {\n        // 別スレッドへメッセージを送っているが、SendMessageなら同期されるので、問題ないはず。\n        //
+    エラー値が返ってくるかもしれないが、今回は無視する。\n        if (listBox)\n        {\n            listBox.AddString(s.c_str());\n
+    \       }\n    }\nprivate:\n    void OnSize(UINT /*type*/, SIZE size)\n    {\n
+    \       listBox.MoveWindow(0, 0, size.cx, size.cy);\n    }\n    // ウィンドウ作成時の処理。\n
+    \   BOOL OnCreate(CREATESTRUCT*)\n    {\n        // リストボックスの作成。\n        HWND
+    hwndListBox = listBox.Create(m_hWnd, 0, 0,\n            LBS_MULTIPLESEL | WS_VSCROLL
+    | WS_CHILD | WS_VISIBLE,\n            WS_EX_CLIENTEDGE, IDC_LISTBOX);\n        if
+    (!hwndListBox)\n        {\n            return false;\n        }\n        // 等角フォントでの表示を試みる。\n
+    \       WTL::CClientDC dc(m_hWnd);\n        font.CreateFont(-MulDiv(POINT_SIZE,
+    GetDeviceCaps(dc, LOGPIXELSY), 72),\n            0, 0, 0, FW_NORMAL, FALSE, FALSE,
+    FALSE, DEFAULT_CHARSET,\n            OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+    DEFAULT_QUALITY,\n            FIXED_PITCH | FF_MODERN, TEXT(\"ＭＳ ゴシック\"));\n        if
+    (font)\n        {\n            listBox.SetFont(font);\n        }\n        return
+    true;\n    }\n    // ウィンドウが閉じるときの処理。\n    void OnDestroy()\n    {\n        //
+    選択されている要素だけを出力。\n        int count = listBox.GetCount();\n        std::vector&lt;TCHAR&gt;
+    buf;\n        for (int i = 0; i &lt; count; ++i)\n        {\n            if (listBox.GetSel(i))\n
+    \           {\n                buf.resize(listBox.GetTextLen(i) + 1);\n                listBox.GetText(i,
+    &amp;buf[0]);\n                tcout &lt;&lt; &amp;buf[0] &lt;&lt; TEXT('\\n');\n
+    \               buf.clear();\n            }\n        }\n        tcout &lt;&lt;
+    std::flush;\n        listBox = 0;\n        PostQuitMessage(0);\n    }\n    WTL::CListBox
+    listBox;\n    WTL::CFont font;\n    static const int IDC_LISTBOX = 1;\n};\n//
+    別スレッドで入力を読み取る。\nvoid ReadThread(MainWindow&amp; wnd)\n{\n    tstring s;\n    while
+    (!boost::this_thread::interruption_requested() &amp;&amp; std::getline(tcin, s))\n
+    \   {\n        wnd.AddLine(s);\n    }\n}\n\nint _tmain()\n{\n    std::locale l(\"\");\n
+    \   std::wcin.imbue(std::locale(\"\"));\n    std::wcout.imbue(std::locale(\"\"));\n\n
+    \   _Module.Init(0, GetModuleHandle(0));\n\n    // ウィンドウの作成。\n    MainWindow wnd;\n
+    \   wnd.Create(NULL, ATL::CWindow::rcDefault,\n        TEXT(\"HandGrep WTL\"),
+    WS_OVERLAPPEDWINDOW, WS_EX_APPWINDOW);\n    boost::thread readThread(std::bind(ReadThread,
+    std::ref(wnd)));\n\n    wnd.ShowWindow(SW_SHOWDEFAULT);\n    wnd.UpdateWindow();\n\n
+    \   WTL::CMessageLoop msgLoop;\n    _Module.AddMessageLoop(&amp;msgLoop);\n    int
+    ret = msgLoop.Run();\n    _Module.RemoveMessageLoop();\n\n    // アプリケーションが終了しようとしていることを伝える。\n
+    \   readThread.interrupt();\n\n    // OSが対応していれば(Vista以降)、入力待ちを解除させる。\n    typedef
+    decltype(CancelSynchronousIo)* PCancelSynchronousIo;\n    if (PCancelSynchronousIo
+    pCancelSynchronousIo =\n        reinterpret_cast&lt;PCancelSynchronousIo&gt;(\n
+    \           GetProcAddress(GetModuleHandle(TEXT(\"kernel32\")), \"CancelSynchronousIo\")))\n
+    \   {\n        pCancelSynchronousIo(readThread.native_handle());\n    }\n    _Module.Term();\n
+    \   readThread.join();\n\n    return ret;\n}\n"
+  :tags:
+  - Boost
+  - Boost.Thread
+  - Boost1.39
+  - WTL
+  - WTL8.0
+  - Windows
+  :references:
+    :url: 
+    :title: 
+- :id: '9043'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9043
+  :user_name: genzou
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2009/06/03 17:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>swingで。</p>\n\n\t"
+  :code: |
+    #!/usr/bin/env groovy
+    import groovy.swing.*
+    import javax.swing.*
+
+    def swing = new SwingBuilder()
+    def frame = swing.frame(title:'Frame', defaultCloseOperation:JFrame.EXIT_ON_CLOSE, show:true, pack:true, id:"frame"){
+        panel{
+            vbox{
+                list(listData:System.in.readLines() as Vector, id:"list", selectionMode:ListSelectionModel.MULTIPLE_INTERVAL_SELECTION){
+                }
+                button("出力！", actionPerformed:{ evt -&gt;
+                    println swing.list.selectedValues.join("\n")
+                    System.exit(0)
+                })
+            }
+        }
+    }
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '9044'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9044
+  :user_name: emasaka
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2009/06/04 06:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    #!/bin/sh
+    file=$(mktemp /tmp/handgrep.XXXXXXXXXX)
+    trap "rm -f $file" EXIT
+    cat &gt; $file
+    (${EDITOR:-vi} $file &lt; /dev/tty &gt; /dev/tty)
+    cat $file
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9045'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9045
+  :user_name: nattou_curry
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/913/
+  :language: Java
+  :time: 2009/06/04 09:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>swingにて。</p>\n<p>HandGrepを初めて使ったのですが、便利そうなツールだと思いました。</p>\n\n\t"
+  :code: "import java.awt.*;\nimport java.awt.event.*;\nimport java.io.*;\nimport
+    javax.swing.*;\n\npublic class HandGrep {\n    public static void main( String[]
+    args ) throws IOException {\n        \n        // フレームを生成\n        \n        final
+    JFrame frame = new JFrame( \"HandGrep\" );\n        frame.setDefaultCloseOperation(
+    JFrame.DO_NOTHING_ON_CLOSE );\n        \n        // コンポーネントをフレームに配置\n        frame.setLayout(
+    new BorderLayout() );\n        final JList list = new JList();\n        JScrollPane
+    scrollPane = new JScrollPane( list );\n        frame.add( scrollPane, BorderLayout.CENTER
+    );\n        JButton button = new JButton( \"完了\" );\n        frame.add( button,
+    BorderLayout.SOUTH );\n        \n        // 初期処理(入力)\n        \n        DefaultListModel
+    listModel = new DefaultListModel();\n\n        BufferedReader reader = new BufferedReader(
+    new InputStreamReader( System.in ) );\n        String line;\n        while ( (
+    line = reader.readLine() ) != null ) {\n            listModel.addElement( line
+    );\n        }\n\n        list.setModel( listModel);\n        \n        // 完了ボタン押下時の処理(出力＆終了)\n
+    \       \n        button.addActionListener( new ActionListener() {\n            public
+    void actionPerformed( ActionEvent evt ) {\n                for ( Object value
+    : list.getSelectedValues() ) {\n                    System.out.println( value
+    );\n                }\n                \n                frame.dispose();\n            }\n
+    \       } );\n        \n        // フレームを表示\n        \n        frame.pack();\n
+    \       frame.show( true );\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9046'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9046
+  :user_name: syat
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/766/
+  :language: C
+  :time: 2009/06/04 10:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  C#で。標準入力とUIを別スレッドにしているので、追加入力可能です。\r<br>コマンドラインとUIの組み合わせって意外と新鮮だと思いました。\n\t"
+  :code: "using System;\nusing System.Windows.Forms;\nusing System.Threading;\n\nnamespace
+    HandGrep {\n    // 行選択ダイアログクラス\n    class Dialog : Form {\n        ListBox list;\n
+    \       public ListBox List {\n            get { return list; }\n            private
+    set { list = value; }\n        }\n        public Dialog() {\n            this.Width
+    = 300; this.Height = 200;\n            this.Text = \"選択して×ボタンを押してください。\";\n            this.List
+    = new ListBox();\n            this.List.Dock = DockStyle.Fill;\n            this.List.SelectionMode
+    = SelectionMode.MultiExtended;\n            this.Controls.Add(this.List);\n        }\n
+    \       public void AddLine(string line) {\n            this.List.Items.Add(line);\n
+    \       }\n    }\n    // メインクラス\n    class Program {\n        static object objLock;
+    \                 // 排他オブジェクト\n        static AutoResetEvent evDialogLoad;     //
+    ダイアログ初期化イベント\n        static AutoResetEvent evDialogClose;    // ダイアログ終了イベント\n
+    \       static Dialog dlg;                      // ダイアログ\n        delegate void
+    MyDelegate();\n \n        static void Main(string[] args) {\n            objLock
+    = new object();\n            evDialogLoad = new AutoResetEvent(false);\n            evDialogClose
+    = new AutoResetEvent(false);\n\n            // ダイアログ作成\n            dlg = new
+    Dialog();\n            dlg.Load += new EventHandler(       // ダイアログ初期化イベントハンドラ登録\n
+    \               delegate(object o, EventArgs e) {\n                    evDialogLoad.Set();\n
+    \               });\n            // ダイアログを別スレッドで表示\n            new MyDelegate(\n
+    \               delegate() {\n                    dlg.ShowDialog();\n                }\n
+    \           ).BeginInvoke(new AsyncCallback(OnDialogClose), null);\n            evDialogLoad.WaitOne();
+    \            // ダイアログの初期化待ち\n            // 標準入力ループ\n            string line;\n
+    \           while ((line = Console.ReadLine()) != null) {\n                //
+    標準入力から１行読み込み、ダイアログに追加\n                dlg.Invoke(new MyDelegate(\n                    delegate()
+    {\n                        lock (objLock) {\n                            if (dlg
+    == null) return;\n                            dlg.AddLine(line);\n                        }\n
+    \                   }\n                ));\n            }\n            evDialogClose.WaitOne();
+    \           // ダイアログの終了待ち\n        }\n        // ダイアログクローズ後のコールバック\n        static
+    void OnDialogClose(IAsyncResult result) {\n            lock (objLock) {\n                //
+    選択行を標準出力に書き込む\n                foreach (string line in dlg.List.SelectedItems)
+    {\n                    Console.WriteLine(line);\n                }\n                dlg
+    = null;\n            }\n            evDialogClose.Set();\n        }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9047'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9047
+  :user_name: kkobayashi
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2009/06/04 10:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Rの標準機能だけで書いてみました。</p>\n<p>標準入力を読ませたあと、excelのようなインターフェイスのデータエディタが起動するので、選択したい値の左にある\"select\"のカラムに0以外の値を記入してください。</p>\n\n\t"
+  :code: |
+    hand.grep &lt;- function(){
+      df &lt;- edit(data.frame(select=0, value=readLines()))
+      as.character(df[(df[,1]!=0),2])
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9052'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9052
+  :user_name: sumim
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/06/05 11:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。例によって標準入出力との連携は苦手なので、ファイル名を指定して内容を読み込み、一覧からクリックして選択した行群を完了ボタン後に文字列の配列として返す処理を書きました。</p>\n<p>ちょっと風変わりな実装方法を試したところとしては、プラガブル
+    MVC で使用するためのモデルとして、通常するように Model のサブクラスを新たに定義することはせず、その代わりに行内容と選択状態のキー・バリュー組を要素に持つ配列を用いたこと。そのために、ビュー・コントローラーとの連携のためのメソッドを、インスタンス特異的クラスを介し、モデルとして用いた配列オブジェクトにアドホックに追加している点です。</p>\n\n\t"
+  :code: "| in lines file keyValues window linesList button results |\nin := 'test.txt'.\nlines
+    := OrderedCollection new.\n[   file := FileStream fileNamed: in.\n    [file atEnd]
+    whileFalse: [lines add: file nextLine].\n] ensure: [file ifNotNil: [file close]].\nkeyValues
+    := lines collect: [:each | each -&gt; false].\nkeyValues assureUniClass.\nkeyValues
+    class\n    compile: 'keyList ^self collect: [:each | each key]';\n    compile:
+    'stateAt: idx ^(self at: idx) value';\n    compile: 'stateAt: idx put: boolean
+    (self at: idx) value: boolean. self changed: nil'.\nwindow := (SystemWindow labelled:
+    '行をクリックして選択...') model: keyValues.\nlinesList := PluggableListMorphOfMany\n    on:
+    keyValues \n    list: #keyList\n    primarySelection: nil\n    changePrimarySelection:
+    nil\n    listSelection: #stateAt: \n    changeListSelection: #stateAt:put: \n
+    \   menu: nil.\nbutton := (PluggableButtonMorph on: window getState: nil action:
+    #closeBoxHit) label: '完了'.\nwindow addMorph: linesList frame: (0.0 @ 0.0 corner:
+    1.0 @ 0.9).\nwindow addMorph: button frame: (0.0 @ 0.9 corner: 1.0 @ 1.0).\nToolBuilder
+    default runModal: (window openInWorld; yourself).\nresults := keyValues select:
+    [:each | each value] thenCollect: [:each | each key].\nkeyValues class removeFromSystem.\n^results
+    asArray\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '9056'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9056
+  :user_name: greentea
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/573/
+  :language: 
+  :time: 2009/06/06 02:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>Python+PyQt4(non-commacial版)で書いてみたのですが、ライセンスがGPLになってしまって、ここには載せられないことに気づいた(^^;</p>\n</div>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9059'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9059
+  :user_name: 匿名
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/06/06 15:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>&gt; なお、パイプの入力がまだあるのにウィンドウを閉じた場合、自プロセスは入力が終わるまで待つ羽目になります\n</p>\n<p>そこまで考えていませんでした。見事な対応も書いてあってすばらしいです。\n</p>\n\n\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9063'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9063
+  :user_name: baal
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/827/
+  :language: Scheme
+  :time: 2009/06/07 09:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Ypsilon + GTK で書きました。リストウィジェットを使いたかったんですが、うまくいかなかったので、チェックボタン並べてます。\n\t"
+  :code: |
+    (import (rnrs)
+            (ypsilon gtk constants)
+            (ypsilon gtk init)
+            (ypsilon gtk main)
+            (ypsilon gtk widget)
+            (ypsilon gtk window)
+            (ypsilon gtk scrolled)
+            (ypsilon gtk container)
+            (ypsilon gtk vpaned)
+            (ypsilon gtk vbox)
+            (ypsilon gtk box)
+            (ypsilon gtk button)
+            (ypsilon gtk check)
+            (ypsilon gtk toggle)
+            (ypsilon gobject signal)
+            (ypsilon ffi))
+
+    (gtk_init (vector (length (command-line))) (apply vector (command-line)))
+
+    (let ((window (gtk_window_new GTK_WINDOW_TOPLEVEL))
+            (scrolled-window (gtk_scrolled_window_new 0 0))
+            (vpaned (gtk_vpaned_new))
+            (button (gtk_button_new_with_label "OUTPUT"))
+            (vbox (gtk_vbox_new 0 0))
+            (destroy
+                (signal-callback gboolean (GtkObject* gpointer)
+                    (lambda (obj data)
+                        (gtk_main_quit))))
+            (clicked
+                (signal-callback gboolean (GtkButton* gpointer)
+                    (lambda (button vbox)
+                        (let ((out (current-output-port)))
+                            (gtk_container_foreach vbox
+                                (lambda (button data)
+                                    (when (positive? (gtk_toggle_button_get_active button))
+                                        (put-string out (gtk_button_get_label button))
+                                        (newline out)))
+                                0))))))
+
+        (let ((in (current-input-port)))
+            (let loop ((line (get-line in)))
+                (unless (eof-object? line)
+                    (gtk_box_pack_start vbox (gtk_check_button_new_with_label line) 0 0 0)
+                    (loop (get-line in)))))
+
+        (gtk_window_set_title window "HandGrep")
+        (gtk_container_set_border_width window 10)
+        (gtk_window_resize window 320 240)
+
+        (g_signal_connect window "destroy" destroy 0)
+        (g_signal_connect button "clicked" clicked vbox)
+        (g_signal_connect_swapped button "clicked" gtk_widget_destroy window)
+
+        (gtk_container_add vpaned button)
+        (gtk_container_add vpaned vbox)
+        (gtk_scrolled_window_add_with_viewport scrolled-window vpaned)
+        (gtk_container_add window scrolled-window)
+        (gtk_widget_show_all window)
+        (gtk_main))
+  :tags:
+  - gtk
+  - ypsilon
+  :references:
+    :url: 
+    :title: 
+- :id: '9108'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9108
+  :user_name: yamamoto
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/1064/
+  :language: Other
+  :time: 2009/06/11 02:07 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">nattou_curry さんの #9045をscalaに移植してみました。\r\n終了処理に自信なし・・・\r\nたたき台なのでたたいて下さい。\r\n環境はVistaでテスト。</pre>\n\t"
+  :code: "import swing._\nimport swing.event._\nimport scala.collection.mutable.ArrayBuffer\nimport
+    scala.io.Source\n\nobject HandGrep extends SimpleGUIApplication {\n  var args
+    = Array[String]()\n  override def main(args:Array[String]):Unit = {\n    this.args
+    = args\n    super.main(args)\n  }\n  \n  // data for list-view\n  // read from
+    stdin\n  var lines = new ArrayBuffer[String]()\n  lines ++= Source.fromInputStream(System.in).getLines\n
+    \ //lines.foreach(print _) // for debug\n  \n  //create frame window\n  def top=new
+    MainFrame{\n    title = \"HandGrep\"\n    \n    val list = new ListView[String](lines)\n
+    \   val scrollPane = new ScrollPane(list)\n    val button = new Button(\"Done\")\n
+    \   // add components \n    contents = new BorderPanel{\n        add(scrollPane,BorderPanel.Position.Center)\n
+    \       add(button    ,BorderPanel.Position.South)\n      }\n    listenTo(button)\n
+    \   reactions +={\n      // \"Done\" button clicked\n      case ButtonClicked(b)
+    =&gt;{\n        for{i&lt;-list.selection.indices\n            v=lines(i)} print(v)\n
+    \       this.dispose\n        System.exit(0)\n      }\n      \n    }// end of
+    reactions\n  } // end of ctor of MainFrame\n  //\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9109'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9109
+  :user_name: yamamoto
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/1064/
+  :language: 
+  :time: 2009/06/11 02:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>言語がOtherになってしまった。すみません。\nSacalaです。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9123'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9123
+  :user_name: tanakahisateru
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/1025/
+  :language: Python
+  :time: 2009/06/11 13:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>素直にwxPythonです。作り方は素直じゃないですが。この程度のものならOOP避けたいと思って。</p>\n\n\t"
+  :code: "import wx\n\ndef gui_hand_grep(lines):\n    app = wx.PySimpleApp()\n    frame
+    = wx.Frame(None, -1, \"Hand Grep\")\n    lineslist = wx.ListBox(frame, -1, style=wx.LB_EXTENDED)\n
+    \   uipanel = wx.Panel(frame, -1)\n    okbutton = wx.Button(uipanel, -1, \"OK\")\n
+    \   uipanel.Layout()\n    sizer = wx.BoxSizer(wx.VERTICAL)\n    frame.SetSizer(sizer)\n
+    \   sizer.Add(lineslist, 1, wx.EXPAND | wx.ALL)\n    sizer.Add(uipanel,   0, wx.EXPAND
+    | wx.ALL)\n    lineslist.Set(lines)\n    sels = []\n    def onOK(event):\n        sels.extend(map(lambda
+    pos: lines[pos], \n              lineslist.GetSelections()))\n        app.ExitMainLoop()\n
+    \   frame.Bind(wx.EVT_BUTTON, onOK, okbutton)\n    frame.Show(True)\n    app.SetTopWindow(frame)\n
+    \   app.MainLoop()\n    return sels\n\nif __name__ == \"__main__\":\n    lines
+    = []\n    eof = False\n    while not eof:\n        try:\n            lines.append(raw_input())\n
+    \       except EOFError:\n            eof = True\n    for sel in gui_hand_grep(lines):\n
+    \       print sel\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9281'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9281
+  :user_name: lunlumo
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/813/
+  :language: Scala
+  :time: 2009/07/03 15:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>　scalaがまだの様なので。</p>\n\n\t"
+  :code: "import    scala.swing.{BorderPanel, Button, ListView, FlowPanel, MainFrame,
+    Menu, MenuBar, MenuItem, ScrollPane, SimpleGUIApplication}\nimport    scala.swing.event.{ActionEvent,
+    ButtonClicked}\n\nclass HandGrepFrame(var lines:List[String]) extends MainFrame
+    {\n    \n    title = \"Hand Grep\"\n    \n    menuBar = new MenuBar\n    \n    val
+    \   menu:Menu = new Menu(\"file\")\n    val    quitMenu:MenuItem = new MenuItem(\"quit\")\n
+    \   \n    menu.contents += quitMenu\n    menuBar.contents += menu\n    \n    val
+    \   list:ListView[String] = new ListView(lines)\n    val    quit:Button = new
+    Button(\"quit\")\n    \n    contents = new BorderPanel {\n        \n        import
+    BorderPanel.Position._\n        \n        layout(new ScrollPane(list)) = Center\n
+    \       layout(new FlowPanel(FlowPanel.Alignment.Right) { contents += quit })
+    = South\n    }\n    \n    listenTo(quitMenu, quit)\n    reactions += {\n        case
+    ActionEvent(`quitMenu`) | ButtonClicked(`quit`) =&gt; quitHandler\n    }\n    \n
+    \   preferredSize = (600, 480)\n    pack\n    \n    def quitHandler:Unit = {\n
+    \       list.selection.items.foreach(Console.println)\n        System.exit(0)\n
+    \   }\n}\n\nobject HandGrep extends SimpleGUIApplication {\n    val    lines:List[String]
+    = readLines\n    def readLines:List[String] = Console.in.ready match {\n            case
+    false =&gt; List[String]()\n            case _ =&gt; Console.readLine :: readLines\n
+    \       }\n    def top = new HandGrepFrame(lines)\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9431'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9431
+  :user_name: seri
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/641/
+  :language: Ruby
+  :time: 2009/07/30 20:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Ruby/Tkで。\r\n行を選択してボタンを押すと標準出力へ出力します。\r\n</pre>\n\t"
+  :code: "require 'tk'\n\nframe = TkFrame.new.pack(:fill =&gt; 'both')\nscrollbar
+    = TkScrollbar.new(frame).pack(:side =&gt; 'right', :fill =&gt; 'y')\nlistbox =
+    TkListbox.new(frame).pack(:fill =&gt; 'both')\nlistbox.yscrollbar(scrollbar)\n\nonButtonClick
+    = proc { \n  begin\n    print listbox.get(listbox.curselection); \n    exit; \n
+    \ rescue\n    Tk.messageBox(:message =&gt; '行を選択してください')\n  end\n}\n\nbutton =
+    TkButton.new(:text =&gt; 'OK', :command =&gt; onButtonClick).pack(:side =&gt;
+    'bottom')\nSTDIN.read.each { |line| listbox.insert(:end, line.chomp) }\n\nTk.mainloop\n"
+  :tags:
+  - Ruby/Tk
+  :references:
+    :url: 
+    :title: 
+- :id: '9815'
+  :parent_id: '252'
+  :url: http://ja.doukaku.org/comment/9815
+  :user_name: taka_2
+  :user_url: /web/20100628135301/http://ja.doukaku.org/user/1132/
+  :language: Other
+  :time: 2010/01/13 00:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">VBScript版です。\r\ndir | cscript Handgrep.vbs
+    &gt; list.txt\r\nとかやると使えます。\r\nGUIではなく、一行ずつ確認メッセージボックスが表示されて、OKを選択した行のみgrep対象となります。</pre>\n\t"
+  :code: |
+    Set result = CreateObject("Scripting.Dictionary")
+
+    While WScript.StdIn.AtEndOfStream = False
+        lineData = WScript.StdIn.ReadLine
+        okOrCancel = msgbox("handgrep? " &amp; lineData, 1)
+        If okOrCancel = 1 Then
+            result.Add lineData, ""
+        End If
+    Wend
+
+    For Each resultLine In result.Keys
+        WScript.StdOut.WriteLine resultLine
+    Next
+  :tags:
+  - VBScript
+  :references:
+    :url: 
+    :title: 

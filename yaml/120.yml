@@ -1,0 +1,1977 @@
+---
+:id: '120'
+:title: コラッツ・角谷の問題
+:comments:
+- :id: '4969'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/4969
+  :user_name: ところてん
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/12/25 15:18 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  <pre class=\"compact\">任意の数nを与えたときに\r\n・nが偶数ならば2で割る　(n=n/2)\r\n・nが奇数ならば3倍して1を足す
+    （n = 3*n+1)\r\nを繰り返すと、いづれは1になる。というものがあります。\r\n\r\n数値計算の上ではかなりの数まで成り立つことが知られています。\r\n（すべての数について成り立つかは不明）\r\n参考リンク先参照\r\n\r\nある任意の数nがコラッツ・角谷の問題で1になるまでのステップ数をf(n)とします。\r\n1～2^20までの数でf(n)を求めて、f(n)が最大になるときのnとf(n)を表示してください。\r\n\r\nたとえばn=9だと次のような数列をたどって、19ステップで1になります。\r\n9-&gt;28-&gt;14-&gt;7-&gt;22-&gt;11-&gt;34-&gt;17-&gt;52-&gt;26-&gt;13-&gt;40-&gt;20-&gt;10-&gt;5-&gt;16-&gt;8-&gt;4-&gt;2-&gt;1\r\nつまりf(9)=19です。\r\n\r\nまた、最大を求めた際の実行時間と環境を書いてください。</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20080926203709/http://q.hatena.ne.jp/1115469752
+    :title: コラッツの問題の成り立つ範囲
+- :id: '5086'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5086
+  :user_name: horiuchi
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/01/01 12:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Pen4 2.40GHz で、以下のような結果になりました。最初にIntegerでやっていたので、113383 ではまってました。</p>\n<p>f(837799)=524\nelapse:
+    15469(ms)</p>\n\n\t"
+  :code: |
+    import java.util.ArrayList;
+    import java.util.HashMap;
+    import java.util.List;
+    import java.util.Map;
+
+    public class Sample120 {
+        private final long maxIndex_;
+        private final Map&lt;Long, Long&gt; memo = new HashMap&lt;Long, Long&gt;();
+
+        public Sample120(int max) {
+            long maxInd = 0;
+            long maxLen = 0;
+            List&lt;Long&gt; sequence = new ArrayList&lt;Long&gt;();
+            for (long index = 1; index &lt;= max; index++) {
+                sequence.clear();
+                long len = calc3n1(index, 0, sequence);
+                createMemo(len, sequence);
+                if (maxLen &lt; len) {
+                    maxLen = len;
+                    maxInd = index;
+                }
+            }
+            maxIndex_ = maxInd;
+        }
+        private long calc3n1(long x, long length, List&lt;Long&gt; sequence) {
+            sequence.add(x);
+            if (x == 1) return length;
+
+            Long longVal = memo.get(x);
+            if (longVal != null) return length + longVal.longValue();
+
+            if ((x &amp; 1) == 0) {
+                return calc3n1(x / 2, length + 1, sequence);
+            } else {
+                return calc3n1(3 * x + 1, length + 1, sequence);
+            }
+        }
+        private void createMemo(long length, List&lt;Long&gt; sequence) {
+            long len = length;
+            for (int index = 0, max = sequence.size(); index &lt; max; index++) {
+                Long longVal = sequence.get(index);
+                if (memo.get(longVal) == null) {
+                    memo.put(longVal, len--);
+                }
+            }
+        }
+
+        public long getMaxIndex() {
+            return maxIndex_;
+        }
+        public long getMaxLength() {
+            return memo.get(maxIndex_);
+        }
+
+
+        public static void main(String[] args) {
+            long start = System.currentTimeMillis();
+
+            Sample120 instance = new Sample120((int)Math.pow(2, 20));
+            System.out.println(instance.getMaxIndex() + ":" + instance.getMaxLength());
+
+            long end = System.currentTimeMillis();
+            System.out.println("elapse: " + (end - start) + "(ms)");
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '5088'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5088
+  :user_name: kozima
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2008/01/01 12:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>とりあえず書いたって感じですが。CLISP で約9秒。</p>\n\n\t"
+  :code: |
+    (defun collatz (n)
+      (let ((memo (make-hash-table)))
+        (setf (gethash 1 memo) 1)
+        (labels ((collatz-loop (i)
+                   (cond ((gethash i memo))
+                         ((evenp i)
+                          (setf (gethash i memo) (1+ (collatz-loop (/ i 2)))))
+                         (t
+                          (setf (gethash i memo) (1+ (collatz-loop (1+ (* 3 i)))))))))
+          (loop with max = 0 and j for i from 1 to n as x = (collatz-loop i)
+            if (&lt; max x) do (setf max x j i)
+            finally (format t "max ~D for n=~D~%" max j)))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5089'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5089
+  :user_name: tsuwabuki
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/479/
+  :language: Haskell
+  :time: 2008/01/01 12:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">実行結果:\r\nn=837799, f(n)=524\r\n\r\n実行時間:\r\n$
+    time ./a.out\r\n(524,837799)\r\n\r\nreal    3m28.485s\r\nuser    3m27.893s\r\nsys
+    \    0m0.368s\r\n\r\n実行環境:\r\nCPU: celeron 1.2GHz\r\nMEM: 256MB</pre>\n\t"
+  :code: |
+    module Main where
+
+    import Data.Map
+
+    main = print $ findMax $ fromList [(collatz n, n) | n &lt;- [1..2^20]]
+
+    collatz n
+        | n == 1 = 0
+        | even n = 1 + collatz (n `div` 2)
+        | otherwise = 1 + collatz (n * 3 + 1)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5090'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5090
+  :user_name: yuin
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/01/01 13:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>あけましておめでとうございます。\n   今年もなにとぞよろしくおねがいします。\n</p>\n<p>軽くメモ化して。\n</p>\n<ul>\n<li>\n
+    \    CPU: Athlon64 3000\n </li>\n\n <li>\n     MEM: 1G\n </li>\n\n <li>\n     OS:
+    WinXP\n </li>\n</ul>\n<p>で\n</p>\n<p><code>f(837799)=524, 7281 ms.</code>\n</p>\n<p>という感じです。\n</p>\n\n\n\n\t"
+  :code: |
+    import scala.collection.mutable.HashMap
+    object collatz {
+      val memo = new HashMap[long, int]
+      def apply(n:int):int = apply(n, n, 0)
+
+      def apply(n:long, m:int, i:int):int = {
+        if(memo.contains(n)) {
+          val o = memo(n) + i
+          memo(m) = o; o
+        } else n&amp;1 match {
+              case 0 =&gt; apply(n/2, m, i+1)
+              case x if n == 1 =&gt; memo(m) = i; i
+              case x =&gt; apply(3*n+1, m, i+1)
+        }
+      }
+    }
+
+    object main {
+      def main(args:Array[String]) = {
+        val start = System.currentTimeMillis
+        val limit = (2 &lt;&lt; (20 - 1)) + 1
+        var biggest_n = 0
+        var biggest_v = 0
+        var v = 0
+        var i = 0; while({i = i+1; i &lt; limit}){
+          v = collatz(i)
+          if(biggest_v &lt; v) {
+            biggest_v = v
+            biggest_n   = i
+          }
+        }
+        println("f("+biggest_n+")="+biggest_v+", "+(System.currentTimeMillis-start)+" ms.")
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5091'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5091
+  :user_name: 匿名
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/01/01 13:05 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">最大を与えるnが複数の場合を考慮するか？\r\n1にならない可能性を考慮するか？\r\n\r\nで実装がけっこう変わる場合があると思います。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5092'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5092
+  :user_name: mc
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/01/01 13:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">SBCL 1.0.13 x86_64 / Linux / Core2 E6600 2.4GHzで、2〜3秒でした。\r\n(time
+    \ (collatz-max (expt 2 20)))\r\n;=&gt; f(837799) = 524\r\n;\r\n;Evaluation took:\r\n;
+    \ 1.355 seconds of real time\r\n;  2.672167 seconds of user run time\r\n;  0.0
+    seconds of system run time\r\n;  0 calls to %EVAL\r\n;  0 page faults and\r\n;
+    \ 1,728 bytes consed.</pre>\n\t"
+  :code: "(defun collatz (n)\n  (do ((cnt 0 (1+ cnt))\n       (res n (if (evenp res)
+    (ash res -1) (1+ (* res 3)))))\n      ((= 1 res) cnt)\n    (declare (fixnum cnt
+    res n))))\n\n(defun collatz-max (num)\n  (do ((i 1 (1+ i)) (n 0) (highest 0))\n
+    \     ((&gt; i num) (format t \"f(~D) = ~D~%\" n highest))\n    (let ((cur (collatz
+    i))) \n      (when (&lt; highest cur) \n        (setq n i highest cur)))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5093'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5093
+  :user_name: あにす
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/01/01 14:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>f(837799)=524\n4468ms</p>\n<p>意外と速度出ました。</p>\n\n\t"
+  :code: |
+    //http://ja.doukaku.org/120/　投稿用
+    using System;
+    class Program {
+        static void Main(string[] args) {
+            long ticks = DateTime.Now.Ticks;//時間記録
+            double z = Math.Pow(2, 20);//2^20
+
+            int step = 0;//最大ステップ数
+            double n = 0;//ステップが最大のn
+
+            for(double i = 1; i &lt;= z; i++) {//2^20までループ
+                int stepTmp = fStep(i);
+                if(step &lt; stepTmp) {//大きければ更新
+                    step = stepTmp;
+                    n = i;
+                }
+            }
+            Console.WriteLine("f(" + n + ")=" + step);
+            Console.WriteLine((DateTime.Now.Ticks - ticks) / 10000L + "ms");
+            Console.ReadLine();
+        }
+
+        static int fStep(double z) {
+            int step = 0;
+            double n = z;
+            while(n != 1) {//1になるまで
+                if(n % 2 == 0) n /= 2;//偶数だったら
+                else n = n * 3 + 1;//奇数だったら
+                step++;//ステップを数える
+            }
+            return step;
+        }
+    }
+  :tags:
+  - C#2.0
+  :references:
+    :url: 
+    :title: 
+- :id: '5094'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5094
+  :user_name: あにす
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/504/
+  :language: 
+  :time: 2008/01/01 14:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>環境を忘れてました。\nOS:Windows XP Home SP2\nCPU:AMD Sempron 3400+ 1.99GHz\nメモリ:480MB</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5095'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5095
+  :user_name: あにす
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/504/
+  :language: 
+  :time: 2008/01/01 14:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>リリースビルドで\n3656ms\nまで速くなりました。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5096'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5096
+  :user_name: fujidig
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/507/
+  :language: Ruby
+  :time: 2008/01/01 14:18 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">      user     system      total        real\r\n
+    38.657000   0.109000  38.766000 ( 39.703000)\r\nresult : f( 837799 ) = 524\r\nでした＞＜</pre>\n\t"
+  :code: |
+    def f n
+        step = 0
+        _n = n
+        while n != 1
+            if n.class == Fixnum &amp;&amp; $cache[n] != nil
+                step += $cache[n]
+                break
+            end
+            if n % 2 == 0
+                n = n / 2
+            else
+                n =  3 * n + 1
+            end
+            step += 1
+        end
+        $cache[_n] = step
+        return step
+    end
+
+    $cache = []
+
+    require 'benchmark'
+
+    max_f = 0
+    max_i = 0
+
+    puts Benchmark::CAPTION
+    puts Benchmark.measure {
+        for i in 1..2**20
+            f_i = f(i)
+            if f_i &gt; max_f
+                max_f = f_i
+                max_i = i
+            end
+        end
+    }
+
+    puts "result : f( #{max_i} ) = #{max_f}"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5097'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5097
+  :user_name: fujidig
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/507/
+  :language: 
+  :time: 2008/01/01 14:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  環境を忘れていました。Pentium 4 CPU 2.40GHz / 512 MB RAM です。。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5098'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5098
+  :user_name: tosik
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/216/
+  :language: C
+  :time: 2008/01/01 14:24 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Compiler: GCC 3.4.4\r\nOS: Cygwin on Windows
+    XP Pro SP2\r\nCPU: Intel Centrino 1GHz\r\nMemory: 504MB\r\n----------------------\r\n&gt;time
+    ./collatz.exe\r\nf(837799) = 524\r\n\r\nreal    0m0.530s\r\nuser    0m0.400s\r\nsys
+    \    0m0.060s\r\n----------------------\r\n簡単なキャッシュを実装したら0.5秒と、思った以上に高速化できました。\r\n答えが皆さんと同じなので安心。\r\nC++なのにCっぽく書きましたが、可読性は若干犠牲になりますが、速度面でプラスになってると思います。</pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+
+    const int MAX = 1048577;
+    int cache[MAX];
+
+    int collatz(unsigned long long int n, int org_n = 0, int depth = 0)
+    {
+        if ( MAX &gt;= n )
+        {
+            if ( cache[n] != -1 )
+            {
+                cache[org_n] = cache[n] + depth;
+                return cache[n] + depth;
+            }
+        }
+
+        if ( n % 2 == 0 )
+        {
+            return collatz( n / 2, org_n, depth + 1 );
+        }
+        else if ( n == 1 )
+        {
+            cache[org_n] = depth;
+            return depth;
+        }
+        else
+        {
+            return collatz( n * 3 + 1, org_n, depth + 1 );
+        }
+    }
+
+
+    int main(void)
+    {
+        for ( int i=0; i&lt;MAX; i++ )
+            cache[i] = -1;
+
+        int max_n = 0;
+        int max_steps = 0;
+
+        for(unsigned long long int i=1; i&lt;MAX; i++)
+        {
+            int steps = collatz(i,i);
+            if ( max_steps &lt; steps )
+            {
+                max_steps = steps;
+                max_n = i;
+            }
+        }
+
+        printf("f(%d) = %d\n", max_n, max_steps);
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5099'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5099
+  :user_name: kozima
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/164/
+  :language: diff
+  :time: 2008/01/01 14:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ステップ数をひとつ多く数えてました。</p>\n\n\t"
+  :code: |
+    -    (setf (gethash 1 memo) 1)
+    +    (setf (gethash 1 memo) 0)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5100'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5100
+  :user_name: vtwntmtn
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/380/
+  :language: Erlang
+  :time: 2008/01/01 14:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>環境</p>\n<pre class=\"literal-block\">\nCPU : Intel(R) Celeron(R)
+    CPU 2.40GHz\nMEM : 774324 kB\nOS : VineLinux 4.2\n</pre>\n<p>コマンド</p>\n<pre class=\"literal-block\">\nerlc
+    +native collatz_kakutani.erl\ntime -p erl +native -noshell -s collatz_kakutani
+    main -s init stop\n</pre>\n<p>実行結果</p>\n<pre class=\"literal-block\">\nf(837799)
+    = 524\n</pre>\n<p>実行時間</p>\n<pre class=\"literal-block\">\nreal 18.46\nuser 14.72\nsys
+    0.40\n</pre>\n\n\t"
+  :code: |
+    -module(collatz_kakutani).
+    -export([main/0]).
+
+    step(1, Step) -&gt; Step;
+    step(Num, Step) -&gt;
+            case Num rem 2 of
+                    0 -&gt; step(Num div 2, Step + 1);
+                    1 -&gt; step(3 * Num + 1, Step + 1)
+            end.
+
+    max_step(1, MaxNum, MaxStep) -&gt; [MaxNum, MaxStep];
+    max_step(Num, MaxNum, MaxStep) -&gt;
+            TmpStep = step(Num, 0),
+            if
+                    TmpStep &gt; MaxStep -&gt; max_step(Num - 1, Num, TmpStep);
+                    true              -&gt; max_step(Num - 1, MaxNum, MaxStep)
+            end.
+
+    main() -&gt; io:format("f(~B) = ~B~n", max_step(1 bsl 20, 1, 1)).
+  :tags:
+  - ErlangOTP_R10B-10
+  :references:
+    :url: 
+    :title: 
+- :id: '5101'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5101
+  :user_name: ところてん
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2008/01/01 16:27 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">お題投稿者です。\r\n先日、放送大学を見ていたらこの問題が紹介されていたので、懐かしかったので出題してみました。\r\n\r\nAthlonXP2500+で4.3秒でした。\r\n2^25まで調べてみました。\r\nこれよりも大きい数になると、メモリが必死になるから、メモ化とは別のアプローチが必要になるかなぁ。\r\nだいたいmaxに比例する感じですね。\r\n\r\nmax
+    =  524288 time =  2.31200003624 sec result = [511935, 469]\r\nmax =  1048576 time
+    =  4.28099989891 sec result = [837799, 524]\r\nmax =  2097152 time =  8.67200016975
+    sec result = [1723519, 556]\r\nmax =  4194304 time =  17.875 sec result = [3732423,
+    596]\r\nmax =  8388608 time =  37.0779998302 sec result = [6649279, 664]\r\nmax
+    =  16777216 time =  74.2660000324 sec result = [15733191, 704]\r\nmax =  33554432
+    time =  153.812000036 sec result = [31466382, 705]</pre>\n\t"
+  :code: |
+    import time
+    import sys
+
+    def main(cMax):
+        memo = [0] * (cMax)
+
+        def _f(n):
+            if n == 1:
+                return 0
+            if n &lt; cMax and memo[n] != 0:
+                return memo[n]
+            if n % 2 == 0:
+                step = _f(n/2) + 1
+            else:
+                step = _f(n*3 + 1) + 1
+            if n &lt; cMax:
+                memo[n] = step
+            return step
+
+        m = [0,0]
+        for x in xrange(1, cMax):
+            if memo[x] == 0:
+                _f(x)
+                if memo[x] &gt; m[1]:
+                    m =[x,memo[x]]
+
+        return m
+
+    if __name__ == '__main__':
+        for x in xrange(10,25+1):
+            t = time.time()
+            result = main(2**x)
+            print "max = ", 2**x , "time = ", time.time() - t, "sec result =", result
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5103'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5103
+  :user_name: dankogai
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/26/
+  :language: C
+  :time: 2008/01/01 18:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>これ、<a href=\"/web/20080926203709/http://ll.jus.or.jp/2006/blog/doukaku2\">キミならどう書く
+    2.0 - ROUND 2 -</a>と同じ問題ですね。違うのは、LL Ringの時の「どう書く」では、1の時も1と数えるので、1違うだけで。\n</p>\n<p>その時にいろいろ書いて出来た最速の奴を。j詳しくは<a
+    href=\"/web/20080926203709/http://blog.livedoor.jp/dankogai/archives/50564170.html\">404
+    Blog Not Found:h(4294967295) = 2610744987 where g = 1051</a>\n   をご覧下さい。\n</p>\n<p>途中経過表示をやめれば、もっと速くなるでしょう。\n</p>\n<p>Dan
+    the Number Cruncher\n</p>\n\n\n\n\t"
+  :code: |
+    /*
+    Core 2 Duo 2.33GHzで
+
+    % time ./a.out 1000000
+    h(1000000) = 837799 where g(837799) = 525
+    0.264u 0.006s 0:00.27 96.2%     0+0k 0+0io 0pf+0w
+    */
+
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+
+    #ifndef CACHE_SIZE
+    #define CACHE_SIZE 64*1024*1024 /* large enough */
+    #endif
+
+    #define MAX_U16        65535
+    typedef unsigned short U16;
+    typedef long long      I64;
+
+    U16 *cache;
+    int cachesize;
+    #define lookup(n)  ((n) &lt; cachesize ? cache[(n)] : 0)
+    #define store(n,g) if ((n) &lt; cachesize &amp;&amp; g &lt;= MAX_U16) cache[(n)] = (g)
+
+    I64 g(I64 n){
+        I64 result = lookup(n);
+        if (result) return result;
+        I64 i = n;
+        I64 l;
+        result = 1;
+        while (i &gt; 1){
+            i = i &amp; 1 ? i*3+1 : i &gt;&gt; 1;
+            l = lookup(i);
+            if (l){
+                result += l;
+                break;
+            }else{
+                result++;
+            }
+        }
+        if (i &lt; 1)       fprintf(stderr, "overflow! g(%qd) = %qd\n", n, i);
+        store(n, result);
+        return result;
+    }
+
+    I64 *h(I64 n){
+        I64 i, nmax = 0, gmax = 0, gnext = 0;
+        static I64 result[2];
+        for (i = n; i &gt; 1 ; i--){
+            gnext = g(i);
+    #ifdef VERBOSE
+            fprintf(stderr, "g(%qd) = %qd\r", i, gnext);
+    #endif
+            if (gnext &gt; gmax){
+                nmax = i; gmax = gnext;
+            }
+            if (i &amp; 0xffff) continue;
+           printf("nmax = %qd, gmax = %qd, n = %qd\r", nmax, gmax, i);
+           fflush(stdout);
+        }
+        result[0] = nmax; result[1] = gmax;
+        return result;
+    }
+
+    #define min(x,y) ((x) &lt; (y) ? (x) : (y))
+
+    void init_cache(I64 n){
+        cachesize = min(n, CACHE_SIZE);
+        cache     = (U16 *)calloc(cachesize, sizeof(U16));
+        if (cache == NULL) exit(-1);
+    }
+
+    int main(int argc, char **argv){
+        I64 n = 0xffffffff; /* look @ this! */
+        if (argc &gt; 1){
+            n = atoll(argv[1]);
+        }
+        init_cache(n);
+        I64 *hg = h(n);
+        printf("h(%qd) = %qd where g(%qd) = %qd\n", n, hg[0], hg[0], hg[1]);
+        return 0;
+    }
+  :tags:
+  - C99
+  :references:
+    :url: 
+    :title: 
+- :id: '5104'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5104
+  :user_name: ところてん
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2008/01/01 19:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あー、バグめっけ。\r\n24,25行目がタブ一個多いです。\r\nCに書き直してたら気づいたorz</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5105'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5105
+  :user_name: ところてん
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/166/
+  :language: C
+  :time: 2008/01/01 20:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">というわけでCで書き直した。\r\n\r\n実行結果＠AthlonXP2500+\r\n----\r\nf(837799)=524\r\ntime=0.093000sec</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;string.h&gt;\n#include &lt;time.h&gt;\n\n#define
+    NMAX 1048576\n\nshort memo[NMAX];\n\nint _f(unsigned long long n)\n{\n    int
+    step;\n    if(n == 1)\n        return 0;\n    if(n &lt; NMAX &amp;&amp; memo[n]
+    != 0)\n        return memo[n];\n\n    if(n &amp; 1)\n        step = _f(n * 3 +
+    1) + 1;\n    else\n        step = _f(n &gt;&gt; 1) + 1;\n\n    if(n &lt; NMAX)\n
+    \       memo[n] = step;\n    return step;\n}\n\nint main(void)\n{\n    int i,mf,mi;\n
+    \   \n    mf = 0;\n    memset(memo, 0, NMAX * sizeof(short));\n    for(i = 1;i
+    &lt; NMAX; ++i) {\n        if (memo[i] == 0){\n            _f(i);\n        }\n\n
+    \       if (memo[i] &gt; mf){\n            mi = i;\n            mf = memo[i];\n
+    \       }    \n    }\n\n    printf(\"f(%d)=%d\\ntime=%fsec\", mi,mf, (double)clock()
+    / CLOCKS_PER_SEC);\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5106'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5106
+  :user_name: omoikani
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/374/
+  :language: StandardML
+  :time: 2008/01/01 21:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">まんまの実装。MLtonでネイティブコンパイル、PenD 3.0GHz x86_64
+    Linuxで6.54s。\r\n\r\ntime ./collatz\r\nf(837799) = 524\r\n./collatz  6.54s user
+    0.00s system 99% cpu 6.550 total</pre>\n\t"
+  :code: |
+    open Int64
+
+    fun collatz n =
+      let
+        fun f (1, i) = i
+          | f (n', i) =
+          if n' mod 2 = 0 then f (n' div 2, i + 1)
+          else f (n' * 3 + 1, i + 1)
+
+        fun loop 0 max = max
+          | loop n max =
+          let
+            val r = if n mod 2 = 0 then f (n div 2, 1) else f (n * 3 + 1, 1)
+          in
+            loop (n - 1) (if #2 max &gt; r then max else (n, r))
+          end
+      in
+        loop n (n, 0)
+      end
+
+    val (n, step) = (collatz o fromLarge o IntInf.pow) (2, 20)
+    val _ = print ("f(" ^ toString n ^ ") = " ^ toString step ^ "\n")
+  :tags:
+  - MLton
+  :references:
+    :url: 
+    :title: 
+- :id: '5107'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5107
+  :user_name: tosik
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/216/
+  :language: 
+  :time: 2008/01/01 22:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>早いですね。\n2^20を数えてないようですが。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5111'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5111
+  :user_name: sumim
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/01/02 04:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n<p>1.0 GHz PowerPC、90 秒弱でした。</p>\n\n\t"
+  :code: |
+    | collatz result |
+
+    collatz := [:nn |
+        | nSteps |
+        nSteps := 0.
+        [   nSteps := nSteps + 1.
+            nn := nn even ifTrue: [nn / 2] ifFalse: [3 * nn + 1].
+            nn = 1] whileFalse.
+        nSteps].
+
+    ^{[result := (1 to: (2 raisedTo: 20))
+        inject: 0 -&gt; 0
+        into: [:max :mm | (collatz value: mm) -&gt; mm max: max]] timeToRun. result}
+
+    "=&gt; {87834 . 524-&gt;837799} "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '5113'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5113
+  :user_name: あにす
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/01/02 05:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">tosikさんの#5098をC#に移植してみました。\r\nわずか421ミリ秒でした。.NETがこんなに速いとは驚きです。\r\nコード全体を読まずに構文ごとにC#に書き換えて、最後に型の帳尻を合わせただけなのでtosikさんの意図に沿ったコードになっているか心配です。\r\n\r\n
+    \   if ( MAX &gt;= n )\r\n    {\r\n        if ( cache[n] != -1 )\r\n        {\r\n
+    \           cache[org_n] = cache[n] + depth;\r\n            return cache[n] +
+    depth;\r\n        }\r\n    }\r\n\r\nの部分でnがcacheの配列の境界を越えてしまったので\r\nif ( MAX &gt;=
+    n )\r\nを\r\nif ( MAX &gt; n )\r\nにしたけどいいのだろうか…。\r\nC++の配列の宣言の添え字は配列長そのもので良かった…筈…。\r\n\r\nOS:Windows
+    XP Home SP2 \r\nCPU:AMD Sempron 3400+ 1.99GHz \r\nメモリ:480MB</pre>\n\t"
+  :code: |
+    using System;
+    class Program {
+        const int MAX = 1048577;
+        static int[] cache = new int[MAX];
+
+        static int collatz(ulong n) {
+            return collatz(n, 0, 0);
+        }
+        static int collatz(ulong n, ulong org_n) {
+            return collatz(n, org_n, 0);
+        }
+        static int collatz(ulong n, ulong org_n, int depth) {
+            if(MAX &gt; n) {
+                if(cache[n] != -1) {
+                    cache[org_n] = cache[n] + depth;
+                    return cache[n] + depth;
+                }
+            }
+
+            if(n % 2 == 0) {
+                return collatz(n / 2, org_n, depth + 1);
+            } else if(n == 1) {
+                cache[org_n] = depth;
+                return depth;
+            } else {
+                return collatz(n * 3 + 1, org_n, depth + 1);
+            }
+        }
+
+
+        static void Main() {
+            long tick = DateTime.Now.Ticks;
+            for(int i = 0; i &lt; MAX; i++)
+                cache[i] = -1;
+
+            ulong max_n = 0;
+            int max_steps = 0;
+
+            for(ulong i = 1; i &lt; MAX; i++) {
+                int steps = collatz(i, i);
+                if(max_steps &lt; steps) {
+                    max_steps = steps;
+                    max_n = i;
+                }
+            }
+
+            Console.WriteLine("f(" + max_n + ")=" + max_steps);
+            Console.WriteLine((DateTime.Now.Ticks - tick) / 10000L + "ms");
+            Console.ReadLine();
+        }
+    }
+  :tags:
+  - C#2.0
+  :references:
+    :url: 
+    :title: 
+- :id: '5117'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5117
+  :user_name: あにす
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/01/02 10:14 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">f(837799)=524\r\n187ms\r\n\r\nOS:Windows XP
+    Home SP2 \r\nCPU:AMD Sempron 3400+ 1.99GHz \r\nメモリ:480MB\r\n\r\n高速化しました。</pre>\n\t"
+  :code: |
+    using System;
+    class Class1 {
+        static uint MAX = Convert.ToUInt32(Math.Pow(2, 20));
+        static int max3Plus1 = (int)MAX * 3 + 1;
+        static int[] cache = new int[max3Plus1];
+
+        static void Main() {
+            long start = DateTime.Now.Ticks;
+            int maxStep = 0;
+            uint maxN = 0;
+            for(uint n = 1; n &lt;= MAX; n++) {
+                int step = collatz(n);
+                if(maxStep &lt; step) {
+                    maxStep = step;
+                    maxN = n;
+                }
+            }
+            Console.WriteLine("f(" + maxN + ")=" + maxStep);
+            Console.WriteLine((DateTime.Now.Ticks - start) / 10000L + "ms");
+            Console.ReadLine();
+        }
+
+        static int collatz(uint n) {
+            int step = 0;
+            uint z = n;
+            while(z != 1) {
+                if(z - 1 &lt;= max3Plus1 &amp;&amp; cache[z - 1] != 0) {
+                    step += cache[z - 1];
+                    break;
+                } else {
+                    if(z % 2 == 0) z /= 2;
+                    else z = z * 3 + 1;
+                    step++;
+                }
+            }
+            cache[n - 1] = step;
+            return step;
+        }
+    }
+  :tags:
+  - C#2.0
+  :references:
+    :url: 
+    :title: 
+- :id: '5119'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5119
+  :user_name: tosik
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/216/
+  :language: 
+  :time: 2008/01/02 10:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">移植ありがとうございます。\r\nC++の添え字は長さです。これは僕のミスでした。\r\n2^20までは偶然MAX==nになることはないので、正しく動作してましたが、n&gt;2^20の場合は実行時にエラーがでることがあるでしょうね。\r\nこのミスは、はじめにMAX=2^20にしていたときのもので、今のMAX=2^20+1に直したときに修正を忘れたものです。\r\n\r\nちなみにですが、このコードを書くときにひとつのバグにてこずりました。\r\nそれは全て
+    int 型にしていたことが原因で、オーバーフローでマイナス値を出していたのが原因でした。\r\n# 不慣れなgdbを使って挑戦したのでなかなか解明できなかった＾＾；</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5120'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5120
+  :user_name: xsd
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/154/
+  :language: OCaml
+  :time: 2008/01/02 11:38 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">OCamlは64bit整数を扱いだすと色々とオーバーヘッドが大きくなるので、なるべくintで\r\n計算を行うようにして、あるところでint64に切り替えるようにしてます。\r\nまた、キャッシュもint64モードでは持たないようにして、ハッシュではなく配列で\r\nアクセスの高速化を図っています。\r\n\r\nPentiumM
+    1.7GHzで0.2秒強です。\r\n\r\n % time ./dk120\r\n f(837799)=524\r\n \r\n real    0m0.227s\r\n
+    user    0m0.220s\r\n sys     0m0.007s\r\n</pre>\n\t"
+  :code: |
+    open Int64
+
+    let maxN       = 1048576
+    let cacheN     = maxN
+    let cacheN64   = Int64.of_int (2 * cacheN)
+
+    let memo = Array.create (cacheN+1) 0
+
+    let rec colatz31 = function
+        | 1 -&gt; 0
+        | n -&gt;
+            if memo.(n) &lt;&gt; 0 then memo.(n) else (
+                let c = 1 +
+                    if n land 1 = 0 then colatz31 (n lsr 1)
+                    else (
+                        let t = n * 3 + 1 in
+                        if t &lt;= cacheN then colatz31 t
+                                       else colatz64 (of_int t)) in
+                let _ = memo.(n) &lt;- c in c)
+
+    and colatz64 n =
+        let t = to_int n in
+        if (t land 1) = 0 then (
+            if n &lt;= cacheN64 then 1 + colatz31 (t lsr 1)
+                             else 1 + colatz64 (shift_right_logical n 1)
+        ) else 1 + colatz64 (succ(mul n 3L))
+
+    let rec loop max1 max2 = function
+        | n when n &gt; maxN -&gt; max1, max2
+        | n -&gt; let max = colatz31 n in
+            if max &gt; max2 then loop n max (n+1) else loop max1 max2 (n+1)
+
+    let _ =
+        let a,b = loop 0 0 1 in
+        Printf.printf "f(%d)=%d\n" a b
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5122'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5122
+  :user_name: mad
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/418/
+  :language: 
+  :time: 2008/01/02 12:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>collatz nの値がユニークではないので、これだと最大値となるnが複数ある場合には最後の物しか得ることができなくなってしまいます。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5123'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5123
+  :user_name: mc
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/405/
+  :language: Other
+  :time: 2008/01/02 13:33 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">ただ計算を繰り返すだけのコードでメモ化等はしていませんが、\r\n古えのLisp1.5/IBM7094はどんなものなのかなと思いぐるぐる回してみました。\r\nずっとGCしっぱなししたが、なんとか結果はでました。\r\nIBM7094
+    / SIMH 3.7 / LINUX / Core2 E6600の環境で、\r\n実行時間は7時間丁度でした。\r\n\r\n実行結果:\r\n END OF
+    EVALQUOTE, VALUE IS ..\r\n (837799 524)\r\n\r\n  THE TIME ( 0/ 0  000.0) HAS COME,
+    THE WALRUS SAID, TO TALK OF MANY THI\r\nNGS .....   -LEWIS CARROLL-\r\n END OF
+    EVALQUOTE OPERATOR\r\n             FIN      END OF LISP RUN</pre>\n\t"
+  :code: "DEFINE((\n(EVENP (LAMBDA (N) (ZEROP (REMAINDER N 2))))\n\n(COLLATZ (LAMBDA
+    (X Y)(PROG (N CNT)\n                  (SETQ N X)\n                  (SETQ CNT
+    Y)\n            L     (COND ((EQUAL 1 N) (RETURN CNT))\n                        ((EVENP
+    N) (SETQ N (QUOTIENT N 2)))\n                        (T (SETQ N (ADD1 (TIMES 3
+    N)))))\n                  (SETQ CNT (ADD1 CNT))\n                  (GO L))))\n\n(COLLTAZ-MAX
+    (LAMBDA (X) (PROG (N RES HN HS)\n                      (SETQ N 1)\n                      (SETQ
+    HS 0)\n                L     (COND ((GREATERP N X) \n                             (RETURN
+    (LIST HN HS))))\n                      (SETQ RES (COLLATZ N 0))\n                      (COND
+    ((GREATERP RES HS)\n                             (PROG ()\n                                (SETQ
+    HS RES)\n                                (SETQ HN N))))\n                      (SETQ
+    N (ADD1 N))\n                      (GO L))))\n))\n\nPROG(()\n     (RETURN (COLLTAZ-MAX
+    (EXPT 2 20))))\n"
+  :tags:
+  - Lisp1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '5124'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5124
+  :user_name: mad
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/418/
+  :language: 
+  :time: 2008/01/02 13:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>すいません!この問題の場合にはすべての解を求める必要はないのですね。大変申し訳ありませんでした。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5125'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5125
+  :user_name: eeweiga
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/537/
+  :language: Perl
+  :time: 2008/01/02 14:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<ul>\n<li>\nCPU: 1.33GHz PowerPC G4\r\n</li>\n<li>\nMEM:
+    512G\r\n</li>\n<li>OS: OSX 10.4.11\r</li>\n</ul>\n<p>\r</p>\n<p>で、\r</p>\n<p>the
+    code took:14 wallclock secs (14.12 usr +  0.15 sys = 14.27 CPU)\r</p>\n<p>f(837799)
+    = 524\r</p>\n<p>です。\r</p>\n<p>\r</p>\n<ul>\n<li>\nデバッグプリントをコメントアウトしたら一気に90秒くらい短縮して脱力しました。\r\n</li>\n<li>\n\"最大の数からチェック\"してます。\r\n</li>\n<li>キャッシュしながら最大値を考えて、全部の値に対するキャッシュができたら終了するパターンも書きましたが、なんか逆に遅くなりました。</li>\n</ul>\n</div>\n\t"
+  :code: |
+    use strict;
+    use warnings;
+
+    my @steps;
+    my @trace;
+
+    sub collatz {
+        my $n = shift;
+        my $c = 0;
+        @trace = ($n);
+        until ($n == 1) {
+            if (defined $steps[$n]) {
+                $c += $steps[$n];
+                last;
+            }
+            if ($n % 2 == 0) {
+                $n /= 2;
+            }
+            else {
+                $n = 3 * $n + 1;
+            }
+            push @trace, $n;
+            $c++;
+        }
+        return $c;
+    }
+
+    use Benchmark;
+    my $t0 = new Benchmark;
+
+    my $max_n = 0;
+    my $max_f = 0;
+    my $limit = 2**20;
+    for (my $n = $limit; $n &gt; 0; $n--) {
+        if (!defined $steps[$n]) {
+            my $c = collatz($n);
+            for my $n (@trace) {
+                last if defined $steps[$n];
+                if ($n &lt;= $limit) {
+                    $steps[$n] = $c;
+                }
+                $c--;
+            }
+        }
+        if ($max_f &lt; $steps[$n]) {
+            $max_n = $n;
+            $max_f = $steps[$n];
+        }
+    #    print "$n\n";
+    }
+
+    my $t1 = new Benchmark;
+    my $td = timediff($t1, $t0);
+    print "the code took:",timestr($td),"\n";
+
+    print "f($max_n) = $max_f\n";
+  :tags: []
+  :references:
+    :url: /web/20080926203709/http://blog.livedoor.jp/dankogai/archives/50564170.html
+    :title: h(4294967295) = 2610744987 where g = 1051
+- :id: '5126'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5126
+  :user_name: tzik
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/392/
+  :language: Haskell
+  :time: 2008/01/02 15:57 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: |
+    {-# OPTIONS_GHC -fglasgow-exts -fbang-patterns #-}
+
+    {-
+    $ uname -sr
+    Linux 2.6.23-gentoo-r3
+    $ uname -p
+    Intel(R) Pentium(R) M processor 1.70GHz
+    $ ghc --version
+    The Glorious Glasgow Haskell Compilation System, version 6.8.2
+    $ ghc -O2 collatz.hs
+    $ time ./a.out
+    (524,837799)
+    ./a.out  6.80s user 0.13s system 90% cpu 7.639 total
+    -}
+
+    import Data.Array
+    import Data.List
+
+    nMax :: Num a=&gt;a
+    nMax = 2^20
+
+    -- (m,k) = collatzStep n のとき、
+    -- nをステップ数kで[1..nMax]内のmに帰着できる。
+    collatzStep :: Integer-&gt;(Int,Int)
+    collatzStep n
+        | n' &lt;= nMax = (fromIntegral n',1)
+        | otherwise = let (m,!k) = collatzStep n' in (m,k+1)
+        where n' = if even n then n `div` 2 else 3*n+1
+
+    collatzStep' :: Int-&gt;(Int,(Int,Int))
+    collatzStep' n = (m,(n,k))
+        where (m,!k) = collatzStep (toInteger n)
+
+    -- collatzStep で得られる帰着関係を反転してグラフにする。
+    -- colltz 角谷の予想が正しければ1を根とした木になっている。
+    collatzTree :: Array Int [(Int,Int)]
+    collatzTree = accumArray (flip (:)) [] (1,nMax) (map collatzStep' [2..nMax])
+
+    -- DFSで高さを調べる。
+    deepest :: Array Int [(Int,Int)]-&gt;Int-&gt;(Int,Int)
+    deepest ar m = maximum.((0,m):) $ [(k+k',n')|(n,k)&lt;-ar!m,let (!k',n')=deepest ar n]
+
+    main :: IO ()
+    main = putStrLn.show $ deepest collatzTree 1
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5127'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5127
+  :user_name: malark
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/122/
+  :language: Java
+  :time: 2008/01/02 17:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Max(f(n)) = 524\r\nn =\r\n  837799\r\nTime:
+    2652[ms]\r\n\r\nAthlon64 X2 5000+(2.6GHz) / Windows Vista HP x64 / JRE1.6.0_03\r\n\r\nこれが限界・・・1秒切りたいなぁ</pre>\n\t"
+  :code: |
+    package challenge120;
+
+    import java.util.ArrayList;
+    import java.util.HashMap;
+    import java.util.List;
+    import java.util.Map;
+
+    public class Challenge120 {
+
+        private final static int LIM = 1 &lt;&lt; 20; // 1&lt;&lt;20 = 2^20
+
+        private final static Map&lt;Long, Integer&gt; CACHE = new HashMap&lt;Long, Integer&gt;();
+
+        public static void main(final String[] args) {
+
+            final long start = System.currentTimeMillis();
+
+            int fnMax = 0;
+            final List&lt;Integer&gt; fnMaxN = new ArrayList&lt;Integer&gt;();
+
+            for (int n = 1; n &lt;= LIM; n++) {
+                final int fn = f(n);
+                if (fn &gt; fnMax) {
+                    fnMax = fn;
+                    fnMaxN.clear();
+                    fnMaxN.add(n);
+                } else if (fn == fnMax) {
+                    fnMaxN.add(n);
+                }
+            }
+            out(fnMax, fnMaxN);
+            System.out.println("Time: " + (System.currentTimeMillis() - start)
+                    + "[ms]");
+        }
+
+        private static int f(final int n) {
+            int fn = 0;
+            for (long nTemp = n; nTemp != 1;) {
+                final Integer cached = CACHE.get(nTemp);
+                if (cached == null) {
+                    nTemp = (nTemp % 2 == 0) ? nTemp / 2 : nTemp * 3 + 1;
+                    fn++;
+                } else {
+                    fn += cached;
+                    break;
+                }
+            }
+            CACHE.put(Long.valueOf(n), fn);
+            return fn;
+        }
+
+        private static void out(final int maxN, final List&lt;Integer&gt; fnMaxN) {
+
+            System.out.println("Max(f(n)) = " + maxN);
+            System.out.println("n =");
+            for (final int n : fnMaxN) {
+                System.out.println("  " + n);
+            }
+        }
+    }
+  :tags:
+  - Java
+  - Java1.6
+  :references:
+    :url: 
+    :title: 
+- :id: '5130'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5130
+  :user_name: kgoto
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/457/
+  :language: Python
+  :time: 2008/01/02 19:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Celeron 2GHz メモリ1GBで17秒ほどで答え出ました．</p>\n<p>% time python korattu.py</p>\n<p>524</p>\n<p>python
+    korattu.py  16.98s user 0.47s system 88% cpu 19.652 total</p>\n\n\t"
+  :code: |
+    D={1:0}
+    def f(n):
+        if D.has_key(n):pass
+        elif n%2 == 0:D[n]=f(n/2)+1
+        else: D[n]=f(3*n+1)+1
+        return D[n]
+
+    if __name__=='__main__':
+        step=0
+        for i in xrange(1,2**20):
+            step=max(step, f(i))
+        print step
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5131'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5131
+  :user_name: kgoto
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/457/
+  :language: Python
+  :time: 2008/01/02 20:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ステップ数が最大になる時のnを求めてませんでした.\nmain部分を修正しました\n実行結果\n(837799, 524)</p>\n\n\t"
+  :code: |
+    if __name__=='__main__':
+        step=(0,0)
+        for i in xrange(1,2**20):
+            tmp=i,f(i)
+            if step[1] &lt; tmp[1]:step=tmp
+        print step
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5133'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5133
+  :user_name: xsd
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/154/
+  :language: Java
+  :time: 2008/01/03 01:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Listではなく、ただの配列でキャッシュを実装するとかなり高速化できますね。\r\n\r\nPentiumM
+    2GHz/Windows XP (32bit)で125msでした。\r\n\r\nC:¥&gt;java Dk120\r\nf(837799)=524 in
+    125 ms</pre>\n\t"
+  :code: "public class Dk120 {\n    static final int maxN = (1 &lt;&lt; 20);\n    static
+    final int cacheN = maxN;\n    \n    private static int[] cache = new int[cacheN+1];\n
+    \   \n    private static int colatz(long n) {\n        if (n == 1) return 0;\n
+    \       if (n &lt;= cacheN &amp;&amp; cache[(int)n] != 0) return cache[(int)n];\n
+    \       \n        int c = 1 + ((n % 2 == 0) ? colatz(n &gt;&gt; 1) : colatz(n
+    * 3 + 1));\n        if (n &lt;= cacheN) cache[(int)n] = c;\n        return c;\n
+    \   }\n    \n    public static void main(String[] args) {\n        int max = 1;\n
+    \       int maxValue = 0;\n        long start = System.currentTimeMillis();\n
+    \       \n        for (int i = 1; i &lt;= maxN; i++) {\n            int c = colatz(i);\n
+    \           if (max &lt; c) { max = c; maxValue = i; }\n        }\n        System.out.printf(\"f(%d)=%d
+    in %d ms\", maxValue, max, System.currentTimeMillis() - start);\n    }    \n}\n"
+  :tags:
+  - JRE1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '5136'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5136
+  :user_name: ところてん
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2008/01/03 06:33 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">ビルドが通らなくておかしいなぁと思ったら、\r\n変数宣言の前に命令があるからC99じゃないとコンパイルできないですねこれ。\r\n（VC++でビルドしてました）\r\n\r\nC99じゃないとビルドが通らないやつには、タグを付けといたほうがいいのかなぁ。\r\ngccはデフォでC99だから、別に問題ないといえば問題ないけど。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5140'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5140
+  :user_name: katsu
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/117/
+  :language: Prolog
+  :time: 2008/01/03 10:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あけましておめでとうございます。\r\nぜんぜんprologらしくないのですみません。\r\ncのループは、計算途中をassertaするために、あえて末尾再帰させていません。\r\n\r\n結果：\r\n
+    $ time pl -qs 120.pl\r\n837799, 524\r\n\r\nreal    0m6.870s\r\nuser    0m6.308s\r\nsys
+    \    0m0.551s\r\n</pre>\n\t"
+  :code: |
+    :-dynamic(ca/2).
+
+    even(N):- 1 =:= N /\ 1.
+
+    c(1,0):-!.
+    c(N,R):-ca(N,R),!.
+    c(N,R) :-!, (even(N)-&gt;N1 is N * 3 + 1; N1 is N / 2),
+                c(N1,R0),
+                succ(R0,R),
+                asserta(ca(N,R)).
+
+    max_c(M,M,MaxI,MaxF,(MaxI,MaxF)).
+    max_c(I,M,MaxI,MaxF,R):-!,
+            c(I,F),
+            succ(I,I1),
+            (MaxF &lt; F -&gt; max_c(I1,M,I,F,R)
+                       ; max_c(I1,M,MaxI,MaxF,R)).
+
+    max_c(M,R):-max_c(1,M,0,0,R).
+
+    :-N is integer(2^20) + 1, max_c(N,R), write(R), nl, halt.
+  :tags:
+  - SWI-prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '5141'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5141
+  :user_name: kozima
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/164/
+  :language: 
+  :time: 2008/01/03 10:39 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <p>最大を与える n が複数の場合ってあるのかな？とちょっと気になったので調べてみました。</p>\n<ul class=\"simple\">\n<li>f(18)=f(19)=20</li>\n<li>f(54)=f(55)=112</li>\n<li>f(231)=f(235)=127</li>\n<li>f(649)=f(654)=f(655)=f(667)=144</li>\n<li>f(2223)=f(2322)=f(2323)=182</li>\n<li>f(17647)=f(17673)=278</li>\n<li>f(34239)=f(35497)=310</li>\n<li>f(1117065)=f(1126015)=527</li>\n<li>f(1501353)=f(1564063)=530</li>\n</ul>\n<p>2^21
+    以下でそういう組み合わせはこれだけ見つかりました。何となくほとんどないんじゃないかと思ったんですが、結構あるんですね。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5146'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5146
+  :user_name: にしお
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2008/01/03 13:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>C99限定なのはC99限定だとタグをつけておいた方が読む人に親切だと思うなぁ。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5202'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5202
+  :user_name: 匿名
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/4/
+  :language: D
+  :time: 2008/01/05 18:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  f(837799) = 524\r<br><br>Processor: Athlon X2 3800+ / Memory: 1GB\r<br>Compiler: Digital Mars D Compiler v2.009\r<br>Process Time: 0:00:00.125\n\t"
+  :code: "import std.stdio;\n\nvoid main() {\n    uint i_max, x_max;\n    foreach(i;
+    1 .. (1 &lt;&lt; 20) + 1) {\n        uint x = f(i);\n        if(x_max &lt; x)
+    {\n            x_max = x;\n            i_max = i;\n        }\n    }\n    writefln(\"f(%s)
+    = %s\", i_max, x_max);\n}\n\nuint f(const ulong n) {\n    static uint[1 &lt;&lt;
+    20] cache;\n    \n    if(n == 1) return 0;\n    if(n &lt; cache.length &amp;&amp;
+    cache[n])\n        return cache[n];\n    \n    auto steps = (n % 2 == 0 ? f(n
+    / 2) : f(n * 3 + 1)) + 1;\n    if(n &lt; cache.length) cache[n] = steps;\n    return
+    steps;\n}\n\nunittest {\n    assert(f(9) == 19);\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5213'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5213
+  :user_name: 梅紫蘇
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/596/
+  :language: C
+  :time: 2008/01/07 08:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>お題の「1～2^20までの数でf(n)を求めて」の要件を満たすか微妙ですが。</p>\n<p>キャッシュ未使用でサボる方法を。\n数が減るときにはN÷2なので、2×Nのステップ数が既知であれば、Nのステップ数も既知（計算済み）として扱える。しかも
+    f(N×２) ＞ f(N)。ということで、(2^20)から(2^20)÷2までの範囲を計算すれば、最大ステップはわかるのかな～と。</p>\n<p>Pen4
+    3.06GHz, WinXP SP2, VS2005, 0.953[s]</p>\n\n\t"
+  :code: |
+    #include &lt;time.h&gt;
+    #include &lt;iostream&gt;
+    #include &lt;vector&gt;
+
+    #define MIN_VALUE (0x0000001UL)        // 1
+    #define MAX_VALUE (0x0000001UL&lt;&lt;20)    // 2 ^ 20
+
+    #define STACK_TYPE std::vector&lt;unsigned long&gt;
+
+    int f(unsigned long n) {
+        if      (n &lt;= 1UL) { return 0; }
+        else if (n &amp; 0x01) { return 1 + f(n * 3UL + 1UL); }
+        else               { return 1 + f(n / 2UL);       }
+    }
+
+    int outf(unsigned long n) {
+        if      (n &lt;= 1UL) { std::cout &lt;&lt; n &lt;&lt; std::endl; return 0; }
+        else if (n &amp; 0x01) { std::cout &lt;&lt; n &lt;&lt; "-&gt;"; return 1 + outf(n * 3UL + 1UL); }
+        else               { std::cout &lt;&lt; n &lt;&lt; "-&gt;"; return 1 + outf(n / 2UL);       }
+    }
+
+    int main(int argc, char* argv[]) {
+        clock_t st = clock();
+
+        STACK_TYPE ans;
+        int nMaxStep = 0;
+        int nStep = 0;
+        for (unsigned long n = MAX_VALUE; (n &gt;= MIN_VALUE) &amp;&amp; ((n * 2) &gt; MAX_VALUE); n--) {
+            nStep = f(n);
+            if (nStep == nMaxStep) {
+                ans.push_back(n);
+            }
+            else if (nStep &gt; nMaxStep) {
+                ans.clear();
+                ans.push_back(n);
+                nMaxStep = nStep;
+            }
+        }
+        std::cout &lt;&lt; "Max Step: " &lt;&lt; nMaxStep &lt;&lt; std::endl;
+        for (STACK_TYPE::iterator li = ans.begin(); li != ans.end(); li++) {
+            outf(*li);
+        }
+
+        clock_t et = clock();
+        std::cout &lt;&lt; "time[s]:" &lt;&lt; ((double)(et-st)/CLOCKS_PER_SEC) &lt;&lt; std::endl;
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5276'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5276
+  :user_name: pooq
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/606/
+  :language: BASIC
+  :time: 2008/01/12 09:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">十進BASIC Ver7.0.4の2進モードで。\r\n実行環境は、pentiumM
+    1.3GHz、メモリ256MB、WindowsXPです。 \r\n\r\nf( 837799 ) = 524 \r\n 3.15000000000873 sec\r\n</pre>\n\t"
+  :code: "!コラッツ・角谷の問題\nLET  st = TIME\nLET  n = 2^20\nDIM  c(n)\n\nFUNCTION f(k)\n
+    \  IF k = 1 THEN\n      LET  f = 0\n   ELSEIF k &lt;= n AND c(k) &lt;&gt; 0 THEN\n
+    \     LET  f = c(k)\n   ELSE\n      IF  MOD(k,2) = 0  THEN\n         LET  s =
+    f(k / 2) + 1\n      ELSE\n         LET  s = f((3 *  k + 1) / 2) + 2\n      END
+    IF\n      IF k &lt;= n THEN  LET  c(k) = s \n      LET  f = s\n   END IF\nEND
+    FUNCTION \n\nLET  mx = f(n)\nLET  no = n\nFOR i = 3 TO n STEP 2\n   LET  j = f(i)\n
+    \  IF j &gt; mx THEN \n      LET  mx = j\n      LET  no = i\n   END IF\nNEXT I
+    \nPRINT \"f(\";no;\") =\";mx\nPRINT TIME - st;\"sec\"\nEND\n"
+  :tags:
+  - 十進BASIC
+  :references:
+    :url: 
+    :title: 
+- :id: '5435'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5435
+  :user_name: tenka
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/664/
+  :language: C
+  :time: 2008/01/23 14:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">WinXP Pro SP2\r\nCPU:C2D E6850\r\nメモリ:2G\r\n\r\nf(837799)
+    = 524\r\n46ms\r\nときどき\r\n31ms\r\n\r\n再帰をなくせばもう少しいける？\r\nC#だってやればできる子</pre>\n\t"
+  :code: |
+    using System;
+
+    class Collatz
+    {
+        private short[] countData;
+        private long MAX_VALUE;
+        public Collatz()
+        {
+            MAX_VALUE = 1048576;//1 &lt;&lt; 20;
+            countData = new short[MAX_VALUE + 1];
+        }
+
+        public void run()
+        {
+            long n = 0, step = 0,temp;
+            for (long i = MAX_VALUE; i &gt; 0; --i)
+            {
+                temp = calc(i);
+                if (temp - step &gt; 0)
+                {
+                    n = i; step = temp;
+                }
+            }
+            Console.WriteLine("f({0}) = {1}", n, step);
+        }
+
+        private long calc(long n)
+        {
+            if ((n ^ 1) == 0) return 0;
+            if (MAX_VALUE - n &lt; 0) return calc(((n &amp; 1) == 0) ? (n &gt;&gt; 1) : (n &lt;&lt; 1) + n + 1) + 1;
+            if (countData[n] &gt; 0) return (long)countData[n];
+            return (long)(countData[n] = (short)(calc(((n &amp; 1) == 0) ? (n &gt;&gt; 1) : (n &lt;&lt; 1) + n + 1) + 1));
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            long tick = DateTime.Now.Ticks;
+            new Collatz().run();
+            Console.WriteLine((DateTime.Now.Ticks - tick) / 10000L + "ms");
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5457'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5457
+  :user_name: Nemo
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/685/
+  :language: PostScript
+  :time: 2008/01/26 04:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">PostScript版。ともかく走る、というだけです。2倍長演算部分、全く汎用性無し....\r\n219秒/Ghostscript
+    7.07/Intel Celeron 2GHz\r\n169秒/Apple Preview 4.0/Intel X5365*2 3GHz\r\n123秒/Adobe
+    Acrobat Distiller (Win) 7.0 / Intel X5365 (Single Core 相当)\r\n</pre>\n\t"
+  :code: "%!PS\n\n/Loop 1024 1024 mul def % (2^10)^2 = 2^20  (2 20 exp cvi)   \n/TextOutput
+    false def\n\n/Limit 1024 1024 1024 mul mul 2 idiv def\n/Limit2 Limit 2 idiv def\n\n\n/F
+    {\n    /N 0 def\n    {\n    dup 1 eq { exit } if\n    dup 2 mod 0 eq { 2 idiv
+    } { 3 mul 1 add } ifelse\n    /N 1 N add def\n    } loop\n    pop\n    N\n} def\n\n/F2
+    {\n    0\n    exch\n    0\n    exch\n    {\n    dup 2 mod 0 eq {\n        exch\n
+    \       dup 2 mod 0 eq {\n        2 idiv\n        exch\n        2 idiv    \n        }
+    {\n        2 idiv\n        exch\n        2 idiv Limit2 add\n        } ifelse\n
+    \   } {\n        dup 1 eq { exch dup 0 eq { exit } if exch } if\n        3 mul
+    1 add\n        exch\n        3 mul\n        exch\n        {\n        dup Limit
+    ge {\n            Limit sub\n            exch\n            1 add\n            exch\n
+    \       } {\n            exit \n        } ifelse\n        } loop\n    } ifelse\n
+    \   3 2 roll\n    1 add\n    3 1 roll\n    } loop\n    pop\n    pop\n} def\n\n/StartTime
+    realtime def\n/Max 0 def\n/MaxNum 0 def\n1 1 Loop {\n    dup F2 dup Max gt {\n
+    \   /Max exch def\n    /MaxNum exch def\n    } {pop pop} ifelse\n} for\n\n/FinishTime
+    realtime def\n\nsave\n\nTextOutput { /show { print } def /showpage {} def } if\n/Times-Roman
+    findfont 20 scalefont setfont\n100 500 moveto (Max =) show\nMax 10 string cvs
+    show\n100 400 moveto (MaxNum = ) show\nMaxNum 10 string cvs show\n100 300 moveto
+    (Timer =) show\nFinishTime StartTime sub 10 string cvs show\n( ms) show\nshowpage\nrestore\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5589'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5589
+  :user_name: mc
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/405/
+  :language: Arc
+  :time: 2008/01/31 05:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Arcです。\r<br>Core2 Duo E6600/Linux 2^20で6分位です。\r<br>定義をメモ化できるdefmemoってのがあるので、それを使ってみたんですが、\r<br>自分はあまり上手く使いこなせていないようで、スピードがでません…。\r<br>実行結果\r<br>(time (collatz-max (expt 2 20)))\r<br>;=&gt;\r<br>;time: 334690 msec.\r<br>;\"f(837799) = 524\"\n\t"
+  :code: |
+    (def collatz-max (num)
+      ((afn (num i n highest)
+        (if (&gt; i num)
+            (prn (string "f(" n ") = " highest))
+            (let cur (collatz i)
+              (if (&lt; highest cur)
+              (self num (+ i 1) i cur)
+              (self num (+ i 1) n highest)))))
+       num 1 0 0))
+
+    (defmemo collatz (n)
+      ((afn (res cnt)
+        (if (is res 1)
+            cnt
+            (self (if (even res)
+                  (/ res 2)
+                  (+ (* res 3) 1))
+              (+ cnt 1))))
+       n 0))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5670'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5670
+  :user_name: silverwire
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/646/
+  :language: Batchfile
+  :time: 2008/02/03 14:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">バッチで書いてみました。\r\n\r\n速度に難があるため、1 ~ 2^12までの範囲でしか確認できていませんが、一応投稿します。\r\n\r\n実行時間の計測には「実行時間の測定」で投稿したものを使用しています。\r\n\r\n
+    \ e.g.\r\n    実行環境 : Pentium M (1.6GHz), 768MB RAM\r\n    実行結果 : f(3711) = 237\r\n
+    \   実行時間 : 450050 (ms)\r\n\r\n最初は以下のようにcallを使用して再帰的に書いていたのですが、速度を考慮してgotoを\r\n利用したループに書き換えました。\r\n\r\n
+    \ e.g.\r\n    :collatz\r\n      if %1 leq 1 goto :EOF\r\n      set /a m=%1%%2\r\n
+    \     if %m% equ 0 (set /a n=%1/2) else (set /a n=3*%1+1)\r\n      call :collatz
+    %n%\r\n    goto :EOF\r\n\r\nただそれでも2^20まで実行した場合 1日では終わらないので、全く異なるロジックを編み\r\n出す以外、手詰まりとなってしまいました。\r\n\r\n#
+    おそらく、遅延環境変数展開を利用して書き換えたくらいでは焼け石に水でしょう。</pre>\n\t"
+  :code: |
+    @echo off
+      setlocal
+        set s_=0
+        set i_=0
+        set /a "i=1&lt;&lt;12"
+
+        for /l %%i in (1,1,%i%) do call :collatz %%i
+
+        echo f(%i_%) = %s_%
+      endlocal
+    goto :EOF
+
+    :collatz
+      set n=%1
+      set s=0
+
+      :loop
+        if %n% leq 1 goto compare
+        set /a m=%n%%%2
+        if %m% equ 0 (set /a n/=2) else (set /a n=3*%n%+1)
+        set /a s+=1
+      goto loop
+
+      :compare
+        if %s% leq %s_% goto :EOF
+        set s_=%s%
+        set i_=%1
+    goto :EOF
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5774'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5774
+  :user_name: saws
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/02/18 12:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ハッシュへと結果をキャッシュして高速化を図っています.\nメモリの使用量がやばいことに.\n自分のCPU(P4;  2.8 GHz)で実行時間は以下の通り.</p>\n<pre
+    class=\"literal-block\">\n  user     system      total        real\n33.828000
+    \  0.360000  34.188000 ( 39.031000)\nf_max: f(837799) = 524\n</pre>\n\n\t"
+  :code: |
+    def solv_collatz(n)
+      hash = {1 =&gt; 0}
+      max_key = hash.keys.max
+      n.downto(1){|i|
+        unless hash[n=i]
+          ary = [n]
+          ary &lt;&lt; (n = n%2 == 0 ? n.div(2) : 3*n+1) until hash[n]
+          pos = ary.size - 1 + hash[ary.last]
+          ary.each_with_index{|x,j|
+            hash[x] ? break : hash[x] = pos-j}
+        end
+        max_key = i if hash[i] &gt; hash[max]}
+      return hash, max_key
+    end
+    collatz, max = solv_collatz(2**20)
+    puts "f_max: f(#{max}) = #{collatz[max]}"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5998'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/5998
+  :user_name: まさぽん
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/711/
+  :language: Scheme
+  :time: 2008/03/11 03:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">できるだけ solve-collatz を実行しないように頑張ってみました。\r\n環境は\r\nCPU:
+    Athlon 64 x2 2GHz\r\nメモリ: 2GB\r\nぐらいです。\r\n\r\n実行例:\r\ngosh&gt; (time (let-values
+    (((n steps) (collatz-max? (expt 2 20))))\r\n              (print \"n=\" n \" :
+    steps=\" steps)))\r\nn=837799 : steps=524\r\n;(time (let-values (((n steps) (collatz-max?
+    (expt 2 20)))) (print \"n=\"  ...\r\n; real   3.247\r\n; user   3.250\r\n; sys
+    \   0.000\r\n#&lt;undef&gt;</pre>\n\t"
+  :code: "(use srfi-11)\n(use gauche.uvector)\n\n(define (solve-collatz n cache)\n
+    \ (let loop ((n n) (step 0) (len (- (u16vector-length cache) 1)))\n    (cond\n
+    \    ((= n 1) step)\n     ((and (&lt; n len) (&lt; 0 (u16vector-ref cache n)))\n
+    \     (+ step (u16vector-ref cache n)))\n     ((even? n) (loop (/ n 2) (+ step
+    1) len))\n     (else (loop (+ (* n 3) 1) (+ step 1) len)))))\n\n(define (set-doubles
+    i st limit cache)\n  (if (&lt;= i limit) \n      (begin (u16vector-set! cache
+    i st)\n             (set-doubles (* i 2) (+ st 1) limit cache))\n      (values
+    (/ i 2) (- st 1))))\n\n(define (collatz-max? limit)\n  (let* ((max-n 0) (max-steps
+    0) (limit limit) (cache (make-u16vector (+ limit 1) 0)))\n    (do ((i 1 (+ i 1)))
+    ((&gt; i limit))\n      (if (zero? (u16vector-ref cache i))\n          (let*-values
+    (((steps) (solve-collatz i cache))\n                        ((mcn mcstep) (set-doubles
+    i steps limit cache)))\n            (if (&lt; max-steps mcstep)\n                (begin
+    (set! max-n mcn) (set! max-steps mcstep))))))\n    (values max-n max-steps)))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6001'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/6001
+  :user_name: まさぽん
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/711/
+  :language: C
+  :time: 2008/03/11 07:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  C に移植したバージョン。\r<br>最近の gcc は、コンパイル時に -O2 を付けると末尾再帰呼び出しを最適化してくれるようですね。便利。\r<br><br>実行例:\r<br>$ cc -O2 -o collatz collatz.c\r<br>$ time ./collatz\r<br>n=837799, steps=524\r<br>./collatz  0.07s user 0.00s system 95% cpu 0.079 total\r<br><br>やはりネイティブコンパイルできる処理系は早いですね。\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n\n#define
+    LIMIT 1048576\n\nint solve_collatz(long n, int step, int *cache){\n    if(n ==
+    1)\n        return step;\n    else if(n &lt;= LIMIT &amp;&amp; cache[n] != 0)\n
+    \       return step + cache[n];\n    else if(0 == n % 2) \n        return solve_collatz(n/2,
+    step+1, cache);\n    else\n        return solve_collatz(n*3+1, step+1, cache);\n}\n\nlong
+    set_doubles(long i, int *steps, int *cache){\n    for(;i &lt;= LIMIT; i *= 2,
+    (*steps)++)\n        cache[i] = *steps;\n    *steps -= 1;\n    return i/2;\n}\n\nint
+    main(){\n    int *cache, steps, max_steps = 0;\n    long n, mc_n, max_n = 0; \n\n
+    \   cache = malloc((LIMIT + 1) * sizeof(int));\n    if(!cache) exit(1);\n    memset(cache,
+    0, (LIMIT + 1) * sizeof(int));\n\n    for(n = 1; n &lt;= LIMIT; n++){\n        if(cache[n]
+    == 0){\n            steps = solve_collatz(n, 0, cache);\n            mc_n = set_doubles(n,
+    &amp;steps, cache);\n            if(max_steps &lt; steps){\n                max_n
+    = mc_n;\n                max_steps = steps;\n            }\n        }\n    }\n
+    \   printf(\"n=%d, steps=%d\\n\", max_n, cache[max_n]);\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6482'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/6482
+  :user_name: genzou
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/06/13 08:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>再帰処理を避けるように作ったのですが、\n30分しても処理が終わりません・・・</p>\n<p>マシンの貧弱性のためか、\n言語の問題か、\nはたまたコードが原因か。</p>\n<p>2*17ぐらいなら何とか1分程度で処理できるんですけどね。</p>\n<p>■スペック■\nCPU:Celeron
+    1.30GHz\nRAM:512MB\nOS:Windows XP SP2</p>\n\n\t"
+  :code: "def start  = new Date()\ndef f( double n ){\n    int count = 0\n\n    while(
+    n != 1 ){\n        if( n % 2 == 0){\n            n = n/2\n        } else {\n            n
+    = 3*n + 1\n        }\n        count++\n    }\n    \n    count \n}\n\ndef max =
+    [n:0, fn:0]\n\ndef last = 2**17\nfor( n in 1..last){\n    def fn = f(n)\n    if(
+    max.fn &lt; fn ){\n        max.n = n\n        max.fn = fn\n        println \"最大は
+    f(${max.n}) = ${max.fn}\"\n    }\n}\n\ndef end = new Date()\n\nprintln \"時間は ${end.time
+    - start.time}\"\n"
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '6564'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/6564
+  :user_name: だいら
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/468/
+  :language: PHP
+  :time: 2008/06/23 21:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>愚直に。\n答えが出るまで数十分かかります。\nPHP遅すぎる。</p>\n\n\t"
+  :code: |
+    &lt;?php
+    $max = array(1,0);
+    $maxValue = pow(2,20);
+
+    for($i=1;$i&lt;=$maxValue;$i++){
+        $deep = collatz($i);
+        if($max[1] &lt; $deep){
+            $max[0] = $i;
+            $max[1] = $deep;
+        }
+    }
+    echo "n=" . $max[0] . " f(n)=" . $max[1];
+
+    function collatz($value, $deep = 0){
+        if($value == 1){
+            return $deep;
+        }elseif($value%2 == 0){
+            $deep = collatz($value/2, $deep);
+        }else{
+            $deep = collatz($value*3+1, $deep);
+        }
+        return $deep + 1;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6575'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/6575
+  :user_name: turugina
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/760/
+  :language: XSLT
+  :time: 2008/06/24 11:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">OS: WindowsVista(Home Premium 32bit)\r\nCPU:
+    AMD Turion64X2 (1.6GHz)\r\nメモリ: 1.5GB で、\r\n\r\nXSLTプロセッサ環境が、\r\nSaxon 9.0.0.6J
+    from Saxonica\r\nJava version 1.6.0_06\r\n\r\n出力：\r\nn=837799, f(n)=524\r\n\r\nかかった時間は、\r\nStylesheet
+    compilation time: 586 milliseconds\r\nExecution time: 391187 milliseconds\r\nだそうです。\r\n</pre>\n\t"
+  :code: |
+    &lt;xsl:stylesheet version="2.0"
+      xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+      xmlns:xs="http://www.w3.org/2001/XMLSchema"
+      xmlns:fn="http://www.w3.org/2005/xpath-functions"
+      xmlns:my="uri:ja.doukaku.org:my-functions"
+      exclude-result-prefixes="my"
+      &gt;
+
+      &lt;xsl:output method="text" /&gt;
+
+      &lt;xsl:template match="/" &gt;
+        &lt;xsl:variable name="collatzresult" as="xs:integer*"&gt;
+          &lt;xsl:for-each select="1 to 1048576"&gt;
+            &lt;xsl:value-of select="my:collatz(.,0)" /&gt;
+          &lt;/xsl:for-each&gt;
+        &lt;/xsl:variable&gt;
+
+        &lt;xsl:variable name="max" as="xs:integer" select="fn:max($collatzresult)" /&gt;
+
+        &lt;xsl:text&gt;n=&lt;/xsl:text&gt;
+        &lt;xsl:for-each select="$collatzresult"&gt;
+          &lt;xsl:if test="$max=."&gt;
+            &lt;xsl:value-of select="fn:position()" /&gt;
+            &lt;xsl:text&gt;, &lt;/xsl:text&gt;
+          &lt;/xsl:if&gt;
+        &lt;/xsl:for-each&gt;
+        &lt;xsl:text&gt;f(n)=&lt;/xsl:text&gt;
+        &lt;xsl:value-of select="$max" /&gt;
+        &lt;xsl:text&gt;&amp;#xA;&lt;/xsl:text&gt;
+      &lt;/xsl:template&gt;
+
+      &lt;xsl:function name="my:collatz" as="xs:integer"&gt;
+        &lt;xsl:param name="n" as="xs:integer" /&gt;
+        &lt;xsl:param name="cnt" as="xs:integer" /&gt;
+
+        &lt;xsl:choose&gt;
+          &lt;xsl:when test="$n=1"&gt;
+            &lt;xsl:value-of select="$cnt" /&gt;
+          &lt;/xsl:when&gt;
+          &lt;xsl:when test="($n mod 2)=0" &gt;
+            &lt;xsl:value-of select="my:collatz($n idiv 2,$cnt+1)" /&gt;
+          &lt;/xsl:when&gt;
+          &lt;xsl:otherwise&gt;
+            &lt;xsl:value-of select="my:collatz($n*3+1,$cnt+1)" /&gt;
+          &lt;/xsl:otherwise&gt;
+        &lt;/xsl:choose&gt;
+      &lt;/xsl:function&gt;
+
+    &lt;/xsl:stylesheet&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7636'
+  :parent_id: '120'
+  :url: http://ja.doukaku.org/comment/7636
+  :user_name: nobusuke_neko
+  :user_url: /web/20080926203709/http://ja.doukaku.org/user/926/
+  :language: JavaScript
+  :time: 2008/09/16 13:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  n = 1..2^k の範囲で最大ステップ求める場合は、\r<br>2^k-1..2^k 間だけ調べることにしました。\r<br>後はいたって普通というか、回りくどいというか。\r<br>CeleronM1.8GHz, Memory1GB, WindowsXP, WSH(JScript)\r<br>--------------------\r<br>C:\\temp&gt;cscript //nologo collatz.js\r<br>f( 837799 ) = 524\r<br>time = 29578ms\n\t"
+  :code: |
+    function steps(n){
+      var step = 0;
+      for(;n!=1; step++)
+        n = (n&amp;1) ? n*3+1 : n/2;
+      return step;
+    }
+    function maxim(lim){
+      var result = 0;
+      var step = 0;
+      for(var i=(lim&amp;(lim-1))?1:lim/2; i&lt;=lim; i++){
+        var temp = steps(i);
+        if(temp &gt; step) { step=temp; result=i; }
+      }
+      return result;
+    }
+
+    var tm = (new Date).getTime();
+    var n = maxim(Math.pow(2,20));
+    var s = steps(n);
+    WScript.Echo('f( '+n+' ) = '+s);
+    WScript.Echo('time = '+((new Date).getTime()-tm) + 'ms');
+  :tags: []
+  :references:
+    :url: 
+    :title: 

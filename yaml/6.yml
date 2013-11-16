@@ -1,0 +1,1631 @@
+---
+:id: '6'
+:title: 税込み価格への修正
+:comments:
+- :id: '3362'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/3362
+  :user_name: にしお
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/04 02:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  ここにチラシの原稿があります。例えば「ダイコン150円、ハクサイ120円、ジャガイモ30円」のような文字列です。法改正によって商品の値段は税込み表示にしないといけなくなりました。そこで、与えられた文字列の中から税抜き価格を見つけ出し、税込み価格に変更した文字列を返す関数を作ってください。\r\n<p>\r\nなお、税抜き価格は半角の数字の連なりで、かつ半角の数字の連なりはすべて税抜き価格だとします。「9,800円」「百円」「１００円」「100g80円」などのような記述はないと考えてかまいません。
+    また税込み価格は税抜き価格の1.05倍で、端数は切り捨てとしてください。\r\n\r\n\t</p>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '82'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/82
+  :user_name: sumim
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/07/04 03:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">関数にはしていませんが…(^_^;)。</pre>\r\n\t"
+  :code: |
+    | inString in out |
+    inString := 'ダイコン150円、ハクサイ120円、ジャガイモ30円'.
+    in := inString readStream.
+    out := String new writeStream.
+    [in atEnd] whileFalse: [
+       in peek isDigit
+          ifTrue: [out print: ((Integer readFrom: in) * 1.05) floor]
+          ifFalse: [out nextPut: in next]].
+    ^out contents
+
+    "=&gt; 'ダイコン157円、ハクサイ126円、ジャガイモ31円' "
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '367'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/367
+  :user_name: ところてん
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/07/09 00:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">何で白菜が125円なんだろう。\r\n浮動小数点の誤差？</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '150'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/150
+  :user_name: rubikitch
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/105/
+  :language: 
+  :time: 2007/07/04 18:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '400'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/400
+  :user_name: ココサブ
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/24/
+  :language: C
+  :time: 2007/07/09 16:26 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  税課税により、桁数が上がっても問題ないようにしたはず。\r\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;string.h&gt;\n#include &lt;stdlib.h&gt;\n\ntypedef
+    struct node Node;\nstruct node {\n    char *string;\n    Node *next;\n};\n\nchar
+    *zei(char *);\nvoid split(Node *head, char *string);\n\nint main()\n{\n    char
+    *result_string;\n    \n    result_string = zei(\"ダイコン150円、ハクサイ120円、ジャガイモ30円\");\n
+    \   printf(\"%s\\n\", result_string);\n    free(result_string);\n\n    result_string
+    = zei(\"ほげ8888円、ぴよ9999円\");\n    printf(\"%s\\n\", result_string);\n    free(result_string);\n\n
+    \   return 0;\n}\n\nchar *zei(char *original)\n{\n    Node list;\n    Node *iter;\n
+    \   Node *iter2;\n    int  value;\n    int  count;\n    char *result;\n\n    split(&amp;list,
+    original);\n\n    /* 税追加と文字数のカウント */\n    count = 0;\n    iter  = &amp;list;\n
+    \   while (iter-&gt;next != NULL) {\n        if (iter-&gt;string[0] &gt;= '0'
+    &amp;&amp; iter-&gt;string[0] &lt;= '9') {\n            sscanf(iter-&gt;string,
+    \"%d\", &amp;value);\n            sprintf(iter-&gt;string, \"%d\", (int)(value
+    * 1.05));\n        }\n        count += strlen(iter-&gt;string);\n        iter
+    = iter-&gt;next;\n    }\n\n    /* 連結 */\n    result    = malloc(sizeof(char) *
+    (count+1));\n    result[0] = '\\0';\n    iter      = &amp;list;\n    while (iter-&gt;next
+    != NULL) {\n        strcat(result, iter-&gt;string);\n        free(iter-&gt;string);\n
+    \       iter = iter-&gt;next;\n    }\n\n    iter = list.next;\n    while (iter-&gt;next
+    != NULL) {\n        iter2 = iter;\n        iter  = iter-&gt;next;\n        free(iter2);\n
+    \   }\n    free(iter);\n\n    return result;\n}\n\nvoid split(Node *head, char
+    *string)\n{\n    Node *now;\n    int count;\n\n    head-&gt;string = NULL;\n    head-&gt;next
+    \  = NULL;\n    now   = head;\n    count = 0;\n    while (*string != '\\0') {\n
+    \       while (string[count] &gt;= '0' &amp;&amp; string[count] &lt;= '9') {\n
+    \           count++;\n            if (string[count] == '\\0')\n                break;\n
+    \       }\n        now-&gt;string = malloc(sizeof(char) * (count+1+1)); /* 桁上がり分
+    */\n        strncpy(now-&gt;string, string, count);\n        now-&gt;string[count]
+    = '\\0';\n        now-&gt;next = malloc(sizeof(Node));\n        now       = now-&gt;next;\n
+    \       now-&gt;string = NULL;\n        now-&gt;next = NULL;\n        string    =
+    string + count;\n        count     = 0;\n        if (*string == '\\0')\n            break;\n
+    \       while (!(string[count] &gt;= '0' &amp;&amp; string[count] &lt;= '9'))
+    {\n            count++;\n            if (string[count] == '\\0')\n                break;\n
+    \       }\n        now-&gt;string = malloc(sizeof(char) * (count+1));\n        strncpy(now-&gt;string,
+    string, count);\n        now-&gt;string[count] = '\\0';\n        now-&gt;next
+    = malloc(sizeof(Node));\n        now       = now-&gt;next;\n        now-&gt;string
+    = NULL;\n        now-&gt;next = NULL;\n        string    = string + count;\n        count
+    \    = 0;\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1702'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/1702
+  :user_name: tomatsu
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/323/
+  :language: Pnuts
+  :time: 2007/08/02 12:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\"></pre>\r\n\t"
+  :code: |
+    function totaxstr(input){
+      substitute(`\d+`, {m-&gt;string(int(int(m)*1.05))}, input, "g")
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3604'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/3604
+  :user_name: 匿名
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/4/
+  :language: R
+  :time: 2007/10/30 15:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">少しは改善した\r\n&gt; x &lt;- unlist(strsplit(string,
+    \"[[:digit:]]+\"))\r\n&gt; y &lt;- floor(as.integer(unlist(strsplit(string, \"[^[:digit:]]+\"))[-1])*1.05)\r\n&gt;
+    paste(x, c(y, \"\"), collapse=\"\", sep=\"\")\r\n[1] \"ダイコン157円、ハクサイ126円、ジャガイモ31円\"\r\n</pre>\r\n\t"
+  :code: |
+    string &lt;- "ダイコン150円、ハクサイ120円、ジャガイモ30円"
+    x &lt;- unlist(strsplit(string, "[[:digit:]]+"))
+    y &lt;- floor(as.integer(unlist(strsplit(string, "[^[:digit:]]+"))[-1])*1.05)
+    paste(x, c(y, ""), collapse="", sep="")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2061'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/2061
+  :user_name: UK
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/326/
+  :language: Ruby
+  :time: 2007/08/10 18:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  既に似たような投稿もありますけど、気にせず投下。\r\n\t"
+  :code: |
+    def addtax(str)
+      str.gsub(/\d+/){|matched|
+        matched.to_i * 1.05
+      }
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3145'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/3145
+  :user_name: tilde
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/446/
+  :language: Objective
+  :time: 2007/09/21 06:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\"></pre>\r\n\t"
+  :code: "//ソースファイルのエンコーディングはUTF-8にしてください\n\n#import &lt;Foundation/Foundation.h&gt;\n\nint
+    main( int argc, const char** argv ) {\n    NSAutoreleasePool* pool = [[NSAutoreleasePool
+    alloc] init];\n\t\n\tNSCharacterSet* decimalSet = [NSCharacterSet decimalDigitCharacterSet];\n\tNSCharacterSet*
+    invertedSet = [decimalSet invertedSet];\n\tNSMutableString* copyString = [NSMutableString\n\t\t\tstringWithUTF8String:\"ダイコン150円、ハクサイ120円、ジャガイモ30円\"];\n\tNSRange
+    targetRange = NSMakeRange( 0, [copyString length] );\n\t\n\tNSLog( copyString
+    );\n\t\n\twhile ( YES ) {\n\t\tNSRange decimalRange = [copyString rangeOfCharacterFromSet:decimalSet\n\t\t\t\toptions:NSBackwardsSearch
+    range:targetRange];\n\t\tif ( decimalRange.location == NSNotFound )\n\t\t\tbreak;\n\t\ttargetRange
+    = NSMakeRange( 0, decimalRange.location );\n\t\tNSRange invertedRange = [copyString
+    rangeOfCharacterFromSet:invertedSet\n\t\t\t\toptions:NSBackwardsSearch range:targetRange];\n\t\tNSRange
+    priceRange;\n\t\tif ( invertedRange.location == NSNotFound )\n\t\t\tpriceRange
+    = NSMakeRange( 0, decimalRange.location + 1 );\n\t\telse\n\t\t\tpriceRange = NSMakeRange(
+    invertedRange.location + 1,\n\t\t\t\t\tdecimalRange.location - invertedRange.location
+    );\n\t\tNSString* priceString = [copyString substringWithRange:priceRange];\n\t\tNSString*
+    taxedString =\n\t\t\t\t[[NSNumber numberWithInt:(int)([priceString intValue] *
+    1.05)] stringValue];\n\t\t//NSLog( @\"%@ -&gt; %@\", priceString, taxedString
+    );\n\t\t[copyString replaceCharactersInRange:priceRange withString:taxedString];\n\t\ttargetRange
+    = NSMakeRange( 0, priceRange.location );\n\t}\n\t\n\tNSLog( copyString );\n\t\n
+    \   [pool release];\n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5915'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/5915
+  :user_name: howking
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/744/
+  :language: Other
+  :time: 2008/03/01 19:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>さっそく間違えた、、、</p>\n\r\n\t"
+  :code: |
+    1&gt; Str=Str="ダイコン150円、ハクサイ120円、ジャガイモ30円".
+      ↓
+    1&gt; Str="ダイコン150円、ハクサイ120円、ジャガイモ30円".
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2136'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/2136
+  :user_name: Felio
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/354/
+  :language: Groovy
+  :time: 2007/08/14 03:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">サイズ1のとき、a[1..-1] が例外ってどうよ...。</pre>\r\n\t"
+  :code: |
+    def add_tax(str) {
+      strs = str.split(/\d+/, -1)
+      nums = []
+      (str =~ /\d+/).each { num -&gt;
+        nums += (num.toBigDecimal() * 1.05).toBigInteger()
+      }
+      nums += ""
+
+      zipWith(strs,nums) { a, b -&gt;
+        a+b
+      }
+    }
+
+    def zipWith(xs, ys, f) {
+      if( xs.size() == 0 ) {
+        return ""
+      } else if ( ys.size() == 0 ) {
+        return ""
+      }
+
+      return f(xs[0],ys[0]) + zipWith(cdr(xs), cdr(ys), f)
+    }
+
+    def cdr(xs) {
+      if(xs.size() &lt; 2) {
+        return []
+      } else {
+        return xs[1..-1]
+      }
+    }
+
+
+    println add_tax("大根 100円, にんじん 50円")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5081'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/5081
+  :user_name: kotaroito
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/523/
+  :language: Java
+  :time: 2008/01/01 01:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>初投稿。\n普通すぎるコードかなぁ。。。</p>\n\r\n\t"
+  :code: "package main;\n\nimport java.util.regex.Matcher;\nimport java.util.regex.Pattern;\n\npublic
+    class TaxConverter {\n    \n    private double taxRate;\n    public TaxConverter(double
+    taxRate) {\n        this.taxRate = taxRate;\n    };\n    \n    public String getTaxIncluded(String
+    taxExcludedString) {\n        Pattern p = Pattern.compile(\"[0-9]+\");\n        Matcher
+    m = p.matcher(taxExcludedString);\n        StringBuffer sb = new StringBuffer();
+    \       \n        while (m.find()) {\n            m.appendReplacement(sb, String.valueOf(calcTaxIncluded(Integer.parseInt(m.group()))));}\n
+    \           m.appendTail(sb);\n        return sb.toString();\n    }\n    \n    private
+    int calcTaxIncluded(int taxExcluded) {\n        int taxIncluded =(int)((taxExcluded
+    * this.taxRate) - (taxExcluded * this.taxRate) % 1.00);\n        return taxIncluded;\n
+    \   }\n    \n    public static void main(String args[]) {\n        TaxConverter
+    converter = new TaxConverter(1.05);\n        System.out.println(converter.getTaxIncluded(\"ダイコン150円、ハクサイ120円、ジャガイモ30円\"));\n
+    \   }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '121'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/121
+  :user_name: minke
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/28/
+  :language: PHP
+  :time: 2007/07/04 08:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">文字列に多バイト文字が来ることもあるんですよね？\r\nRubyの場合はKCODEを指定してやるだけですが。\r\n</pre>\r\n\t"
+  :code: |
+    &lt;?php
+    function conv_with_tax($str) {
+      return mb_ereg_replace("(\d+)", "intval(1.05 * \\1)", $str, "e");
+    }
+    ?&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5914'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/5914
+  :user_name: howking
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/744/
+  :language: Erlang
+  :time: 2008/03/01 19:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  勉強の為、ワンライナーっぽく書いてみました。\r\n\t"
+  :code: |
+    1&gt; Str=Str="ダイコン150円、ハクサイ120円、ジャガイモ30円".
+    2&gt; io:format("~s~n",[lists:foldl(fun(Elem,Acc)-&gt;{Start,Len,InStr}=Elem,string:left(Acc,Start-1)++InStr++string:substr(Acc,Start+Len) end,Str,[{Start,Length,integer_to_list(list_to_integer(Price) * 105 div 100)}||{Start,Length}&lt;-element(2,regexp:matches(Str,"[0-9]+")),Price&lt;-[string:substr(Str,Start,Length)]])]).
+    ダイコン157円、ハクサイ126円、ジャガイモ31円
+    ok
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '83'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/83
+  :user_name: 匿名
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/07/04 03:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">まぁシンプルに。</pre>\r\n\t"
+  :code: "import java.math.BigDecimal;\n\npublic class ZeikomiHyoki {\n\t\n\tpublic
+    static void main(String[] args) {\n\t\tfor (int i = 0; i &lt; args.length; i++)
+    {\n\t\t\tSystem.out.println(new ZeikomiHyoki().execute(args[i]));\n\t\t}\n\t}\n\t\n\tpublic
+    String execute(String string) {\n\t\tStringBuffer buffer = new StringBuffer();\n\t\tStringBuffer
+    integralBuffer = new StringBuffer();\n\t\tboolean flg = false;\n\t\tfor (int i
+    = 0; i &lt; string.length(); i++) {\n\t\t\tif (48 &lt;= (int) string.charAt(i)
+    &amp;&amp; (int) string.charAt(i) &lt;= 57) {\n\t\t\t\tif (!flg) {\n\t\t\t\t\tflg
+    = true;\n\t\t\t\t\tintegralBuffer = new StringBuffer();\n\t\t\t\t}\n\t\t\t\tintegralBuffer.append(string.charAt(i));\n\t\t\t}
+    else {\n\t\t\t\tif (flg) {\n\t\t\t\t\tflg = false;\n\t\t\t\t\tbuffer.append(calc(integralBuffer.toString()));\n\t\t\t\t}\n\t\t\t\tbuffer.append(string.charAt(i));\n\t\t\t}\n\t\t}\n\t\treturn
+    buffer.toString();\n\t}\n\n\tprivate String calc(String string) {\n\t\tSystem.out.println(string);\n\t\treturn
+    new BigDecimal(string).multiply(new BigDecimal(\"1.05\")).setScale(0, BigDecimal.ROUND_DOWN).toString();\n\t}\n\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '85'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/85
+  :user_name: かも
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/67/
+  :language: Perl
+  :time: 2007/07/04 03:47 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  \r\n\t"
+  :code: |
+    perl -pe 's/(\d+)/int $1*1.05/eg'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '365'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/365
+  :user_name: ところてん
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2007/07/09 00:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  正規表現はやっぱり苦手だ。\r\n\t"
+  :code: |
+    # -*- coding: utf-8 -*-
+
+    def toTaxStr(s):
+        out = ""
+        items = s.split("円")
+        for item in items[0:-1]:
+            kakaku = ""
+            while(len(item) and item[-1].isdigit()):
+                kakaku = item[-1] + kakaku
+                item = item[0:-1]
+            out += item
+            if len(kakaku):
+                out += str(int(int(kakaku)*1.05))
+            out += "円"
+        return out + items[-1]
+
+
+    sample_str = "ダイコン150円、ハクサイ120円、ジャガイモ30円"
+    print unicode(toTaxStr(sample_str),"utf-8")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5077'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/5077
+  :user_name: vtwntmtn
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/380/
+  :language: Erlang
+  :time: 2007/12/31 18:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \r\n\t"
+  :code: |
+    -module(tax).
+    -export([main/0]).
+
+    tax(Str) -&gt;
+        case regexp:match(Str, "[0-9]+") of
+            nomatch -&gt; Str;
+            {match, Start, Lenght} -&gt;
+                Pre = string:substr(Str, 1, Start - 1),
+                {Num, _} = string:to_integer(string:substr(Str, Start, Lenght)),
+                NewPrice = io_lib:format("~B", [Num * 105 div 100]),
+                Post = tax(string:substr(Str, Start + Lenght)),
+                Pre ++ NewPrice ++ Post
+        end.
+
+    main() -&gt; io:format(tax("ダイコン150円、ハクサイ120円、ジャガイモ30円"), []).
+
+    % &gt; erlc tax.erl
+    % &gt; erl -noshell -s tax main -s init stop
+    % ダイコン157円、ハクサイ126円、ジャガイモ31円
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6120'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/6120
+  :user_name: reeya2007
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/774/
+  :language: Perl
+  :time: 2008/03/31 06:45 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\r\n\t  \r\n\t"
+  :code: |
+    sub set_tax{
+            my ($text) = shift;
+
+            $$text =~ s/([0-9]+)/int($1*1.05)/eg;
+
+            return $text;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9517'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/9517
+  :user_name: Wiles
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/1094/
+  :language: C
+  :time: 2009/08/26 06:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>長々となってしまいましたが……</p>\n\r\n\t"
+  :code: "#include&lt;stdio.h&gt;\n#include&lt;string.h&gt;\n#include&lt;stdlib.h&gt;\n#include&lt;ctype.h&gt;\n#define
+    SIZE 1000\n#define BUFSIZE 100\n\nvoid zeikomi(char *from, char *to)\n{\n    char
+    buf[BUFSIZE], buf2[BUFSIZE];\n    int i = 0, j = 0, k = 0, flag = 0, mon;\n\n
+    \   for(i = 0; i &lt; BUFSIZE; i++)\n    {\n        buf[i] = '\\0';\n        buf2[i]
+    = '\\0';\n    }\n    \n    i = 0;\n    \n    while(*(from + i))\n    {\n        if(isdigit(*(from
+    + i)))\n        {\n            buf2[j++] = *(from + i);\n            flag = 1;\n
+    \           i++;\n            continue;\n        }\n        else if(flag)\n        {\n
+    \           mon = atoi(buf2);\n            mon *= 1.05;\n            sprintf(buf2,
+    \"%d\", mon);\n            strcat(to, buf);\n            strcat(to, buf2);\n            for(j
+    = 0; j &lt; k; j++)\n            {\n                buf[j] = '\\0';\n            }\n
+    \           k = strlen(buf2);\n            for(j = 0; j &lt; k; j++)\n            {\n
+    \               buf2[j] = '\\0';\n            }\n            j = 0;\n            k
+    = 0;\n            flag = 0;\n            continue;\n        }\n        buf[k++]
+    = *(from + i);\n        i++;\n    }\n    strcat(to, buf);\n}\n\nint main(void)\n{\n
+    \   char *str = \"おいしいみず200円、サイコソ\\ーダ300円、ミックスオレ350円\\nタウリン9800\\\\、ヨクアタール950yen\",
+    result[SIZE];\n    int i;\n    for(i = 0; i &lt; SIZE; i++)\n    {\n        result[i]
+    = '\\0';\n    }\n    \n    zeikomi(str, result);\n    puts(result);\n    \n    return
+    0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5742'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/5742
+  :user_name: まさぽん
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/711/
+  :language: Scheme
+  :time: 2008/02/12 10:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">一度「数字」と「数字以外」のリストにバラして連結してます。\r\n実行例:\r\ngosh&gt;
+    (henkan \"ダイコン150円、ハクサイ120円、ジャガイモ30円\")\r\n\"ダイコン157円、ハクサイ126円、ジャガイモ31円\"</pre>\r\n\t"
+  :code: "(use srfi-13)\n(define henkan\n  (lambda (str)\n    (string-concatenate
+    (tokenize str))))\n\n(define tokenize\n  (lambda (str) \n    (let1 m (#/\\d+/
+    str)\n      (if m\n          (if (string-null? (rxmatch-after m))\n              (cons
+    (rxmatch-before m) (cons (taxation (m)) '()))\n              (cons (rxmatch-before
+    m) (cons (taxation (m)) (tokenize (rxmatch-after m)))))\n          (cons str '())))))\n\n(define
+    taxation\n  (lambda (n)\n    (number-&gt;string (x-&gt;integer (floor (* 1.05
+    (string-&gt;number n)))))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '813'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/813
+  :user_name: rubikitch
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/105/
+  :language: 
+  :time: 2007/07/14 05:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  誤差っぽいですね。Common Lispは分数が使えるので1.05→21/20に変えてみたら126になりました。\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2742'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/2742
+  :user_name: 130R
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/409/
+  :language: PowerShell
+  :time: 2007/08/31 09:34 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">おっと。$itemが抜けた</pre>\r\n\t"
+  :code: |
+    $item = "ダイコン150円、ハクサイ120円、ジャガイモ30円"
+    $item.split("、") | %{$_ -match "(^.+[^\d])(\d+)(.+$)"} | %{([int]$matches[2]) * 1.05} | %{$matches[1]+[int]($_-0.5)+$matches[3]}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '215'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/215
+  :user_name: matarillo
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/136/
+  :language: C
+  :time: 2007/07/06 04:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  C# 2.0 (ECMA C# 3rd edition) 以降。呼び出すたびにRegExインスタンスが作成されるのは無駄なんですが。\r\n\t"
+  :code: |
+    public static string PlusTax(string expression)
+    {
+        return new System.Text.RegularExpressions.Regex("[0-9]+").Replace(expression, delegate(Match m)
+        {
+            int price;
+            int.TryParse(m.Value, out price);
+            price = (price * 105) / 100;
+            return price.ToString();
+        });
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '475'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/475
+  :user_name: fbis
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/89/
+  :language: Perl
+  :time: 2007/07/10 11:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">ちゃんとfloor使ってやってみる</pre>\r\n\t"
+  :code: |
+    perl -MPOSIX -pe 's/(\d+)/floor($1*1.05)/eg'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2740'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/2740
+  :user_name: 130R
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/409/
+  :language: PowerShell
+  :time: 2007/08/31 09:15 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\r\n\t  <pre class=\"compact\"></pre>\r\n\t"
+  :code: |
+    PS C:\&gt; $item.split("、") | %{$_ -match "(^.+[^\d])(\d+)(.+$)"} | %{([int]$matches[2]) * 1.05} | %{$matches[1]+[int]($_-0.5)+$matches[3]}
+    ダイコン157円
+    ハクサイ126円
+    ジャガイモ31円
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '165'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/165
+  :user_name: mattn
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/52/
+  :language: Vim
+  :time: 2007/07/05 04:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  ノーマルモードで実行\r\n\t"
+  :code: |
+    :%s!\(\d\+\)!\=submatch(0)*105/100!g
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '305'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/305
+  :user_name: daisuke
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/157/
+  :language: 
+  :time: 2007/07/07 09:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  上の方の人と丸被りだった。orz 申し訳ない。\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4112'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/4112
+  :user_name: fujidig
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/507/
+  :language: 
+  :time: 2007/11/16 13:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  searchdown2 で。\r\n\t"
+  :code: |2
+        disabledraw;
+        begingroupundo;
+        gofiletop;
+        while( true ) {
+            searchdown2 "[0-9]", regular;
+            if( !result ) {
+                break;
+            }
+            #figX = x;
+            #figY = y;
+            searchdown "[^0-9]", regular;
+            if( !result ) {
+                gofileend;
+            }
+            #figure = val( gettext( #figX, #figY, x, y ) );
+            beginsel;
+            moveto #figX, #figY;
+            insert str( #figure * 105 / 100 );
+        }
+        endgroupundo;
+        enabledraw;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '369'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/369
+  :user_name: こう。
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2007/07/09 01:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  何の工夫もなしに\r\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n#include
+    &lt;ctype.h&gt;\n\nchar* tax(char* src,char* dest){\n\tchar *p;\n\tchar buf[256];\n\tlong
+    price;\n\t\n\tp=src;\n\tdest[0]='\\0';\n\twhile(*p){\n\t\tif(isdigit(*p)){\n\t\t\tprice=strtol(p,&amp;p,10);\n\t\t\tprice=price*105/100;\n\t\t\tsprintf(buf,\"%ld\",price);\n\t\t\tstrcat(dest,buf);\n\t\t}else{\n\t\t\tstrncat(dest,p,1);\n\t\t\tp++;\n\t\t}\n\t}\n\treturn
+    dest;\n}\n\nint main(){\n\tchar buf[256];\n\t\n\ttax(\"ダイコン150円、ハクサイ120円、ジャガイモ30円\",buf);\n\tprintf(\"%s\\n\",buf);\n\ttax(\"PC150000円、車2000000円\",buf);\n\tprintf(\"%s\\n\",buf);\n\treturn
+    0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3869'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/3869
+  :user_name: yappy
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/533/
+  :language: C
+  :time: 2007/11/11 16:58 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\r\n\t  <pre class=\"compact\">scanfの真の力を見せるときが来た！\r\nコード簡略化のための副作用\r\n・入出力は引数ではなく標準入出力に\r\n・半角数字の前の半角スペース禁止(scanfが読み飛ばしてしまいます)</pre>\r\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+
+    int main(){
+        int price;
+        while(!feof(stdin))
+            scanf("%d", &amp;price)?printf("%d", price*105/100):putchar(getchar());
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2120'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/2120
+  :user_name: higeorange
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/194/
+  :language: Io
+  :time: 2007/08/13 15:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\"></pre>\r\n\t"
+  :code: |
+    includeTax := method(str,
+        regex := Regex clone setPattern("\\d+") setString(str)
+        return regex substitute(n, (n asString asNumber * 1.05) floor)
+    )
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '84'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/84
+  :user_name: 匿名
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/4/
+  :language: JavaScript
+  :time: 2007/07/04 03:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">身も蓋もないけど。</pre>\r\n\t"
+  :code: |
+    function Convert2TaxedHandout(s) {
+      return s.replace(/[1-9][0-9]*/g, function(p) { return Math.floor(p * 1.05); });
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1362'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/1362
+  :user_name: rubikitch
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/105/
+  :language: Bash
+  :time: 2007/07/23 06:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  基本正規表現の余計なエスケープうぜええええ＞＜\r\n\t"
+  :code: |
+    function do-digits () {
+        digit=`expr "$1" : '\([0-9]\+\)'`
+        if [ "$digit" != "" ];then
+            echo -n `expr $digit '*' 21 / 20`
+            rest=`expr "$1" : '[0-9]\+\(.\+\)'`
+        else
+            rest="$1"
+        fi
+    }
+
+    function do-nondigits () {
+        if [ "$1" != "" ]; then
+            nondigitlen=`expr "$1" : '[^0-9]\+'`
+            len=`expr length "$1"`
+            echo -n `expr "$1" : '\([^0-9]\+\)'`
+            if [ $nondigitlen != $len ]; then
+                rest=`expr "$1" : '[^0-9]\+\(.\+\)'`
+            else
+                rest=""
+            fi
+        fi
+    }
+
+    function with-tax () {
+        rest=$1
+        while [ "$rest" != "" ]; do
+            do-digits "$rest"
+            do-nondigits "$rest"
+        done
+        echo
+    }
+    with-tax "ダイコン150円、ハクサイ120円、ジャガイモ30円"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '366'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/366
+  :user_name: ところてん
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/07/09 00:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">(\\d*円)を修正する問題だと勘違いしていたorz。</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '304'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/304
+  :user_name: daisuke
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/157/
+  :language: Ruby
+  :time: 2007/07/07 09:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \r\n\t"
+  :code: |
+    def add_tax(str)
+      str.gsub(/\d+/){($&amp;.to_i * 1.05).to_i}
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3601'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/3601
+  :user_name: 匿名
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/4/
+  :language: R
+  :time: 2007/10/30 12:25 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">あまりたいした改善でもないが</pre>\r\n\t"
+  :code: |
+    string &lt;- "ダイコン150円、ハクサイ120円、ジャガイモ30円"
+    x &lt;- unlist(strsplit(string, "[[:digit:]]+"))
+    r &lt;- gregexpr("[[:digit:]]+", string)
+    start  &lt;- r[[1]]
+    len &lt;- attr(r[[1]], "match.length")
+    y &lt;- sapply(1:length(start), function(i) floor(as.integer(substr(string, start[i], start[i]+len[i]-1))*1.05))
+    paste(x, c(y, ""), collapse="", sep="")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6504'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/6504
+  :user_name: genzou
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/06/14 23:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>ひねりなしです。</p>\n\r\n\t"
+  :code: |
+    def replaceNumber( text ){
+        text.replaceAll( /[1-9]\d+/, {
+            (it.toInteger() * 1.05).toInteger()
+        })
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '507'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/507
+  :user_name: ocean
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/177/
+  :language: C
+  :time: 2007/07/10 18:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  C++のSTLを使ってみました。bcc32(5.5)で確認。\r\n\t"
+  :code: "#include &lt;iostream&gt;\n#include &lt;sstream&gt;\n#include &lt;cctype&gt;\n#include
+    &lt;string&gt;\n#include &lt;algorithm&gt;\n#include &lt;functional&gt;\n\nstd::string
+    convert_do(const std::string&amp; s)\n{\n    std::istringstream sin(s);\n\n    int
+    price;\n\n    sin &gt;&gt; price;\n\n    price *= 1.05;\n\n    std::ostringstream
+    sout;\n\n    sout &lt;&lt; price;\n\n    return sout.str();\n}\n\nstruct isdigit
+    : std::unary_function&lt;char, bool&gt;\n{\n    bool operator()(char c) const\n
+    \   {\n        return std::isdigit(c);\n    }\n};\n\nstd::string convert(const
+    std::string&amp; s)\n{\n    std::string ret;\n\n    std::string::const_iterator
+    beg = s.begin();\n    std::string::const_iterator end = s.end();\n\n    while
+    (true)\n    {\n        std::string::const_iterator cur;\n\n        cur = std::find_if(beg,
+    end, isdigit());\n\n        ret.append(std::string(beg, cur)); beg = cur;\n\n
+    \       if (beg == end)\n        {\n            break;\n        }\n\n        cur
+    = std::find_if(beg, end, std::not1(isdigit()));\n\n        ret.append(convert_do(std::string(beg,
+    cur))); beg = cur;\n    }\n\n    return ret;\n}\n\nint main()\n{\n    std::cout
+    &lt;&lt; convert(\"Æ\x92_Æ\x92CÆ\x92RÆ\x92“150‰~Â\x81AÆ\x92nÆ\x92NÆ\x92TÆ\x92C120‰~Â\x81AÆ\x92WÆ\x92Æ\x92Æ\x92KÆ\x92CÆ\x92‚30‰~\")
+    &lt;&lt; std::endl;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '859'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/859
+  :user_name: rubikitch
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/105/
+  :language: D
+  :time: 2007/07/14 17:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \r\n\t"
+  :code: |
+    module doukaku;
+    private import std.stdio;
+    private import std.string;
+    private import std.regexp;
+    char[] including_tax(char[] str) {
+        return sub(str, r"[0-9]+", delegate(RegExp re) {
+                long price = atoi(re.match(0));
+                return format("%d", price*21/20);
+            }, "g");
+    }
+    void main() {
+        writefln(including_tax("ダイコン150円、ハクサイ120円、ジャガイモ30円"));
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '119'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/119
+  :user_name: noeta
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/60/
+  :language: Python
+  :time: 2007/07/04 07:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">どなたかかエレガントなコードをお願いします＞＜</pre>\r\n\t"
+  :code: |
+    import re
+    def include_tax(s):
+        return re.sub('\d+', lambda m: str(int(int(m.group(0)) * 1.05)), s)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '422'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/422
+  :user_name: cats
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/07/10 02:55 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\r\n\t  回答済みだけど、メモ代わりに。\r\n\t"
+  :code: |
+    using System;
+    using System.Text.RegularExpressions;
+    class Program
+    {
+      static void Main()
+      {
+        string s = "test100xyz400";
+        Console.WriteLine(ReplaceTax(s));
+      }
+      public static string ReplaceTax(string s)
+      {
+        return Regex.Replace(s, @"\d+", delegate(Match m)
+        {
+          return ((int)(int.Parse(m.Value) * 1.05)).ToString();
+        });
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '115'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/115
+  :user_name: jmuk
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/19/
+  :language: Ruby
+  :time: 2007/07/04 06:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  ruby でも gsub ですかね。\r\n\t"
+  :code: |
+    % ruby -pe '$_.gsub!(/\d+/){|s| (s.to_i * 1.05).to_i}'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '137'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/137
+  :user_name: mimizu
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/103/
+  :language: Java
+  :time: 2007/07/04 15:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \r\n\t"
+  :code: "import java.util.regex.Pattern;\nimport java.util.regex.Matcher;\n\npublic
+    class ExciseTax {\n\t\n\tprivate double rate;\n\t\n\tpublic ExciseTax(double rate)
+    {\n\t\tthis.rate = 1.0 + rate;\n\t}\n\t\n\tpublic String includeTax(String string)
+    {\n\t\tPattern p = Pattern.compile(\"\\\\d+\");\n\t\tMatcher m = p.matcher(string);\n\t\tStringBuffer
+    sb = new StringBuffer();\n\t\twhile (m.find()) {\n\t\t\tm.appendReplacement(sb,
+    calcTaxIncludedPrice(m.group()));\n\t\t}\n\t\tm.appendTail(sb);\n\t\treturn sb.toString();\n\t}\n\t\n\tprivate
+    String calcTaxIncludedPrice(String price) {\n\t\treturn Long.toString((long)(Long.parseLong(price)
+    * rate));\n\t}\n\t\n\tpublic static void main(String[] args) {\n\t\tSystem.out.println(new
+    ExciseTax(0.05).includeTax(\"ダイコン150円、ハクサイ120円、ジャガイモ30円\"));\n\t}\n\t\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '436'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/436
+  :user_name: にしお
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/10 05:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  一瞬、投稿ミスで重複になってしまったのかと思ってしまいました(笑)\r\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '409'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/409
+  :user_name: kacchi
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/145/
+  :language: Emacs
+  :time: 2007/07/09 20:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">(included-tax \"ダイコン150円、ハクサイ120円、ジャガイモ30円\")\r\n\r\n=&gt;\"ダイコン157円、ハクサイ126円、ジャガイモ31円\"\r\n</pre>\r\n\t"
+  :code: |
+    (defun including-tax (str)
+      (let ((rep (lambda (m) (number-to-string (floor (* (string-to-number m) 1.05))))))
+        (replace-regexp-in-string "[0-9]+" rep str)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1296'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/1296
+  :user_name: katsu
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/117/
+  :language: Prolog
+  :time: 2007/07/21 14:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  一応。Regexpライブラリって無いわけではないみたいだけど…\r\n\t"
+  :code: |
+    text([],[]).
+    text([C|Cs],R):-num(C),number([C|Cs],Cr,N),number_codes(N1,N),N2 is floor(N1*1.05),number_codes(N2,N3),append(N3,Rs,R),text(Cr,Rs).
+    text([C|Cs],[C|Rs]):-text(Cs,Rs).
+
+    num(C):-between(0'0,0'9,C).
+
+    number([],[],[]).
+    number([C|Cs],Cr,[C|Ns]):-num(C),number(Cs,Cr,Ns).
+    number(Cr,Cr,[]).
+
+    :-text("12345円 だいこん123円",R),string_to_list(Rt,R),writeln(Rt).
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '989'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/989
+  :user_name: hirataka
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/233/
+  :language: 
+  :time: 2007/07/16 09:57 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  \r\n\t"
+  :code: |
+    「ダイコン150円、ハクサイ120円、ジャガイモ30円」を税込み価格で表示
+
+    ●税込み価格(原稿を)
+    　箱とは配列
+    　
+    　原稿を「円」で区切って反復
+    　　対象を「\d+$」で正規表現マッチ
+    　　価格はそれの1.05倍の整数部分
+    　　対象の「\d+$」を「{価格}円」へ正規表現置換
+    　　箱にそれを配列追加
+    　
+    　箱を空で配列結合して戻す
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '435'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/435
+  :user_name: にしお
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/10 05:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  たしかに、120 * 1.05はちょうど126.0になるはずですね…\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1428'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/1428
+  :user_name: kkobayashi
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2007/07/24 15:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">Rのgsubは、マッチングした文字列を関数の引数にできないようです。\r\nもっと洗練された回答がありそうなのですが・・・。\r\n\r\n&gt;
+    string &lt;- \"ダイコン150円、ハクサイ120円、ジャガイモ30円\"\r\n&gt; tax(string)\r\n[1] \"ダイコン157円、ハクサイ126円、ジャガイモ31円\"</pre>\r\n\t"
+  :code: |
+    tax &lt;- function(x){
+       r      &lt;- gregexpr("[[:digit:]]+", x)
+       start  &lt;- r[[1]]
+       len    &lt;- attr(r[[1]], "match.length")
+       x2     &lt;- unlist(strsplit(x, ""))
+       for(i in 1:length(start)){
+           val &lt;- floor(as.integer(paste(x2[start[i]:(start[i]+len[i]-1)], collapse="")) * 1.05)
+           x2[start[i]:(start[i]+len[i]-1)] &lt;- ""
+           x2[start[i]] &lt;- val
+       }
+       return(paste(x2, collapse=""))
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4023'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/4023
+  :user_name: fujidig
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/507/
+  :language: 
+  :time: 2007/11/14 13:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  開いている文書から変換。\r<br>「与えられた文字列の中から見つけ出し、変更した文字列を返す関数を作る」には沿っていませんが、この方が秀丸マクロらしいと思います。\r\n\t"
+  :code: |2
+        disabledraw;
+        begingroupundo;
+        gofiletop;
+        while( true ) {
+            if ( code &lt; '0' || code &gt; '9' ) {
+                searchdown "[0-9]", regular;
+                if( !result ) {
+                    break;
+                }
+            }
+            #figX = x;
+            #figY = y;
+            searchdown "[^0-9]", regular;
+            if( !result ) {
+                gofileend;
+            }
+            #figure = val( gettext( #figX, #figY, x, y ) );
+            beginsel;
+            moveto #figX, #figY;
+            delete;
+            insert str( #figure * 105 / 100 );
+        }
+        endgroupundo;
+        enabledraw;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '151'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/151
+  :user_name: rubikitch
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/105/
+  :language: Common
+  :time: 2007/07/04 18:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  初めてcl-ppcreを使ってみました\r\n\t"
+  :code: |
+    (require 'cl-ppcre)
+    (defun including-tax (string)
+      (cl-ppcre:regex-replace-all
+       "\\d+" string
+       (lambda (num) (format nil "~a" (floor (* (parse-integer num) 1.05))))
+       :simple-calls t))
+
+    ;; CL-USER&gt; (including-tax "ダイコン150円、ハクサイ120円、ジャガイモ30円")
+    ;; "ダイコン157円、ハクサイ125円、ジャガイモ31円"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3230'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/3230
+  :user_name: omoikani
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/374/
+  :language: StandardML
+  :time: 2007/10/02 09:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\"></pre>\r\n\t"
+  :code: |
+    fun includeTax str =
+    let
+      val s = tokens "[0-9]+" str
+      val yen = tokens "[^0-9]+" str
+      val tax = map (fn x =&gt; itoa (atoi x * 105 div 100)) yen
+
+      fun loop (a::a', b::[]) = a ^ b ^ (concat a')
+        | loop (a::a', b::b') = a ^ b ^ (loop (a', b'))
+    in
+      loop (s, tax)
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '549'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/549
+  :user_name: ocean
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/177/
+  :language: diff
+  :time: 2007/07/11 08:14 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  浮動小数点数だと、100 * 1.05 =&gt; 105 のようにちょうど整数になったとき、計算誤差によっては104になってしまうかもしれないので、整数のままで処理するように修正。\r\n\t"
+  :code: "--- main.cpp.orig\tWed Jul 11 15:03:27 2007\n+++ main.cpp\tWed Jul 11 15:01:35
+    2007\n@@ -13,11 +13,9 @@\n \n     sin &gt;&gt; price;\n \n-    price *= 1.05;\n-\n
+    \    std::ostringstream sout;\n \n-    sout &lt;&lt; price;\n+    sout &lt;&lt;
+    (price * 105 / 100);\n \n     return sout.str();\n }\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '532'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/532
+  :user_name: ether
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/96/
+  :language: Lua
+  :time: 2007/07/11 06:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \r\n\t"
+  :code: |
+    function tax(text)
+      return string.gsub(text, "%d+",
+        function(amt)
+          return tostring(math.floor(amt * 1.05))
+        end)
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '997'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/997
+  :user_name: iwk
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/49/
+  :language: OCaml
+  :time: 2007/07/16 10:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \r\n\t"
+  :code: |
+    open System;;
+    open System.Text.RegularExpressions;;
+
+    let yen:string = "円";;
+
+    let tax str =
+        let re = new Regex( "\d+" ^ yen ) in
+        let matches = Seq.to_list { for m in re.Matches( str ) -&gt; m.ToString() } in
+        let getPrice (s:string) = Int32.Parse(s.Replace(yen, "")) in
+        let taxes s = ((getPrice s) * 105 / 100).ToString() ^ yen in
+        let rec replace (base:string) = function
+            | [] -&gt; base
+            | m::ms -&gt; replace (base.Replace(m,(taxes m))) ms in
+        replace str matches;;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1056'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/1056
+  :user_name: morchin
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/78/
+  :language: Python
+  :time: 2007/07/18 06:35 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">string.Templateを使ったバージョン。かなり冗長。orz\r\nユニコード文字列と普通の文字列の両方に対応。</pre>\r\n\t"
+  :code: "# -*- coding: utf-8 -*-\nimport re, string\n\ndef include_tax(s):\n\tstrtype
+    = type(s)\n\tp = re.compile(r'([\\d]+)')\n\ts2 = re.sub(p, r'${_\\1}', s)\n\ts3
+    = string.Template(s2)\n\td = [(strtype('_%d' % n), int(n*1.05)) for n in map(int,
+    re.findall(p, s))]\n\treturn s3.substitute(dict(d))\n\t\nprint include_tax(u'ダイコン150円、ハクサイ120円、ジャガイモ30円')\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1843'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/1843
+  :user_name: yattom
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/335/
+  :language: awk
+  :time: 2007/08/04 18:07 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  <pre class=\"compact\">gawk -ftax.awk &lt;データファイル&gt;\r\n\r\nex)\r\n&gt;
+    type test.txt\r\nダイコン150円、ハクサイ120円、ジャガイモ30円\r\n\r\n&gt; gawk -ftax.awk test.awk\r\nダイコン157円、ハクサイ126円、ジャガイモ31円\r\n\r\nawkで文字列中の複数のパターンを逐次処理する場合の\r\n典型的パターンだと思います。</pre>\r\n\t"
+  :code: "{\n\ts = $0\n\tresult = \"\"\n\twhile(match(s, /[0-9]+/)) {\n\t\ttax_inc
+    = int(substr(s, RSTART, RLENGTH) * 1.05)\n\t\tresult = result substr(s, 1, RSTART
+    - 1) tax_inc\n\t\ts = substr(s, RSTART + RLENGTH)\n\t}\n\tprint result s\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '618'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/618
+  :user_name: anekos
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/170/
+  :language: Haskell
+  :time: 2007/07/12 08:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  UTF-8の入力で確認。\r\n他では文字化けするかもしれません。\r\n\t"
+  :code: |
+    import Char
+    includeTax s = inText s
+        where inText []                    = []
+              inText (x:xs) | isDigit x    = inPrice xs [x]
+                            | otherwise    = x : inText xs
+              inPrice (x:xs) y | isDigit x = inPrice xs (y ++ [x])
+              inPrice xs y                 = tax y ++ inText xs
+              tax s                        = show $ floor $ 1.05 * read s
+
+    main = getContents &gt;&gt;= (putStr . includeTax)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '861'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/861
+  :user_name: yuin
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/07/14 18:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">実際には日本語でコケますが・・・</pre>\r\n\t"
+  :code: "import scala.io._\nimport java.util.regex._\n\nclass ExtendedString(self:String)
+    {\n  def gsub(reg:String)(f:(String)=&gt;String) = {\n    val result = new StringBuffer\n
+    \   val m = Pattern.compile(\"\\\\d+\").matcher(self)\n    while(m.find) m.appendReplacement(result,
+    f(m.group))\n    m.appendTail(result)\n    result.toString\n  }\n  \n  def taxed():String
+    = {\n    gsub(\"\\\\d+\"){x =&gt; (Integer.parseInt(x)*1.05).asInstanceOf[Int].toString}\n
+    \ }\n}\nimplicit def string2ext(self:String) = new ExtendedString(self)\n\n\"ダイコン150円、ハクサイ120円、ジャガイモ30円\".taxed\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6600'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/6600
+  :user_name: pooq
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/606/
+  :language: J
+  :time: 2008/06/28 05:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">正規表現のライブラリを使ってみた。\r\n\r\n   data=.'ダイコン150円、ハクサイ120円、ジャガイモ30円'\r\n
+    \  tax data\r\nダイコン157円、ハクサイ126円、ジャガイモ31円\r\n</pre>\r\n\t"
+  :code: |
+    load 'regex'
+    tax=:3 :0
+    f=. &lt;. &amp; (1.05 &amp; *) &amp;. ".
+    '[0-9]+' f rxapply y
+    )
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '408'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/408
+  :user_name: kacchi
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/145/
+  :language: Scheme
+  :time: 2007/07/09 20:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">(including-tax \"ダイコン150円、ハクサイ120円、ジャガイモ30円\")\r\n\r\n=&gt;\"ダイコン157円、ハクサイ126円、ジャガイモ31円\"\r\n</pre>\r\n\t"
+  :code: |
+    (define (including-tax str)
+      (let ((rep (lambda (m) (x-&gt;integer (floor (* (string-&gt;number (m 0)) 1.05))))))
+        (regexp-replace-all #/\d+/ str rep)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4021'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/4021
+  :user_name: fujidig
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/507/
+  :language: 
+  :time: 2007/11/14 13:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  \r\n\t"
+  :code: "    call IncludeTax \"ダイコン150円、ハクサイ120円、ジャガイモ30円\";\n    message $$return;\n
+    \   endmacro;\n\nIncludeTax:\n    $$figure = \"\";\n    $$result = \"\";\n    while(
+    $$1 != \"\" ) {\n        ##char = ascii( $$1 );\n        if ( ##char &gt;= '0'
+    &amp;&amp; ##char &lt;= '9' ) {\n            $$figure = $$figure + char( ##char
+    );\n        } else {\n            if ( $$figure != \"\" ) {\n                $$result
+    = $$result + str( val( $$figure ) * 105 / 100 );\n                $$figure = \"\";\n
+    \           }\n            $$result = $$result + char( ##char );\n        }\n
+    \       \n        $$1 = rightstr( $$1, strlen( $$1 ) - strlen( char( ##char )
+    ) );\n    }\n    if ( $$figure != \"\" ) {\n        $$result = $$result + str(
+    val( $$figure ) * 105 / 100 );\n        $$figure = \"\";\n    }\n    return $$result;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9284'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/9284
+  :user_name: bleis-tift
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/732/
+  :language: SQL
+  :time: 2009/07/05 03:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>SQL Server 2008 で確認しました。</p>\n\r\n\t"
+  :code: |
+    WITH
+      Input(draft) AS (
+        SELECT N'ダイコン150円、ハクサイ120円、ジャガイモ30円'
+      )
+    , Split(i, is_num, elem, draft) AS (
+        SELECT
+            1
+          , CASE WHEN LEFT(draft, 1) LIKE '[0-9]' THEN 1 ELSE 0 END
+          , CAST(LEFT(draft, 1) AS nvarchar(max))
+          , SUBSTRING(draft, 2, LEN(draft))
+        FROM
+            Input
+        UNION ALL
+        SELECT
+            CASE
+            WHEN LEFT(draft, 1) LIKE '[0-9]' AND is_num = 1
+              THEN i
+            WHEN LEFT(draft, 1) NOT LIKE '[0-9]' AND is_num = 0
+              THEN i
+              ELSE i + 1
+            END
+          , CASE WHEN LEFT(draft, 1) LIKE '[0-9]' THEN 1 ELSE 0 END
+          , CASE
+            WHEN LEFT(draft, 1) LIKE '[0-9]' AND is_num = 1
+              THEN elem + LEFT(draft, 1)
+            WHEN LEFT(draft, 1) NOT LIKE '[0-9]' AND is_num = 0
+              THEN elem + LEFT(draft, 1)
+              ELSE LEFT(draft, 1)
+            END
+          , SUBSTRING(draft, 2, LEN(draft))
+        FROM
+            Split
+        WHERE
+            draft &lt;&gt; ''
+      )
+    , Elems(i, is_num, elem) AS (
+        SELECT
+            i
+          , is_num
+          , elem
+        FROM
+            Split P
+        WHERE
+            NOT EXISTS(
+              SELECT * FROM Split C
+              WHERE P.i = C.i AND LEN(P.elem) &lt; LEN(C.elem)
+            )
+      )
+    , TaxIn(i, elem) AS (
+        SELECT
+            i
+          , CASE is_num
+            WHEN 1 THEN CAST(FLOOR(CAST(elem AS int) * 1.05) AS nvarchar(max))
+                   ELSE elem
+            END
+        FROM
+            Elems
+      )
+    , [Concat](i, tax_in, max_i) AS (
+        SELECT
+            0
+          , CAST('' AS nvarchar(max))
+          , MAX(i)
+        FROM
+            TaxIn
+        UNION ALL
+        SELECT
+            i + 1
+          , tax_in + (SELECT elem FROM TaxIn WHERE TaxIn.i = [Concat].i + 1)
+          , max_i
+        FROM
+            [Concat]
+        WHERE
+            i &lt;&gt; max_i
+      )
+    , Result(res) AS (
+        SELECT tax_in FROM [Concat] WHERE i = max_i
+      )
+    SELECT * FROM Result
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8005'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/8005
+  :user_name: pa
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/943/
+  :language: Other
+  :time: 2008/11/09 10:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">正規表現のテスト。\r\n\r\n文字列を配列として利用してみる。\r\nスライスで扱えるのですっきりと書くことが出来る。\r\n\r\nRegexモジュールをロードし、\r\nRegex-&gt;compileで正規表現のコンパイル、\r\nRegex-&gt;executeで実行。\r\n戻り値は配列だが0番目のみ有効。\r\n1番目以降を使うのは正規表現のなかに()を入れてマッチさせる場合らしい。\r\n\r\n今回の使用方法では、executeよりもexecuteseの方が良かったかもしれない。\r\n\r\n例\r\n%
+    d6 ダイコン150円、ハクサイ120円、ジャガイモ30円\r\nダイコン158円、ハクサイ126円、ジャガイモ32円</pre>\r\n\t"
+  :code: "implement d6;\n\ninclude \"sys.m\";\ninclude \"draw.m\";\ninclude \"string.m\";\ninclude
+    \"regex.m\";\n\nd6: module{\n    sys: Sys;\n    init: fn(ctx: ref Draw-&gt;Context,
+    argv: list of string);\n    usage: fn(prog: string);\n    main: fn(src: string);\n};\n\nmain(src:
+    string)\n{\n    regex: Regex;\n    regex = load Regex Regex-&gt;PATH;\n    str:
+    String;\n    str = load String String-&gt;PATH;\n\n    re: Regex-&gt;Re;\n    a,
+    b, p, pre, post : int;\n\n    (re, nil) = regex-&gt;compile(\"[0-9]+\", 0);\n\n
+    \   p = 0;\n    while(p &lt; len src){\n        rslt := regex-&gt;execute(re,
+    src[p:]);\n        if(rslt == nil){\n            break;\n        }\n\n        (a,
+    b) = rslt[0];    \n        sys-&gt;print(\"%s\", src[p: p + a]);\n        (pre,
+    nil) = str-&gt;toint(src[p + a:p + b], 10);\n        post = int (real pre * 1.05);\n
+    \       sys-&gt;print(\"%d\", post);\n\n        p += b;\n    }\n\n    sys-&gt;print(\"%s\",
+    src[p:]);\n}\n\ninit(ctx: ref Draw-&gt;Context, argv: list of string)\n{\n    sys
+    = load Sys Sys-&gt;PATH;\n\n    prog: string = hd argv;\n\n    argv = tl argv;\n
+    \   if(argv == nil){\n        usage(prog);\n        return;\n    }\n\n    while(argv
+    != nil){\n        main (hd argv);\n        argv = tl argv;\n    }\n    sys-&gt;print(\"\\n\");\n}\n\nusage
+    (prog: string)\n{\n    sys-&gt;print(\"usage: %s [string]\\n\", prog);\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10516'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/10516
+  :user_name: kamotsu
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/1101/
+  :language: Other
+  :time: 2010/05/27 17:54 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\r\n\t  <pre class=\"compact\">Clojureで．\r\ngsubに渡した無名関数はstring型を取ってnumber型を返しているが，\r\n何故かうまくいく．</pre>\r\n\t"
+  :code: "(use 'clojure.contrib.str-utils)\n\n(defn inc-tax-string [string]\n  (re-gsub
+    #\"\\d+\" #(Math/round (* (Integer/parseInt %) 1.05)) string))\n  \n(inc-tax-string
+    \"ダイコン150円、ハクサイ120円、ジャガイモ30円\")\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8284'
+  :parent_id: '6'
+  :url: http://ja.doukaku.org/comment/8284
+  :user_name: genzou
+  :user_url: /web/20110320100230/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2009/01/04 21:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>普通はこうやってreplaceAll使うらしい</p>\n\r\n\t"
+  :code: |
+    def replaceNumber( text ){
+        text.replaceAll(/[1-9]\d*/){
+            (it.toInteger() * 1.05).toInteger()
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 

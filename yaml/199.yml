@@ -1,0 +1,1184 @@
+---
+:id: '199'
+:title: echoクライアント
+:comments:
+- :id: '7080'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7080
+  :user_name: nu
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/870/
+  :language: 
+  :time: 2008/08/09 14:50 GMT
+  :vote_count: '10'
+  :vote_score: '0'
+  :body: "\r\n\t  <div class=\"section\">\n<p>TCPのechoクライアントを書いてください。\r</p>\n<p>\r</p>\n<ul>\n<li>\n
+    サーバのホスト名ないしIPアドレス、およびポートはコマンドライン引数で指定します。\r\n</li>\n<li>\n 標準入力からユーザの入力を受け取り、echoサーバに送信します。\r\n</li>\n<li>
+    echoサーバから受信したデータを標準出力に出力します。\r</li>\n</ul>\n<p>\r</p>\n<p>Windowsなら、Simple TCP/IP
+    Servicesを起動してやれば、ローカルの確認用echo サーバとして使えます。\r</p>\n<p>\r</p>\n<p> my_program localhost
+    7 &lt; input_file &gt; result_file\r</p>\n<p>のようにしてリダイレクトを行った場合にも、result_fileがinput_fileの内容と一致するようにしてみてください。</p>\n</div>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7120'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7120
+  :user_name: kkobayashi
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2008/08/13 11:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>こんな感じでしょうか。</p>\n\n\t"
+  :code: |
+    echo.client &lt;- function(host.name="localhost", port.number=9999){
+      sock &lt;- socketConnection(host=host.name, port=port.number)
+      repeat{
+        writeLines(readLines(), sock)
+        writeLines(readLines(sock, n=1))
+      }
+    }
+    argv &lt;- commandArgs(trailingOnly=T)
+    echo.client(argv[1], argv[2])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7122'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7122
+  :user_name: seri
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/641/
+  :language: Ruby
+  :time: 2008/08/13 13:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  久しぶりの投稿\r\n\n\t"
+  :code: |
+    require 'socket'
+
+    host = ARGV[0]
+    port = ARGV[1].to_i
+
+    TCPSocket.open(host, port) { |s|
+      while $stdin.gets
+        s.write $_
+        print s.gets
+      end
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7123'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7123
+  :user_name: turugina
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/760/
+  :language: Perl
+  :time: 2008/08/13 20:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">IO::* モジュールを使って。</pre>\n\t"
+  :code: |
+    use strict;
+    use warnings;
+
+    use IO::Socket::INET;
+    use IO::Handle;
+
+    my $s = IO::Socket::INET-&gt;new(
+      PeerAddr =&gt; $ARGV[0],
+      PeerPort =&gt; $ARGV[1],
+    ) or die "failed to open $ARGV[0]:$ARGV[1]";
+
+    my $i = IO::Handle-&gt;new_from_fd(*STDIN, q/r/);
+    my $o = IO::Handle-&gt;new_from_fd(*STDOUT, q/w/);
+    my $buf;
+    while ( my $bytes = $i-&gt;read($buf, 256) ) {
+      $s-&gt;syswrite($buf);
+      $s-&gt;read($buf,$bytes);
+      $o-&gt;syswrite($buf);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7126'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7126
+  :user_name: matarillo
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/136/
+  :language: C
+  :time: 2008/08/15 05:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    using System;
+    using System.IO;
+    using System.Net.Sockets;
+
+    class P
+    {
+        static void Main(string[] args)
+        {
+            TcpClient c = new TcpClient(args[0], int.Parse(args[1]));
+            NetworkStream s = c.GetStream();
+            TextWriter w = new StreamWriter(s);
+            TextReader r = new StreamReader(s);
+            string l = null;
+            while ((l = Console.ReadLine()) != null)
+            {
+                w.WriteLine(l);
+                w.Flush();
+                Console.WriteLine(r.ReadLine());
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7127'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7127
+  :user_name: sumim
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/08/15 06:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    | serverAddress portNumber socket string |
+    serverAddress := NetNameResolver addressFromString: '127.0.0.1'.
+    portNumber := 9999.
+    socket := Socket newTCP.
+    socket connectTo: serverAddress port: portNumber.
+    World findATranscript: nil.
+    [(string := FillInTheBlank request: 'string:') notEmpty] whileTrue: [
+        socket sendData: string, String crlf.
+        Transcript show: socket receiveData].
+    socket close
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '7130'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7130
+  :user_name: stog
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/860/
+  :language: Python
+  :time: 2008/08/15 12:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>$ python client_echo.py localhost 7 &lt; input_file &gt; result_file</p>\n\n\t"
+  :code: |
+    #!/usr/bin/python
+    # -*- coding: utf8 -*-
+    import sys, socket
+
+    host, port = sys.argv[1:3]
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((host, int(port)))
+    sf = s.makefile()
+
+    for line in sys.stdin:
+        sf.write(line)
+        sf.flush()
+        print sf.readline(),
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7132'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7132
+  :user_name: stog
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/860/
+  :language: PHP
+  :time: 2008/08/15 21:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>PHP 5.1.6</p>\n<p>$ php -q client_echo.php localhost 7 &lt; input_file
+    &gt; result_file</p>\n\n\t"
+  :code: |
+    #!/usr/bin/env php
+    &lt;?php
+    $host = $argv[1];
+    $port = $argv[2];
+
+    $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+    socket_connect($sock, $host, $port);
+
+    while ($line = fgets(STDIN, 1024)) {
+        socket_write($sock, $line, strlen($line));
+        echo socket_read($sock, 1024);
+    }
+    ?&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7138'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7138
+  :user_name: takano32
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/148/
+  :language: 
+  :time: 2008/08/16 09:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>クライアント機能に限定したnetcatコマンドを作りなさい、ということかしら？</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7139'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7139
+  :user_name: athos
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/755/
+  :language: Scheme
+  :time: 2008/08/16 16:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  あえて無限リストを使って。\n\t"
+  :code: |
+    (use gauche.net)
+    (use util.stream)
+
+    (call-with-client-socket
+        (make-client-socket 'inet (car *argv*) (x-&gt;integer (cadr *argv*)))
+      (lambda (i o)
+        (stream-for-each
+         (lambda (l)
+           (display #`",|l|\n" o)
+           (print (read-line i)))
+         (port-&gt;stream (current-input-port) read-line))))
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '7141'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7141
+  :user_name: komamitsu
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/786/
+  :language: OCaml
+  :time: 2008/08/16 22:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ocamlfind c -package unix -linkpkg -o echoc echoc.ml</p>\n\n\t"
+  :code: |
+    open Unix
+
+    let conn host port =
+      let hostent = gethostbyname host in
+      open_connection (ADDR_INET(hostent.h_addr_list.(0), port))
+
+    let main () =
+      let (ich, och) = conn Sys.argv.(1) (int_of_string Sys.argv.(2)) in
+      let rec loop () =
+        let str = read_line () in
+        Printf.fprintf och "%s\r\n" str; flush och;
+        print_endline (input_line ich);
+        loop () in
+      loop ()
+
+    let _ = main ()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7142'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7142
+  :user_name: nu
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/870/
+  :language: Python
+  :time: 2008/08/16 22:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>題意が分かりにくかったのでしょうか。申し訳ありません。\r</p>\n<p>\r</p>\n<p>自分が想定していたのは、Pythonで書くなら以下のようなコードだったのですが、題意はご自由に解釈していただいて構いません。</p>\n</div>\n\t"
+  :code: |
+    #!/usr/bin/env python
+    import sys
+    import os
+    import socket
+    from threading import Thread
+
+    class Receiver(Thread):
+        def __init__(self, sock):
+            Thread.__init__(self)
+            self.src = sock
+        def run(self):
+            for data in iter(lambda: self.src.recv(8192), ""):
+                os.write(sys.stdout.fileno(), data)
+
+    def main(args):
+        if len(args) &lt; 3:
+            print &gt;&gt;sys.stderr, "usage: %s host port" % args[0]
+            sys.exit(1)
+        if sys.platform == 'win32':
+            sys.stdin.setmode(os.O_BINARY)
+            sys.stdout.setmode(os.O_BINARY)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((args[1], int(args[2])))
+        receiver = Receiver(sock)
+        receiver.start()
+        for data in iter(lambda: os.read(sys.stdin.fileno(), 8192), ""):
+            sock.send(data)
+        sock.shutdown(socket.SHUT_WR)
+        receiver.join()
+        sock.close()
+        return 0
+
+    if __name__ == '__main__':
+        main(sys.argv)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7143'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7143
+  :user_name: nu
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/870/
+  :language: Python
+  :time: 2008/08/17 00:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ええと、さっきのは#7138さんへのレスです。それと、コードが間違っていたので修正します。\nsetmode()はmsvcrtの関数でした。</p>\n<p>「netcatのクライアント部分と同等」であるかは、netcatコマンドの仕様に詳しくないので、申し訳ありませんが何ともいえません。</p>\n<p>echoはR.Stevensのunpvのようなネットワークプログラミングの教科書の最初のサンプルとして出てくることが多いでしょうから、その多言語版クックブックという観点を考えていました。</p>\n\n\t"
+  :code: |
+    #!/usr/bin/env python
+    import sys
+    import os
+    import socket
+    from threading import Thread
+    import msvcrt
+
+    class Receiver(Thread):
+        def __init__(self, sock):
+            Thread.__init__(self)
+            self.src = sock
+        def run(self):
+            for data in iter(lambda: self.src.recv(8192), ""):
+                os.write(sys.stdout.fileno(), data)
+
+    def main(args):
+        if len(args) &lt; 3:
+            print &gt;&gt;sys.stderr, "usage: %s host port" % args[0]
+            sys.exit(1)
+        if sys.platform == 'win32':
+            msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
+            msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((args[1], int(args[2])))
+        receiver = Receiver(sock)
+        receiver.start()
+        for data in iter(lambda: os.read(sys.stdin.fileno(), 8192), ""):
+            sock.send(data)
+        sock.shutdown(socket.SHUT_WR)
+        receiver.join()
+        sock.close()
+        return 0
+
+    if __name__ == '__main__':
+        main(sys.argv)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7144'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7144
+  :user_name: nskj77
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/375/
+  :language: Haskell
+  :time: 2008/08/17 01:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "module Main where                                                                                                            \n\nimport
+    Control.Arrow\nimport Control.Exception (bracket)\nimport System.Environment (getArgs)\nimport
+    Network (connectTo, PortID(..))\nimport System.IO\n\nfunc :: Kleisli IO (Handle,String)
+    ()\nfunc = arr ((first hPutStr &gt;&gt;&gt; app)\n          &amp;&amp;&amp; ((hGetLines
+    *** length . lines) &gt;&gt;&gt; app))\n    &gt;&gt;&gt; Kleisli join'\n    &gt;&gt;&gt;
+    Kleisli (snd &gt;&gt;&gt; mapM_ putStrLn)\n  where join' :: (Monad m) =&gt; (m
+    a,m b) -&gt; m (a,b)\n        join' (mx,my) = mx &gt;&gt;= \\x -&gt; my &gt;&gt;=
+    \\y -&gt; return (x,y)\n\nhGetLines handle n\n    | n == 0 = return []\n    |
+    otherwise = hGetLine handle\n                    &gt;&gt;= \\l -&gt; hGetLines
+    handle (pred n)\n                    &gt;&gt;= return . (:) l\n\necho :: String
+    -&gt; Handle -&gt; IO ()\necho s handle = do\n    hSetBuffering handle LineBuffering\n
+    \   runKleisli func (handle,s)\n\nmain = do\n    (h:p:_) &lt;- getArgs\n    s
+    &lt;- getContents\n    bracket (connectTo h (port p)) hClose (echo s)\n  where
+    port = PortNumber . fromIntegral . read\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7173'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7173
+  :user_name: lunlumo
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/813/
+  :language: Java
+  :time: 2008/08/17 18:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>　Javaがまだの様なので。</p>\n</div>\n\t"
+  :code: "import    java.io.InputStream;\nimport    java.io.OutputStream;\nimport
+    \   java.net.Socket;\n\nclass Echo {\n    Socket    socket;\n    OutputStream
+    \   out;\n    InputStream    in;\n    \n    public Echo(String host,int port)
+    throws Exception {\n        socket = new Socket(host,port);\n        out = socket.getOutputStream();\n
+    \       in = socket.getInputStream();\n    }\n    \n    public void echo(int size,byte[]
+    request) throws Exception {\n        byte[] response= new byte[size];\n        out.write(request,0,size);\n
+    \       out.flush();\n        in.read(response,0,size);\n        System.out.write(response,0,size);\n
+    \   }\n    \n    public void close() throws Exception {\n        socket.close();\n
+    \   }\n    \n    public static void main(String[] args) {\n        try {\n            Echo
+    \   echo = new Echo(args[0],Integer.parseInt(args[1]));\n            byte[]    request
+    = new byte[2048];\n            int    size;\n            while ((size = System.in.read(request))
+    &gt; 0) {\n                echo.echo(size,request);\n            }\n            echo.close();\n
+    \       } catch(Exception ex) {\n            ex.printStackTrace();\n        }\n
+    \   }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7574'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7574
+  :user_name: ksky
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/918/
+  :language: Groovy
+  :time: 2008/09/05 17:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "try {\n  host = args[0] \n  port = args[1].toInteger()\n} catch (e) {\n
+    \ println \"usage: groovy ${this.class.name} host port\"\n  System.exit 1\n}\n\nnew
+    Socket(host, port).withStreams { is, os -&gt;\n  dis = new DataInputStream(is)\n
+    \ buf = new byte[1024]\n  while ((len = System.in.read(buf)) &gt;= 0) {\n    os.write(buf,
+    0, len)\n    dis.readFully(buf, 0, len)\n    System.out.write(buf, 0, len)\n  }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7677'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7677
+  :user_name: kgbu
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/847/
+  :language: Erlang
+  :time: 2008/09/18 11:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>echoのプロトコル(RFC862)に詳しくないのですが、サーバ側からデータの終わり(eofなど)が返ってこないようなので、タイムアウト(10秒)を設定してみました（汗\r</p>\n<p>送信したデータと比較して、同じならcloseする条件もつけました。\r</p>\n<p>\r</p>\n<p>escriptが利用可能な環境であれば、以下のようにコマンドラインから実行可能です。\r</p>\n<p>\r</p>\n<p>$
+    ./スクリプト名 localhost 7 &lt; testfile &gt; newfile\r</p>\n</div>\n\t"
+  :code: |
+    #!/usr/bin/env escript
+    main([Hostname, Port])-&gt;
+            Str = loop(io:get_line(standard_io,''), []),
+            Res = gen_tcp:connect(Hostname,
+                            list_to_integer(Port),
+                            [binary, {packet, 0}]),
+            case Res of
+                    {ok, Socket} -&gt;
+                            ok = gen_tcp:send(Socket, Str),
+                            receive_data(Socket, [], lists:flatten(Str));
+                    {error, Why} -&gt; io:format("error ~p~n", [Why]), exit(eError)
+            end.
+
+    receive_data(Socket, _Original, _Original) -&gt;
+                    gen_tcp:close(Socket);
+    receive_data(Socket, SoFar, Original) -&gt;
+            receive
+                    {tcp, Socket, Bin} -&gt;
+                            Lines = binary_to_list(Bin),
+                            io:format("~s", [Lines]),
+                            receive_data(Socket, lists:flatten(SoFar ++ [Lines]), Original);
+                    {tcp_closed, Socket} -&gt;
+                            ok
+            after 10000 -&gt;
+                    gen_tcp:close(Socket)
+            end.
+
+    loop(eof, SoFar)-&gt;
+        lists:reverse(SoFar);
+    loop(Data, SoFar) -&gt;
+        loop(io:get_line(''), [Data|SoFar]).
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7748'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/7748
+  :user_name: egtra
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2008/10/04 06:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Boost.Asio@C++でやってみました。\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    #include &lt;boost/asio.hpp&gt;
+
+    int main(int argc, char** argv)
+    {
+        if (argc &lt;= 2)
+        {
+            return 2;
+        }
+        try
+        {
+            boost::asio::ip::tcp::iostream ss(argv[1], argv[2]);
+            std::string send, recv;
+            while (getline(std::cin, send))
+            {
+                ss &lt;&lt; send &lt;&lt; std::endl;
+                getline(ss, recv);
+                std::cout &lt;&lt; recv &lt;&lt; std::endl;
+            }
+        }
+        catch(std::exception const&amp; e)
+        {
+            std::cerr &lt;&lt; e.what() &lt;&lt; std::endl;
+            return 1;
+        }
+        return 0;
+    }
+  :tags:
+  - Boost
+  - Boost.Asio
+  :references:
+    :url: 
+    :title: 
+- :id: '8147'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/8147
+  :user_name: ihag
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/560/
+  :language: C
+  :time: 2008/12/13 04:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>select(2)を使って非同期I/Oで実装してみました．非同期なので，daytimeのような「相手が一方的に喋って切断する」ようなサービスに対しても期待通り動きます．</p>\n<pre
+    class=\"literal-block\">\n% ./echo_client localhost daytime\n13 DEC 2008 19:27:24
+    JST\n</pre>\n<p>また，せっかくなので，アドレスファミリ非依存にしています．IPv6でも動きます．</p>\n\n\t"
+  :code: "#include &lt;sys/types.h&gt;\n#include &lt;sys/socket.h&gt;\n#include &lt;sys/select.h&gt;\n#include
+    &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;signal.h&gt;\n#include
+    &lt;string.h&gt;\n#include &lt;netdb.h&gt;\n#include &lt;unistd.h&gt;\n#include
+    &lt;errno.h&gt;\n\n#ifndef false\n# define false 0\n#endif\n#ifndef true\n# define
+    true !false\n#endif\n\n#define BUFMAX 8192\n\nstruct buf_t {\n    char head[BUFMAX];\n
+    \   int maxsize;\n    int len;\n    char *cur;\n    int f_finished;\n};\nstruct
+    stream_t {\n    int fd;\n    struct buf_t *buf;\n};\n\nvoid buf_init(struct buf_t
+    *);\nvoid buf_truncate(struct buf_t *);\nssize_t stream_read(struct stream_t *);\nssize_t
+    stream_write(struct stream_t *);\nvoid usage(void);\n\n\nvoid\nbuf_init(struct
+    buf_t *buf)\n{\n    memset(buf, 0, sizeof(struct buf_t));\n    buf-&gt;maxsize
+    = BUFMAX;\n    buf-&gt;len = 0;\n    buf-&gt;cur = buf-&gt;head;\n    buf-&gt;f_finished
+    = false;\n}\n\nvoid\nbuf_truncate(struct buf_t *buf)\n{\n    buf-&gt;len = 0;\n
+    \   buf-&gt;cur = buf-&gt;head;\n    buf-&gt;cur = '\\0';\n}\n\nssize_t\nstream_read(struct
+    stream_t *stream)\n{\n    struct buf_t *buf = stream-&gt;buf;\n    int fd = stream-&gt;fd;\n
+    \   ssize_t len = 0, bufrest = 0;\n\n    bufrest = buf-&gt;maxsize - 1 - buf-&gt;len;\n
+    \   if (bufrest == 0)\n        return 0;   /* not enough space in buffer. do nothing.
+    */\n\n    len = read(fd, buf-&gt;cur, bufrest);\n    if (len == -1) {\n        perror(\"read\");\n
+    \       exit(EXIT_FAILURE);\n    } else if (len == 0) {  /* caught EOF */\n        return
+    -1;\n    }\n    \n    buf-&gt;len += len;\n    buf-&gt;cur = buf-&gt;head + buf-&gt;len;\n
+    \   *buf-&gt;cur = '\\0';\n\n    return len;\n}\n\nssize_t\nstream_write(struct
+    stream_t *stream)\n{\n    struct buf_t *buf = stream-&gt;buf;\n    int fd = stream-&gt;fd;\n
+    \   ssize_t len = 0;\n\n    if ((len = write(fd, buf-&gt;head, buf-&gt;len)) ==
+    -1) {\n        switch (errno) {\n        case EPIPE:\n            perror(\"write\");\n
+    \           return -1;\n            break;\n        default:\n            perror(\"write\");\n
+    \           exit(EXIT_FAILURE);\n        }\n    }\n\n    memcpy(buf-&gt;head,
+    buf-&gt;head + len, buf-&gt;len - len);\n    buf-&gt;len -= len;\n\n    buf-&gt;cur
+    = buf-&gt;head + buf-&gt;len;\n    *buf-&gt;cur = '\\0';\n\n    return len;\n}\n\nvoid\nusage(void)\n{\n
+    \   fprintf(stderr, \"usage: ./echo_client &lt;hostname&gt; [port]\\n\");\n    exit(EXIT_FAILURE);\n}\n\n\nint\nmain(int
+    argc, char **argv)\n{\n    char *peer_hostname = NULL;\n    char *peer_port =
+    \"echo\";\n    struct addrinfo hints, *res, *res0;\n    int sockfd = -1;\n\n    struct
+    sigaction act;\n    fd_set read_fds, write_fds;\n    struct buf_t buffer[2];\n
+    \   struct stream_t instream[2], outstream[2], *inp, *outp;\n\n    int loop;\n
+    \   int i, err, ret;\n\n    /*\n     * parse arguments\n     */\n    if (argc
+    &lt;= 1 || argc &gt; 3)\n        usage();\n    if (argc &gt; 2)\n        peer_port
+    = argv[2];\n    peer_hostname = argv[1];\n\n    /*\n     * connect to peer\n     */\n
+    \   memset(&amp;hints, 0, sizeof(hints));\n    hints.ai_family = AF_UNSPEC;\n
+    \   hints.ai_socktype = SOCK_STREAM;\n    if ((err = getaddrinfo(peer_hostname,
+    peer_port, &amp;hints, &amp;res0)) != 0) {\n        fprintf(stderr, \"ERROR: %s\\n\",
+    gai_strerror(err));\n        exit(EXIT_FAILURE);\n    }\n\n    for (res = res0;
+    res; res = res-&gt;ai_next) {\n        if ((sockfd = socket(res-&gt;ai_family,
+    res-&gt;ai_socktype,\n                             res-&gt;ai_protocol)) == -1)
+    {\n            perror(\"socket\");\n            continue;\n        }\n        if
+    (connect(sockfd, res-&gt;ai_addr, res-&gt;ai_addrlen) == -1) {\n            perror(\"connect\");\n
+    \           close(sockfd);\n            sockfd = -1;\n            continue;\n
+    \       }\n        break;\n    }\n    if (sockfd == -1)\n        exit(EXIT_FAILURE);\n\n
+    \   /*\n     * prepare\n     */\n    /* ignore SIGPIPE in order to receive EPIPE
+    from write(2). */\n    memset(&amp;act, 0, sizeof(act));\n    act.sa_handler =
+    SIG_IGN;\n    sigaction(SIGPIPE, &amp;act, NULL);\n\n    for (i = 0; i &lt; 2;
+    i++)\n        buf_init(&amp;buffer[i]);\n\n    memset(instream, 0, sizeof(instream));\n
+    \   memset(outstream, 0, sizeof(outstream));\n\n    instream[0].fd = 0; /* stdin
+    */\n    instream[1].fd = sockfd;\n    outstream[0].fd = 1; /* stdout */\n    outstream[1].fd
+    = sockfd;\n\n    /* connect streams via buffers */\n    instream[1].buf = outstream[0].buf
+    = &amp;buffer[0]; /* sockfd to stdout */\n    instream[0].buf = outstream[1].buf
+    = &amp;buffer[1]; /* stdin to sockfd */\n\n    /*\n     * event loop\n     */\n
+    \   loop = true;\n    while(loop) {\n        /* select */\n        FD_ZERO(&amp;read_fds);\n
+    \       FD_ZERO(&amp;write_fds);\n\n        loop = false;\n        for (i = 0;
+    i &lt; 2; i++) {\n            if (instream[i].buf-&gt;f_finished == false) {\n
+    \               FD_SET(instream[i].fd, &amp;read_fds);\n                loop =
+    true;\n            }\n            if (outstream[i].buf-&gt;len &gt; 0)\n                FD_SET(outstream[i].fd,
+    &amp;write_fds);\n        }\n        if (!loop)\n            break;  /* There
+    is nothing to input */\n\n        ret = select(sockfd + 1, &amp;read_fds, &amp;write_fds,
+    NULL, NULL);\n        switch(ret) {\n        case -1:\n            perror(\"select\");\n
+    \           exit(EXIT_FAILURE);\n            break;\n        case 0:\n            fprintf(stderr,
+    \"Internal ERROR: Unexpected timed out\\n\");\n            exit(EXIT_FAILURE);\n
+    \       }\n\n        /* process input */\n        for (i = 0, inp = instream;
+    i &lt; 2; i++, inp++) {\n            if (!FD_ISSET(inp-&gt;fd, &amp;read_fds))\n
+    \               continue;\n\n            if (stream_read(inp) == -1) {  /* caught
+    EOF */\n                inp-&gt;buf-&gt;f_finished = true;\n                if
+    (inp-&gt;fd == sockfd)  /* socket closed */\n                    loop = false;\n
+    \           }\n        }\n\n        /* process output */\n        for (i = 0,
+    outp = outstream; i &lt; 2; i++, outp++) {\n            if (outp-&gt;buf-&gt;f_finished
+    == true &amp;&amp; outp-&gt;buf-&gt;len == 0) {\n                shutdown(outp-&gt;fd,
+    SHUT_WR);\n                continue;\n            }\n\n            if (!FD_ISSET(outp-&gt;fd,
+    &amp;write_fds))\n                continue;\n            \n            if (stream_write(outp)
+    == -1) { /* caught EPIPE */\n                buf_truncate(outp-&gt;buf);\n                outp-&gt;buf-&gt;f_finished
+    = true;\n                loop = false;\n            }\n        }\n    }\n\n    /*
+    flush remained output buffers */\n    for (i = 0, outp = outstream; i &lt; 2;
+    i++, outp++) {\n        while (outp-&gt;buf-&gt;len &gt; 0)\n            stream_write(outp);\n
+    \   }\n\n    /* finalize */\n    close(sockfd);\n    freeaddrinfo(res0);\n\n    exit(EXIT_SUCCESS);\n}\n"
+  :tags:
+  - POSIX
+  :references:
+    :url: /web/20091213144012/http://www.kt.rim.or.jp/~ksk/sock-faq/unix-socket-faq-ja.html
+    :title: Programming UNIX Sockets in C - Frequently Asked Questions
+- :id: '9656'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9656
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/05 04:09 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>lakeland health board nz &lt;a href=http://rxdrugs24x7.com/category/arthritis.html&gt;Order
+    arthritis&lt;/a&gt; ram nut diet <a class=\"reference\" href=\"/web/20091213144012/http://rxdrugs24x7.com/product/naprosyn.html\">http://rxdrugs24x7.com/product/naprosyn.html</a>
+    psychology richland washington mental health <a class=\"reference\" href=\"/web/20091213144012/http://rxdrugs24x7.com/product/duricef.html\">http://rxdrugs24x7.com/product/duricef.html</a>\nhellp
+    syndrome during pregnancy &lt;a href=http://rxdrugs24x7.com/product/coumadin.html&gt;Order
+    Coumadin&lt;/a&gt; pickle juice and health &lt;a href=http://rxdrugs24x7.com/product/lotrel.html&gt;dental
+    desktop wallpaper&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://rusfilms.com/
+    :title: 'sounding penis '
+- :id: '9659'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9659
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/05 16:45 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>type 1 polyglandular autoimmune syndrome &lt;a href=http://rxdrugs24x7.com/product/luvox.html&gt;Order
+    Luvox&lt;/a&gt; union pacific tea plate <a class=\"reference\" href=\"/web/20091213144012/http://rxdrugs24x7.com/product/xenical.html\">http://rxdrugs24x7.com/product/xenical.html</a>
+    college students and drug use <a class=\"reference\" href=\"/web/20091213144012/http://rxdrugs24x7.com/product/levitra.html\">http://rxdrugs24x7.com/product/levitra.html</a>\npenis
+    saize debate &lt;a href=http://rxdrugs24x7.com/product/wellbutrin.html&gt;Order
+    Wellbutrin&lt;/a&gt; folia vein &lt;a href=http://rxdrugs24x7.com/product/celecoxib.html&gt;billing
+    coder medical&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://rusfilms.com/
+    :title: 'carbohydrates related diseases '
+- :id: '9662'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9662
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/06 19:25 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>uft dental forms &lt;a href=http://rxdrugs24x7.com/product/celecoxib.html&gt;Order
+    Celecoxib&lt;/a&gt; university of texas dental branch houston <a class=\"reference\"
+    href=\"/web/20091213144012/http://rxdrugs24x7.com/product/adalat.html\">http://rxdrugs24x7.com/product/adalat.html</a>
+    staphylococcus aureus opportunistic infection <a class=\"reference\" href=\"/web/20091213144012/http://rxdrugs24x7.com/product/cardura.html\">http://rxdrugs24x7.com/product/cardura.html</a>\nquincy
+    medical &lt;a href=http://rxdrugs24x7.com/catalogue/z.html&gt;usa pharmacy&lt;/a&gt;
+    discoveries in medical history &lt;a href=http://rxdrugs24x7.com/catalogue/p.html&gt;nashville
+    mental health counselors&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://rusfilms.com/
+    :title: 'the effect of ozone on health electronic air cleaner '
+- :id: '9665'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9665
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/07 05:33 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>haddaway rock my heart &lt;a href=http://royalmp3.net/artist9960/josh-lees-discography/&gt;Josh
+    Lees&lt;/a&gt; children mp3 <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist1207/ahriman-discography/\">http://royalmp3.net/artist1207/ahriman-discography/</a>
+    yamaha ringtones <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist1704/africa-djole-discography/\">http://royalmp3.net/artist1704/africa-djole-discography/</a>\nnova
+    telenovela na pop tv &lt;a href=http://royalmp3.net/artist17472/akron-family-discography/&gt;Akron-Family&lt;/a&gt;
+    youtube videos of celine dion an interviwe about her sons birth &lt;a href=http://royalmp3.net/artist1953/hotwire-discography/&gt;pop
+    culture 1964&lt;/a&gt;\nsinik instrumental &lt;a href=http://royalmp3.net/artist38857/magierski-and-tymon-feat.-maly72-discography/&gt;Magierski
+    and Tymon Feat. Maly72&lt;/a&gt; boss audio systems cl 70 300wx2 &lt;a href=http://royalmp3.net/artist3857/california-sunshine-discography/&gt;seussical
+    the musical music&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://rusfilms.com/
+    :title: amen kid rock
+- :id: '9668'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9668
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/07 19:09 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>free music nextel real ringtone &lt;a href=http://royalmp3.net/artist1938/freiburger-spielleyt-discography/&gt;Freiburger
+    Spielleyt&lt;/a&gt; christian rock music lyrics <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist1865/safri-duo-discography/\">http://royalmp3.net/artist1865/safri-duo-discography/</a>
+    music from and inspired <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist3696/peter-mergener-and-weisser-discography/\">http://royalmp3.net/artist3696/peter-mergener-and-weisser-discography/</a>\nkidscorner
+    music &lt;a href=http://royalmp3.net/artist39497/ricardo-silveira-discography/&gt;Ricardo
+    Silveira&lt;/a&gt; music from iphone to imac &lt;a href=http://royalmp3.net/artist2777/alastis-discography/&gt;american
+    country music awards&lt;/a&gt;\nmusic bunny love &lt;a href=http://royalmp3.net/artist17218/timbaland-and-magoo-discography/&gt;Timbaland
+    and Magoo&lt;/a&gt; top 100 on american music billboard chart &lt;a href=http://royalmp3.net/artist2291/joe-satriani-discography/&gt;nami
+    tamaki music videos&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://rusfilms.com/
+    :title: download game mp music video htm
+- :id: '9671'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9671
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/08 17:29 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>pompton music hours &lt;a href=http://royalmp3.net/artist28629/rais-khan-sitar-sultan-khan-s-discography/&gt;Rais
+    Khan Sitar,Sultan Khan S&lt;/a&gt; monster mash music <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist792/yello-discography/\">http://royalmp3.net/artist792/yello-discography/</a>
+    sheet music giulio caccini ave maria <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist271/angra-discography/\">http://royalmp3.net/artist271/angra-discography/</a>\ndeath
+    sentence movie <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_igby_goes_down/\">http://moviestrawberry.com/films/film_igby_goes_down/</a>
+    freecopyable movie files &lt;a href=http://moviestrawberry.com/films/film_red_dragon/&gt;setting
+    wizard of oz movie&lt;/a&gt; movie running man &lt;a href=http://moviestrawberry.com/films/film_the_carnival/&gt;the
+    carnival&lt;/a&gt;\ncarrousel music &lt;a href=http://royalmp3.net/artist10133/malibu-stacey-discography/&gt;Malibu
+    Stacey&lt;/a&gt; price of starting a music store &lt;a href=http://royalmp3.net/artist3457/shadows-fall-discography/&gt;hot
+    water music remedy&lt;/a&gt;\nmovie 300 helmet <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_shattered/\">http://moviestrawberry.com/films/film_shattered/</a>
+    movie to hawaii &lt;a href=http://moviestrawberry.com/films/film_the_libertine/&gt;dolls
+    movie&lt;/a&gt; best movie ever &lt;a href=http://moviestrawberry.com/films/film_lords_of_dogtown/&gt;lords
+    of dogtown&lt;/a&gt;\nalpha wave music &lt;a href=http://royalmp3.net/artist30093/timbiriche-discography/&gt;Timbiriche&lt;/a&gt;
+    sarah ezen music &lt;a href=http://royalmp3.net/artist2882/quorthon-discography/&gt;chinese
+    sheet music&lt;/a&gt;\nmovie backgrounds with motion <a class=\"reference\" href=\"/web/20091213144012/http://rusfilms.com/page/3/\">http://rusfilms.com/page/3/</a>
+    greatest movie quotes &lt;a href=http://rusfilms.com/page/4/&gt;milf movie&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://rusfilms.com/page/3/
+    :title: mandaly bay las vegas music concerts
+- :id: '9676'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9676
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/12 03:55 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>music for all saints day &lt;a href=http://royalmp3.net/artist14670/j-laze-discography/&gt;J
+    Laze&lt;/a&gt; when they ring those golden bells sheet music free <a class=\"reference\"
+    href=\"/web/20091213144012/http://royalmp3.net/artist1759/rick-wakeman-with-the-english-rock-ensemble-discography/\">http://royalmp3.net/artist1759/rick-wakeman-with-the-english-rock-ensemble-discography/</a>
+    listen to windham hill music <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist1597/wehrmacht-discography/\">http://royalmp3.net/artist1597/wehrmacht-discography/</a>\nsummary
+    of the movie shawshank redemption <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_cleopatra_70/\">http://moviestrawberry.com/films/film_cleopatra_70/</a>
+    harry morgan movie arena to purchase &lt;a href=http://moviestrawberry.com/films/film_firestarter/&gt;crop
+    movie files&lt;/a&gt; history of the english language movie &lt;a href=http://moviestrawberry.com/films/film_are_we_there_yet/&gt;are
+    we there yet&lt;/a&gt;\nhow to put a music in a blog &lt;a href=http://royalmp3.net/artist25654/phil-manzanera-discography/&gt;Phil
+    Manzanera&lt;/a&gt; hide or shrink music player on myspace &lt;a href=http://royalmp3.net/artist1497/amon-duul--uk--discography/&gt;piano
+    sheet music for halo 2 main theme&lt;/a&gt;\ndownloadable sites for high school
+    musical 2 full movie <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_the_u_s_vs_john_lennon/\">http://moviestrawberry.com/films/film_the_u_s_vs_john_lennon/</a>
+    black free fuck movie porn &lt;a href=http://moviestrawberry.com/films/film_the_honeymooners/&gt;cable
+    movie tc grid&lt;/a&gt; movie sites to watch harry potter and the order of the
+    phoenix &lt;a href=http://moviestrawberry.com/films/film_san_francisco/&gt;san
+    francisco&lt;/a&gt;\nadorno standardisation music &lt;a href=http://royalmp3.net/artist31328/sarah-vaughan-and-clifford-brown-discography/&gt;Sarah
+    Vaughan and Clifford Brown&lt;/a&gt; song pop music &lt;a href=http://royalmp3.net/artist1822/klaus-schulze-and-andreas-grosser-discography/&gt;crow
+    indian music&lt;/a&gt;\noh christmas tree movie <a class=\"reference\" href=\"/web/20091213144012/http://rusfilms.com/page/3/\">http://rusfilms.com/page/3/</a>
+    ice station movie &lt;a href=http://rusfilms.com/page/4/&gt;movie oceon sounds&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://rusfilms.com/
+    :title: harmonica free music sheets
+- :id: '9678'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9678
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/12 10:40 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>sheet music vangelis &lt;a href=http://royalmp3.net/artist4559/roger-chapman-discography/&gt;Roger
+    Chapman&lt;/a&gt; quotation on parenting and music <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist3985/wizzy-noise-discography/\">http://royalmp3.net/artist3985/wizzy-noise-discography/</a>
+    lead male role in music man <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist4280/cappo-discography/\">http://royalmp3.net/artist4280/cappo-discography/</a>\nall
+    lf my life movie <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_casey_bats_again/\">http://moviestrawberry.com/films/film_casey_bats_again/</a>
+    natural tit movie &lt;a href=http://moviestrawberry.com/films/film_everything_is_illuminated/&gt;warner
+    premiere the clique movie casting call&lt;/a&gt; instructions for cannon movie
+    dital camera &lt;a href=http://moviestrawberry.com/films/film_spacecamp/&gt;spacecamp&lt;/a&gt;\nbmg
+    music custumer service number &lt;a href=http://royalmp3.net/artist36/david-lanz-discography/&gt;David
+    Lanz&lt;/a&gt; where can i find sheet music to print out &lt;a href=http://royalmp3.net/artist1215/cryptic-wintermoon-discography/&gt;online
+    graduate music theory courses&lt;/a&gt;\npierside movie theater <a class=\"reference\"
+    href=\"/web/20091213144012/http://moviestrawberry.com/films/film_tron/\">http://moviestrawberry.com/films/film_tron/</a>
+    movie sound effects &lt;a href=http://moviestrawberry.com/hqmoviesbyyear/year_2002_high-quality-movies/?page=4&gt;harwich
+    movie theatre&lt;/a&gt; gold movie &lt;a href=http://moviestrawberry.com/films/film_uncle_buck/&gt;uncle
+    buck&lt;/a&gt;\nmp3 christian free music contemporary &lt;a href=http://royalmp3.net/artist37590/david-garrett-discography/&gt;David
+    Garrett&lt;/a&gt; mckenzie river music &lt;a href=http://royalmp3.net/artist3449/poison-the-well-discography/&gt;download
+    free pakistani music websites&lt;/a&gt;\nmovie content reviews <a class=\"reference\"
+    href=\"/web/20091213144012/http://rusfilms.com/page/2/\">http://rusfilms.com/page/2/</a>
+    movie pitchathon &lt;a href=http://rusfilms.com/&gt;arrow in the head movie reviews&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://rusfilms.com/page/4/
+    :title: the smiths music dvd uk
+- :id: '9681'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9681
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/13 04:15 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>teddy bear music &lt;a href=http://royalmp3.net/artist24559/gangrena-discography/&gt;Gangrena&lt;/a&gt;
+    buy music file online ireland <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist4053/the-muses-rapt-discography/\">http://royalmp3.net/artist4053/the-muses-rapt-discography/</a>
+    hawaiian music or chants <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist2498/snap-vs-motivo-discography/\">http://royalmp3.net/artist2498/snap-vs-motivo-discography/</a>\nbook
+    and movie night gifts and gift baskets <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_barney_animal_abc_s/\">http://moviestrawberry.com/films/film_barney_animal_abc_s/</a>
+    lone survivor movie &lt;a href=http://moviestrawberry.com/films/film_riding_giants/&gt;resident
+    evil movie review&lt;/a&gt; movie easter eggs &lt;a href=http://moviestrawberry.com/films/film_the_chronicles_of_narnia_the_lion_the_witch_and_the_wardrobe/&gt;the
+    chronicles of narnia the lion the witch and the wardrobe&lt;/a&gt;\nbuy online
+    music tracks sale ireland &lt;a href=http://royalmp3.net/artist18887/johannes-brahms-discography/&gt;Johannes
+    Brahms&lt;/a&gt; portable music stand &lt;a href=http://royalmp3.net/artist2208/hiroki-okano-discography/&gt;ffxi
+    windurst music&lt;/a&gt;\ndownload knocked up the movie <a class=\"reference\"
+    href=\"/web/20091213144012/http://moviestrawberry.com/films/film_life_70/\">http://moviestrawberry.com/films/film_life_70/</a>
+    gay twink free movie &lt;a href=http://moviestrawberry.com/hqmoviesbyyear/year_2008_high-quality-movies/&gt;reeker
+    movie spoiler&lt;/a&gt; kylie inogue van damme movie &lt;a href=http://moviestrawberry.com/films/film_green_lantern_first_flight/&gt;green
+    lantern first flight&lt;/a&gt;\nmusic to the booty call d &lt;a href=http://royalmp3.net/artist975/burzum-discography/&gt;Burzum&lt;/a&gt;
+    karaoke music burning &lt;a href=http://royalmp3.net/artist587/catastrophic-discography/&gt;music
+    in buddhism&lt;/a&gt;\ngood burger movie website <a class=\"reference\" href=\"/web/20091213144012/http://rusfilms.com/page/3/\">http://rusfilms.com/page/3/</a>
+    movie funding &lt;a href=http://rusfilms.com/page/2/&gt;leo movie&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://rusfilms.com/
+    :title: music valencia
+- :id: '9685'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9685
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/14 04:01 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>alan parsons project music &lt;a href=http://royalmp3.net/artist29103/duplego-discography/&gt;Duplego&lt;/a&gt;
+    music of my life radio <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist329/barbra-streisand-discography/\">http://royalmp3.net/artist329/barbra-streisand-discography/</a>
+    soul plane boondocks music ruckus <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist1064/lycia-discography/\">http://royalmp3.net/artist1064/lycia-discography/</a>\ndiaper
+    fetish movie <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_green_day_bullet_in_a_bible/\">http://moviestrawberry.com/films/film_green_day_bullet_in_a_bible/</a>
+    movie car &lt;a href=http://moviestrawberry.com/hqmoviesbygenres/download-genre_war-movies/?page=8&gt;movie
+    theathers&lt;/a&gt; the full south park movie &lt;a href=http://moviestrawberry.com/films/film_the_car/&gt;the
+    car&lt;/a&gt;\nred jumsuit apparatus music &lt;a href=http://royalmp3.net/artist9741/helrunar-discography/&gt;Helrunar&lt;/a&gt;
+    randolph music center &lt;a href=http://royalmp3.net/artist3719/robbie-williams-and-kylie-minogue-discography/&gt;paginnis
+    music store upper james hamilton&lt;/a&gt;\nhow to develop a movie or tv show
+    <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_last_of_the_wild_chimps/\">http://moviestrawberry.com/films/film_last_of_the_wild_chimps/</a>
+    movie sally field &lt;a href=http://moviestrawberry.com/countries/?page=91&gt;lakshyam
+    telugu movie free online&lt;/a&gt; music from the movie click &lt;a href=http://moviestrawberry.com/films/film_zach_galifianakis_live_at_the_purple_onion/&gt;zach
+    galifianakis live at the purple onion&lt;/a&gt;\ndownload free ipod music site
+    web &lt;a href=http://royalmp3.net/artist26860/sleep-chamber-discography/&gt;Sleep
+    Chamber&lt;/a&gt; music popular in 1957 &lt;a href=http://royalmp3.net/artist2080/coil-discography/&gt;steve
+    taylor music&lt;/a&gt;\ncontact the movie <a class=\"reference\" href=\"/web/20091213144012/http://rusfilms.com/page/4/\">http://rusfilms.com/page/4/</a>
+    shattered glass movie &lt;a href=http://rusfilms.com/page/3/&gt;cars the movie
+    games&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://rusfilms.com/page/3/
+    :title: download rock music dvd
+- :id: '9688'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9688
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/14 20:39 GMT
+  :vote_count: '3'
+  :vote_score: '-3'
+  :body: "\n\t  <p>computer mall music online shopping shopping shopping 20 &lt;a
+    href=http://royalmp3.net/artist38147/jim-noir-discography/&gt;Jim Noir&lt;/a&gt;
+    christmas carol sheet music <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist1308/hortus-animae-discography/\">http://royalmp3.net/artist1308/hortus-animae-discography/</a>
+    rare suul music <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist1987/cher-discography/\">http://royalmp3.net/artist1987/cher-discography/</a>\nbrigde
+    movie <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/hqmoviesbygenres/download-genre_drama-movies/?page=88\">http://moviestrawberry.com/hqmoviesbygenres/download-genre_drama-movies/?page=88</a>
+    beijing english movie theaters &lt;a href=http://moviestrawberry.com/films/film_the_whalers/&gt;will
+    smith future movie&lt;/a&gt; free halloween movie sheet music &lt;a href=http://moviestrawberry.com/films/film_911_in_plane_site/&gt;911
+    in plane site&lt;/a&gt;\nmusic man bass guitar &lt;a href=http://royalmp3.net/artist9102/chronic-future-discography/&gt;Chronic
+    Future&lt;/a&gt; raul rick lopez texas music band trackfive &lt;a href=http://royalmp3.net/artist2755/sear-bliss-discography/&gt;christmas
+    music downloads htm&lt;/a&gt;\ntiffany teen porn movie <a class=\"reference\"
+    href=\"/web/20091213144012/http://moviestrawberry.com/genres/incredible_variety_of_films/?page=2\">http://moviestrawberry.com/genres/incredible_variety_of_films/?page=2</a>
+    movie theater and champaign il &lt;a href=http://moviestrawberry.com/films/film_a_perfect_world/&gt;movie
+    called played on goggle&lt;/a&gt; movie showings amc 20 brandon fl &lt;a href=http://moviestrawberry.com/films/film_no_man_s_land/&gt;no
+    man s land&lt;/a&gt;\nbeach music awards alabama theatre myrtle beach sc &lt;a
+    href=http://royalmp3.net/artist4039/psycraft-discography/&gt;Psycraft&lt;/a&gt;
+    official music hitlist &lt;a href=http://royalmp3.net/artist2192/david-fiuczynski-discography/&gt;lights
+    myspace music&lt;/a&gt;\nadult movie aeads <a class=\"reference\" href=\"/web/20091213144012/http://rusfilms.com/page/2/\">http://rusfilms.com/page/2/</a>
+    download porn movie free &lt;a href=http://rusfilms.com/page/2/&gt;movie listing
+    in area&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://rusfilms.com/page/4/
+    :title: negative influence of rap music
+- :id: '9690'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9690
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/14 18:22 GMT
+  :vote_count: '3'
+  :vote_score: '-3'
+  :body: "\n\t  <p>music downloads mp3 &lt;a href=http://royalmp3.net/artist21170/onesidezero-discography/&gt;Onesidezero&lt;/a&gt;
+    axe music in edmonton <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist4035/perplex-discography/\">http://royalmp3.net/artist4035/perplex-discography/</a>
+    nigeria tribal music <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist4000/cosmosis-discography/\">http://royalmp3.net/artist4000/cosmosis-discography/</a>\nmovie
+    witches of breastwick cast <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_american_zeitgeist/\">http://moviestrawberry.com/films/film_american_zeitgeist/</a>
+    movie theaters in st catharines ontario &lt;a href=http://moviestrawberry.com/films/film_freezer_burn/&gt;beastiality
+    movie post&lt;/a&gt; music from the lifetiem movie custody &lt;a href=http://moviestrawberry.com/films/film_the_russell_girl/&gt;the
+    russell girl&lt;/a&gt;\nled zeppelin music reviews &lt;a href=http://royalmp3.net/artist12175/stunt-monkey-discography/&gt;Stunt
+    Monkey&lt;/a&gt; banjo sheet music &lt;a href=http://royalmp3.net/artist2488/the-eagles-discography/&gt;led
+    zeppelin music reviews&lt;/a&gt;\nwriting a movie review <a class=\"reference\"
+    href=\"/web/20091213144012/http://moviestrawberry.com/films/film_the_black_balloon/\">http://moviestrawberry.com/films/film_the_black_balloon/</a>
+    stand by me song in the movie stamd by me &lt;a href=http://moviestrawberry.com/films/film_the_purloined_pup/&gt;true
+    story about fire in the sky movie&lt;/a&gt; teenage black female movie and tv
+    stars &lt;a href=http://moviestrawberry.com/films/film_warbirds/&gt;warbirds&lt;/a&gt;\nvanhelsing
+    music &lt;a href=http://royalmp3.net/artist27337/anonymous-and-j.-rider-discography/&gt;Anonymous
+    and J. Rider&lt;/a&gt; name any 3 music festivals held in barbados &lt;a href=http://royalmp3.net/artist3096/intermix-discography/&gt;led
+    zeppelin music reviews&lt;/a&gt;\nmovie castaway <a class=\"reference\" href=\"/web/20091213144012/http://rusfilms.com/\">http://rusfilms.com/</a>
+    mpeg movie editor &lt;a href=http://rusfilms.com/page/2/&gt;myan movie&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://rusfilms.com/page/3/
+    :title: mc3 remix music
+- :id: '9693'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9693
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/14 23:26 GMT
+  :vote_count: '3'
+  :vote_score: '-3'
+  :body: "\n\t  <p>download music onto an ipod for free &lt;a href=http://royalmp3.net/artist2270/faithless-discography/&gt;Faithless&lt;/a&gt;
+    music listener <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist348/fields-of-the-nephilim-discography/\">http://royalmp3.net/artist348/fields-of-the-nephilim-discography/</a>
+    colorado music summit <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist1872/scotch-discography/\">http://royalmp3.net/artist1872/scotch-discography/</a>\nraven
+    riley movie <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_merlin_s_apprentice/\">http://moviestrawberry.com/films/film_merlin_s_apprentice/</a>
+    classic movie guide review express stardust &lt;a href=http://moviestrawberry.com/films/film_wishcraft/&gt;ruby
+    cairo movie&lt;/a&gt; stateboro movie theatre &lt;a href=http://moviestrawberry.com/films/film_quien_grita_venganza/&gt;quien
+    grita venganza&lt;/a&gt;\nmvgp music &lt;a href=http://royalmp3.net/artist34215/mopreme-shakur-discography/&gt;Mopreme
+    Shakur&lt;/a&gt; religious leader literature music &lt;a href=http://royalmp3.net/artist703/boney-james-discography/&gt;music
+    amps&lt;/a&gt;\nmovie war jet li cars <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_the_invisible_man/\">http://moviestrawberry.com/films/film_the_invisible_man/</a>
+    movie stream   adult &lt;a href=http://moviestrawberry.com/films/film_blank_check/&gt;movie
+    theater cleveland&lt;/a&gt; gay porn movie review &lt;a href=http://moviestrawberry.com/films/film_tillies_punctured_romance/&gt;tillies
+    punctured romance&lt;/a&gt;\nkorg triton le music workstation 9v input power cable
+    &lt;a href=http://royalmp3.net/artist34413/shack-discography/&gt;Shack&lt;/a&gt;
+    webbie music codes &lt;a href=http://royalmp3.net/artist225/kenny-rogers-and-dolly-parton-discography/&gt;music
+    from the show dead like me&lt;/a&gt;\nforced lebian rape fantasy girl on girl
+    movie thumbs <a class=\"reference\" href=\"/web/20091213144012/http://rusfilms.com/page/2/\">http://rusfilms.com/page/2/</a>
+    original hairspray movie rss feed &lt;a href=http://rusfilms.com/page/2/&gt;free
+    movie download sites&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://rusfilms.com/page/3/
+    :title: grithop music history
+- :id: '9697'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9697
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/15 22:06 GMT
+  :vote_count: '3'
+  :vote_score: '-3'
+  :body: "\n\t  <p>new age christmas music &lt;a href=http://royalmp3.net/artist6725/unwritten-law-discography/&gt;Unwritten
+    Law&lt;/a&gt; music from cane <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist2213/marcelo-kayath-discography/\">http://royalmp3.net/artist2213/marcelo-kayath-discography/</a>
+    sack buts elizabethan music <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist3180/amina-discography/\">http://royalmp3.net/artist3180/amina-discography/</a>\ntmd
+    movie files <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_all_the_days_before_tomorrow/\">http://moviestrawberry.com/films/film_all_the_days_before_tomorrow/</a>
+    pitch a movie &lt;a href=http://moviestrawberry.com/films/film_beverly_hills_chihuahua/&gt;corpus
+    christi movie theaters&lt;/a&gt; cocaine angel movie review &lt;a href=http://moviestrawberry.com/films/film_awakenings/&gt;awakenings&lt;/a&gt;\nfoy
+    vance music available for download &lt;a href=http://royalmp3.net/artist2668/april-ethereal-discography/&gt;April
+    Ethereal&lt;/a&gt; merengue music &lt;a href=http://royalmp3.net/artist2752/richard-marx-discography/&gt;the
+    music group this day and age&lt;/a&gt;\nuncle bud porno movie sex charlotte niece
+    girl scout <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_essex_boys/\">http://moviestrawberry.com/films/film_essex_boys/</a>
+    bible movie deborah &lt;a href=http://moviestrawberry.com/hqmoviesbygenres/download-genre_comedy-movies/?page=7&gt;broken
+    lizard supertroopers movie&lt;/a&gt; walk of shame movie &lt;a href=http://moviestrawberry.com/films/film_man_on_the_moon/&gt;man
+    on the moon&lt;/a&gt;\nanna tsuchiya music download &lt;a href=http://royalmp3.net/artist23675/paul-cheneour-discography/&gt;Paul
+    Cheneour&lt;/a&gt; cent music video download htm &lt;a href=http://royalmp3.net/artist3718/mark-knopfler-discography/&gt;mp3
+    music song downloads free&lt;/a&gt;\npopple movie <a class=\"reference\" href=\"/web/20091213144012/http://rusfilms.com/page/3/\">http://rusfilms.com/page/3/</a>
+    haloween the movie &lt;a href=http://rusfilms.com/&gt;wall street movie&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://digg.com/users/moxovhyg/history
+    :title: dodge truck commercial music new
+- :id: '9701'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9701
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/17 00:04 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>reel big fish trumpet music &lt;a href=http://royalmp3.net/artist2865/midnight-oil-discography/&gt;Midnight
+    Oil&lt;/a&gt; raggae music stratford on the avon <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist2142/elias-rahbani-discography/\">http://royalmp3.net/artist2142/elias-rahbani-discography/</a>
+    find bulgarian music online <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist3192/cluster-discography/\">http://royalmp3.net/artist3192/cluster-discography/</a>\nbabe
+    movie <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_wire_in_the_blood/\">http://moviestrawberry.com/films/film_wire_in_the_blood/</a>
+    movie thetre reviews &lt;a href=http://moviestrawberry.com/films/film_quick/&gt;free
+    download virgins movie&lt;/a&gt; hostel the movie &lt;a href=http://moviestrawberry.com/films/film_loggerheads/&gt;loggerheads&lt;/a&gt;\nconsumerism
+    of music &lt;a href=http://royalmp3.net/artist37005/anthony-and-the-johnson-discography/&gt;Anthony
+    and the Johnson&lt;/a&gt; passion   music &lt;a href=http://royalmp3.net/artist4292/dj-krush-discography/&gt;new
+    jersey catholic wedding music group violin&lt;/a&gt;\ncast and crew of the movie
+    school of rock <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_from_justin_to_kelly/\">http://moviestrawberry.com/films/film_from_justin_to_kelly/</a>
+    convoy movie &lt;a href=http://moviestrawberry.com/films/film_uprising/&gt;latest
+    hindi movie songs&lt;/a&gt; disney movie brink &lt;a href=http://moviestrawberry.com/films/film_long_xiong_hu_di/&gt;long
+    xiong hu di&lt;/a&gt;\nmichael phelps music &lt;a href=http://royalmp3.net/artist32398/boxcutter-discography/&gt;Boxcutter&lt;/a&gt;
+    find music artist by lyrics &lt;a href=http://royalmp3.net/artist2323/max-folmer-discography/&gt;music
+    a g omstead&lt;/a&gt;\ntroll movie <a class=\"reference\" href=\"/web/20091213144012/http://rusfilms.com/page/3/\">http://rusfilms.com/page/3/</a>
+    emmanuelle movie series &lt;a href=http://rusfilms.com/&gt;movie nudes&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://digg.com/users/moxovhyg/history
+    :title: cars movie pixar
+- :id: '9704'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9704
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/17 20:48 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>medical nudity\n&lt;a href=http://digg.com/food_drink/Need_To_Buy_Levitra_Online_Buy_Levitra_Pills_Here&gt;generic
+    levitra&lt;/a&gt;\n&lt;a href=http://digg.com/food_drink/Buy_Paxil_at_Drugstore_gd_Brand_and_Generic_Discount_Drugs&gt;Cheap
+    Paxil&lt;/a&gt;\n&lt;a href=http://digg.com/health/Buy_Tamiflu_Where_To_Order_Tamiflu_Purchase_Tamiflu_Online&gt;Buying
+    Tamiflu Without Prescription&lt;/a&gt;\n&lt;a href=http://digg.com/food_drink/Cialis_professional_Buy_Drugs_Online_without_prescription&gt;Cheap
+    Cialis&lt;/a&gt;\n&lt;a href=http://digg.com/health/Viagra_professional_Buy_Drugs_Online_without_prescription&gt;Viagra
+    without prescription&lt;/a&gt;\n<a class=\"reference\" href=\"/web/20091213144012/http://digg.com/food_drink/Need_To_Buy_Levitra_Online_Buy_Levitra_Pills_Here\">http://digg.com/food_drink/Need_To_Buy_Levitra_Online_Buy_Levitra_Pills_Here</a>\n<a
+    class=\"reference\" href=\"/web/20091213144012/http://digg.com/food_drink/Buy_Paxil_at_Drugstore_gd_Brand_and_Generic_Discount_Drugs\">http://digg.com/food_drink/Buy_Paxil_at_Drugstore_gd_Brand_and_Generic_Discount_Drugs</a>\n<a
+    class=\"reference\" href=\"/web/20091213144012/http://digg.com/health/Buy_Tamiflu_Where_To_Order_Tamiflu_Purchase_Tamiflu_Online\">http://digg.com/health/Buy_Tamiflu_Where_To_Order_Tamiflu_Purchase_Tamiflu_Online</a>\n<a
+    class=\"reference\" href=\"/web/20091213144012/http://digg.com/food_drink/Cialis_professional_Buy_Drugs_Online_without_prescription\">http://digg.com/food_drink/Cialis_professional_Buy_Drugs_Online_without_prescription</a>\n<a
+    class=\"reference\" href=\"/web/20091213144012/http://digg.com/health/Viagra_professional_Buy_Drugs_Online_without_prescription\">http://digg.com/health/Viagra_professional_Buy_Drugs_Online_without_prescription</a></p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://digg.com/health/Buy_Tamiflu_Where_To_Order_Tamiflu_Purchase_Tamiflu_Online
+    :title: 'sample infection control plan '
+- :id: '9707'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9707
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/11/18 04:53 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>music theory beginners &lt;a href=http://royalmp3.net/artist11974/optimum-wound-profile-discography/&gt;Optimum
+    Wound Profile&lt;/a&gt; until your love comes back around sheet music <a class=\"reference\"
+    href=\"/web/20091213144012/http://royalmp3.net/artist4125/part--arvo-discography/\">http://royalmp3.net/artist4125/part--arvo-discography/</a>
+    janzo music <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist3080/bill-douglas-discography/\">http://royalmp3.net/artist3080/bill-douglas-discography/</a>\nsan
+    antonio mission drive in movie <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/hqmoviesbygenres/download-genre_music-movies/?page=6\">http://moviestrawberry.com/hqmoviesbygenres/download-genre_music-movies/?page=6</a>
+    pennies from heaven download movie &lt;a href=http://moviestrawberry.com/films/film_the_love_guru/&gt;beowulf
+    the movie&lt;/a&gt; free hardcore teen movie &lt;a href=http://moviestrawberry.com/films/film_the_madagascar_penguins_in_a_christmas_caper/&gt;the
+    madagascar penguins in a christmas caper&lt;/a&gt;\nillegal music downloads htm
+    &lt;a href=http://royalmp3.net/artist20917/ezra-discography/&gt;Ezra&lt;/a&gt;
+    free sheet music electric guitar downloadable sheet music &lt;a href=http://royalmp3.net/artist1491/morcheeba-discography/&gt;sheet
+    music sunset mountain&lt;/a&gt;\nmovie studio policy procedure manual <a class=\"reference\"
+    href=\"/web/20091213144012/http://moviestrawberry.com/films/film_from_dusk_till_dawn/\">http://moviestrawberry.com/films/film_from_dusk_till_dawn/</a>
+    pussy licking free movie &lt;a href=http://moviestrawberry.com/films/film_serendipity/&gt;asian
+    porn movie&lt;/a&gt; xenosaga movie sep 11 &lt;a href=http://moviestrawberry.com/films/film_snezhnaya_koroleva_the_snow_queen/&gt;snezhnaya
+    koroleva the snow queen&lt;/a&gt;\nmusic of the night and phantom of the opera
+    and sound &lt;a href=http://royalmp3.net/artist37588/bernd-alois-zimmermann-discography/&gt;Bernd
+    Alois Zimmermann&lt;/a&gt; beethoven free music &lt;a href=http://royalmp3.net/artist2098/element-of-crime-discography/&gt;nebblett
+    family music&lt;/a&gt;\nchettukinda pleader telugu movie <a class=\"reference\"
+    href=\"/web/20091213144012/http://rusfilms.com/page/2/\">http://rusfilms.com/page/2/</a>
+    helen hunt adult movie &lt;a href=http://rusfilms.com/page/4/&gt;berlin news adult
+    movie theater&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://mymusicpro.org/
+    :title: bad movie titles
+- :id: '9712'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9712
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/12/02 23:50 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>pdf music &lt;a href=http://royalmp3.net/artist29091/distress-discography/&gt;Distress&lt;/a&gt;
+    al stewart folk music <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist1166/riley-lee-and-gabriel-lee-discography/\">http://royalmp3.net/artist1166/riley-lee-and-gabriel-lee-discography/</a>
+    native american music and retuals <a class=\"reference\" href=\"/web/20091213144012/http://royalmp3.net/artist4064/zorba-and-logic-bomb-discography/\">http://royalmp3.net/artist4064/zorba-and-logic-bomb-discography/</a>\nmovie
+    \  dvd   source   gathering of eagles <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_flesh_gordon_meets_the_cosmic_cheerleaders/\">http://moviestrawberry.com/films/film_flesh_gordon_meets_the_cosmic_cheerleaders/</a>
+    new movie jodie foster &lt;a href=http://moviestrawberry.com/films/film_canine_patrol/&gt;movie
+    theaters myrtle beach sc&lt;/a&gt; movie nudes &lt;a href=http://moviestrawberry.com/films/film_lizzie_mcguire/&gt;lizzie
+    mcguire&lt;/a&gt;\nour father who art in heaven music &lt;a href=http://royalmp3.net/artist31498/antonio-adolfo-and-no-em-pingo-d-agua-discography/&gt;Antonio
+    Adolfo and No em Pingo d'Agua&lt;/a&gt; music player   file fetish &lt;a href=http://royalmp3.net/artist458/xenomorph-discography/&gt;flintstones
+    music&lt;/a&gt;\nhalloween the movie clips <a class=\"reference\" href=\"/web/20091213144012/http://moviestrawberry.com/films/film_irma_la_douce/\">http://moviestrawberry.com/films/film_irma_la_douce/</a>
+    movie major leauge &lt;a href=http://moviestrawberry.com/films/film_baptists_at_our_barbecue/&gt;gba
+    movie maker&lt;/a&gt; cia movie pics &lt;a href=http://moviestrawberry.com/films/film_the_fly/&gt;the
+    fly&lt;/a&gt;\nmusic lyrics mitch mcvicker &lt;a href=http://royalmp3.net/artist37182/goon-moon-discography/&gt;GOON
+    MOON&lt;/a&gt; music lryics &lt;a href=http://royalmp3.net/artist2823/fred-ventura-discography/&gt;goldendisc
+    music shop ireland&lt;/a&gt;\nlord of the flies movie <a class=\"reference\" href=\"/web/20091213144012/http://rusfilms.com/\">http://rusfilms.com/</a>
+    worst movie ever &lt;a href=http://rusfilms.com/page/3/&gt;eddie murphy movie
+    ugly big feet&lt;/a&gt;</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://mymusicpro.org/
+    :title: watch children of men movie free
+- :id: '9715'
+  :parent_id: '199'
+  :url: http://ja.doukaku.org/comment/9715
+  :user_name: 匿名
+  :user_url: /web/20091213144012/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/12/07 00:41 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>trenton dating &lt;a href=http://loveepicentre.com/&gt;true singles&lt;/a&gt;
+    dating ring <a class=\"reference\" href=\"/web/20091213144012/http://loveepicentre.com/\">http://loveepicentre.com/</a>
+    dating ring</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091213144012/http://loveepicentre.com/
+    :title: iranian singles

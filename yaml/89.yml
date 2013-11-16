@@ -1,0 +1,682 @@
+---
+:id: '89'
+:title: 自然数の分割
+:comments:
+- :id: '4099'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4099
+  :user_name: herumi
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/564/
+  :language: 
+  :time: 2007/11/16 06:28 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">自然数nとm(n&gt;=m&gt;0)が与えられたとき，nをm個の非負の整数の和で表すやり方を全て出力してください．\r\nその際，和の組(x_1,
+    ..., x_m)は大きい順に出力してください．\r\nここでm = 3の時の「(a, b, c)が(A, B, C)より大きい」とは\r\n(a &gt;
+    A)\r\n(a == A) かつ (b &gt; B)\r\n(a == A) かつ (b == B) かつ (c &gt; C)\r\nのいずれかが成り立つとき(つまりは辞書的順序)とします．\r\n\r\n例:n
+    = 5, m = 3が与えられたときは\r\n5, 0, 0,\r\n4, 1, 0,\r\n4, 0, 1,\r\n3, 2, 0,\r\n3, 1, 1,\r\n...\r\n0,
+    1, 4,\r\n0, 0, 5,\r\nを出力する．\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4299'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4299
+  :user_name: SiroKuro
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/540/
+  :language: C
+  :time: 2007/11/21 18:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  追加して並び替えました。こんな感じでしょうか。\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    static class Program {
+        static void Main(String[] args) {
+            int n = int.Parse(args[0]), m = int.Parse(args[1]);
+            List&lt;int[]&gt; result = new List&lt;int[]&gt;();
+            Append(result, n, m, 0, new int[0]);
+            result.Sort(delegate(int[] x, int[] y) {
+                for(int i = 0; i &lt; x.Length; i++) {
+                    if (x[i] != y[i]) {
+                        return x[i].CompareTo(y[i]) * -1;
+                    }
+                }
+                return 0;
+            });
+            foreach(int[] res in result) {
+                Console.WriteLine(string.Join(", ", Array.ConvertAll&lt;int, string&gt;(res,
+                    delegate(int x) { return x.ToString(); })));
+            }
+        }
+        static void Append(List&lt;int[]&gt; result, int n, int m, int sum, int[] items) {
+            if (m &lt;= items.Length) {
+                if (n == sum) {
+                    result.Add(items);
+                }
+            }
+            else {
+                List&lt;int&gt; temp = new List&lt;int&gt;(items);
+                temp.Add(0);
+                for(int i = 0; i + sum &lt;= n; i++) {
+                    temp[temp.Count - 1] = i;
+                    Append(result, n, m, sum + i, temp.ToArray());
+                }
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4301'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4301
+  :user_name: yuin
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/11/21 19:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>とりえあず。</p>\n\n\t"
+  :code: |
+    def sumPatterns(n:int, m:int) = {
+      def sum(ns:List[int]) = (0 /: ns){_+_}
+      def cmp(a:List[int],b:List[int]):boolean = {
+        if(a.head == b.head) cmp(a.tail, b.tail)
+        else if(a.head &gt; b.head) true
+        else false
+      }
+
+      ((List(List[int]())) /: List.make(m, 0 to n)){
+        for(i &lt;-_; j &lt;-_) yield j::i
+      }.filter(sum(_) == n).sort(cmp _)
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4302'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4302
+  :user_name: rucker
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/11/21 20:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">普通に再帰で。</pre>\n\t"
+  :code: |
+    &lt;?php
+    function parts($a,$n,$m)
+    {
+        if(--$m&lt;=0)
+        {    $a[]=$n;
+            echo implode(',',$a),"\n";
+            return;
+        }
+        $c=count($a);
+        for($i=$n;$i&gt;=0;--$i)
+        {    $a[$c]=$i;
+            parts($a,$n-$i,$m);
+        }
+    }
+
+    parts(array(),$argv[1],$argv[2]);
+    ?&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4303'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4303
+  :user_name: shiro
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/41/
+  :language: Haskell
+  :time: 2007/11/21 20:30 GMT
+  :vote_count: '9'
+  :vote_score: '9'
+  :body: "\n\t  <p>comprehension大活躍。</p>\n\n\t"
+  :code: |
+    partitionNum n 1 = [[n]]
+    partitionNum n m = [(n-x):xs | x &lt;- [0..n], xs &lt;- partitionNum x (m-1)]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4305'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4305
+  :user_name: nobsun
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/11/21 21:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>あちゃ。先こされた ^^</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4306'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4306
+  :user_name: matyr
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/11/22 00:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  push とか unshift は元の配列を返してくれれば便利なのに。\n\t"
+  :code: |
+    function doukaku89(n, m){
+      if(--m &lt; 1) return [[n]];
+      for(var r = [], i = n, x = 0; i &gt;= 0; i--)
+        for(var a = arguments.callee(n - i, m), j = 0, l = a.length; j &lt; l; j++)
+          r[x++] = (a[j].unshift(i), a[j]);
+      return r;
+    }
+
+    (typeof alert != 'undefined' ? alert :
+     typeof print != 'undefined' ? print :
+     function($){ typeof WSH == 'object' &amp;&amp; WSH.echo($) })(doukaku89(5, 3).join('\n'))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4307'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4307
+  :user_name: nantan
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/535/
+  :language: Java
+  :time: 2007/11/22 01:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>普通に再帰で。</p>\n\n\t"
+  :code: |
+    import java.util.*;
+    public class PartNumber {
+        public static void main(String[] args) {
+            System.out.println(part(5, 3));    // =&gt; [[5, 0, 0], [4, 1, 0], ..., [0, 1, 4], [0, 0, 5]]
+        }
+        private static List&lt;List&lt;Integer&gt;&gt; part(int n, int m) {
+            List&lt;List&lt;Integer&gt;&gt; res = new ArrayList&lt;List&lt;Integer&gt;&gt;();
+            List&lt;Integer&gt; item;
+            if (m == 1) {
+                item = new ArrayList&lt;Integer&gt;();
+                item.add(n);
+                res.add(item);
+                return res;
+            }
+            for (int i = n; i &gt;= 0; i--) {
+                List&lt;List&lt;Integer&gt;&gt; r = part(n - i, m - 1);
+                for (List&lt;Integer&gt; l : r) {
+                    item = new ArrayList&lt;Integer&gt;();
+                    item.add(i);
+                    item.addAll(l);
+                    res.add(item);
+                }
+            }
+            return res;
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4308'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4308
+  :user_name: sawat
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/322/
+  :language: Java
+  :time: 2007/11/22 01:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  動的計画法で。\r<br>(n, m) = (32, 8)で実行した場合。\r<br>----\r<br>234[ms]\r<br>[4, 4, 4, 4, 4, 4, 4, 4]\r<br>[3, 4, 4, 4, 4, 4, 4, 5]\r<br>[3, 3, 4, 4, 4, 4, 5, 5]\r<br>   :\r<br>[0, 0, 0, 0, 0, 0, 1, 31]\r<br>[0, 0, 0, 0, 0, 0, 0, 32]\r<br>3319\r<br>"
+  :code: "import java.util.*;\n\npublic class PartNumber {\n    private static final
+    Map&lt;Key, Answer&gt; answerTable = new HashMap&lt;Key, Answer&gt;();\n    public
+    static void main(String[] args) {\n        long begin = System.currentTimeMillis();\n
+    \       Answer answer = execute(32, 8);\n        System.out.printf(\"%d[ms]%n\",
+    System.currentTimeMillis() - begin);\n        for (int[] a : answer.set) {\n            System.out.println(Arrays.toString(a));\n
+    \       }\n        System.out.println(answer.set.size());\n    }\n    \n    public
+    static Answer execute(int n, int m) {\n        Key key = new Key(n, m);\n        if(answerTable.containsKey(key))
+    {\n            return answerTable.get(key);\n        }\n        Answer answer
+    = new Answer(key);\n        if(m &lt;= 2) {\n            for (int i = 0; i &lt;=
+    n/2; i++) {\n                answer.set.add(new int[]{i, n-i});\n            }\n
+    \       } else {\n            for (int i = 0; i &lt;= n/m; i++) {\n                answer.set.addAll(execute(n-i,
+    m-1).marge(key, i).set);\n            }\n        }\n        answerTable.put(key,
+    answer);\n        return answer;\n    }\n     \n    static class Key {\n        final
+    int n;\n        final int m;\n\n        Key(int n, int m) {\n            this.n
+    = n;\n            this.m = m;\n        }\n        \n        @Override\n        public
+    int hashCode() {\n            return 17 * n ^ m;\n        }\n        @Override\n
+    \       public boolean equals(Object obj) {\n            if (this == obj) return
+    true;\n            if (!(obj instanceof Key)) return false;\n            Key target
+    = (Key) obj;\n            return (this.n == target.n &amp;&amp; this.m == target.m);\n
+    \       }\n    }\n    \n    static class Answer {\n        private final Key k;\n
+    \       private TreeSet&lt;int[]&gt; set;\n\n        Answer(Key k) {\n            this.k
+    = k;\n            this.set = new TreeSet&lt;int[]&gt;(\n                new Comparator&lt;int[]&gt;()
+    {\n                    public int compare(int[] o1, int[] o2) {\n                        assert
+    o1.length == o2.length;\n                        if(o1 == o2) return 0;\n                        for
+    (int i = 0; i &lt; o1.length; i++) {\n                            if(o1[i] !=
+    o2[i]) return o2[i] - o1[i];\n                        }\n                        return
+    0;\n                    }\n                });\n        }\n        boolean add(int
+    x, int[] a) {\n            assert a.length + 1 == k.m;\n            int[] a2 =
+    new int[k.m];\n            a2[0] = x;\n            System.arraycopy(a, 0, a2,
+    1, a.length);\n            Arrays.sort(a2);\n            return set.add(a2);\n
+    \       }\n        Answer marge(Key k, int x) {\n            Answer answer = new
+    Answer(k);\n            for (int[] a : this.set) {\n                answer.add(x,
+    a);\n            }\n            return answer;\n        }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4309'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4309
+  :user_name: sawat
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/322/
+  :language: 
+  :time: 2007/11/22 01:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  まちがえた。大きい数を左に詰めるのか！\r<br>でも、int[]の逆順ソートはArrays.sortではできない。\r<br>Integer[]にするしかないか…\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4310'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4310
+  :user_name: uho
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/498/
+  :language: Java
+  :time: 2007/11/22 01:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Javaが無いからと思ったのに、\n完成したときには投稿されていたよ。\n残念。</p>\n\n\t"
+  :code: "public class Bunkatsu {\n    public static void main(String[] args) {\n
+    \       printSum( 6, 3 );\n    }\n\n    public    static void printSum( int n,
+    int m) {\n        if( m &lt;= 0 || n &lt; m )\n            return;\n        \n
+    \       int[]    prints = new int[m];\n        subPrintSum( prints, 0, n, m );\n
+    \   }\n    \n    public static void subPrintSum( int[] prints, int p, int zan,
+    int m ) {\n        if( p == m -1 ) {\n            prints[p] = zan;\n\n            for(
+    int print : prints ) {\n                System.out.print( print );\n                System.out.print(
+    \",\" );\n            }\n            System.out.println();\n        }\n        else\n
+    \       {\n            for( int i = zan ; i &gt;= 0 ; --i ) {\n                prints[p]
+    = i;\n                subPrintSum( prints, p+1, zan - i, m );\n            }\n
+    \       }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4311'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4311
+  :user_name: sawat
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/322/
+  :language: Java
+  :time: 2007/11/22 01:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>修正。</p>\n\n\t"
+  :code: "package doukaku;\n\nimport java.util.*;\n\npublic class PartNumber {\n    private
+    static final Map&lt;Key, Answer&gt; answerTable = new HashMap&lt;Key, Answer&gt;();\n
+    \   public static void main(String[] args) {\n        long begin = System.currentTimeMillis();\n
+    \       Answer answer = execute(32, 8);\n        System.out.printf(\"%d[ms]%n\",
+    System.currentTimeMillis() - begin);\n        for (Integer[] a : answer.set) {\n
+    \           System.out.println(Arrays.toString(a));\n        }\n        System.out.println(answer.set.size());\n
+    \   }\n    \n    public static Answer execute(int n, int m) {\n        Key key
+    = new Key(n, m);\n        if(answerTable.containsKey(key)) {\n            return
+    answerTable.get(key);\n        }\n        Answer answer = new Answer(key);\n        if(m
+    &lt;= 2) {\n            for (int i = 0; i &lt;= n/2; i++) {\n                answer.set.add(new
+    Integer[]{i, n-i});\n            }\n        } else {\n            for (int i =
+    0; i &lt;= n/m; i++) {\n                answer.set.addAll(execute(n-i, m-1).marge(key,
+    i).set);\n            }\n        }\n        answerTable.put(key, answer);\n        return
+    answer;\n    }\n     \n    static class Key {\n        final int n;\n        final
+    int m;\n\n        Key(int n, int m) {\n            this.n = n;\n            this.m
+    = m;\n        }\n        \n        @Override\n        public int hashCode() {\n
+    \           return 17 * n ^ m;\n        }\n        @Override\n        public boolean
+    equals(Object obj) {\n            if (this == obj) return true;\n            if
+    (!(obj instanceof Key)) return false;\n            Key target = (Key) obj;\n            return
+    (this.n == target.n &amp;&amp; this.m == target.m);\n        }\n    }\n    \n
+    \   static class Answer {\n        private final Key k;\n        private TreeSet&lt;Integer[]&gt;
+    set;\n\n        Answer(Key k) {\n            this.k = k;\n            this.set
+    = new TreeSet&lt;Integer[]&gt;(\n                new Comparator&lt;Integer[]&gt;()
+    {\n                    public int compare(Integer[] o1, Integer[] o2) {\n                        assert
+    o1.length == o2.length;\n                        if(o1 == o2) return 0;\n                        for
+    (int i = 0; i &lt; o1.length; i++) {\n                            if(o1[i] !=
+    o2[i]) return o2[i] - o1[i];\n                        }\n                        return
+    0;\n                    }\n                });\n        }\n        boolean add(int
+    x, Integer[] a) {\n            assert a.length + 1 == k.m;\n            Integer[]
+    a2 = new Integer[k.m];\n            a2[0] = x;\n            System.arraycopy(a,
+    0, a2, 1, a.length);\n            Arrays.sort(a2, Collections.reverseOrder());\n
+    \           \n            return set.add(a2);\n        }\n        Answer marge(Key
+    k, int x) {\n            Answer answer = new Answer(k);\n            for (Integer[]
+    a : this.set) {\n                answer.add(x, a);\n            }\n            return
+    answer;\n        }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4312'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4312
+  :user_name: sawat
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/322/
+  :language: diff
+  :time: 2007/11/22 02:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>う。根本的に間違えてた。\n「組み合わせ」じゃなくて、「順列」なのね。\nはじめからソートは要らなかったorz</p>\n<p>何度もすみません。最初のコードとのdiffで</p>\n\n\t"
+  :code: |
+    @@ -23,3 +23,3 @@
+             if(m &lt;= 2) {
+    -            for (int i = 0; i &lt;= n/2; i++) {
+    +            for (int i = 0; i &lt;= n; i++) {
+                     answer.set.add(new int[]{i, n-i});
+    @@ -27,3 +27,3 @@
+             } else {
+    -            for (int i = 0; i &lt;= n/m; i++) {
+    +            for (int i = 0; i &lt;= n; i++) {
+                     answer.set.addAll(execute(n-i, m-1).marge(key, i).set);
+    @@ -80,3 +80,3 @@
+                 System.arraycopy(a, 0, a2, 1, a.length);
+    -            Arrays.sort(a2);
+    +
+                 return set.add(a2);
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4313'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4313
+  :user_name: ihag
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/560/
+  :language: Ruby
+  :time: 2007/11/22 02:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>まずは，非常に安直な実装で．</p>\n<p>はじめに，0以上n以下の数値からなる要素m個のArrayについて，考えうる全ての組み合わせを求めます．例えば，n
+    = 3, m =2 の場合は:</p>\n<pre class=\"literal-block\">\n&gt; [[0, 0], [0, 1], [0,
+    2], [0, 3],\n&gt;  [1, 0], [1, 1], [1, 2], [1, 3],\n&gt;  [2, 0], [2, 1], [2,
+    2], [2, 3],\n&gt;  [3, 0], [3, 1], [3, 2], [3, 3]]\n</pre>\n<p>次に，このArrayを走査し，総和がnと一致するものだけを抽出し，ソートして解とします:</p>\n<pre
+    class=\"literal-block\">\n&gt; [[3, 0], [2, 1], [1, 2], [0, 3]]\n</pre>\n<p>添削，ツッコミ，diff希望します:-)</p>\n\n\t"
+  :code: |
+    require 'pp'
+
+    class NumericArray &lt; Array
+      def initialize(maxvalue, level)
+        self[0, 0] = [0] * level
+        @maxvalue = maxvalue
+      end
+
+      def succ
+        self.dup.succ!
+      end
+
+      def succ!
+        result = []
+        carry = reverse.inject(1) do |carry, cur|
+          if cur + carry &lt; @maxvalue then
+            result &lt;&lt; cur + carry
+            carry = 0
+          else
+            result &lt;&lt; 0
+            carry = 1
+          end
+        end
+        return nil if carry == 1
+        replace(result.reverse)
+      end
+
+      def sum
+        inject(0) {|sum, i| i + sum}
+      end
+    end
+
+
+    begin
+      raise '2 arguments required.' if ARGV.size != 2
+      sum, maxlevel = ARGV.map {|n| n.to_i }
+
+      if sum &lt;= 0 or maxlevel &lt;= 0 then
+        raise 'Arguments out of range.'
+      end
+    rescue
+      puts &lt;&lt;-_EOD_
+    #{File.basename($0)}: ERROR: #{$!}
+    usage: #{File.basename($0)} n m
+      _EOD_
+      exit(1)
+    end
+
+    xs = NumericArray.new(sum + 1, maxlevel)
+    result = []
+    begin
+      result &lt;&lt; xs.dup
+    end while xs.succ!.nil? == false
+
+    pp result.select {|list| list.sum == sum}.sort.reverse
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4314'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4314
+  :user_name: SiroKuro
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/540/
+  :language: C
+  :time: 2007/11/22 02:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  なんということだ。Sort どころか List&lt;int[]&gt; すら要らなかった／(^o^)＼\n\t"
+  :code: "using System;\nusing System.Collections.Generic;\nstatic class Program {\n
+    \   static void Main(String[] args) {\n        hoge(int.Parse(args[0]), 0, 0,
+    new int[int.Parse(args[1])]);\n    }\n    static void hoge(int n, int m, int sum,
+    int[] items) {\n        if (items.Length &lt;= m) {\n            if (n == sum)
+    {\n                Console.WriteLine(string.Join(\", \", Array.ConvertAll&lt;int,
+    string&gt;(items, \n                    delegate(int x) { return x.ToString();
+    })));\n            }\n        }\n        else {\n            for(int i = n - sum;
+    0 &lt;= i ; i--) {\n                items[m] = i;\n                hoge(n, m +
+    1, sum + i, items);\n            }\n        }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4316'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4316
+  :user_name: みよ
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/510/
+  :language: Emacs
+  :time: 2007/11/22 03:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>comprehensionって便利ですね。\nList Comprehension - defmacro によるリストの内包表記\n<a
+    class=\"reference\" href=\"/web/20081202172851/http://lambda.s55.xrea.com/Emacs.html\">http://lambda.s55.xrea.com/Emacs.html</a>\nのlist-of\nを利用してemacs-lispで書いてみました。</p>\n\n\t"
+  :code: "(defun partitionNum (a b)\n  (if (= b 1)\n      (list (list a))\n    (let
+    ((x 0) (l '()))\n      (while (&lt;= x a)\n    (progn\n      (setq l\n        (append
+    \n         l\n         (list-of (append (list (- a x)) y)\n              (y in
+    (partitionNum x (- b 1))))))\n      (setq x (+ x 1))))\n      l)))\n(print (partitionNum
+    5 3))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4317'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4317
+  :user_name: shiro
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/11/22 04:16 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <p>Schemeならsrfi-42でcomprehensionが使えます。</p>\n\n\t"
+  :code: |
+    (use srfi-42)
+
+    (define (partition-num n m)
+      (if (= m 1)
+        `((,n))
+        (list-ec (: x 0 (+ n 1)) (: xs (partition-num x (- m 1)))
+                 (cons (- n x) xs))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '4318'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4318
+  :user_name: yohei
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/415/
+  :language: C
+  :time: 2007/11/22 04:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>再帰 &amp; yieldで</p>\n\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+
+    class Program {
+        static IEnumerable&lt;string&gt; PartNum(int n, int m) {
+            if (m == 1) {
+                yield return n.ToString();
+            } else if (m &gt; 1) {
+                for (int i = 0; i &lt;= n; i++)
+                    foreach (string s in PartNum(i, m - 1))
+                        yield return (n - i).ToString() + ", " + s;
+            }
+        }
+        static void Main(string[] args) {
+            foreach (string s in PartNum(5, 3))
+                Console.WriteLine(s);
+        }
+    }
+  :tags:
+  - C#2.0
+  :references:
+    :url: 
+    :title: 
+- :id: '4319'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4319
+  :user_name: sawat
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/322/
+  :language: Ruby
+  :time: 2007/11/22 04:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>rubyが無かったので書いてみたら、もうあった orz</p>\n\n\t"
+  :code: |
+    def part_number(n, m)
+      return [[n]] if m == 1
+      table = Array.new(n+1)
+      0.upto(n) do |i|
+        list = []
+        0.upto(i) do |j|
+          list &lt;&lt; [i-j, j]
+        end
+        table[i] = list
+      end
+      3.upto(m) do |p|
+        new_table = Array.new(n+1)
+        0.upto(n) do |i|
+          new_table[i] = []
+          0.upto(i) do |j|
+            table[j].inject(new_table[i]) {|res, l| res &lt;&lt; ([i-j] + l)}
+          end
+        end
+        table = new_table
+      end
+      table[n]
+    end
+
+    m = (ARGV.shift || 5).to_i
+    n = (ARGV.shift || 3).to_i
+    part_number(m, n).each do |a|
+      puts a.join(',')
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4320'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4320
+  :user_name: yohei
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/415/
+  :language: C
+  :time: 2007/11/22 04:36 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>再帰で</p>\n\n\t"
+  :code: "#include &lt;stdio.h&gt;\n\nvoid partNum(char *s, int n, int m) {\n    if
+    (m == 1) {\n        printf(\"%s%d\\n\", s, n);\n    } else if (m &gt; 1) {\n        int
+    i;\n        char *p;\n        p = s + strlen(s);\n        for (i = 0; i &lt;=
+    n; i++) {\n            sprintf(p, \"%d, \", n - i);\n            partNum(s, i,
+    m - 1);\n        }\n    }\n}\n\nint main(void) {\n    char s[256] = \"\";\n    \n
+    \   partNum(s, 5, 3);\n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4321'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4321
+  :user_name: sawat
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/322/
+  :language: Ruby
+  :time: 2007/11/22 04:40 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>行数を減らしてみた。</p>\n\n\t"
+  :code: |
+    def part_number(n, m)
+      table = Array.new(n+1) {|i| [[i]] }
+      2.upto(m) do |p|
+        table = Array.new(n+1) do |i|
+          (0..i).inject([]) do |list, j|
+            table[j].inject(list) {|res, l| res &lt;&lt; ([i-j] + l)}
+          end
+        end
+      end
+      table[n]
+    end
+
+    m = (ARGV.shift || 5).to_i
+    n = (ARGV.shift || 3).to_i
+    part_number(m, n).each do |a|
+      puts a.join(',')
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4322'
+  :parent_id: '89'
+  :url: http://ja.doukaku.org/comment/4322
+  :user_name: 匿名
+  :user_url: /web/20081202172851/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 
+  :vote_count: 
+  :vote_score: 
+  :body: ''
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 

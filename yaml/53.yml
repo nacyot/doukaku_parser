@@ -1,0 +1,752 @@
+---
+:id: '53'
+:title: 仲間はずれの判定
+:comments:
+- :id: '3409'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/3409
+  :user_name: にしお
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/29 19:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  リストxsが渡されたときに\r\n<ul>\n<li>\r\n全部の要素が同じ値である(例：[1, 1, 1, 1])、\r\n</li>\n<li>\r\n一つだけ仲間はずれがある(例：[1,
+    2, 1, 1, 1])、\r\n</li>\n<li>\r\nその他\r\n</li>\n</ul>\r\nを識別する関数を作ってください。\r\nまた判定後に「全部の要素が同じ値」の場合にはその値、\r\n「一つだけ仲間はずれがある」の場合にはその仲間はずれの値と多数派の値を複雑な処理なしに取得できるようにしてください。\r\n<p>\r\n型にうるさい言語のために：リストの中身は非負の整数だと仮定して負の値を未定義値代わりに使っても構いません。\r\n</p>\n<p>\r\n追記：リストの長さは3以上であると仮定して構いません。(2個で異なる値の時にどちらが仲間はずれか決まらないので。)
+    nobsunさん、noriさん、ご指摘ありがとうございます。\r\n\t</p>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3889'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/3889
+  :user_name: nantan
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/535/
+  :language: Java
+  :time: 2007/11/12 04:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">もっとスリム化できそうですがとりあえず。</pre>\r\n\t"
+  :code: |
+    import java.util.*;
+    public class NakamaHazure {
+        public static void main(String[] args) {
+            check(Arrays.asList(1,1,1,1));    // =&gt; [1]
+            check(Arrays.asList(1,2,1,1,1));    // =&gt; [2,1]
+            check(Arrays.asList(1,2,2,1,1));    // =&gt; []
+            check(Arrays.asList(1,2,2,1,3));    // =&gt; []
+        }
+        private static void check(List&lt;Integer&gt; list) {
+            HashSet&lt;Integer&gt; set = new HashSet&lt;Integer&gt;();
+            HashSet&lt;Integer&gt; minor = new HashSet&lt;Integer&gt;();;
+            Integer major = null;
+            for (Integer i : list) {
+                if (!set.add(i)) {
+                    if (major != null &amp;&amp; major != i) {
+                        System.out.println("[]");
+                        return;
+                    }
+                    minor.remove(i);
+                    major = i;
+                } else {
+                    minor.add(i);
+                }
+            }
+            if (set.size() == 1) {
+                System.out.println("[" + set.iterator().next() + "]");
+            } else if (set.size() == 2) {
+                System.out.println("[" + minor.iterator().next() + "," + major + "]");
+            } else {
+                System.out.println("[]");
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5844'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/5844
+  :user_name: takuya_1st
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/725/
+  :language: PHP
+  :time: 2008/02/26 00:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>array_count_values便利ですね。あえて使わないで作ってみる事で便利さを際実感</p>\n\r\n\t"
+  :code: |
+    $a[]= array(1,1,1,1);#1
+    $a[]= array(1,2,1,1,1);#2
+    $a[]= array(2,1,2,2);#その他
+    $a[]= array(1,2,2,2);#その他
+    $a[]= array(1,1,2,2);#その他
+    $a[]= array(1,1,2,3);#その他
+    function check($_array){
+        $uniques = sizeof(array_unique($_array));
+        switch($uniques){
+            case(1):
+                return array("仲間"=&gt;array_pop($_array));
+            case(2):
+                sort($_array);
+                #仲間はずれ
+                if( $_array[0]!=$_array[1] ){
+                    return array( "仲間はずれ"=&gt;array_shift($_array),"仲間"=&gt;array_pop($_array) );
+                }else if($_array[0]==$_array[1] &amp;&amp; $_array[sizeof($_array)-1] != $_array[sizeof($_array)-2] ){
+                    return array( "仲間はずれ"=&gt;array_pop($_array),"仲間"=&gt;array_shift($_array) );
+                }
+            default:
+                return "その他";
+        }
+
+
+    }
+
+    foreach( $a as $b ){
+        print_r( check($b) ).PHP_EOL;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2637'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2637
+  :user_name: shiro
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/08/29 19:32 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">効率は悪いけれど短い版。\r\n\r\n実行例:\r\ngosh&gt; (classify
+    '(1 1 1 1 1))\r\n(homo 1)\r\ngosh&gt; (classify '(1 1 2 1 1))\r\n(quasi-homo 1
+    2)\r\ngosh&gt; (classify '(2 1 1 1 1))\r\n(quasi-homo 1 2)\r\ngosh&gt; (classify
+    '(2 1 4 1 1))\r\nhetero\r\ngosh&gt; (classify '())\r\nhetero\r\n</pre>\n\t"
+  :code: |
+    (use gauche.collection)
+    (use util.match)
+
+    (define (classify lis)
+      (match (group-collection lis)
+        [((x ...))     `(homo ,(car x))]
+        [((x ...) (y)) `(quasi-homo ,(car x) ,y)]
+        [((y) (x ...)) `(quasi-homo ,(car x) ,y)]
+        [_ 'hetero]))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '2638'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2638
+  :user_name: ところてん
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2007/08/29 20:36 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">ディクショナリ使ってる。\r\nちょっと頭悪い実装。\r\nすべて同じ時 0、一個違うとき1、その他2を返します。</pre>\n\t"
+  :code: "def check(xs):\n    c = {}\n    for i in xs:\n        if not c.has_key(i):\n
+    \           c[i] = 0\n        c[i] += 1\n        if (len(c) == 3):\n            return
+    2\n\n    if len(c) == 1:\n        return 0\n    if len(c) == 2:\n        a = c.items()[0][1]\n
+    \       b = c.items()[1][1]\n        if min(a,b) &gt; 1:\n            return 2\n
+    \       return 1\n    else:\n        return 2\n        \n\nprint check((1,1,1,1))\nprint
+    check((1,1,1,2))\nprint check((1,1,2,1))\nprint check((1,1,2,3))\nprint check((1,2,2,1))\nprint
+    check((1,2,2,1))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2639'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2639
+  :user_name: rubikitch
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/105/
+  :language: Ruby
+  :time: 2007/08/29 20:42 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">その他の場合はnilを。</pre>\n\t"
+  :code: |
+    def classify(ary)
+      hash = ary.inject(Hash.new(0)){|h,x| h[x]+=1; h }
+      first = hash.keys.first
+      case hash.keys.length
+      when 1; [:homo, first]
+      when 2
+        second = hash.keys[1]
+        hash[first]==1 ? [:quasi_homo, first, second] : [:quasi_homo, second, first]
+      end
+    end
+
+    classify [1,1,1,1]              # =&gt; [:homo, 1]
+    classify [1,2,1,1,1]            # =&gt; [:quasi_homo, 2, 1]
+    classify [2,1,1,1,1]            # =&gt; [:quasi_homo, 2, 1]
+    classify [1,2,3,4]              # =&gt; nil
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2640'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2640
+  :user_name: rubikitch
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/105/
+  :language: Ruby
+  :time: 2007/08/29 20:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">しまった！[2,2,1,1,1]のケースが漏れてた</pre>\n\t"
+  :code: |
+    def classify(ary)
+      hash = ary.inject(Hash.new(0)){|h,x| h[x]+=1; h }
+      first = hash.keys.first
+      case hash.keys.length
+      when 1; [:homo, first]
+      when 2
+        second = hash.keys[1]
+        hash[first]==1 ? [:quasi_homo, first, second] : [:quasi_homo, second, first] if hash.values.include?(1)
+      end
+    end
+
+    classify [1,1,1,1]              # =&gt; [:homo, 1]
+    classify [1,2,1,1,1]            # =&gt; [:quasi_homo, 2, 1]
+    classify [2,1,1,1,1]            # =&gt; [:quasi_homo, 2, 1]
+    classify [2,2,1,1,1]            # =&gt; nil
+    classify [2,4,1,1,1]            # =&gt; nil
+    classify [1,2,3,4]              # =&gt; nil
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2641'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2641
+  :user_name: rubikitch
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/105/
+  :language: Common
+  :time: 2007/08/29 21:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">再帰版。リストを先頭から見ていき、条件をみたさなくなったら即座に終了する。</pre>\n\t"
+  :code: |
+    (defun classify (list)
+      (labels ((rec (list alist)
+                 (let ((pair (assoc (car list) alist))
+                       (len (length alist)))
+                   (cond ((null list)
+                          (if (= len 1)
+                              (values :homo (caar alist))
+                              (let ((one (position 1 (mapcar #'cdr alist))))
+                                (case one
+                                  (0 (values :quasi-homo (caar alist) (caadr alist)))
+                                  (1 (values :quasi-homo (caadr alist) (caar alist)))
+                                  (t nil)))))
+                         ((and (&gt;= len 2) (null pair))
+                          (return-from classify nil))
+                         ((null pair)
+                          (rec (cdr list) (cons (cons (car list) 1) alist)))
+                         (t
+                          (incf (cdr pair))
+                          (rec (cdr list) alist))))))
+        (rec list ())))
+    (multiple-value-list (classify '(1 1 1 1)))   ; =&gt; (:HOMO 1)
+    (multiple-value-list (classify '(1 2 1 1 1))) ; =&gt; (:QUASI-HOMO 2 1)
+    (multiple-value-list (classify '(1 1 1 1 2))) ; =&gt; (:QUASI-HOMO 2 1)
+    (multiple-value-list (classify '(2 2 1 1 1))) ; =&gt; (NIL)
+    (multiple-value-list (classify '(2 4 1 1 1))) ; =&gt; (NIL)
+    (multiple-value-list (classify '(1 2 3 4)))   ; =&gt; (NIL)
+    (multiple-value-list (classify '()))          ; =&gt; (NIL)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2642'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2642
+  :user_name: rubikitch
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/105/
+  :language: C
+  :time: 2007/08/29 21:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    enum { hetero, homo, quasi_homo };
+    typedef struct {
+        int type;                   /* hetero, homo, quasi_homo */
+        int one;
+        int other;
+    } classify_result;
+
+    classify_result classify(int *p, int len) {
+        int temp[] = {  -1,  0,  -1,    0 };
+        /*            key1 val1 key2 val2 */
+        int cur, i;
+        static classify_result hetero_result = {hetero, -1, -1};
+        classify_result res = hetero_result;
+
+        if (len == 0) return hetero_result;
+        for (i=0; i&lt;len; i++) {
+            cur = p[i];
+            if (temp[0] == cur) temp[1]++;
+            else if (temp[2] == cur) temp[3]++;
+            else if (temp[0] == -1) { temp[0]=cur; temp[1]=1; }
+            else if (temp[2] == -1) { temp[2]=cur; temp[3]=1; }
+            else return hetero_result;
+        }
+        if (temp[2] == -1) { res.type = homo; res.one = temp[1]; }
+        else if (temp[1] == 1) { res.type = quasi_homo; res.one = temp[0]; res.other = temp[2]; }
+        else if (temp[3] == 1) { res.type = quasi_homo; res.one = temp[2]; res.other = temp[0]; }
+        else return hetero_result;
+        return res;
+    }
+    /* コードはここまで。以後テスト。 */
+
+    void print_classify_result(classify_result x) {
+        switch(x.type) {
+        case hetero:
+            printf("&lt;hetero&gt;\n");
+            break;
+        case homo:
+            printf("&lt;homo %d&gt;\n", x.one);
+            break;
+        case quasi_homo:
+            printf("&lt;quasi_homo %d %d&gt;\n", x.one, x.other);
+            break;
+        default:
+            printf("BUG!\n");
+        }
+    }
+    int main() {
+        {
+            int ary[] = {1,1,1,1};
+            print_classify_result(classify(ary, sizeof(ary)/sizeof(int)));
+        }
+        {
+            int ary[] = {1,2,1,1,1};
+            print_classify_result(classify(ary, sizeof(ary)/sizeof(int)));
+        }
+        {
+            int ary[] = {1,1,1,1,2};
+            print_classify_result(classify(ary, sizeof(ary)/sizeof(int)));
+        }
+        {
+            int ary[] = {2,2,1,1,1,1};
+            print_classify_result(classify(ary, sizeof(ary)/sizeof(int)));
+        }
+        {
+            int ary[] = {2,4,1,1,1,1};
+            print_classify_result(classify(ary, sizeof(ary)/sizeof(int)));
+        }
+        {
+            int ary[] = {1,2,3,4};
+            print_classify_result(classify(ary, sizeof(ary)/sizeof(int)));
+        }
+        {
+            int ary[] = {};
+            print_classify_result(classify(ary, sizeof(ary)/sizeof(int)));
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2643'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2643
+  :user_name: takkanm
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/224/
+  :language: Haskell
+  :time: 2007/08/29 22:04 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">そのまま実装\r\n\r\n*Main&gt; classify [1,1,1,1,1]
+    \                                                                                                               \r\n(\"homo\",[1])\r\nit
+    :: ([Char], [Integer])                                                                                                                  \r\n*Main&gt;
+    classify [1,1,2,1,1]\r\n(\"quasi-homo\",[1,2])                                                                                                                       \r\nit
+    :: ([Char], [Integer])\r\n*Main&gt; classify [2,1,1,1,1]                                                                                                                \r\n(\"quasi-homo\",[1,2])\r\nit
+    :: ([Char], [Integer])                                                                                                                  \r\n*Main&gt;
+    classify [2,2,1,2,2]\r\n(\"quasi-homo\",[2,1])                                                                                                                       \r\nit
+    :: ([Char], [Integer])\r\n*Main&gt; classify [2,3,2,1,5]                                                                                                                \r\n(\"hetero\",[])\r\nit
+    :: ([Char], [Integer])            </pre>\n\t"
+  :code: |
+    otherList :: (Eq a) =&gt; [a] -&gt; [a]
+    otherList (x:xs) = [ y |  y&lt;-xs , y /= x ]
+
+    quasiHomo1 :: (Eq a) =&gt; [a] -&gt; Bool
+    quasiHomo1     = (== 1) . length . otherList
+
+    quasiHomo2 :: (Eq a) =&gt; [a] -&gt; Bool
+    quasiHomo2 xs  = (== 1) $ (length xs ) - (length $ otherList xs)
+
+    quasiHomoList :: (Eq a) =&gt; [a] -&gt; [a]
+    quasiHomoList xs = map head $ [xs] ++ [otherList xs]
+
+    homo :: (Eq a) =&gt; [a] -&gt; Bool
+    homo (xs) = xs == [ y | y &lt;- xs , y == (head xs)]
+
+    classify :: (Eq a) =&gt; [a] -&gt;  ([Char],[a])
+    classify xs | homo xs = ("homo" , [head xs])
+                | quasiHomo1 xs = ("quasi-homo", quasiHomoList xs)
+                | quasiHomo2 xs = ("quasi-homo", reverse $ quasiHomoList xs)
+                | otherwise = ("hetero",[])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2644'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2644
+  :user_name: naoya_t
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/348/
+  :language: awk
+  :time: 2007/08/29 23:03 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">非負整数に限定せず、文字列（日本語を含む）もOK\r\n% awk -f nakama.awk\r\n1
+    1 1 1\r\n全部の要素が同じ値: 1\r\n1 2 1 1 1\r\n一つだけ仲間はずれがある: 仲間はずれ(2),多数派(1)\r\n1 2 1 2\r\nその他\r\na
+    a a a b a a\r\n一つだけ仲間はずれがある: 仲間はずれ(b),多数派(a)\r\ncat cat cat        \r\n全部の要素が同じ値:
+    cat\r\nWii Wii Wii PS3 Wii\r\n一つだけ仲間はずれがある: 仲間はずれ(PS3),多数派(Wii)\r\n渋谷 赤坂 赤坂 赤坂\r\n一つだけ仲間はずれがある:
+    仲間はずれ(渋谷),多数派(赤坂)\r\n★ ★ ★ ★ ★\r\n全部の要素が同じ値: ★\r\n☆ ☆ ☆ ★ ☆\r\n一つだけ仲間はずれがある: 仲間はずれ(★),多数派(☆)\r\n☆
+    ★ ☆ ★ ★\r\nその他</pre>\n\t"
+  :code: "{\n\tdelete xs\n\tfor (i=1;i&lt;=NF;i++) xs[i] = $i\n\tresult = nakama(xs)\n\tif
+    (result ~ /unanimity/) {\n\t\tprintf(\"全部の要素が同じ値: %s\\n\", MAJORITY)  ## %dでなく%s\n\t}
+    else if (result ~ /left alone/) {\n\t\tprintf(\"一つだけ仲間はずれがある: 仲間はずれ(%s),多数派(%s)\\n\",
+    MINORITY, MAJORITY)  ## %dでなく%s\n\t} else if (result ~ /(empty|two different values|other)/)
+    {\n\t\tprintf(\"その他\\n\")\n\t}\n}\n\nfunction nakama(xs,  i,len,x_count,member,m,m1,m2)\n{\n\tlen
+    = 0 ; for (i in xs) len++\n\tif (len == 0) return \"empty\"\n\tif (len == 1) {\n\t\tMAJORITY
+    = xs[1] ; MINORITY = \"\" ; return \"unanimity\"\n\t}\n\n\tdelete x_count\n\n\tmember
+    = \":\" xs[1] \":\"\n\tx_count[xs[1]] = 1\n\n\tfor (i=2; i&lt;=len; i++) {\n\t\tx
+    = xs[i]\n\n\t\tif (member !~ \":\" x \":\") member = member x \":\"\n\t\tx_count[x]++\n\t}\n\n\tgsub(/(^:|:$)/,\"\",member)\n\tmember_count
+    = split(member,m,\":\")\n\tif (member_count == 1) {\n\t\tMAJORITY = m[1] ; MINORITY
+    = \"\" ; return \"unanimity\"\n\t} else if (member_count == 2) {\n\t\tm1 = m[1]
+    ; m2 = m[2]\n\t\tif (x_count[m1] == 1) {\n\t\t\tif (x_count[m2] == 1) {\n\t\t\t\tMAJORITY
+    = m1 ; MINORITY = m2 ; return \"two different values\"\n\t\t\t} else {\n\t\t\t\tMAJORITY
+    = m2 ; MINORITY = m1 ; return \"left alone\"\n\t\t\t}\n\t\t} else if (x_count[m2]
+    == 1) {\n\t\t\tMAJORITY = m1 ; MINORITY = m2 ; return \"left alone\"\n\t\t} else
+    {\n\t\t\tMAJORITY = MINORITY = \"\" ; return \"other\"\n\t\t}\n\t} else {\n\t\tMAJORITY
+    = MINORITY = \"\" ; return \"other\"\n\t}\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2646'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2646
+  :user_name: nobsun
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/30 00:03 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">入力リストの長さが0,1,2のときの扱いを\r\nいれたのでちょっとスマートじゃないけど\r\n効率は悪くない(はず)\r\nデータ型のフィールドラベルについては\r\nHaskell98の仕様に記述があるので参考にどうぞ。</pre>\n\t"
+  :code: "data Case a = Zero \n            | One {first :: a}\n            | Two {first,
+    second :: a}\n            | Homo {homo :: a} \n            | QuasiHomo {homo,
+    strange :: a}\n            | Hetero\n  deriving Show\n\nclassify :: Eq a =&gt;
+    [a] -&gt; Case a\nclassify []     = Zero\nclassify (x:xs) = judge (One x) xs\n\njudge
+    c [] = c\njudge (One x) (y:ys) \n      | x == y    = judge (Homo x) ys\n      |
+    otherwise = judge (Two x y) ys\njudge (Homo x) (y:ys)\n      | x == y    = judge
+    (Homo x) ys\n      | otherwise = judge (QuasiHomo x y) ys\njudge (Two x y) (z:zs)\n
+    \     | x == z    = judge (QuasiHomo x y) zs\n      | y == z    = judge (QuasiHomo
+    y x) zs\njudge (QuasiHomo x y) (z:zs)\n      | x == z    = judge (QuasiHomo x
+    y) zs\njudge _ _         = Hetero\n\n{-\n*Main&gt; classify [1,1,1,1,1]\nHomo
+    {homo = 1}\n*Main&gt; classify [1,2,1,1,1]\nQuasiHomo {homo = 1, strange = 2}\n*Main&gt;
+    classify [1,2,1,2,1]\nHetero\n-}\n"
+  :tags:
+  - フィールドラベル
+  :references:
+    :url: /web/20081202154714/http://www.sampou.org/haskell/report-revised-j/exps.html#sect3.15
+    :title: フィールドラベルをもつデータ型
+- :id: '2647'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2647
+  :user_name: ether
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/96/
+  :language: OCaml
+  :time: 2007/08/30 00:45 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  サーチする中で4つ状態があるんですよね。それぞれをそのまま関数にしてみました。\n\t"
+  :code: |
+    type 'a t = H of 'a | Q of 'a * 'a | Other
+
+    let classify (x::xs) =
+      let rec one a = function
+      | [] -&gt; H a
+      | x::xs when x = a -&gt; one' a xs
+      | x::xs -&gt; two a x xs
+      and one' a = function
+      | [] -&gt; H a
+      | x::xs when x = a -&gt; one' a xs
+      | x::xs -&gt; two' a x xs
+      and two a b = function
+      | [] -&gt; Q (a, b)
+      | x::xs when x = a -&gt; two' a b xs
+      | x::xs when x = b -&gt; two' b a xs
+      | _ -&gt; Other
+      and two' a b = function
+      | [] -&gt; Q (a, b)
+      | x::xs when x = a -&gt; Q (a, b)
+      | _ -&gt; Other
+      in
+      one x xs
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2655'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2655
+  :user_name: talo
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/237/
+  :language: Python
+  :time: 2007/08/30 01:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">まだまだ感が否めない。。。</pre>\n\t"
+  :code: |
+    def lookfor(target):
+        count = {}
+        for v in target:
+            if not count.has_key(v):
+                count[v] = target.count(v)
+        #2つ以上要素があって、1回出現の要素がない時はその他
+        #要素が2つより多い場合もその他
+        if (1 not in count.values() and len(count.keys()) &gt;= 2)\
+                or len(count.keys()) &gt; 2:
+            print '%s その他' % (target)
+        #要素が1つしかない時は全部同じ
+        elif len(count.keys()) == 1:
+            print '%s 全て同じ' % (target)
+        #この時点で1回出現の要素と多数出現の要素の2つが残っている
+        else:
+            for k, v in count.iteritems():
+                if v == 1:
+                    outofgroup = k
+                else:
+                    group = k
+            print '%s 多数派: %s, 仲間外れ: %s' % (target, group, outofgroup)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2656'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2656
+  :user_name: sawat
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/322/
+  :language: JavaScript
+  :time: 2007/08/30 01:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  戻り値は配列で、要素数が\r<br>１なら全部同じで[共通項]\r<br>2なら仲間はずれ有りで[共通項, 仲間ハズレ]\r<br>0ならその他\r<br>"
+  :code: "Array.prototype.classify = function () {\n  if(this.length == 0) return
+    [];\n  var a , b, ac = 0, bc = 0;\n  for(var i=0, n=this.length; i&lt;n; i++)
+    {\n    if(ac == 0 || a == this[i]) {a = this[i]; ac++; }\n    else if(bc == 0
+    || ac == 1 &amp;&amp; b == this[i]) {b = this[i]; bc++;}\n    else return [];\n
+    \ }\n  return a == void 0 ? [b] : \n         b == void 0 ? [a] :\n         ac
+    &lt; bc     ? [b, a] : [a, b];\n};\n\nalert([2,2,1,2].classify());// =&gt; [2,
+    1]\nalert([1,1,1].classify());  // =&gt; [1]\nalert([2, 1, 1, 1].classify());
+    // =&gt; [1, 2]\nalert([2, 1, 0, 1].classify()); // =&gt; []\nalert([1, 2, 1,
+    2, 1].classify()); // =&gt; []\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2657'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2657
+  :user_name: sawat
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/322/
+  :language: diff
+  :time: 2007/08/30 01:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  間違えた。これでは値にundefinedを扱えませんでした。\n\t"
+  :code: |2
+       }
+    -  return a == void 0 ? [b] :
+    -         b == void 0 ? [a] :
+    -         ac == bc    ? [] :
+    -         ac &lt; bc     ? [b, a] : [a, b];
+    +  return ac == 0  ? [b] :
+    +         bc == 0  ? [a] :
+    +         ac == bc ? [] :
+    +         ac &lt; bc  ? [b, a] : [a, b];
+     };
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2658'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2658
+  :user_name: nori
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/59/
+  :language: Other
+  :time: 2007/08/30 01:46 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">len(xs)==0のときは全部同じなのかね？\r\n集合論的にはどうなんでしょうね。\r\n\r\n辞書を使って脱力実装。\r\n\r\n最初は辞書を返して終わりにしようと思ったけど、気が引けたのでやめた。\r\n\r\nしかも書いてみたら辞書を生成する部分より長いしｗ。</pre>\n\t"
+  :code: |
+    def classify_r(xs):
+      if len(xs) == 0 :
+        return dict()
+      else:
+        d = classify_r(xs[1:])
+        c = d.get(xs[0], 0)
+        d.update({xs[0]: c + 1})
+        return d
+
+    def classify(xs):
+      d = classify_r(xs)
+      if len(d) == 0:
+        return "Empty"
+      elif len(d) == 1:
+        return d.keys()[0]
+      elif len(d) == 2:
+        a = d.keys()[0]
+        b = d.keys()[1]
+        if d[a] &gt;= d[b]:
+          return (a, b)
+        else:
+          return (b, a)
+      else:
+        return "Mixed"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2661'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2661
+  :user_name: morchin
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/78/
+  :language: Python
+  :time: 2007/08/30 02:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">以下を返値とする。\r\n全部の要素が同じ値である： 1\r\n一つだけ仲間はずれがある：
+    2\r\nその他： 0\r\n\r\nまた、dup_check.majorとdup_check.minorで必要な値を取り出せる。\r\n</pre>\n\t"
+  :code: "try: set\nexcept NameError: from sets import Set as set\n\ndef dup_check(xs):\n\tfor
+    attr in ['major', 'minor']:\n\t\tif hasattr(dup_check, attr): delattr(dup_check,
+    attr)\n\tL = list(set(xs))\n\tif len(L) == 1:\n\t\tdup_check.major = L[0]\n\t\treturn
+    1\n\telif len(L) == 2:\n\t\tL.sort(key=xs.count)\n\t\tdup_check.minor = L[0]\n\t\tdup_check.major
+    = L[1]\n\t\treturn 2\n\telse:\n\t\treturn 0\n\nprint 'ret =', dup_check([1,1,1,1])\nprint
+    'uniq =', dup_check.major\nprint\nprint 'ret =', dup_check([1,2,1,1,1])\nprint
+    'major =', dup_check.major\nprint 'minor =', dup_check.minor\nprint\nprint 'ret
+    =', dup_check([1,2,3,4])\n\n出力：\nret = 1\nuniq = 1\n\nret = 2\nmajor = 1\nminor
+    = 2\n\nret = 0\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2663'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2663
+  :user_name: 匿名
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/08/30 02:39 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">戻り値は2要素のタプルを返す\r\n　(その要素, None)　ー　要素が全部同じの時\r\n　(多い方の要素,
+    少ない方の要素)　ー　要素が一つだけのものと他全部同じの時\r\n　(None, None)　ー　それ以外の場合\r\n</pre>\n\t"
+  :code: |
+    def f(xs):
+      a = list(set(xs))
+      if len(a) == 1: return xs[0], None
+      if len(a) == 2 and xs.count(a[0]) == 1: return a[1], a[0]
+      if len(a) == 2 and xs.count(a[1]) == 1: return a[0], a[1]
+      return None, None
+
+    print f([1,1,1,1])
+    print f([1,2,1,1,1])
+    print f([1,1,2,2])
+    print f([1,1,2,3])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2664'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2664
+  :user_name: mc
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2007/08/30 02:40 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">条件によって多値を返すようにしてみました。\r\n* 全部の要素が同じ値である =&gt;
+    仲間, nil\r\n* 一つだけ仲間はずれがある =&gt; 仲間はずれ, 仲間\r\n* その他 =&gt; nil, もとのリスト\r\n</pre>\n\t"
+  :code: "(defun hajiki (lst &amp;optional &amp;key (test #'equal))\n  (let ((xs (remove
+    (car lst) lst :test-not test))\n\t(ys (remove (car lst) lst :test test))\n\t(kind
+    (let ((cnt 0) tem)\n\t\t(dolist (item lst cnt)\n\t\t  (or (eq tem (pushnew item
+    tem :test test)) (incf cnt))\n\t\t  (and (&gt; cnt 2) (return-from hajiki (values
+    nil lst)))))))\n    (if (= kind 1)\n\t(values (car xs) nil)\n\t(let ((xs-len (length
+    xs))\n\t      (ys-len (length ys)))\n\t  (cond ((&lt; xs-len ys-len ) (values
+    (car xs) (car ys)))\n\t\t((= xs-len ys-len) (values nil lst))\n\t\t('T (values
+    (car ys) (car xs))))))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2665'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2665
+  :user_name: jz5
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/344/
+  :language: VB
+  :time: 2007/08/30 03:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">要素数2～0のIntegerの配列を返します。\r\n仲間はずれなしの場合 要素数1でxsの1つの値が、\r\n仲間はずれありの場合
+    要素数2で仲間、仲間はずれの順で値が入っています。\r\nその他の場合要素数0で返ります。\r\n\r\n呼び出し例\r\nDim xs() As Integer
+    = {1, 2, 1, 1}\r\nFor Each x In Classify(xs)\r\n    Console.Write(x &amp; \",
+    \")\r\nNext\r\n\r\n結果\r\n1, 2, </pre>\n\t"
+  :code: |
+    Function Classify(ByVal xs() As Integer) As Integer()
+        Dim seq = From x In xs Group By x Into Count() Order By Count
+
+        If seq.Count = 1 Then
+            Return New Integer() {seq.First.x}
+        ElseIf seq.Count = 2 AndAlso seq.First.Count = 1 Then
+            Return New Integer() {seq(1).x, seq(0).x}
+        End If
+        Return New Integer() {}
+    End Function
+  :tags:
+  - VB9.0
+  :references:
+    :url: 
+    :title: 
+- :id: '2666'
+  :parent_id: '53'
+  :url: http://ja.doukaku.org/comment/2666
+  :user_name: yuin
+  :user_url: /web/20081202154714/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/08/30 03:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>Scalaだとこういう場合はcase classでoptionかな。\n</p>\n\n\n\n\t"
+  :code: "import scala.collection.mutable.HashMap\n\ntrait Base\ncase class All[+A](a:A)
+    extends Base\ncase class One[+A](a:A, b:A) extends Base\n\ndef groupTest[A](xs:List[A]):Option[Base]
+    = {\n  val map = xs.foldLeft(new HashMap[A,int]){(r,v)=&gt;r(v)=r.getOrElse(v,
+    0)+1;r}\n  val hasone = map.values.exists(1==)\n\n  map.size match {\n    case
+    1 =&gt; Some(All(map.keys.toList.head))\n    case 2 if hasone =&gt; \n      val
+    (a, b) = map.keys.toList.partition(map(_) == 1)\n      (map(a(0)), map(b(0)))
+    match {\n        case (1, _) =&gt; Some(One(b(0), a(0)))\n        case (_, 1)
+    =&gt; Some(One(a(0), b(0)))\n        case _      =&gt; None\n      }\n    case
+    _ =&gt; None\n  }\n}\n\ngroupTest(List(1,2,1,1,1)) match {\n  case Some(All(a))
+    \    =&gt; println(a)\n  case Some(One(a, one)) =&gt; println(a+\",\"+one)\n  case
+    None             =&gt; println(\"None\")\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

@@ -1,0 +1,907 @@
+---
+:id: '71'
+:title: B+木のノード削除
+:comments:
+- :id: '3462'
+  :parent_id: '71'
+  :url: http://ja.doukaku.org/comment/3462
+  :user_name: moxth
+  :user_url: /web/20081120160140/http://ja.doukaku.org/user/474/
+  :language: 
+  :time: 2007/10/18 21:04 GMT
+  :vote_count: '8'
+  :vote_score: '-4'
+  :body: "\r\n\t  <pre class=\"compact\">B+木(B+Tree、B-Plus-Treeなど)とは、B木を拡張した平衡木です。\r\n元のB木は枝や葉に関係なくキーとデータの組が入りますが、\r\nB+木では葉に全てのキーとデータが入り、ルートから葉までの\r\n枝には索引と分岐しか入らず、B木より空間効率が良いアルゴリズムです。\r\nDBなどでよく使われますが、Web上のサンプルとしてはあまり見かけません。\r\n\r\n問題：\r\nB+木の検索や追加は比較的簡単なので、本題では削除のみに注目します。\r\nB+木のルート(根)とキーを与えると、キーに一致するB+木中の要素を、\r\n要素の順序と木の平衡を保ちながら削除し、更新したB+木を返す関数を\r\n作ってください。(入力するB+木のサンプルは後述します)\r\n\r\n条件：\r\n・B+木としては最小のオーダー3の構造を対象にします。\r\n
+    \ 「オーダー3」とは、葉の要素数が2～3、枝の分岐の数も\r\n  2～3の範囲を取るものです。(枝の索引数は分岐の数-1)\r\n  ただしルートのみは、B+木全体の要素の数が3以下の場合、\r\n
+    \ 葉の要素の数が2未満になりえます。(例を見てください)\r\n・要素や索引のキーは数字とし、データは省略してかまいません。\r\n・B+木そのものやDB以外のライブラリならば使用してかまいません。\r\n・結果で得られるB+木は入力の複製でもかまいません。(関数型言語への配慮)\r\n・ノードの索引の更新は必ずしも存在する要素のキーと同期させる必要はありません。\r\n
+    \ ただし検索に支障のない範囲である事。\r\n・関数に与えたキーがどの要素とも一致せず、削除に失敗する場合は、\r\n  NULLなどの生存ノードと区別できる値を返してください。\r\n\r\n例：\r\n問題の理解を促すための例示としてB+木をS式のリストで表します。\r\n※この例の結果と違っていても平衡が保てていればOKです。\r\nリストのタグの意味
+    … L=葉, N=枝(ノード), B=分岐, K=索引, 数字=キー\r\n\r\n例) 1から7までのB+木\r\n(N (K 3 6)        ;
+    検索に使われる索引は、middleとright各々の最小キーがあれば良い\r\n   (B (L 1 2)     ; left    \r\n      (L
+    3 4 5)   ; middle (分岐と葉の数は最小2、最大3つです)\r\n      (L 6 7)))   ; right  \r\n1を削除\r\n=&gt;(N
+    (K 4 6)      ; middleの最小キーが変化したので索引も更新します\r\n     (B (L 2 3)   ; middleの最小キーをもらって平衡を保ちます\r\n
+    \       (L 4 5)\r\n        (L 6 7)))\r\nさらに2を削除\r\n=&gt;(N (K 6)        ; middleの最小キーが変化したので索引も更新します\r\n
+    \    (B (L 3 4 5) ; 不完全なleft(またはmiddle)を削除し統合します\r\n        (L 6 7)))\r\nさらに6を削除\r\n=&gt;(N
+    (K 5)\r\n     (B (L 3 4)\r\n        (L 5 7)))\r\nさらに4を削除\r\n=&gt;(L 3 5 7)       ;
+    葉の数を保てなくなるので葉のみになります\r\nさらに3と5を削除\r\n=&gt;(L 5 7) \r\n=&gt;(L 7)           ; ルートのみ葉の数が2未満になりえます\r\n\r\n入力するB+木のサンプル：\r\n1から81までのB+木を用意しました。\r\n本題はこれらを全て削除して要素数をゼロにできればOKです。\r\n※S式のリストで出してますが、実際のデータ構造は何でもいいです。\r\n(N
+    (K 28 55)\r\n   (B (N (K 10 19)\r\n         (B (N (K 4 7)\r\n               (B
+    (L  1  2  3)\r\n                  (L  4  5  6)\r\n                  (L  7  8  9)))\r\n
+    \           (N (K 13 16)\r\n               (B (L 10 11 12)\r\n                  (L
+    13 14 15)\r\n                  (L 16 17 18)))\r\n            (N (K 22 25)\r\n
+    \              (B (L 19 20 21)\r\n                  (L 22 23 24)\r\n                  (L
+    25 26 27)))))\r\n      (N (K 37 46)\r\n         (B (N (K 31 34)\r\n               (B
+    (L 28 29 30)\r\n                  (L 31 32 33)\r\n                  (L 34 35 36)))\r\n
+    \           (N (K 40 43)\r\n               (B (L 37 38 39)\r\n                  (L
+    40 41 42)\r\n                  (L 43 44 45)))\r\n            (N (K 49 52)\r\n
+    \              (B (L 46 47 48)\r\n                  (L 49 50 51)\r\n                  (L
+    52 53 54)))))\r\n      (N (K 64 73)\r\n         (B (N (K 58 61)\r\n               (B
+    (L 55 56 57)\r\n                  (L 58 59 60)\r\n                  (L 61 62 63)))\r\n
+    \           (N (K 67 70)\r\n               (B (L 64 65 66)\r\n                  (L
+    67 68 69)\r\n                  (L 70 71 72)))\r\n            (N (K 76 79)\r\n
+    \              (B (L 73 74 75)\r\n                  (L 76 77 78)\r\n                  (L
+    79 80 81)))))))\r\n</pre>\r\n\t"
+  :code: ''
+  :tags:
+  - B+Tree
+  - B+木
+  - B-Plus-Tree
+  - S式
+  - 削除
+  :references:
+    :url: 
+    :title: 
+- :id: '3631'
+  :parent_id: '71'
+  :url: http://ja.doukaku.org/comment/3631
+  :user_name: sumim
+  :user_url: /web/20081120160140/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/10/31 13:50 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  Squeak Smalltalk で。手続き的に。\r<br><br>81 までの自然数をランダムに与えて、さいごまですべて削除できることを確認しました。\n\t"
+  :code: |
+    | removeNode tree |
+
+    removeNode := [:root :elem |
+        | node branch left middle right target neighbor merged keys
+         bIndex eIndex path branchOf keysOf fixKeysOf |
+
+        root first == #L
+            ifTrue: [
+                eIndex := root indexOf: elem.
+                eIndex = 0 ifTrue: [^nil] ifFalse: [root := root copyWithoutIndex: eIndex]]
+            ifFalse: [
+                path := OrderedCollection new.
+                node := root.
+                keysOf := [:val | val first == #L ifTrue: [nil] ifFalse: [val second]].
+                branchOf := [:val | val first == #L ifTrue: [val] ifFalse: [val third]].
+                fixKeysOf := [:nde |
+                    (keysOf value: nde) ifNotNilDo: [:kys |
+                        kys become: {#K}, (((branchOf value: nde) allButFirst: 2) collect: [:br |
+                            [br first == #L] whileFalse: [br := (branchOf value: br) second].
+                            br second])]].
+                [   keys := keysOf value: node.
+                    keys ifNil: [target := node] ifNotNil: [
+                        branch := branchOf value: node.
+                        bIndex := keys findLast: [:key | (key isSymbol ifTrue: [0] ifFalse: [key]) &lt;= elem].
+                        bIndex = 0 ifTrue: [^nil].
+                        target := branch at: bIndex + 1].
+                    target first = #L] whileFalse: [path add: node. node := target].
+
+                eIndex := target indexOf: elem ifAbsent: [^nil].
+                target become: (target copyWithoutIndex: eIndex).
+                (bIndex &gt; 2 and: [eIndex = 2]) ifTrue: [keys at: bIndex put: target second].
+
+                [   left := branch second.
+                    middle := branch size &gt; 2 ifTrue: [branch third] ifFalse: [nil].
+                    right := branch size = 4 ifTrue: [branch fourth] ifFalse: [nil].
+
+                    (branchOf value: target) size = 2 ifTrue: [
+                        neighbor := target caseOf: {[left]-&gt;[middle]. [middle]-&gt;[left]. [right]-&gt;[middle]}.
+                        merged := target == left
+                            ifTrue: [(branchOf value: target), (branchOf value: neighbor) allButFirst]
+                            ifFalse: [(branchOf value: neighbor), (branchOf value: target) allButFirst].
+                        (branchOf value: neighbor) size = 3
+                            ifTrue: [
+                                (branchOf value: neighbor) become: merged.
+                                branch become: (branch copyWithout: target)]
+                            ifFalse: [
+                                target == left ifTrue: [target := neighbor flag: (neighbor := target)].
+                                (branchOf value: target) become: ({target first}, (merged allButFirst: 3)).
+                                fixKeysOf value: target.
+                                (branchOf value: neighbor) become: (merged allButLast: 2)].
+                            fixKeysOf value: neighbor].
+                    fixKeysOf value: node.
+                    branch size = 2 ifFalse: [false] ifTrue: [
+                        path ifEmpty: [node become: branch last. false] ifNotEmpty: [
+                            target := node.
+                            node := path removeLast.
+                            branch := node third.
+                            true]]
+                ] whileTrue].
+        root].
+
+    World findATranscript: nil.
+    tree := #(N (K 28 55)
+       (B (N (K 10 19)
+             (B (N (K 4 7)
+                   (B (L  1  2  3) (L  4  5  6) (L  7  8  9)))
+                (N (K 13 16)
+                   (B (L 10 11 12) (L 13 14 15) (L 16 17 18)))
+                (N (K 22 25)
+                   (B (L 19 20 21) (L 22 23 24) (L 25 26 27)))))
+          (N (K 37 46)
+             (B (N (K 31 34)
+                   (B (L 28 29 30) (L 31 32 33) (L 34 35 36)))
+                (N (K 40 43)
+                   (B (L 37 38 39) (L 40 41 42) (L 43 44 45)))
+                (N (K 49 52)
+                   (B (L 46 47 48) (L 49 50 51) (L 52 53 54)))))
+          (N (K 64 73)
+             (B (N (K 58 61)
+                   (B (L 55 56 57) (L 58 59 60) (L 61 62 63)))
+                (N (K 67 70)
+                   (B (L 64 65 66) (L 67 68 69) (L 70 71 72)))
+                (N (K 76 79)
+                   (B (L 73 74 75) (L 76 77 78) (L 79 80 81))))))).
+
+    (1 to: 81) asArray shuffled do: [:each |
+        tree := removeNode value: tree value: each.
+        Transcript cr; show: each asString, ', ', (tree printString copyWithout: $#)]
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: /web/20081120160140/http://pfp7.cc.yamaguchi-u.ac.jp/~ichikawa/lecture/yamanashi-u/01/resume/node10.html
+    :title: データベースシステム (後半) - 物理的な格納方式 - B+-Tree
+- :id: '3757'
+  :parent_id: '71'
+  :url: http://ja.doukaku.org/comment/3757
+  :user_name: 匿名
+  :user_url: /web/20081120160140/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/11/08 10:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">厳密にB+Treeと呼べるのかはわかりませんが\r\nそれっぽい感じにはなっていると思います。\r\n</pre>\n\t"
+  :code: |
+    class B(list):
+      def __str__(self):
+        return '(B %s)' % '\n'.join([str(i) for i in self]).replace('\n', '\n   ')
+
+      def delete(self, i, k):
+        if isinstance(self[i], N):
+          self[i].delete0(k)
+          if len(self[i].b) &lt; 2:
+            if i == 0:
+              if len(self[i+1].b) == 3:
+                self[i].b.append(self[i+1].b.pop(0))
+                self[i+1].k = self[i+1].getk()
+              else:
+                self[i].b.extend(self[i+1].b)
+                self.pop(i+1)
+              self[i].k = self[i].getk()
+            else:
+              if len(self[i-1].b) == 3:
+                self[i].b.insert(0, self[i-1].b.pop())
+                self[i].k = self[i].getk()
+              else:
+                self[i-1].b.extend(self[i].b)
+                self.pop(i)
+              self[i-1].k = self[i-1].getk()
+        else:
+          self[i].remove(k)
+          if len(self[i]) &lt; 2:
+            if i == 0:
+              if len(self[i+1]) == 3:
+                self[i].append(self[i+1].pop(0))
+              else:
+                self[i].extend(self.pop(i+1))
+            else:
+              if len(self[i-1]) == 3:
+                self[i].insert(0, self[i-1].pop())
+              else:
+                self[i-1].extend(self.pop(i))
+
+    class L(list):
+      def __str__(self):
+        return '(L %s)' % ' '.join(['%2d' % i for i in self])
+
+      def delete(self, k):
+        self.remove(k)
+        return self
+
+    class K(list):
+      def __str__(self):
+        return '(K %s)' % ' '.join(['%d' % i for i in self])
+
+    class N:
+      def __init__(self, k=None, b=None):
+        self.k = k
+        self.b = b
+
+      def __str__(self):
+        return '(N %s\n   %s)' % (self.k, str(self.b).replace('\n', '\n   '))
+
+      def delete(self, k):
+        self.delete0(k)
+        if len(self.b) &lt; 2:
+          return self.b[0]
+        return self
+
+      def delete0(self, k):
+        for i, j in enumerate(self.k+[0x100000000]):
+          if k &lt; j:
+            self.b.delete(i, k)
+            self.k = self.getk()
+            break
+
+      def getk(self):
+        if isinstance(self.b[0], L):
+          return K([l[0] for l in self.b[1:]])
+        else:
+          def getmin(n):
+            if isinstance(n.b[0], L):
+              return n.b[0][0]
+            return getmin(n.b[0])
+          return K([getmin(n) for n in self.b[1:]])
+
+    def mk_data():
+      r = [N(b=B([L([i, i+1, i+2]) for i in range(j, j+9, 3)])) for j in range(1, 81, 9)]
+      for i in r:
+        i.k = i.getk()
+      r = [N(b=B(r[i*3:i*3+3])) for i in range(3)]
+      for i in r:
+        i.k = i.getk()
+      r = N(b=B(r))
+      r.k = r.getk()
+      return r
+
+    def test(l):
+      root = mk_data()
+      print root, '\n'
+      for i in l:
+        root = root.delete(i)
+        print 'del = %d\n%s\n' % (i, root)
+
+    if __name__ == '__main__':
+      from random import shuffle
+
+      test(range(1, 82))
+      test(range(81, 0, -1))
+      l = range(1, 82)
+      shuffle(l)
+      test(l)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3832'
+  :parent_id: '71'
+  :url: http://ja.doukaku.org/comment/3832
+  :user_name: dankogai
+  :user_url: /web/20081120160140/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/11 01:20 GMT
+  :vote_count: '3'
+  :vote_score: '-3'
+  :body: "\n\t  <pre class=\"compact\">CPANのBtrees.pmを使ってお手軽に。\r\n削除ごとのTreeの様子は、YAMLで表示されます。\r\nDan
+    the CPAN Monger</pre>\n\t"
+  :code: |
+    use strict;
+    use warnings;
+    use Btrees;
+    use YAML::Syck;
+
+    my $nodes = shift || 8;
+    sub comp{ $_[0] &lt;=&gt; $_[1]}
+    my ($tree, $node);
+    ($tree, $node) = bal_tree_add($tree, $_, \&amp;comp) for (1..$nodes);
+
+    for (1..$nodes){
+        ($tree, $node) = bal_tree_del($tree, $_, \&amp;comp);
+        print YAML::Syck::Dump($tree);
+    }
+  :tags:
+  - CPAN
+  :references:
+    :url: /web/20081120160140/http://search.cpan.org/perldoc?Btrees
+    :title: Btrees
+- :id: '4708'
+  :parent_id: '71'
+  :url: http://ja.doukaku.org/comment/4708
+  :user_name: ihag
+  :user_url: /web/20081120160140/http://ja.doukaku.org/user/560/
+  :language: Ruby
+  :time: 2007/12/09 15:30 GMT
+  :vote_count: '6'
+  :vote_score: '6'
+  :body: "\n\t  <p>Rubyで．追加・削除・検索を実装してみました．\nお題にて示されたデータ構造に対し，ランダムに1～81を削除して最後まで削除できることを確認したほか，ランダムに0～10000の要素を追加したデータ構造を用意し，矛盾なく最後まで削除できることを確認しました．</p>\n<div
+    class=\"section\">\n<h1><a id=\"id1\" name=\"id1\">概要</a></h1>\n<p>今回，B+Treeのアルゴリズムを実装したクラスBPlusTreeを作成しました．\nまず，このクラスの簡単な使い方について説明します．</p>\n<div
+    class=\"section\">\n<h2><a id=\"b-tree\" name=\"b-tree\">B+Treeオブジェクトの生成</a></h2>\n<p>B+Treeオブジェクト生成の例:</p>\n<pre
+    class=\"literal-block\">\nbtree = BPlusTree.new\n</pre>\n<p>内部節(以下Branch)の持てる分岐の数(最大分岐数)と，葉(以下Leaf)の持てる要素の数は，B+Treeの初期化時に任意の数を設定することができます．\nこの時，各Branchの保持する最小の分岐数は，(最大分岐数
+    / 2) の切り上げの数となります．最小の要素数についても同様です．</p>\n<p>最大分岐数と最大要素数を指定する場合の例:</p>\n<pre class=\"literal-block\">\n#
+    Branchの最大分岐数5, Leafの最大要素数3\nbtree = BPlusTree.new({:maxbranch =&gt; 5, :maxentry
+    =&gt; 3})\n</pre>\n</div>\n<div class=\"section\">\n<h2><a id=\"id2\" name=\"id2\">追加・削除・検索</a></h2>\n<p>追加・削除・検索の例:</p>\n<pre
+    class=\"literal-block\">\nbtree = BPlusTree.new\n\n# キーとデータを追加\nbtree.add(10,
+    \"value10\")\nbtree.add(11, \"value11\")\nbtree.add(12, \"value12\")\nbtree.add(13,
+    \"value13\")\nbtree.add(14, \"value14\")\n\n# 削除\nbtree.delete(13)\n\n# 検索 (値取得)\npp
+    btree.get(10)  # =&gt; \"value10\"\npp btree.get(13)  # =&gt; nil (要素が無いので)\n\n#
+    表示\nbtree.disp        # =&gt; 以下を表示\n                  # - Branch(root) [(10),
+    12]\n                  #   - Leaf [10, 11]\n                  #   - Leaf [12,
+    14, 15]\n\nbtree.disp(true)  # =&gt; 第一引数により，Leafのデータを表示するか切り替え\n                  #
+    - Branch(root) [(10), 12]\n                  #   - Leaf [10:value10, 11:value11]\n
+    \                 #   - Leaf [12:value12, 14:value14, 15:value15]\n\n# フラットな配列に変換
+    (全件探索による)\npp btree.to_a     # =&gt; [[10, \"value10\"], [11, \"value11\"],\n
+    \                 #     [12, \"value12\"], [14, \"value14\"], [15, \"value15\"]\n</pre>\n<p>dispメソッドによる表示結果では，Branchの一番目のキーを
+    (...) で括っています．これは「(検索アルゴリズムには影響を及ぼさない)一番目のキーである」程度の控えめな気持ちを表しています．要するに，あまり意味はありません．</p>\n</div>\n<div
+    class=\"section\">\n<h2><a id=\"id3\" name=\"id3\">その他</a></h2>\n<p>ppライブラリ用にpretty_printメソッドを再定義していますので，ppでそれなりに見やすい出力を得ることができます．</p>\n<p>pp
+    btreeの出力例:</p>\n<pre class=\"literal-block\">\n#&lt;BPlusTree:0x402e7a58\n @tree=\n
+    \ #&lt;BPlusTree::BPlusTree:0x402e79cc\n   @param={:maxbranch=&gt;3, :minentry=&gt;2,
+    :minbranch=&gt;2, :maxentry=&gt;3},\n   @root=\n    #&lt;B+T::Branch key:[1, 5]
+    branch:\n     [#&lt;B+T::Branch key:[1, 3] branch:\n       [#&lt;B+T::Leaf key:[1,
+    2] data:[\"value01\", \"value02\"]&gt;,\n        #&lt;B+T::Leaf key:[3, 4] data:[\"value03\",
+    \"value04\"]&gt;]&gt;,\n      #&lt;B+T::Branch key:[5, 7] branch:\n       [#&lt;B+T::Leaf
+    key:[5, 6] data:[\"value05\", \"value06\"]&gt;,\n        #&lt;B+T::Leaf key:[7,
+    8, 9] data:[\"value07\", \"value08\", \"value09\"]&gt;]&gt;]&gt;&gt;&gt;\n</pre>\n<div
+    class=\"section\">\n<h3><a id=\"new-from-assoc\" name=\"new-from-assoc\">new_from_assocクラスメソッド</a></h3>\n<p>配列により組み上げた任意の構造から，BPlusTreeオブジェクトを得るために，new_from_assocクラスメソッドを定義しています．これは，本お題を達成する上で必要だったために実装しました．</p>\n<p>最初はB+Treeのアルゴリズムを素直に使ってキー1～81を順番に追加してゆき，お題にて提示された構造を作ろうとしましたが，B+Treeの追加アルゴリズムは「追加時に最大要素数(分岐数)以上になった場合，2分割してそれぞれをB+Treeに加える」というものですので，詰め方を工夫しないと充填率100%とはならず，隙間が空いてしまいます．今回は，配列で構造を作った後にB+Treeオブジェクトを組み上げるメソッドを定義して対応しました．</p>\n<p>new_from_assocクラスメソッドの使用例:</p>\n<pre
+    class=\"literal-block\">\nassoc = [[:branch, [1, 4],\n          [[:leaf, [1, 2,
+    3], [\"value01\", \"value02\", \"value03\"]],\n           [:leaf, [4, 5, 6], [\"value04\",
+    \"value05\", \"value06\"]]]]]\nbtree = BPlusTree.new_from_assoc(assoc)\nbtree.disp
+    \ # =&gt; 以下を表示\n            # - Branch(root) [(1), 4]\n            #   - Leaf
+    [1, 2, 3]\n            #   - Leaf [4, 5, 6]\n</pre>\n</div>\n</div>\n</div>\n<div
+    class=\"section\">\n<h1><a id=\"id4\" name=\"id4\">クラス説明</a></h1>\n<div class=\"section\">\n<h2><a
+    id=\"bplustree-bplustree\" name=\"bplustree-bplustree\">BPlusTree::BPlusTree</a></h2>\n<p>使用者が直接操作するための入り口となるクラスです．add,
+    delete, get, disp, to_aメソッドなどを定義しています．ルートとなるBranchまたはLeafへの参照を保持しています．</p>\n<p>また，B+Treeではルートとなるノードについては特別扱いをする必要がありますが，そうした操作も本クラスで実装しています．</p>\n</div>\n<div
+    class=\"section\">\n<h2><a id=\"bplustree-bplustree-node\" name=\"bplustree-bplustree-node\">BPlusTree::BPlusTree::Node</a></h2>\n<p>Leaf,
+    Branchクラスの基底クラスです．共通のメソッドやアクセサメソッドを定義しています．このクラスのインスタンスが作られることはありません．</p>\n</div>\n<div
+    class=\"section\">\n<h2><a id=\"bplustree-bplustree-leaf\" name=\"bplustree-bplustree-leaf\">BPlusTree::BPlusTree::Leaf</a></h2>\n<p>Leafのクラスです．add,
+    deleteなど基本的なメソッドを定義しているほか，自身の分割(split)や，兄弟のLeafと要素を配分(balance)，兄弟のLeafを自身に併合(integrate)などのメソッドも定義しています．これらのメソッドは，BPlusTree::BranchクラスやBPlusTree::BPlusTreeクラスから呼ばれます．</p>\n</div>\n<div
+    class=\"section\">\n<h2><a id=\"bplustree-bplustree-branch\" name=\"bplustree-bplustree-branch\">BPlusTree::BPlusTree::Branch</a></h2>\n<p>Branchのクラスです．Leafと同様，Branchの操作に特有なメソッドを定義しています．</p>\n</div>\n<div
+    class=\"section\">\n<h2><a id=\"bplustree\" name=\"bplustree\">BPlusTree</a></h2>\n<p>BPlusTree::BPlusTreeクラスのインスタンスを1つだけ保持し，add,
+    delete, get, disp, to_aメソッドを委譲しています．</p>\n<p>本来は特に必要ないクラスですが，BPlusTree::BPlusTree.newなどと打つよりBPlusTree.newとできた方が何かと気分がよいために定義してあります．</p>\n</div>\n</div>\n\n\t"
+  :code: |-
+    #!/usr/bin/ruby
+    require 'forwardable'
+    require 'pp'
+
+    #
+    # BPlusTree class
+    #
+    class BPlusTree
+      extend Forwardable
+      def_delegators :@tree, :root, :add, :delete, :get, :to_a, :disp
+      attr_accessor :tree
+
+      def initialize(param = {})
+        @tree = BPlusTree.new(param)
+      end
+
+      def BPlusTree.new_from_assoc(assoc, param = {})
+        ret = new(param)
+        ret.tree = BPlusTree.new_from_assoc(assoc, param)
+        return ret
+      end
+
+
+      class BPlusTree
+        attr_accessor :root, :param
+
+        def initialize(param = {})
+          self.param = param
+          self.root = Leaf.new(self.param)
+        end
+
+        def BPlusTree.new_from_assoc(assoc, param = {})
+          new(param).create_bptree_from_assoc(assoc)
+        end
+
+        def add(key, value)
+          ret, _ = self.root.add(key, value)
+          increase_height if ret == :need_split
+          return key
+        end
+
+        def delete(key)
+          ret, di = self.root.delete(key)
+          if ret == :need_balance and self.root.suitable_root? then
+            decrease_height
+          end
+          return((di.nil?) ? nil : key)
+        end
+
+        def get(key)
+          self.root.get(key)
+        end
+
+        def to_a
+          self.root.to_a
+        end
+
+        def disp(with_data = false)
+          self.root.disp(0, with_data)
+        end
+
+        def create_bptree_from_assoc(assoc)
+          raise 'Multiple root node occured' if assoc.size &gt; 1
+          type, key, data = assoc[0]
+          root = {:leaf =&gt; Leaf, :branch =&gt; Branch}[type].new_from_assoc(assoc[0])
+          root.connect_nextp(nil)
+          self.root = root
+          return self
+        end
+
+
+        private
+        def increase_height
+          # create a new root
+          newroot = Branch.new(self.param)
+
+          # connect children to new root
+          lbrother = self.root
+          bbrother = self.root.split
+          (newroot.add_child(lbrother).nil?  and
+           newroot.add_child(bbrother).nil?) or
+            raise("#{self.class}#increase_height: Internal error")
+
+          self.root = newroot
+        end
+
+        def decrease_height
+          self.root = self.root.get_child
+        end
+      end
+
+
+      class Node
+        attr_accessor :key, :param
+
+        def initialize(param = {})
+          self.key = []
+          self.param = param
+
+          @param[:maxentry]  ||= 3
+          @param[:maxbranch] ||= 3
+          @param[:minentry]  ||= (@param[:maxentry]  + 1) / 2
+          @param[:minbranch] ||= (@param[:maxbranch] + 1) / 2
+
+          return self
+        end
+
+        def maxentry
+          @param[:maxentry]
+        end
+        def maxbranch
+          @param[:maxbranch]
+        end
+        def minentry
+          @param[:minentry]
+        end
+        def minbranch
+          @param[:minbranch]
+        end
+
+
+        def min
+          return self.key.first
+        end
+
+        protected
+        def search_insert_pos(key)
+          for i in 0..self.key.size - 1
+            return i if key &lt; self.key[i]
+          end
+          return self.key.size
+        end
+      end
+
+
+      class Leaf &lt; Node
+        attr_accessor :data, :nextp
+
+        def initialize(param = {})
+          self.data = []
+          self.nextp = nil
+          super
+        end
+
+        def Leaf.new_from_assoc(assoc, param = {})
+          new(param).create_bptree_from_assoc(assoc)
+        end
+
+        def add(key, value)
+          before = search_insert_pos(key)
+          self.key[before, 0]  = key
+          self.data[before, 0] = value
+
+          ret = nil
+          ret = :need_split if self.key.size &gt; self.maxentry
+          return [ret, before]
+        end
+
+        def delete(key)
+          pos = search_key(key)
+          return [nil, nil] if pos.nil?
+
+          self.key.delete_at(pos)
+          self.data.delete_at(pos)
+
+          ret = nil
+          ret = :need_balance if self.key.size &lt; self.minentry
+          return [ret, pos]
+        end
+
+        def get(key)
+          pos = search_key(key)
+          return nil if pos.nil?
+          return self.data[pos]
+        end
+
+        def to_a
+          ret = self.key.zip(self.data)
+          return ret if self.nextp.nil?
+          return ret +  self.nextp.to_a
+        end
+
+        def disp(level, with_data = false)
+          indent = '  ' * level
+          print indent + '- Leaf' + ((level == 0) ? '(root)' : '') + ' ['
+          print self.key.zip(self.data).inject('') {|before, (k, d)|
+              if before.empty? then
+                k.to_s + (with_data ? ':' + d.to_s : '')
+              else
+                before + ', ' + k.to_s + (with_data ? ':' + d.to_s : '')
+              end
+            }
+          puts ']'
+        end
+
+        def pretty_print(pp)
+          pp.group(1, '#&lt;B+T::Leaf', '&gt;') do
+            pp.breakable
+            pp.text('key:')
+            pp.pp(self.key)
+            pp.breakable
+            pp.text('data:')
+            pp.pp(self.data)
+          end
+        end
+
+
+        def split
+          range = (self.key.size / 2) .. self.key.size - 1
+
+          sibling = Leaf.new(self.param)
+          sibling.key[0, 0] = self.key[range]
+          sibling.data[0, 0] = self.data[range]
+          self.key[range] = nil
+          self.data[range] = nil
+          sibling.nextp = self.nextp
+          self.nextp = sibling
+
+          return sibling
+        end
+
+        def balance(bigbrother)
+          if self.key.size + bigbrother.key.size &lt;= self.maxentry then
+            return :need_integrate
+          end
+          if self.key.size + bigbrother.key.size &gt;  self.maxentry * 2 then
+            raise "#{self.class}#balance: Internal error"
+          end
+
+          newkey  = self.key.dup + bigbrother.key
+          newdata = self.data.dup + bigbrother.data
+          keys = newkey.size
+          boundary = keys / 2
+
+          self.key        = newkey[0..boundary-1]
+          bigbrother.key  = newkey[boundary..keys-1]
+
+          self.data       = newdata[0..boundary-1]
+          bigbrother.data = newdata[boundary..keys-1]
+
+          return nil
+        end
+
+        def integrate(bigbrother)
+          self.key  += bigbrother.key
+          self.data += bigbrother.data
+          self.nextp = bigbrother.nextp
+          bigbrother.nextp = nil
+
+          raise "#{self.class}: Internal error" if self.key.size &gt; self.maxentry
+          return nil
+        end
+
+        def get_child
+          return self
+        end
+
+        def suitable_root?
+          return true
+        end
+
+        def create_bptree_from_assoc(assoc)
+          type, key, data = assoc
+          unless type == :leaf then
+            raise "#{self.class}#create_bptree_from_assoc: Internal error"
+          end
+          self.key = key
+          self.data = data
+          return self
+        end
+
+        def connect_nextp(before = nil)
+          before.nextp = self unless before.nil?
+          return self
+        end
+
+
+        private
+        def search_key(key)
+          for i in 0..self.key.size - 1
+            return i if self.key[i] == key
+          end
+          return nil
+        end
+      end
+
+
+      class Branch &lt; Node
+        attr_accessor :branch
+
+        def initialize(param = {})
+          self.branch = []
+          super
+        end
+
+        def Branch.new_from_assoc(assoc, param = {})
+          new(param).create_bptree_from_assoc(assoc)
+        end
+
+        def add(key, value)
+          bi = search_branch(key)
+          child = self.branch[bi]
+          ret, before = child.add(key, value)
+          self.key[bi] = child.key[before] if before == 0
+
+          return [nil, bi] if ret.nil?
+          raise "#{self.class}#add: Internal error" unless ret == :need_split
+
+          # split child
+          bbrother = child.split
+          ret = self.add_child(bbrother)
+
+          return [ret, bi] if ret.nil? or ret == :need_split
+          raise "#{self.class}#add: Internal error"
+        end
+
+        def delete(key)
+          bi = search_branch(key)
+          child = self.branch[bi]
+          ret, di = child.delete(key)
+          self.key[bi] = child.key[di] if di == 0
+
+          bj = nil
+          until ret.nil?
+            case ret
+            when :need_balance
+              # choose pair.
+              bi, bj = self.choose_pair(bi)
+              lbrother, bbrother = self.branch[bi..bj]
+
+              # balance pair
+              ret = lbrother.balance(bbrother)
+              self.key[bj] = bbrother.min
+            when :need_integrate
+              # remove big-brother
+              self.branch.delete_at(bj)
+              self.key.delete_at(bj)
+
+              # integrate pair
+              ret = lbrother.integrate(bbrother)
+            else
+              raise "#{self.class}#delete: Internal error"
+            end
+          end
+
+          ret = nil
+          ret = :need_balance if self.key.size &lt; self.minbranch
+          return [ret, bi]
+        end
+
+        def get(key)
+          bi = search_branch(key)
+          return self.branch[bi].get(key)
+        end
+
+        def to_a
+          return self.branch[0].to_a
+        end
+
+        def disp(level, with_data = false)
+          indent = '  ' * level
+          puts indent + '- Branch' + (level == 0 ? '(root)' : '') + ' [' +
+            self.key.inject('') {|before, k|
+              if before.empty? then
+                "(#{k})"
+              else
+                before + ", #{k}"
+              end
+            } + ']'
+          self.branch.map do |branch|
+            branch.disp(level + 1, with_data)
+          end
+        end
+
+        def pretty_print(pp)
+          pp.group(1) do
+            pp.text('#&lt;B+T::Branch')
+            pp.breakable
+            pp.group(1, 'key:[', ']') do
+              self.key.inject(false) do |before, key|
+                pp.comma_breakable if before
+                pp.pp(key)
+                true
+              end
+            end
+
+            pp.breakable
+            pp.text('branch:')
+          end
+
+          pp.nest(1) do
+            pp.breakable
+            pp.group(1, '[', ']') do
+              self.branch.inject(false) do |before, branch|
+                pp.comma_breakable if before
+                pp.pp(branch)
+                true
+              end
+            end
+          end
+
+          pp.text('&gt;')
+        end
+
+
+        def add_child(child)
+          before = search_insert_pos(child.min)
+          self.key[before, 0] = child.min
+          self.branch[before, 0] = child
+
+          return :need_split if self.key.size &gt; self.maxbranch
+          return nil
+        end
+
+        def split
+          range = (self.key.size / 2) .. self.key.size - 1
+
+          sibling = Branch.new(self.param)
+          sibling.key[0, 0] = self.key[range]
+          sibling.branch[0, 0] = self.branch[range]
+
+          self.branch[range] = nil
+          self.key[range] = nil
+
+          return sibling
+        end
+
+        def balance(bigbrother)
+          if self.key.size + bigbrother.key.size &lt;= self.maxbranch then
+            return :need_integrate
+          end
+          if self.key.size + bigbrother.key.size &gt;  self.maxbranch * 2 then
+            raise "#{self.class}#balance: Internal error"
+          end
+
+          # newkeyとnewbranchには，maxbranch * 2個の要素を置くための空間が必要
+          newkey    = self.key.dup + bigbrother.key
+          newbranch = self.branch.dup + bigbrother.branch
+          keys = newkey.size
+          boundary = keys / 2
+
+          self.key       = newkey[0..boundary-1]
+          bigbrother.key = newkey[boundary..keys-1]
+
+          self.branch       = newbranch[0..boundary-1]
+          bigbrother.branch = newbranch[boundary..keys-1]
+
+          return nil
+        end
+
+        def integrate(bigbrother)
+          for i in 0..bigbrother.key.size - 1
+            self.add_child(bigbrother.branch[i])
+          end
+
+          raise "#{self.class}: Internal error" if self.key.size &gt; self.maxbranch
+          return nil
+        end
+
+        def get_child
+          raise "#{self.class}#get_child: Internal error" if self.key.size != 1
+          return self.branch[0]
+        end
+
+        def suitable_root?
+          return true if self.key.size &lt;= 1
+          return false
+        end
+
+        def choose_pair(lbrother_idx)
+          lbrother_idx -= 1 if lbrother_idx == self.key.size - 1
+          bbrother_idx = lbrother_idx + 1
+          raise "#{self.class}#choose_pair: Internal error" if key.size &lt; 2
+          return [lbrother_idx, bbrother_idx]
+        end
+
+        def create_bptree_from_assoc(assoc)
+          type, key, branch = assoc
+          unless type == :branch then
+            raise "#{self.class}#create_bptree_from_assoc: Internal error"
+          end
+          self.key = key
+          self.branch = branch.map do |child|
+            {:leaf =&gt; Leaf, :branch =&gt; Branch}[child.first].new_from_assoc(child)
+          end
+          return self
+        end
+
+        def connect_nextp(before = nil)
+          self.branch.inject(before) do |before, branch|
+            branch.connect_nextp(before)
+          end
+        end
+
+
+        private
+        def search_branch(key)
+          for i in 1..self.key.size - 1
+            return i - 1 if key &lt; self.key[i]
+          end
+          return self.key.size - 1
+        end
+      end
+    end
+
+    ###########################################################################
+    # deleting test
+
+    puts '[Delete test 1]'
+    puts
+
+    assoc =
+    [[:branch, [1, 28, 55],
+      [[:branch, [1, 10, 19],
+        [[:branch, [1, 4, 7],
+          [[:leaf, [1, 2, 3], ["data01", "data02", "data03"]],
+           [:leaf, [4, 5, 6], ["data04", "data05", "data06"]],
+           [:leaf, [7, 8, 9], ["data07", "data08", "data09"]]]],
+         [:branch, [10, 13, 16],
+          [[:leaf, [10, 11, 12], ["data10", "data11", "data12"]],
+           [:leaf, [13, 14, 15], ["data13", "data14", "data15"]],
+           [:leaf, [16, 17, 18], ["data16", "data17", "data18"]]]],
+         [:branch, [19, 22, 25],
+          [[:leaf, [19, 20, 21], ["data19", "data20", "data21"]],
+           [:leaf, [22, 23, 24], ["data22", "data23", "data24"]],
+           [:leaf, [25, 26, 27], ["data25", "data26", "data27"]]]]]],
+       [:branch, [28, 37, 46],
+        [[:branch, [28, 31, 34],
+          [[:leaf, [28, 29, 30]
+
+
+
+
+    <!--
+         FILE ARCHIVED ON 16:01:40 Nov 20, 2008 AND RETRIEVED FROM THE
+         INTERNET ARCHIVE ON 13:38:24 Nov 16, 2013.
+         JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+         ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+         SECTION 108(a)(3)).
+    -->
+  :tags: []
+  :references:
+    :url: 
+    :title: 

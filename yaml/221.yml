@@ -1,0 +1,813 @@
+---
+:id: '221'
+:title: 道順を数える
+:comments:
+- :id: '8127'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8127
+  :user_name: mattsan
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/833/
+  :language: 
+  :time: 2008/12/07 23:12 GMT
+  :vote_count: '4'
+  :vote_score: '2'
+  :body: "\r\n\t  図.1のような。格子状の経路があるとします。\r<br><br>(1)  このときPからQまでいくのに何通りの経路があるか数えてください。ただし遠回りはせずかならずQに近づく方向に進む(右方向か下方向にだけ進む)とします。\r<br><br>(2)  (1)と条件は同じで、図.2のように経路の一部がない(通れない)場合に、PからQまでいくのに何通りの経路があるか数えてください。\r<br><br>P-+-+-+    P-+-+-+\r<br>| | | |    | | | |\r<br>+-+-+-+    +-+-+-+\r<br>| | | |    |   | |\r<br>+-+-+-+    +-+-+ +\r<br>| | | |    | | | |\r<br>+-+-+-+    +-+ +-+\r<br>| | | |    | | | |\r<br>+-+-+-Q    +-+-+-Q\r<br>  図.1       図.2\r<br><br>経路の表現の仕方、記憶の仕方は自由とします。上記のようなキャラクタでの表現でもよいですし、最初からプログラムで扱いやすいデータとして持っていてもOKです。入力も外部からの入力でもよいですし、プログラム中にコーディングされていてもOKです。\r<br><br><br>※問題は、野﨑昭弘「離散数学『数え上げ理論』」(講談社 ブルーバックス)「第3章 道順を数える」から拝借させて頂きました。\r<br>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8140'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8140
+  :user_name: kozima
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2008/12/12 18:25 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>単純な DP で。幅、高さ、通れない道を受け取って経路の数を返します。</p>\n\n\t"
+  :code: |
+    (defun count-paths (width height &amp;rest edges-na)
+      (let ((table (make-array (list height width) :initial-element 0)))
+        (dotimes (h height)
+          (dotimes (w width)
+            (if (or (zerop w) (zerop h))
+                (setf (aref table h w) 1)
+              (progn
+                (unless (find (list (1- w) h w h) edges-na :test #'equal)
+                  (incf (aref table h w) (aref table h (1- w))))
+                (unless (find (list w (1- h) w h) edges-na :test #'equal)
+                  (incf (aref table h w) (aref table (1- h) w)))))))
+        ;; (print table)
+        (aref table (1- height) (1- width))
+        ))
+
+    ;; test
+    (count-paths 4 5)
+    (count-paths 4 5 '(1 1 1 2) '(2 2 3 2) '(1 3 2 3))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8141'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8141
+  :user_name: kozima
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2008/12/13 01:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ごめんなさいバグがありました。</p>\n<p>(count-paths 4 5 '(0 0 0 1) '(0 0 1 0))\nが
+    35 になってました。</p>\n\n\t"
+  :code: |
+    (defun count-paths (width height &amp;rest edges-na)
+      (let ((table (make-array (list height width) :initial-element 0)))
+        (setf (aref table 0 0) 1)
+        (dotimes (h height)
+          (dotimes (w width)
+            (or (zerop w)
+                (find (list (1- w) h w h) edges-na :test #'equal)
+                (incf (aref table h w) (aref table h (1- w))))
+            (or (zerop h)
+                (find (list w (1- h) w h) edges-na :test #'equal)
+                (incf (aref table h w) (aref table (1- h) w)))))
+        (aref table (1- height) (1- width))))
+
+    (count-paths 4 5 '(0 0 0 1) '(0 0 1 0)) ; =&gt; 0
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8142'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8142
+  :user_name: cappuccino
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/549/
+  :language: C
+  :time: 2008/12/12 21:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ゴール地点の座標をセットして呼び出せば答えが返ってきます。\n例 Route1(5, 6)</p>\n\n\t"
+  :code: |
+    using System;
+
+    class Program
+    {
+        static void Main()
+        {
+            Console.WriteLine(Route1(3, 4));
+            Console.WriteLine(Route2(3, 4));
+        }
+
+        static int Route1(int x, int y)
+        {
+            //スタート地点
+            if (x == 0 &amp;&amp; y == 0)
+            {
+                return 1;
+            }
+            //左からのルートと上からのルートの合計
+            return (x &gt; 0 ? Route1(x - 1, y) : 0) + (y &gt; 0 ? Route1(x, y - 1) : 0);
+        }
+
+        static int Route2(int x, int y)
+        {
+            if (x == 0 &amp;&amp; y == 0)
+            {
+                return 1;
+            }
+            //ここだけ特別扱い
+            if (x == 1 &amp;&amp; y == 2)
+            {
+                return Route2(x - 1, y);
+            }
+            return (x &gt; 0 ? Route2(x - 1, y) : 0) + (y &gt; 0 ? Route2(x, y - 1) : 0);
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8144'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8144
+  :user_name: emasaka
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/12/13 01:35 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">標準入力→標準出力です。\r\n左上スタート、右下ゴールに限定しています。\r\n\r\n$
+    cat fig02.txt\r\nP-+-+-+\r\n| | | |\r\n+-+-+-+\r\n|   | |\r\n+-+-+ +\r\n| | |
+    |\r\n+-+ +-+\r\n| | | |\r\n+-+-+-Q\r\n$ bash q221.bash &lt; fig02.txt\r\n15\r\n</pre>\n\t"
+  :code: |
+    #!/bin/bash
+
+    counts=(1)
+
+    while true; do
+        # horizontal bars
+        read -r line || break
+        for ((i = 0; i * 2 + 1 &lt; ${#line}; i++)) {
+            [ "${line:$((i*2+1)):1}" = - ] &amp;&amp; ((counts[i+1] += counts[i]))
+        }
+
+        # vertical bars
+        read -r line || break
+        for ((i = 0; i * 2 &lt; ${#line}; i++)) {
+            [ "${line:$((i*2)):1}" = '|' ] || counts[i]=0
+        }
+    done
+
+    echo ${counts[${#counts[@]} - 1]}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8146'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8146
+  :user_name: cappuccino
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/549/
+  :language: C
+  :time: 2008/12/13 03:10 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>図２を見間違えてました。</p>\n<p>図１  35</p>\n<p>図２  15</p>\n\n\t"
+  :code: |
+    using System;
+
+    class Program
+    {
+        static void Main()
+        {
+            Console.WriteLine(Route1(3, 4));
+            Console.WriteLine(Route2(3, 4));
+        }
+
+        static int Route1(int x, int y)
+        {
+            //スタート地点
+            if (x == 0 &amp;&amp; y == 0)
+            {
+                return 1;
+            }
+            //左からのルートと上からのルートの合計
+            return (x &gt; 0 ? Route1(x - 1, y) : 0) + (y &gt; 0 ? Route1(x, y - 1) : 0);
+        }
+
+        static int Route2(int x, int y)
+        {
+            if (x == 0 &amp;&amp; y == 0)
+            {
+                return 1;
+            }
+            //三カ所特別扱い
+            if (x == 1 &amp;&amp; y == 2)
+            {
+                return Route2(x - 1, y);
+            }
+            if (x == 3 &amp;&amp; y == 2)
+            {
+                return Route2(x, y - 1);
+            }
+            if (x == 2 &amp;&amp; y == 3)
+            {
+                return Route2(x, y - 1);
+            }
+            return (x &gt; 0 ? Route2(x - 1, y) : 0) + (y &gt; 0 ? Route2(x, y - 1) : 0);
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8149'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8149
+  :user_name: 匿名
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/12/13 06:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>冗長になってしまいました</p>\n\n\t"
+  :code: |
+    inc = lambda c: chr(ord(c) + 1)
+    edge_from = lambda p, points, deny: \
+        [ q for q in [inc(p[0]) + p[1], p[0] + inc(p[1])]
+                if q in points and (p, q) not in deny ]
+    edges = lambda points, deny: \
+        dict([(p, [e for e in edge_from(p, points, deny)]) for p in points ])
+    def count_paths(E, start, goal):
+        return 1 if start == goal \
+                else sum([count_paths(E, p, goal) for p in E[start]])
+
+    points = [ row + col for row in 'ABCDE' for col in '1234' ]
+    E1 = edges(points, [])
+    E2 = edges(points, [('B2','C2'), ('C3', 'C4'), ('D2','D3')])
+    print count_paths(E1, 'A1', 'E4')
+    print count_paths(E2, 'A1', 'E4')
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8153'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8153
+  :user_name: 匿名
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/12/13 08:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あらかじめ道のデータを配列として取り込んでいます。\r\n各点とその上の店、左の点との関係は\r\n　どっちもつながってない(スタート地点)：0\r\n　左の点とだけつながってる：1\r\n　上の点とだけつながってる：2\r\n　左も上もつながってる：3\r\nとし、それぞれの点の状態を見て計算します。\r\n図1の場合はroad[2][1]=3、図2の場合はroad[2][1]=1で計算</pre>\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    using namespace std;
+
+    int main(){
+      int road[5][4] = { {0, 1, 1, 1},
+                          {2, 3, 3, 3},
+                          {2, 1, 3, 3},
+                          {2, 3, 3, 3},
+                          {2, 3, 3, 3}
+                        };
+
+      int pattern[5][4];
+
+      int i, j;
+      for(i=0; i&lt;5; i++){
+        for(j=0; j&lt;4; j++){
+          switch(road[i][j]){
+          case 0: pattern[i][j] = 1; break;
+          case 1: pattern[i][j] = pattern[i][j-1]; break;
+          case 2: pattern[i][j] = pattern[i-1][j]; break;
+          case 3: pattern[i][j] = pattern[i][j-1] + pattern[i-1][j]; break;
+          }
+        }
+      }
+      cout &lt;&lt; "road pattern is " &lt;&lt; pattern[4][3] &lt;&lt; ".\n";
+
+      return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8156'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8156
+  :user_name: horiuchi
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/12/13 09:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>与えられていた文字列そのものを受け取って経路数を計算してます。\n経路数の計算は単純なDFで。</p>\n\n\t"
+  :code: |
+    import java.util.ArrayList;
+    import java.util.HashMap;
+    import java.util.HashSet;
+    import java.util.List;
+    import java.util.Map;
+    import java.util.Set;
+
+    public class Sample221 {
+        static class RouteNode {
+            public final List&lt;RouteNode&gt; dests = new ArrayList&lt;RouteNode&gt;();
+            public int routeCount = 0;
+        }
+
+        private final Map&lt;Integer, Map&lt;Integer, RouteNode&gt;&gt; nodeMap_
+            = new HashMap&lt;Integer, Map&lt;Integer,RouteNode&gt;&gt;();
+        private RouteNode startNode_;
+        private RouteNode goalNode_;
+
+        public int countRoute(String[] map) {
+            createNode(map);
+
+            Set&lt;RouteNode&gt; checkNodes = new HashSet&lt;RouteNode&gt;();
+            checkNodes.add(startNode_);
+            startNode_.routeCount = 1;
+            while (!(checkNodes.isEmpty() || goalNode_.routeCount &gt; 0)) {
+                checkNodes = checkNextNode(checkNodes);
+            }
+            return goalNode_.routeCount;
+        }
+
+        private Set&lt;RouteNode&gt; checkNextNode(Set&lt;RouteNode&gt; nodes) {
+            Set&lt;RouteNode&gt; nextNodes = new HashSet&lt;RouteNode&gt;();
+            for (RouteNode node: nodes) {
+                for (RouteNode next: node.dests) {
+                    next.routeCount += node.routeCount;
+                    nextNodes.add(next);
+                }
+            }
+            return nextNodes;
+        }
+
+        private void createNode(String[] map) {
+            createNodeInstance(map);
+            createLinkNode(map);
+        }
+        private void createNodeInstance(String[] map) {
+            for (int row = 0, rowMax = (map.length + 1) / 2; row &lt; rowMax; row++) {
+                for (int col = 0, colMax = (map[row * 2].length() + 1) / 2; col &lt; colMax; col++) {
+                    Map&lt;Integer, RouteNode&gt; rowMap = nodeMap_.get(row);
+                    if (rowMap == null) {
+                        rowMap = new HashMap&lt;Integer, RouteNode&gt;();
+                        nodeMap_.put(row, rowMap);
+                    }
+                    RouteNode node = new RouteNode();
+                    rowMap.put(col, node);
+                    char c = map[row * 2].charAt(col * 2);
+                    if (c == 'P') startNode_ = node;
+                    if (c == 'Q') goalNode_ = node;
+                }
+            }
+        }
+        private void createLinkNode(String[] map) {
+            for (int row = 0; row &lt; map.length; row++) {
+                for (int col = 0; col &lt; map[row].length(); col++) {
+                    switch (row % 2 * 2 + col % 2) {
+                        case 0:    // Node
+                            break;
+                        case 1: // horizontal route
+                            char h = map[row].charAt(col);
+                            if (h == '-') {
+                                int linkRow = row / 2;
+                                int linkCol = col / 2;
+                                linkNode(linkRow, linkCol, linkRow, linkCol + 1);
+                            }
+                            break;
+                        case 2: // vertical route
+                            char v = map[row].charAt(col);
+                            if (v == '|') {
+                                int linkRow = row / 2;
+                                int linkCol = col / 2;
+                                linkNode(linkRow, linkCol, linkRow + 1, linkCol);
+                            }
+                            break;
+                        case 3: // blank
+                            break;
+                    }
+                }
+            }
+        }
+        private void linkNode(int fromRow, int fromCol, int toRow, int toCol) {
+            RouteNode fromNode = nodeMap_.get(fromRow).get(fromCol);
+            RouteNode toNode = nodeMap_.get(toRow).get(toCol);
+            fromNode.dests.add(toNode);
+        }
+
+
+        public static void main(String[] args) {
+            Sample221 sample = new Sample221();
+            String[] ex1 = new String[] {
+                    "P-+-+-+",
+                    "| | | |",
+                    "+-+-+-+",
+                    "| | | |",
+                    "+-+-+-+",
+                    "| | | |",
+                    "+-+-+-+",
+                    "| | | |",
+                    "+-+-+-Q",
+            };
+            System.out.println(sample.countRoute(ex1));
+
+            String[] ex2 = new String[] {
+                    "P-+-+-+",
+                    "| | | |",
+                    "+-+-+-+",
+                    "|   | |",
+                    "+-+-+ +",
+                    "| | | |",
+                    "+-+ +-+",
+                    "| | | |",
+                    "+-+-+-Q",
+            };
+            System.out.println(sample.countRoute(ex2));
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '8157'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8157
+  :user_name: sumim
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/12/13 10:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: "| width map counts index |\n\nwidth := 4.\nmap := \n    'P-+-+-+',\n    '|
+    | | |',\n    '+-+-+-+',\n    '|   | |',\n    '+-+-+ +',\n    '| | | |',\n    '+-+
+    +-+',\n    '| | | |',\n    '+-+-+-Q'.\n\ncounts := Array new: width withAll: 0.\ncounts
+    at: 1 put: 1.\nindex := 1.\n(2 to: map size by: 2) do: [:pos |\n    index := index
+    + 1.\n    (map at: pos) caseOf: {\n        [$-] -&gt; [counts at: (index - 1 \\\\
+    width + 1) incrementBy: (counts atWrap: index - 1)].\n        [$ ] -&gt; [index
+    &gt; width ifTrue: [counts atWrap: index put: 0]]} otherwise: [].\n    index =
+    (width * 2) ifTrue: [index := 1]].\ncounts last   \"=&gt; 15 \"\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '8176'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8176
+  :user_name: mamamoto
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2008/12/14 20:28 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>ほんと数えるだけですすみません。</p>\n\n\t"
+  :code: |
+    def sum(a)
+      a.inject(0){|r,e|r+e}
+    end
+
+    map = [0]*3+[1]*4
+    path1 = map.permutation.to_a.uniq
+    path2 = path1.reject{|pt|
+      sum(pt[0,2])==1 &amp;&amp; pt[2]==1 ||
+      sum(pt[0,4])==2 &amp;&amp; pt[4]==0 ||
+      sum(pt[0,4])==3 &amp;&amp; pt[4]==0
+    }
+
+    p path1.size, path2.size
+  :tags:
+  - Ruby1.9
+  :references:
+    :url: 
+    :title: 
+- :id: '8193'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8193
+  :user_name: nobsun
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/12/16 20:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">めいっぱい関数型ぽく\r\n\r\n格子点を経路数をカウントする関数で表現 \r\n接続情報は、上側格子点と左側格子点を引数とし格子点を返す関数で表現\r\n経路情報は接続情報のマトリックス(ここではリストのリスト)で表現\r\n\r\n実行結果\r\n*Main&gt;
+    answer1\r\n35\r\n*Main&gt; answer2\r\n15\r\n\r\n\r\n</pre>\n\t"
+  :code: "type Counter    = Int -&gt; Int            -- 経路数をカウントする関数\ntype Grid       =
+    Counter               -- 格子点はカウンタで表現\ntype Connection                         --
+    接続情報は\n     =  Grid                            --   上側格子点と\n     -&gt; Grid                            --
+    \  左側格子点とを引数とし\n     -&gt; Grid                            --   当該格子点を返す関数で表現\n\ngrids
+    :: [[Connection]] -&gt; [[Grid]]\ngrids = tail . scanl acc (repeat id)\n  where
+    \n    acc fs = tail . scanl (flip ($)) id . zipWith (flip ($)) fs\n\nendpoint
+    :: [[Grid]] -&gt; Grid\nendpoint = last . last\n\ncount :: Grid -&gt; Int\ncount
+    = ($ 1)\n\nanswer1 = (count . endpoint . grids) sample1\nanswer2 = (count . endpoint
+    . grids) sample2\n\n-- 格子点の接続情報\n\n(&amp;&amp;&amp;) :: (a -&gt; b) -&gt; (a -&gt;
+    c) -&gt; (a -&gt; (b,c))\n(f &amp;&amp;&amp; g) x = (f x, g x)\n\ns,n,u,l,b ::
+    Connection\ns _     _    = id                              -- スタート地点\nn _     _
+    \   = const 0                         -- 左からも、上からも経路がない\nu upper _    = upper
+    \                          -- 上からの経路のみ\nl _     left = left                            --
+    左からの経路のみ\nb upper left = uncurry (+) . (upper &amp;&amp;&amp; left)  -- 左からも、上からも経路あり\n\n--
+    経路情報\n\nsample1, sample2 :: [[Connection]]\nsample1 = [[s,l,l,l]\n          ,[u,b,b,b]\n
+    \         ,[u,b,b,b]\n          ,[u,b,b,b]\n          ,[u,b,b,b]]\n\nsample2 =
+    [[s,l,l,l]\n          ,[u,b,b,b]\n          ,[u,l,b,u]\n          ,[u,b,u,b]\n
+    \         ,[u,b,b,b]]\n"
+  :tags:
+  - ghc-6.10.1
+  :references:
+    :url: 
+    :title: 
+- :id: '8194'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8194
+  :user_name: manzo
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/980/
+  :language: Ruby
+  :time: 2008/12/17 00:59 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>格子は-（横)、|（縦）のシンボルで表現。\n順列してuniqした。</p>\n<p>図2はそれぞれの道順のうち３番目が|（縦）を削除してpq.size。</p>\n\n\t"
+  :code: "#順列してuniqする。\npq = [:-,:-,:-,:|,:|,:|,:|].permutation.to_a.uniq\n\n#図1 \np
+    pq.size\n\n#図2 配列の配列の3番目が|であるものを削除して.size。\np pq.delete_if{|i|i[2] == :|}.size\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8195'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8195
+  :user_name: mamamoto
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/437/
+  :language: 
+  :time: 2008/12/17 01:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>単純に道順の3番目が縦という条件では数えられないではないでしょうか。\nまっすぐ下に降りてから右、というルートもありますし。</p>\n<p>実際、このコードで[:-]*4+[:<a
+    href=\"/web/20090103103113/http://ja.doukaku.org/221/flatten/#id1\" name=\"id2\"><span
+    class=\"problematic\" id=\"id2\">|</span></a>]*4として実行すると、2番目のルートが35となります。\nしかし、僕のを含めいくつかのコードを改造し試したところ、32となりました。</p>\n<div
+    class=\"system-message\" id=\"id1\">\n<p class=\"system-message-title\">System
+    Message: <a name=\"id1\">WARNING/2</a> (<tt class=\"docutils\">&lt;string&gt;</tt>,
+    line 4); <em><a href=\"/web/20090103103113/http://ja.doukaku.org/221/flatten/#id2\">backlink</a></em></p>\nInline
+    substitution_reference start-string without end-string.</div>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8197'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8197
+  :user_name: mattsan
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/833/
+  :language: C
+  :time: 2008/12/17 04:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">わたしも関数型言語C++で関数型っぽく(爆)。\r\n\r\n…\r\n\r\nすみませんすみません。\r\n\r\nこんな密度でtemplateと書いたのはわたしも初めてです。</pre>\n\t"
+  :code: |
+    // 各点での経路の数
+    template&lt;char CHAR, template&lt;int, int&gt; class MAP, int ROW, int COL&gt; struct C { static const int value = 0; };
+
+    // 経路を計算するテンプレート
+    template&lt;template&lt;int, int&gt; class MAP, int ROW, int COL&gt; struct Count { static const int value = C&lt;MAP&lt;ROW, COL&gt;::value, MAP, ROW, COL&gt;::value; };
+
+    // 各点での経路の数: キャラクタごとに特殊化
+    template&lt;template&lt;int, int&gt; class MAP, int ROW, int COL&gt; struct C&lt;'s', MAP, ROW, COL&gt; { static const int value = 1; };
+    template&lt;template&lt;int, int&gt; class MAP, int ROW, int COL&gt; struct C&lt;'l', MAP, ROW, COL&gt; { static const int value = Count&lt;MAP, ROW, COL - 1&gt;::value; };
+    template&lt;template&lt;int, int&gt; class MAP, int ROW, int COL&gt; struct C&lt;'u', MAP, ROW, COL&gt; { static const int value = Count&lt;MAP, ROW - 1, COL&gt;::value; };
+    template&lt;template&lt;int, int&gt; class MAP, int ROW, int COL&gt; struct C&lt;'b', MAP, ROW, COL&gt; { static const int value = Count&lt;MAP, ROW - 1, COL&gt;::value + Count&lt;MAP, ROW, COL - 1&gt;::value; };
+
+    // 問1の図を定義するテンプレート
+    template&lt;int ROW, int COL&gt; struct Map1         { static const char value = 'b'; }; // 基本的には左、上とも通れる
+    template&lt;int COL&gt;          struct Map1&lt;0, COL&gt; { static const char value = 'l'; }; // 0行目は基本的に左だけ通れる
+    template&lt;int ROW&gt;          struct Map1&lt;ROW, 0&gt; { static const char value = 'u'; }; // 0桁目は基本的に上だけ通れる
+    template&lt;&gt;                 struct Map1&lt;0, 0&gt;   { static const char value = 's'; }; // 0行0桁目は起点
+
+    // 問2の図を定義するテンプレート
+    template&lt;int ROW, int COL&gt; struct Map2         { static const char value = 'b'; }; // 基本的には左、上とも通れる
+    template&lt;int COL&gt;          struct Map2&lt;0, COL&gt; { static const char value = 'l'; }; // 0行目は基本的に左だけ通れる
+    template&lt;int ROW&gt;          struct Map2&lt;ROW, 0&gt; { static const char value = 'u'; }; // 0桁目は基本的に上だけ通れる
+    template&lt;&gt;                 struct Map2&lt;0, 0&gt;   { static const char value = 's'; }; // 0行0桁目は起点
+    template&lt;&gt;                 struct Map2&lt;2, 1&gt;   { static const char value = 'l'; }; // 2行1桁目は左だけ通れる
+    template&lt;&gt;                 struct Map2&lt;2, 3&gt;   { static const char value = 'u'; }; // 2行3桁目は上だけ通れる
+    template&lt;&gt;                 struct Map2&lt;3, 2&gt;   { static const char value = 'u'; }; // 3行2桁目は上だけ通れる
+
+    #include &lt;iostream&gt;
+
+    int main(int, char* [])
+    {
+        std::cout &lt;&lt; "問1の答えは " &lt;&lt; Count&lt;Map1, 4, 3&gt;::value &lt;&lt; " 通りです" &lt;&lt; std::endl;
+        std::cout &lt;&lt; "問2の答えは " &lt;&lt; Count&lt;Map2, 4, 3&gt;::value &lt;&lt; " 通りです" &lt;&lt; std::endl;
+
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8199'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8199
+  :user_name: yama
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/684/
+  :language: C
+  :time: 2008/12/17 06:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>素直に全ての道を数えてみました</p>\n<p>結果 map1: 35, map2: 15</p>\n\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+
+    #define HEIGHT 5
+    #define WIDTH 4
+    typedef enum tagLoad
+    {
+        NONE,
+        RIGHT,
+        UNDER,
+        BOTH
+    } Load;
+
+    Load map1[HEIGHT][WIDTH] = {
+        {BOTH, BOTH, BOTH, UNDER},
+        {BOTH, BOTH, BOTH, UNDER},
+        {BOTH, BOTH, BOTH, UNDER},
+        {BOTH, BOTH, BOTH, UNDER},
+        {RIGHT, RIGHT, RIGHT, NONE}
+    };
+
+    Load map2[HEIGHT][WIDTH] = {
+        {BOTH, BOTH, BOTH, UNDER},
+        {BOTH, RIGHT, BOTH, UNDER},
+        {BOTH, BOTH, UNDER, UNDER},
+        {BOTH, UNDER, BOTH, UNDER},
+        {RIGHT, RIGHT, RIGHT, NONE}
+    };
+
+    void search(Load map[HEIGHT][WIDTH], int y, int x, int* count)
+    {
+        if(y == HEIGHT-1)
+        {
+            (*count)++;
+            return;
+        }
+        switch(map[y][x])
+        {
+        case RIGHT:
+            search(map, y, x+1, count);
+            break;
+        case UNDER:
+            search(map, y+1, x, count);
+            break;
+        case BOTH:
+            search(map, y+1, x, count);
+            search(map, y, x+1, count);
+            break;
+        }
+    }
+
+    int main(void)
+    {
+        int count = 0;
+        search(map1, 0, 0, &amp;count);
+        printf("map1: %d\n", count);
+        count = 0;
+        search(map2, 0, 0, &amp;count);
+        printf("map2: %d\n", count);
+        return EXIT_SUCCESS;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8201'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8201
+  :user_name: manzo
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/980/
+  :language: Ruby
+  :time: 2008/12/17 20:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  mamamotoさん\r<br><br>＞単純に道順の3番目が縦\r<br><br>バカでした。\r<br>ご指摘ありがとうございます。\r<br>これはわかったものの謎が解けず悶々としてしまいました。答えがあわないんです。\r<br><br>というのも３ヵ所通れないことに一夜明けた朝に気がついた次第(^_^;)\r<br><br>＞[:-]*4+[:|]*4として実行\r<br>して32になりました。\r<br><br>ありがとうございました。\n\t"
+  :code: |
+    #なんべんも出てくるので。
+    class Array
+      def pat
+        self.permutation.to_a.uniq
+      end
+    end
+
+    #順列してuniqする。
+    pq = ([:-]*3 +[:|]*4).pat
+
+    #図.1
+    p pq.size # =&gt; 35
+
+
+
+    #図.2 ３ヵ所通れない。通れないパターンを作り削除して.size。
+
+    #通れないパターンを入れる配列
+    del = []
+
+    #１番目の通れないパターン(1×1の次が|）
+    del += ([:-]  +  [:|]  ).pat.map{|i|i+[:|]}
+
+    #2番目の通れないパターン(2×2の次が-)
+    del += ([:-]*2 + [:|]*2).pat.map{|i|i+[:-]}
+
+    #3番目の通れないパターン(1×3の次が-)
+    del += ([:-]*1 + [:|]*3).pat.map{|i|i+[:-]}
+
+    #全体からdelのパターンを削除。
+    del.map{|i|pq.delete_if{|j|j[0,i.size] == i}}
+
+    p pq.size # =&gt; 15
+  :tags:
+  - 1.8.7
+  - ruby
+  :references:
+    :url: 
+    :title: 
+- :id: '8207'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8207
+  :user_name: Nemo
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/685/
+  :language: PostScript
+  :time: 2008/12/19 08:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>PostScript で2通り。\nCountPath1 は (1)  タイプ専用で、サイズ((1) では 3 4 )を受けとって解を出力します。</p>\n<p>CountPath
+    は 接続図の配列を受けて解を出力します。</p>\n\n\t"
+  :code: "!PS\n\n% Ans 1   サイズのみから (1)のみ計算\n/fact { dup 1 gt { dup 1 sub fact mul
+    } if } def\n/CountPath1 { 2 copy add fact exch fact idiv exch fact idiv } def\n\n%
+    Ans 2   (2) \n/CountPath {\n    [ 1 index 1 get length {1} repeat ] exch\n    {\n
+    \       dup length 0 1 3 -1 roll 1 sub {\n            2 copy get\n            dup
+    2 and 0 eq { 0 } { 3 index 2 index get } ifelse\n            exch 1 and 0 ne {
+    3 index 2 index 1 sub get add } if\n            3 index 3 1 roll put\n        }
+    for\n        pop\n    } forall\n    dup length 1 sub get\n} def\n\n% === Test
+    ===\n% 1:左に繋がる 2:上に繋がる 3:両方に繋がる\n/Map1 [\n    [ 2 1 1 1 ]\n    [ 2 3 3 3 ]\n    [
+    2 3 3 3 ]\n    [ 2 3 3 3 ]\n    [ 2 3 3 3 ]\n] def\n\n/Map2 [\n    [ 2 1 1 1 ]\n
+    \   [ 2 3 3 3 ]\n    [ 2 1 3 2 ]\n    [ 2 3 2 3 ]\n    [ 2 3 3 3 ]\n] def\n\n3
+    4 CountPath1 =\nMap1 CountPath =\nMap2 CountPath =\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8260'
+  :parent_id: '221'
+  :url: http://ja.doukaku.org/comment/8260
+  :user_name: sawat
+  :user_url: /web/20090103103113/http://ja.doukaku.org/user/322/
+  :language: JavaScript
+  :time: 2008/12/28 02:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>典型的な動的計画法(DP)の練習問題ですね。</p>\n\n\t"
+  :code: |
+    function Point(up, left) {
+       this.up = up; this.left =left;
+    }
+    Point.U = new Point(true, false);
+    Point.L = new Point(false, true);
+    Point.UL = new Point(true, true);
+    Point.NON = new Point(false, false);
+
+    var points;
+    with(Point) {
+       points = [
+          [U, L,  L,  L],
+          [U, UL, UL, UL],
+          [U, L,  UL, U],
+          [U, UL, U,  UL],
+          [U, UL, UL, UL]
+       ];
+    }
+    function countRoute(points) {
+       var count_table = new Array(points[0].lenth);
+       count_table[0] = 1;
+
+       for (var i=0, n=points.length; i&lt;n; i++) {
+          var row = points[i];
+          for (var j=0, m=row.length; j&lt;m; j++) {
+             var p = row[j];
+             count_table[j] = (p.up &amp;&amp; count_table[j] || 0) + (p.left &amp;&amp; count_table[j-1] || 0);
+          }
+       }
+       return count_table[count_table.length-1];
+    }
+    alert(countRoute(points));
+  :tags: []
+  :references:
+    :url: 
+    :title: 

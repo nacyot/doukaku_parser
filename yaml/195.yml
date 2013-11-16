@@ -1,0 +1,863 @@
+---
+:id: '195'
+:title: tailの実装
+:comments:
+- :id: '6818'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/6818
+  :user_name: takeru
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/850/
+  :language: 
+  :time: 2008/07/24 04:57 GMT
+  :vote_count: '11'
+  :vote_score: '-9'
+  :body: "\r\n\t  <div class=\"section\">\n<p>'tail'を実装してください。\r</p>\n<p>巨大なファイルでも効率的に動作するようにしてください。\r</p>\n<p>\r</p>\n<p>最低限必要な機能は、\r</p>\n<ul>\n<li>\n行数指定\r\n</li>\n<li>「-f」パラメータの対応\r</li>\n</ul>\n<p>です。\r</p>\n</div>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6992'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/6992
+  :user_name: leque
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2008/08/05 22:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>愚直にキューをつかって。</p>\n\n\t"
+  :code: |
+    (use gauche.parseopt)
+    (use gauche.selector)
+    (use util.queue)
+
+    (define (main args)
+      (let-args (cdr args)
+          ((nlines "n=n" 10)
+           (f? "f" #f)
+           . argv)
+        (call-with-input-file (car argv)
+          (lambda (iport)
+            (let ((q (make-queue)))
+              (let loop ((n 0)
+                         (line (read-line iport)))
+                (unless (or (= n nlines) (eof-object? line))
+                  (enqueue! q line)
+                  (loop (+ n 1) (read-line iport))))
+              (do ((line (read-line iport) (read-line iport)))
+                  ((eof-object? line))
+                (enqueue! q line)
+                (dequeue! q))
+              (for-each print (queue-&gt;list q)))
+            (when f?
+              (with-signal-handlers ((SIGINT =&gt; (lambda _ (exit 0))))
+                (lambda ()
+                  (let ((sel (make &lt;selector&gt;)))
+                    (selector-add! sel
+                                   iport
+                                   (lambda (input _)
+                                     (and-let* ((line (read-line input))
+                                                ((not (eof-object? line))))
+                                       (print line))
+                                     (sys-sleep 1))
+                                   '(r))
+                    (while #t (selector-select sel))))))
+            0))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '6997'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/6997
+  :user_name: あにす
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/504/
+  :language: 
+  :time: 2008/08/06 07:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  tailの仕様がわかりません。\r<br>検索すると概要はわかるのですが、実際にどういった動作をさせれば良いのでしょう？\r<br>UNIX環境が無いのでどうしたらよいのか…。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7002'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/7002
+  :user_name: sumim
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/08/06 05:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で、それっぽい動きをするものを。</p>\n\n\t"
+  :code: |
+    | filename file numOfLines isFollowMode lineCount savedPosition |
+    filename := 'in.txt'.
+    numOfLines := 10.
+    isFollowMode := false.
+
+    file := FileStream fileNamed: filename.
+    file setToEnd.
+    file binary.
+    lineCount := 0.
+    [file position &gt; 0 and: [lineCount &lt; numOfLines]]
+        whileTrue: [file back = 13 ifTrue: [lineCount := lineCount + 1]].
+
+    file ascii.
+    World findATranscript: nil.
+    Transcript cr; show: file upToEnd.
+    savedPosition := file position.
+    file close.
+    isFollowMode ifTrue: [
+        [Sensor keyboardPressed] whileFalse: [
+            (Delay forSeconds: 5) wait.
+            file reopen; position: savedPosition.
+            Transcript show: file upToEnd.
+            savedPosition := file position.
+            file close]]
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '7009'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/7009
+  :user_name: kkobayashi
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2008/08/06 15:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>まじめに書いたらCのようになってしまいました。</p>\n\n\t"
+  :code: |
+    read.file &lt;- function (infile, offset=0){
+       con &lt;- file(infile)
+       open(con)
+       seek(con, offset)
+       lines &lt;- readLines(con)
+       cur.offset &lt;- seek(con)
+       close(con)
+       list(l=lines, o=cur.offset)
+    }
+
+    my.tail &lt;- function(infile, n=10, follow=FALSE){
+       lines &lt;- read.file(infile)
+       writeLines(tail(lines$l, n))
+       if(follow){
+           size  &lt;- file.info(infile)$size
+           repeat{
+               if(size &lt; (s &lt;- file.info(infile)$size)){
+                   lines &lt;- read.file(infile, lines$o)
+                   writeLines(lines$l)
+                   size &lt;- s
+               }
+               Sys.sleep(1)
+           }
+       }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7042'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/7042
+  :user_name: raynstard
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2008/08/07 08:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">たしかにお題を出す人にも、もうすこし丁寧に出題してほしい感じがしますね。\r\n\r\nたぶんですが、\r\n意訳すると以下のような感じになるのではないでしょうか？\r\n1.
+    指定されたファイルの最後尾から N行表示すること\r\n2. ファイルの更新を監視して、指定のファイルが更新された場合に、\r\n   更新分のうち、最後尾からN行を表示すること\r\n\r\n「2.」更新分なので前回表示続きからという点が注意事項だと思います。\r\n\r\n#
+    「-f」 を実装しなさいというあたり、\r\n  以前あったファイルの更新を監視するお題の\r\n  派生と考えられるのかな？\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7081'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/7081
+  :user_name: 匿名
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2008/08/09 21:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  対象がファイルの場合には、予めファイル末尾を基準にシークします。これによってファイルサイズに依存しない処理時間を実現しています。\r<br><br>起動方法は\r<br><br>java Tail [-f] [-&lt;num&gt;] [&lt;ファイル名&gt;]\r<br>-f: ファイル末尾まで読み込んでも終了せず、ファイルが成長した部分をポーリングで表示する（ファイル名を与えない場合は無視する）。\r<br>num: ファイル末尾からnum行を表示する（デフォルトは10行）。\r<br>ファイル名: 表示するファイル名。省略した場合は標準入力。\r<br><br>です。\n\t"
+  :code: "import java.io.*;\n\npublic class Tail {\n    private static final int MAX_LINE_LENGTH
+    = 1000;\n    private static final long SLEEP_TIME = 500; // 500 m sec\n    private
+    static int numOfLine = 10;\n    private static boolean fOption = false;\n    private
+    static String fileName = null;\n    private static InputStream targetStream =
+    System.in;\n\n    public static void main(String[] args) throws Exception {\n
+    \       for (String s: args) {\n            if (\"-help\".equals(s)) {\n                System.err.println(\"Usage&gt;
+    java Tail [-f] [-&lt;num&gt;] [filename]\");\n                return;\n            }\n
+    \           else if (\"-f\".equals(s))\n                fOption = true;\n            else
+    if (s.startsWith(\"-\"))\n                numOfLine = -Integer.parseInt(s);\n
+    \           else\n                fileName = s;\n        }\n        \n        if
+    (fileName != null) {\n            File target = new File(fileName);\n            long
+    len = target.length();\n            targetStream = new FileInputStream(target);\n
+    \           len -= MAX_LINE_LENGTH * numOfLine;\n            if (len &gt; 0)\n
+    \               targetStream.skip(len);\n        }\n        BufferedReader br
+    = new BufferedReader(new InputStreamReader(targetStream));\n        String line;\n
+    \       String[] lines = new String[numOfLine];\n        int ip = 0;\n        while
+    ((line = br.readLine()) != null) {\n            lines[ip] = line;\n            if
+    (++ip &gt;= numOfLine)\n                ip = 0;\n        }\n        int i = ip;\n
+    \       do {\n            if (lines[i] != null)\n                System.out.println(lines[i]);\n
+    \           if (++i &gt;= numOfLine)\n                i = 0;\n        } while
+    (i != ip);\n        if (fOption &amp;&amp; fileName != null) {\n            while
+    (true) {\n                Thread.sleep(SLEEP_TIME);\n                line = br.readLine();\n
+    \               if (line != null)\n                    System.out.println(line);\n
+    \           }\n        }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7135'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/7135
+  :user_name: lunlumo
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/813/
+  :language: Perl
+  :time: 2008/08/16 13:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>　末尾から読み込む様にしてみました。</p>\n</div>\n\t"
+  :code: |
+    #! /usr/bin/perl
+
+    use strict;
+
+    package Tail;
+
+    $Tail::BUF_SIZE = 4096;
+
+    sub new {
+        my    ($pkg,$lines,$follow,$file) = @_;
+        my    $self = bless({},$pkg);
+        $self-&gt;file($file);
+        $self-&gt;lines(defined($lines) ? $lines : 10);
+        $self-&gt;follow(defined($follow) ? $follow : 0);
+        $self;
+    }
+
+    sub lines {
+        my    ($self,$lines) = @_;
+        $self-&gt;{'lines'} = $lines if (defined($lines));
+        $self-&gt;{'lines'};
+    }
+
+    sub follow {
+        my    ($self,$follow) = @_;
+        $self-&gt;{'follow'} = $follow if (defined($follow));
+        $self-&gt;{'follow'};
+    }
+
+    sub file {
+        my    ($self,$file) = @_;
+        $self-&gt;{'file'} = $file if (defined($file));
+        $self-&gt;{'file'};
+    }
+
+    sub quit {
+        my    ($self,$quit) = @_;
+        $self-&gt;{'quit'} = $quit if (defined($quit));
+        $self-&gt;{'quit'};
+    }
+
+    sub _fh {
+        my    ($self,$fh) = @_;
+        $self-&gt;{'_fh'} = $fh if (defined($fh));
+        $self-&gt;{'_fh'};
+    }
+
+    sub initialize {
+        my    ($self) = @_;
+        my    $fh;
+        open ($fh,"&lt;".$self-&gt;file()) || die "cannot open file.";
+        binmode($fh);
+        $self-&gt;_fh($fh);
+        $self-&gt;quit(0);
+        $|=1;
+        $self;
+    }
+
+    sub _tailn {
+        my    ($self) = @_;
+        my    $lines = $self-&gt;lines();
+        my    $size = -s $self-&gt;file();
+        my    $fh = $self-&gt;_fh();
+        my    $pos = $size;
+        my    $head;
+        my    $tail = '';
+        while ($pos &gt; 0) {
+            my    $buf = '';
+            my    $ret;
+            if ($pos &lt;= $Tail::BUF_SIZE) {
+                seek($fh,0,0);
+                $ret = read($fh,$buf,$pos);
+            } else {
+                seek($fh,$pos-$Tail::BUF_SIZE,0);
+                $ret = read($fh,$buf,$Tail::BUF_SIZE);
+            }
+            die "cannot read file." unless (defined($ret));
+            $pos -= $ret;
+            $tail = $buf.$tail;
+            last if (scalar(split(/(?:\0x0d\x0a|\x0d|\x0d)/,$tail)) &gt; $lines);
+        }
+        $pos = length($tail) - 1;
+        while ($pos &gt;= 0) {
+            my    $c = substr($tail,$pos,1);
+            if ($c eq "\x0d" || $c eq "\x0a") {
+                last if (--$lines &lt;= 0);
+                $pos-- if ($c eq "\x0a" &amp;&amp; $pos &gt; 0 &amp;&amp; substr($tail,$pos-1,1) eq "\x0d");
+            }
+            $pos--;
+        };
+        $tail =  substr($tail,$pos+1,length($tail)-$pos-1);
+        $tail =~ s/(\x0d\x0a|\x0d|\x0a)/\n/g;
+        print $tail;
+        seek($fh,$size,0);
+        $self;
+    }
+
+    sub _tailf {
+        my    ($self) = @_;
+        my    $fh = $self-&gt;_fh();
+        until ($self-&gt;quit()) {
+            my    $buf = '';
+            seek($fh,tell($fh),0);
+            until (eof($fh)) {
+                die "cannot read file." unless (defined(read($fh,$buf,$Tail::BUF_SIZE)));
+                $buf =~ s/(\x0d\x0a|\x0d|\x0a)/\n/g;
+                print $buf;
+            }
+            sleep(1);
+        }
+        $self;
+    }
+
+    sub tail {
+        my    ($self) = @_;
+        $self-&gt;_tailn();
+        $self-&gt;_tailf() if ($self-&gt;follow());
+    }
+
+    sub finalize {
+        my    ($self) = @_;
+        close($self-&gt;_fh());
+    }
+
+    package main;
+
+    use Getopt::Std;
+
+    my    $opt = {};
+    my    $tail;
+    eval {
+        getopts('n:f',$opt);
+        $tail = new Tail($opt-&gt;{'n'},$opt-&gt;{'f'},shift(@ARGV))-&gt;initialize();
+        $SIG{INT} = sub { $tail-&gt;quit(1); };
+        $tail-&gt;tail();
+        $tail-&gt;finalize();
+    };
+    print "error: $@" if ($@);
+
+    1;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7153'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/7153
+  :user_name: lunlumo
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/813/
+  :language: Ruby
+  :time: 2008/08/17 06:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>　Rubyもまだの様なので書いてみました。</p>\n</div>\n\t"
+  :code: "#! /usr/bin/ruby\n\nclass Tail\n    BUF_SIZE = 4096\n    \n    attr_accessor
+    :lines, :follow, :file, :quit, :_f\n    private :_f\n    \n    def initialize(lines,follow,file)\n
+    \       self.lines = lines ? lines.to_i : 10\n        self.follow = follow ? follow
+    : false\n        self.file = file\n        quit = false\n        self.send(:_f=,File.open(file,'r').binmode)\n
+    \       self\n    end\n    \n    def _tailn\n        lines = self.lines\n        size
+    = _f.lstat.size\n        pos = size\n        tail = ''\n        tails = []\n        until(pos
+    &lt;= 0) do\n            buf = ''\n            if pos &lt; BUF_SIZE\n                _f.pos
+    = 0\n                buf = _f.read(pos)\n            else\n                _f.pos
+    = pos - BUF_SIZE\n                buf = _f.read(BUF_SIZE)\n            end\n            raise
+    IOError.new('cannot read file.') unless(buf)\n            pos -= buf.size\n            tail
+    = buf + tail\n            break if tail.split(/(?:\\x0d\\x0a|\\x0d|\\x0a)/).size
+    &gt; lines\n        end\n        tail = tail.gsub(/(\\x0d\\x0a|\\x0d|\\x0a)/,\"\\n\")\n
+    \       tails = tail.split(/\\n/)\n        tails.push(\"\") if tail =~ /\\n\\z/\n
+    \       print tails.reverse.first(lines).reverse.join(\"\\n\")\n        STDOUT.flush\n
+    \       _f.pos = size\n        self\n    end\n    \n    def _tailf\n        until(quit)
+    do\n            buf = ''\n            buf = _f.read\n            raise IOException.new('cannot
+    read file.') unless(buf)\n            if (buf.size &gt; 0)\n                buf
+    = buf.gsub(/(\\x0d\\x0a|\\x0d|\\x0a)/,\"\\n\")\n                print buf\n                STDOUT.flush\n
+    \           end\n            sleep(1)\n        end\n        self\n    end\n    \n
+    \   def tail\n        _tailn\n        _tailf if follow\n    end\n    \n    def
+    finalize\n        _f.close\n    end\nend\n\nrequire \"optparse\"\n\ntail = nil\n\nconf
+    = Hash.new\nopts = OptionParser.new\nopts.on(\"-n MANDATORY\") { |v| conf[:n]
+    = v }\nopts.on(\"-f\") { |v| conf[:f] = v }\nopts.parse!\n\nif ARGV.size == 0\n
+    \   puts \"usage: ruby #{$0} [-n lines] [-f] filename\"\nelse\n    begin\n        tail
+    = Tail.new(conf[:n],conf[:f],ARGV.shift)\n        Signal.trap(:INT) { tail.quit
+    = true }\n        tail.tail\n        tail.finalize\n    rescue =&gt; e\n        puts
+    e.message\n    end\nend\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7175'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/7175
+  :user_name: seri
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/641/
+  :language: C
+  :time: 2008/08/17 16:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">C#でやってみました。</pre>\n\t"
+  :code: |
+    using System;
+    using System.Text;
+    using System.Threading;
+    using System.IO;
+
+    class Tail
+    {
+        private const int SLEEP_TIME = 1000;
+        private static bool fOption = false;
+        private static int outputLines = 10;
+        private static string filename = string.Empty;
+        private static string usage = "Usage: Tail.exe [-n number] [-f] filename";
+
+        static void Main(string[] args)
+        {
+            try {
+                for (int i = 0; i &lt; args.Length; i++) {
+                    if (args[i][0] == '-') {
+                        switch (args[i][1]) {
+                            case 'n':
+                                outputLines = int.Parse(args[++i]);
+                                break;
+                            case 'f':
+                                fOption = true;
+                                break;
+                            default:
+                                Console.Error.WriteLine("Invalid Option: {0}", args[i]);
+                                Console.Error.WriteLine(usage);
+                                return;
+                        }
+                    }
+                    else
+                        filename = args[i];
+                }
+
+                string buffer = string.Empty;
+                int allLines = 0;
+                string line = string.Empty;
+                using (FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
+                    using (StreamReader sr = new StreamReader(fs, Encoding.Default)) {
+                        while (sr.ReadLine() != null)
+                            allLines++;
+                        fs.Seek(0, SeekOrigin.Begin);
+                        if (allLines &lt;= outputLines)
+                            buffer = sr.ReadToEnd();
+                        else {
+                            for (int i = 0; i &lt; allLines; i++) {
+                                line = sr.ReadLine();
+                                if (i &gt; allLines - outputLines - 1)
+                                    buffer += line + "\n";
+                            }
+                        }
+
+                        Console.WriteLine(buffer);
+
+                        while (fOption) {
+                            Thread.Sleep(SLEEP_TIME);
+                            while ((line = sr.ReadLine()) != null)
+                                Console.WriteLine(line);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) {
+                Console.Error.WriteLine(ex.Message.ToString());
+                Console.Error.WriteLine(usage);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7209'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/7209
+  :user_name: 匿名
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/08/19 05:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">手抜きで行末記号を\"\\n\"で決め打ちです。</pre>\n\t"
+  :code: |
+    import sys
+    import time
+    import StringIO
+
+    def gettail(fp, n):
+      start = fp.tell()
+      fp.seek(0, 2)
+      end = fp.tell()
+      s = ''
+      while len(s) &lt; end - start and s.count('\n') &lt;= n:
+        a = min(160 * n, fp.tell() - start)
+        fp.seek(-a, 1)
+        s = fp.read(a) + s
+      return StringIO.StringIO(s).readlines()[-n:]
+
+    def getnlines(fp, start, n):
+      fp.seek(0, 2)
+      pos = fp.tell()
+      fp.seek(start)
+      for s in gettail(fp, n):
+        sys.stdout.write(s)
+        sys.stdout.flush()
+      return pos
+
+    n = 10
+    f = False
+    fp = None
+
+    sys.argv.pop(0)
+    while sys.argv:
+      s = sys.argv.pop(0)
+      if s == '-n':
+        n = int(sys.argv.pop(0))
+      elif s == '-f':
+        f = True
+      elif not s.startswith('-'):
+        fp = file(s, 'rb')
+
+    pos = getnlines(fp, 0, n)
+
+    while f:
+      time.sleep(1)
+      pos = getnlines(fp, pos, n)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7213'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/7213
+  :user_name: silverwire
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/646/
+  :language: Batchfile
+  :time: 2008/08/19 07:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">バッチです。カバレッジ稼ぎのようでちょっと恥ずかしいのですが、あまり処理を複雑に\r\nしたくなかったので、標準入力からの入力や-fオプションは実装しませんでした。\r\n\r\n
+    \ e.g.\r\n    C:\\&gt;tail 3 tail.bat\r\n        set /a i-=%1\r\n      endlocal
+    &amp; more +%i% %p%\r\n    goto :EOF\r\n\r\n以下の参考サイトのものはもっと複雑で頭が下がります。</pre>\n\t"
+  :code: |
+    :: tail.bat
+    @echo off
+      setlocal
+        set i=0
+        set p=%~fs2
+
+        echo %1|findstr /r "[^0-9]" &gt;NUL 2&gt;&amp;1
+        if %ERRORLEVEL% equ 0 (call :usage &amp; exit /b 1)
+
+        if "%p%" equ "" (call :usage &amp; exit /b 1)
+
+        if not exist %p% (call :usage &amp; exit /b 1)
+
+        for /f %%i in ('find /c /v "" ^&lt; %p%') do set i=%%i
+        set /a i-=%1
+      endlocal &amp; more +%i% %p%
+    goto :EOF
+
+    :usage
+      setlocal
+        echo %~n0 [LINE] [FILE]
+      endlocal
+    goto :EOF
+  :tags: []
+  :references:
+    :url: /web/20090319013829/http://d.hatena.ne.jp/otn/20040306/p1
+    :title: 【続々々】tailコマンドの作成
+- :id: '7505'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/7505
+  :user_name: lunlumo
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/813/
+  :language: Scala
+  :time: 2008/08/31 09:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>　オプションの処理にかなり場所をとられてしまっていますが...。</p>\n</div>\n\t"
+  :code: "import    java.io.FileNotFoundException\nimport    java.io.File\nimport
+    \   java.io.FileInputStream\nimport    scala.collection.mutable.HashMap\n\nclass
+    InvalidArgumentException extends Exception {}\n\nclass GetOpt(f:String) {\n    var
+    \   _params:List[Tuple2[String,Boolean]] = null\n    var    _opt:HashMap[Any,Any]
+    = null\n    var    _rest:Array[String] = null\n    \n    _params = f.toList.foldLeft(List[Tuple2[String,Boolean]]())
+    { (l,c) =&gt;\n        c match {\n            case ':' =&gt; l match {\n                case
+    List() =&gt; throw new InvalidArgumentException\n                case h::r =&gt;
+    (h._1,true)::r\n            }\n            case k =&gt; (k.toString,false)::l\n
+    \       }\n    }.reverse\n    \n    def parse(a:Array[String]):GetOpt = {\n        def
+    _parse(o:HashMap[Any,Any],l:List[String]):Tuple2[HashMap[Any,Any],List[String]]
+    = l match {\n            case List() =&gt; (o,List())\n            case h::r =&gt;
+    h.toList match {\n                case '-'::k =&gt; {\n                    _params.find
+    { e =&gt; e._1 == new String(k.toArray) } match {\n                        case
+    Some(Tuple2(_,true)) =&gt; {\n                            if (r.size == 0) throw
+    new InvalidArgumentException\n                            o.update(new String(k.toArray),r.head)\n
+    \                           _parse(o,r.tail)\n                        }\n                        case
+    Some(Tuple2(_,false)) =&gt; {\n                            o.update(new String(k.toArray),true)\n
+    \                           _parse(o,r)\n                        }\n                        case
+    _ =&gt; throw new InvalidArgumentException\n                    }\n                }\n
+    \               case _ =&gt; (o,l)\n            }\n        }\n        _parse(new
+    HashMap[Any,Any],a.toList) match {\n            case Tuple2(o,r) =&gt; { _opt
+    = o; _rest = r.toArray }\n        }\n        this\n    }\n    \n    def getopt(k:String):Any
+    = _opt.isDefinedAt(k) match {\n        case true =&gt; _opt.apply(k)\n        case
+    _ =&gt; false\n    }\n    \n    def rest:Array[String] = _rest\n}\n\nclass CTail(n:Int,f:Boolean,i:File)
+    {\n    \n    val    s:FileInputStream = new FileInputStream(i)\n    \n    def
+    this(o:GetOpt) =this(o.getopt(\"n\") match { case Some(false) =&gt; 10; case n
+    =&gt; n.asInstanceOf[String].toInt },o.getopt(\"f\").asInstanceOf[Boolean],new
+    File(o.rest.apply(0)))\n    \n    def tailn:Unit = {\n        \n        val    BUF_SIZE:Int
+    = 4096\n        val    e:Long = i.length\n        \n        def _tailn(p:Long,n:Int,b:Array[Byte]):Array[Byte]
+    = {\n            var    t:Array[Byte] = null\n            var    l:Int = n\n            (p
+    &gt; BUF_SIZE) match {\n                case true =&gt; {\n                    t
+    = new Array[Byte](BUF_SIZE)\n                    s.getChannel.position(p - BUF_SIZE)\n
+    \                   s.read(t,0,BUF_SIZE)\n                }\n                case
+    _ =&gt; {\n                    t = new Array[Byte](p.toInt)\n                    s.read(t,0,p.toInt)\n
+    \               }\n            }\n            t = t.reverse.takeWhile { c =&gt;
+    if (c == '\\n') l = l - 1; (l &gt; 0) }.reverse\n            ((p &lt;= BUF_SIZE)
+    || (l == 0)) match {\n                case true =&gt; t ++ b\n                case
+    _ =&gt; _tailn(p - BUF_SIZE, l, t ++ b)\n            }\n        }\n        \n
+    \       print(new String(_tailn(e, n, new Array[Byte](0))))\n        s.getChannel.position(e)\n
+    \   }\n    \n    def tailf:Unit = {\n        def _tailf(b:List[Byte]):List[Byte]
+    = {\n            val    c:Int = s.read\n            (c &gt;= 0) match {\n                case
+    true =&gt; _tailf(b + c.toByte)\n                case _ =&gt; b\n            }\n
+    \       }\n        print(new String(_tailf(List[Byte]()).toArray))\n        Thread.sleep(100)\n
+    \       tailf\n    }\n    \n    def tail:CTail = {\n        tailn\n        if
+    (f) tailf\n        this\n    }\n    \n    def close:Unit = s.close\n}\n\nobject
+    Tail {\n    def main(args:Array[String]):Unit = {\n        try {\n            val
+    \   o:GetOpt = new GetOpt(\"n:f\").parse(args)\n            (new CTail(o)).tail.close\n
+    \       } catch {\n            case e:InvalidArgumentException =&gt; println(\"usage:
+    scala Tail [-n &lt;number of lines&gt;] [-f] file\")\n            case e:FileNotFoundException
+    =&gt; print(\"file not found.\")\n            case e:Exception =&gt; e.printStackTrace\n
+    \       }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7626'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/7626
+  :user_name: nobsun
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/09/10 21:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>とりあえず実装してみたというレベル\nData.Sequenceを使ってみた\n効率については考えてない orz</p>\n\n\t"
+  :code: "module Main where\n\nimport Control.Concurrent\nimport Data.Foldable\nimport
+    Data.Sequence\nimport Prelude hiding (foldl,concat,mapM_)\nimport System.Console.GetOpt\nimport
+    System.Environment\nimport System.IO\n\ndata Options = Options \n { optFollowed
+    :: Bool\n , optNumber   :: Int\n } deriving Show\n\ndefaultOptions = Options \n
+    { optFollowed = False\n , optNumber   = 10\n }\n\noptions :: [OptDescr (Options
+    -&gt; Options)]\noptions \n = [ Option ['f'] [] (NoArg (\\ opts -&gt; opts { optFollowed
+    = True }))\n            \"followed by addition to the file\"\n   , Option ['n']
+    [] (ReqArg (\\ d opts -&gt; opts { optNumber = read d }) \"NUMBER\")\n            \"display
+    last NUMBER lines\"]\n\ncompileOpts :: [String] -&gt; IO (Options, [String])\ncompileOpts
+    argv\n = case getOpt Permute options argv of\n     (o,n,[]  ) -&gt; return (foldl
+    (flip id) defaultOptions o, n)\n     (_,_,errs) -&gt; ioError (userError (concat
+    errs ++ usageInfo header options))\n  where header = \"Usage : tail [OPTION..]
+    file\"\n\nmain :: IO ()\nmain = getArgs &gt;&gt;= compileOpts &gt;&gt;= tail'\n\ntail'
+    :: (Options, [String]) -&gt; IO ()\ntail' (o,fs) =   openFile (head fs) ReadMode\n
+    \            &gt;&gt;= loop empty (optNumber o) 0 (optFollowed o)\n\nloop :: Seq
+    String -&gt; Int -&gt; Int -&gt; Bool -&gt; Handle -&gt; IO ()\nloop q n i f h\n
+    = do { eof &lt;- hIsEOF h\n      ; if eof then if not f then printQ q\n                    else
+    printQ q &gt;&gt; lineCat h\n        else do { l &lt;- hGetLine h\n                ;
+    if n &gt; i then loop (q |&gt; l) n (i+1) f h\n                  else case viewl
+    q of\n                         _ :&lt; qs -&gt; loop (qs |&gt; l) n n f h\n                }\n
+    \     }\n\nprintQ :: Seq String -&gt; IO ()\nprintQ = mapM_ putStrLn\n\nlineCat
+    :: Handle -&gt; IO ()\nlineCat h = do { eof &lt;- hIsEOF h\n               ; if
+    eof then threadDelay (10^4) &gt;&gt; lineCat h\n                 else hGetLine
+    h &gt;&gt;= putStrLn &gt;&gt; lineCat h\n               }\n"
+  :tags:
+  - Data.Sequence
+  :references:
+    :url: 
+    :title: 
+- :id: '7938'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/7938
+  :user_name: mc
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/11/03 09:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  あんまり効率は良くないかも\r<br>(tail \"/etc/passwd\" 4 :follow 'T)\r<br>;&gt;&gt;&gt; \r<br>haldaemon:x:111:123:Hardware abstraction layer,,,:/var/run/hald:/bin/false\r<br>sshd:x:112:65534::/var/run/sshd:/usr/sbin/nologin\r<br>statd:x:113:65534::/var/lib/nfs:/bin/false\r<br>telnetd:x:114:125::/nonexistent:/bin/false\r<br>... 1秒おきに繰り返し\n\t"
+  :code: "(defun tail (file lines &amp;key (follow nil) (external-format :utf-8))\n
+    \ (when (&lt; 0 lines)\n    (let ((pool (make-array lines)))\n      (with-open-file
+    (in file :external-format external-format)\n        (loop :DO (loop :for line
+    := (read-line in nil nil) :while line\n                        :for pos := 0 :then
+    (mod (1+ pos) lines)\n                        :do (setf (aref pool pos) line)\n
+    \                       :finally (loop :for p :from pos\n                                       :for
+    x :across pool\n                                       :do (princ (aref pool (mod
+    (1+ p) lines)))\n                                           (terpri)))\n              :WHILE
+    follow \n              :DO (file-position in 0) \n                  (sleep 1))))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7940'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/7940
+  :user_name: mc
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/11/03 03:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  すいません、間違ったものを貼りつけてました。前のでは、ファイルの行数が指定より少ない場合に余計な出力が出てしまいます。\n\t"
+  :code: "(defun tail (file lines &amp;key (follow nil) (external-format :utf-8))\n
+    \ (when (&lt; 0 lines)\n    (let ((pool (make-array lines :initial-element nil)))\n
+    \     (with-open-file (in file :external-format external-format)\n        (loop
+    :DO (loop :for line := (read-line in nil nil) :while line\n                        :for
+    pos := 0 :then (mod (1+ pos) lines)\n                        :do (setf (aref pool
+    pos) line)\n                        :finally (loop :for p :from pos\n                                       :for
+    x :across pool\n                                       :do (let ((line (aref pool
+    (mod (1+ p) lines))))\n                                             (when line
+    \n                                               (princ line)\n                                               (terpri)))))\n
+    \             :WHILE follow \n              :DO (file-position in 0) \n                  (sleep
+    1))))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7945'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/7945
+  :user_name: mc
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/11/04 02:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  該当行のファイルポジションを割出してから表示するようにしてみました。\n\t"
+  :code: "(defun tail (file lines &amp;key (follow nil) (external-format :utf-8))\n
+    \ (when (&lt; 0 lines)\n    (with-open-file (in file :external-format external-format)\n
+    \     (loop :FOR pos := (last-n-line-position lines file) \n                  :THEN
+    (last-n-line-position lines file :offset pos)\n            :DO (file-position
+    in pos)\n                (loop :for line := (read-line in nil nil) :while line\n
+    \                     :do (princ line) (terpri))\n            :WHILE follow :DO
+    (sleep 1)))))\n\n(defun last-n-line-position (n file &amp;key (newline-char #\\Newline)
+    (offset 0))\n  (declare ((integer 0 *) n offset))\n  (let* ((n (1+ n))                     ;改行で数えているので1+\n
+    \        (pool (make-array n :initial-element nil)))\n    (with-open-file (in
+    file :element-type '(unsigned-byte 8))\n      (file-position in offset)\n      (loop
+    :with nl := (char-code newline-char)\n            :and pos := 0\n            :for
+    byte := (read-byte in nil nil) :while byte\n            :for file-pos :from 0
+    \n            :when (eql nl byte)\n            :do (setq pos (mod (1+ pos) n))\n
+    \               (setf (aref pool pos) file-pos)\n            :finally (return\n
+    \                      (let ((ans (loop :for p :across pool \n                                        :minimize
+    (or p 0))))\n                         (+ offset\n                            (if
+    (zerop ans) 0 (1+ ans)))))))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8179'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/8179
+  :user_name: ihag
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/560/
+  :language: C
+  :time: 2008/12/15 06:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>行数を後ろから数えるのが面倒だなぁ，と思ったけど，よくよく考えたらmmap(2)してポインタ経由で後ろから読めばいいだけの話でした．</p>\n\n\t"
+  :code: "#include &lt;sys/mman.h&gt;\n#include &lt;sys/stat.h&gt;\n#include &lt;sys/types.h&gt;\n#include
+    &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;fcntl.h&gt;\n#include
+    &lt;unistd.h&gt;\n\n#ifndef false\n# define false 0\n#endif\n#ifndef true\n# define
+    true !false\n#endif\n\n#define handle_error(str) \\\n    do { perror(str); exit(EXIT_FAILURE);
+    } while(0)\n\nstatic const char *myname;\n\nvoid\nusage(void)\n{\n    fprintf(stderr,
+    \"usage: %s [-n &lt;number&gt;] [-f] &lt;file&gt;\\n\", myname);\n    exit(EXIT_FAILURE);\n}\n\nvoid\ndo_flush(int
+    fd, size_t offset, size_t file_size)\n{\n    u_char buf[8192], *buf_p;\n    size_t
+    len_r, len_w, remain_byte;\n\n    for (remain_byte = file_size - offset;\n         remain_byte
+    &gt; 0;\n         remain_byte -= len_r) {\n        if ((len_r = read(fd, buf,
+    sizeof(buf))) == -1)\n            handle_error(\"read\");\n        for (buf_p
+    = buf; (buf_p - buf) &lt; len_r; buf_p += len_w)\n            if ((len_w = write(1,
+    buf, len_r)) == -1)\n                handle_error(\"write\");\n    }\n}\n\nvoid\ndo_tail(int
+    fd, size_t file_size, int line_max)\n{\n    u_char *head, *tail, *cur, *last =
+    NULL;\n    int lines = 0;\n    size_t len;\n\n    head = (u_char *) mmap(NULL,
+    file_size, PROT_READ,\n                           MAP_PRIVATE, fd, 0);\n    if
+    (head == MAP_FAILED)\n        handle_error(\"mmap\");\n\n    tail = head + file_size
+    - 1;\n    if (*tail != '\\n')\n        ++lines;\n\n    for (cur = tail; cur &gt;=
+    head; last = cur--) {\n        if (*cur == '\\n')\n            if (++lines &gt;
+    line_max)\n                break;\n    }\n    while ((len = write(1, last, file_size
+    - (last - head))) &gt; 0)\n        last += len;\n    if (len == -1)\n        handle_error(\"write\");\n\n
+    \   if (munmap(head, file_size) == -1)\n        handle_error(\"munmap\");\n}\n\nvoid\ndo_tailf(int
+    fd, size_t file_size)\n{\n    struct stat sb;\n    \n    if (lseek(fd, file_size,
+    SEEK_SET) == -1)\n        handle_error(\"lseek\");\n\n    while (true) {\n        if
+    (fstat(fd, &amp;sb) == -1)\n            handle_error(\"fstat\");\n        if (sb.st_size
+    &gt; file_size)\n            do_flush(fd, file_size, sb.st_size);\n        file_size
+    = sb.st_size;\n        sleep(1);\n    }\n}\n\nvoid\nprocess_file(char *filename,
+    int line_max, int f_tailf, int f_header)\n{\n    int fd;\n    size_t file_size;\n\n
+    \   if (f_header)\n        printf(\"==&gt; %s &lt;==\\n\", filename);\n    \n
+    \   if ((fd = open(filename, 0)) == -1)\n        handle_error(\"open\");\n    if
+    ((file_size = lseek(fd, 0, SEEK_END)) == -1)\n        handle_error(\"lseek\");\n
+    \   \n    if (file_size &gt; 0)\n        do_tail(fd, file_size, line_max);\n    if
+    (f_tailf)\n        do_tailf(fd, file_size);\n\n    close(fd);\n}\n\nint\nmain(int
+    argc, char **argv)\n{\n    int ch;\n    int line_max = 10, f_tailf = false;\n\n
+    \   myname = argv[0];\n    while ((ch = getopt(argc, argv, \"fn:\")) != -1) {\n
+    \       switch (ch) {\n        case 'f':\n            f_tailf = true;\n            break;\n
+    \       case 'n':\n            line_max = atoi(optarg);\n            break;\n
+    \       case '?':\n        default:\n            usage();\n        }\n    }\n
+    \   argc -= optind; argv += optind;\n    if (argc &lt; 1)\n        usage();\n\n
+    \   while (*argv != NULL) {\n        process_file(*argv, line_max,\n                     (argv[1]
+    == NULL &amp;&amp; f_tailf), (argc &gt; 1));\n        argv++;\n    }\n\n    exit(EXIT_SUCCESS);\n}\n"
+  :tags:
+  - POSIX
+  :references:
+    :url: 
+    :title: 
+- :id: '8183'
+  :parent_id: '195'
+  :url: http://ja.doukaku.org/comment/8183
+  :user_name: ihag
+  :user_url: /web/20090319013829/http://ja.doukaku.org/user/560/
+  :language: diff
+  :time: 2008/12/15 09:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ちょうど気を抜いたところでバグってました．うーん．</p>\n\n\t"
+  :code: |
+    --- tail.c.orig 2008-12-15 21:28:50.000000000 +0900
+    +++ tail.c      2008-12-16 00:39:44.000000000 +0900
+    @@ -37,7 +37,7 @@
+             if ((len_r = read(fd, buf, sizeof(buf))) == -1)
+                 handle_error("read");
+             for (buf_p = buf; (buf_p - buf) &lt; len_r; buf_p += len_w)
+    -            if ((len_w = write(1, buf, len_r)) == -1)
+    +            if ((len_w = write(1, buf_p, len_r - (buf_p - buf))) == -1)
+                     handle_error("write");
+         }
+     }
+  :tags: []
+  :references:
+    :url: 
+    :title: 

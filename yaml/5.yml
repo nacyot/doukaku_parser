@@ -1,0 +1,992 @@
+---
+:id: '5'
+:title: 指定されたフォルダ以下のゴミ掃除
+:comments:
+- :id: '3361'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/3361
+  :user_name: にしお
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/03 13:03 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  指定したフォルダ以下にある、ファイル名が\"~\"で終わるファイルを削除するプログラムを作ってください。\r\n指定したフォルダの中にあるフォルダのさらに中にあるファイルも削除の対象です。\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/8
+  :user_name: Yusuke.M
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/13/
+  :language: Python
+  :time: 2007/06/30 07:37 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">エラーハンドリングは省略してます。</pre>\n\t"
+  :code: |
+    import os
+
+    def remove_backup(root_path):
+        for w in os.walk(root_path):
+            for f in w[2]:
+                if f.endswith('~'):
+                    os.remove('%s/%s' % (w[0], f))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/9
+  :user_name: kiy0taka
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/16/
+  :language: Java
+  :time: 2007/06/30 10:13 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |2
+     import java.io.File;
+    import java.io.FileFilter;
+
+    public class FileCleaner {
+
+        private File rootDir;
+
+        public FileCleaner(String rootDir) {
+            this(new File(rootDir));
+        }
+
+        public FileCleaner(File rootDir) {
+            this.rootDir = rootDir;
+        }
+
+        public void deleteFilesBySuffix(String suffix) {
+            FileFilter filter = new FileFilter() {
+                public boolean accept(File pathname) {
+                    return pathname.isFile() &amp;&amp; pathname.getName().endsWith("~");
+                }
+            };
+            deleteTargetFiles(rootDir, filter);
+        }
+
+        private void deleteTargetFiles(File dir, FileFilter filter) {
+            File[] fileList = dir.listFiles();
+            for (int i=0; i&lt;fileList.length; i++) {
+                File file = fileList[i];
+                if (file.isDirectory()) {
+                    deleteTargetFiles(file, filter);
+                } else {
+                    if (filter.accept(file)) {
+                        file.delete();
+                        System.out.println(file + " を削除しました。");
+                    }
+                }
+            }
+        }
+
+        public static void main(String[] args) {
+            if (args.length == 0) {
+                System.err.println("ディレクトリを指定してください。");
+                return;
+            }
+            new FileCleaner(args[0]).deleteFilesBySuffix("~");
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '11'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/11
+  :user_name: hamano
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/25/
+  :language: C
+  :time: 2007/06/30 14:02 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">なんとなくCで</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n#include
+    &lt;sys/types.h&gt;\n#include &lt;sys/stat.h&gt; \n#include &lt;dirent.h&gt;\n#include
+    &lt;unistd.h&gt;\n\nvoid remove_backup(const char *dn){\n    DIR *dp;\n    struct
+    dirent *de;\n    char path[PATH_MAX];\n    struct stat st;\n    if(!(dp = opendir(dn)))
+    return;\n    while((de = readdir(dp))){\n        if(!strcmp(de-&gt;d_name, \".\")
+    || !strcmp(de-&gt;d_name, \"..\")) continue;\n        snprintf(path, PATH_MAX,
+    \"%s/%s\", dn, de-&gt;d_name);\n        stat(path, &amp;st);\n        if(S_ISREG(st.st_mode)
+    &amp;&amp; de-&gt;d_name[strlen(de-&gt;d_name) - 1] == '~')\n            unlink(path);\n
+    \       else if(S_ISDIR(st.st_mode))\n            remove_backup(path);\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '15'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/15
+  :user_name: minke
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/28/
+  :language: Ruby
+  :time: 2007/06/30 15:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Ruby.\n\t"
+  :code: |
+    class Dir
+      def delete_rec(pat)
+        self.each do |e|
+          next if e == '.' or e == '..'
+          p = self.path + '/' + e
+          File.delete(p) if pat =~ e and File.writable?(p)
+          Dir.open(p).delete_rec(pat).close if File.directory?(p)
+        end
+        self
+      end
+    end
+
+    Dir.open(ARGV[0]).delete_rec(/~$/).close
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '19'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/19
+  :user_name: akkunchoi
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/38/
+  :language: PHP
+  :time: 2007/06/30 17:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  普段はFile_Find使うけど\n\t"
+  :code: |
+    &lt;?php
+    remove_file('.', '~$');
+    function remove_file($dir, $regex){
+        $d = dir($dir);
+        while (($file = $d-&gt;read()) !== false) {
+            if ($file == '.' || $file == '..') continue;
+            $path = $d-&gt;path . "/$file";
+            if (is_dir($path)){
+                remove_file($path, $regex);
+            }else if (preg_match("/$regex/", $path)){
+                echo "delete $path\n";
+                unlink($path);
+            }
+        }
+        $d-&gt;close();
+    }
+    ?&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '26'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/26
+  :user_name: shivashanti
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/34/
+  :language: Perl
+  :time: 2007/06/30 20:03 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  普通は find . -type f -regex \".*~$\" | xarg rm\n\t"
+  :code: |
+    perl -MFile::Find -e "find(sub {/.*~$/ &amp;&amp; unlink \$File::Find::name;}, '.');"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '27'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/27
+  :user_name: shiro
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/06/30 20:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Scheme (Gauche) で。\n\t"
+  :code: |
+    (use file.util)
+    (define (remove-backup dir)
+      (directory-fold "." (lambda (path seed) (and (#/~$/ path) (sys-unlink path))) #f))
+    (define (main args) (for-each remove-backup (cdr args)) 0)
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '28'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/28
+  :user_name: shiro
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/06/30 20:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">うわ、違うバージョンを貼り付けてしまった。\r\n\r\n3行目、s/print/sys-unlink/
+    です。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '34'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/34
+  :user_name: jmuk
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/19/
+  :language: Ruby
+  :time: 2007/07/01 00:16 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  find 版。\n\t"
+  :code: |
+    require 'find'
+
+    Find.find(".") do |fn|
+      if File.file?(fn) &amp;&amp; ?~ == fn[-1]
+        File.unlink(fn)
+      end
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '40'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/40
+  :user_name: yugui
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/55/
+  :language: Ruby
+  :time: 2007/07/01 08:30 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  Dir.globでしょ。\n\t"
+  :code: |
+    Dir.glob('**/*~') do |path|
+      File.unlink(path)
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '42'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/42
+  :user_name: tench@n
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/57/
+  :language: Batchfile
+  :time: 2007/07/01 13:09 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">古のバッチファイルが今こそ火を噴く！\r\n\r\n\r\n調子に乗りましたすいません。\r\n</pre>\n\t"
+  :code: |
+    for /D /R %%d in (*~) do (echo "%%d")
+  :tags:
+  - バッチ
+  :references:
+    :url: 
+    :title: 
+- :id: '43'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/43
+  :user_name: nori
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/59/
+  :language: Python
+  :time: 2007/07/01 13:26 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: |
+    import os.path
+    import os
+    from optparse import OptionParser
+
+
+    parser = OptionParser(usage="%prog &lt;folder to start&gt;", description='remove files end with "~" recursively.')
+    (opsions, args) = parser.parse_args()
+    if len(args) != 1:
+      parser.error("need argument &lt;folder to start&gt;")
+
+    path = os.path.abspath(args[0])
+    def remove_them(parser, dirname, names):
+      for name in names:
+        t = os.path.join(dirname, name)
+        if name.endswith('~'):
+          try:
+            os.remove(t)
+          except e:
+            print e, " skip to remove: ", t
+
+    os.path.walk(path, remove_them, parser)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '44'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/44
+  :user_name: mattn
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/52/
+  :language: Vim
+  :time: 2007/07/01 13:46 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  vimスクリプト\r\n\n\t"
+  :code: |
+    fun! DeleteBackupFiles(dir)
+      for v in split(globpath(a:dir, "*~"), "\n")
+        call delete(v)
+      endfor
+    endfun
+    call DeleteBackupFiles("/tmp")
+  :tags:
+  - vim
+  :references:
+    :url: 
+    :title: 
+- :id: '45'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/45
+  :user_name: nori
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/59/
+  :language: 
+  :time: 2007/07/01 15:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  う。~か~~と読み間違えた・・・orz\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '47'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/47
+  :user_name: kaorun
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/61/
+  :language: C
+  :time: 2007/07/02 02:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  C#\r\nサブディレクトリ消さなくて良いならSearchOption.AllDirectoriesでらくちん。\n\t"
+  :code: "using System;\nusing System.IO;\n\nnamespace Doukaku.CS\n{\n\tpublic class
+    DelNyoro\n\t{\n\t\tstatic void Main(string[] args)\n\t\t{\n\t\t\tforeach(string
+    dir in args)\n\t\t\t{\n\t\t\t\tif (Directory.Exists(dir))\n\t\t\t\t{\n\t\t\t\t\tforeach
+    (string nyoroFile in Directory.GetFiles(dir, \"*~\", SearchOption.AllDirectories))\n\t\t\t\t\t\tFile.Delete(nyoroFile);\n\t\t\t\t}\n\t\t\t\telse\n\t\t\t\t\tConsole.WriteLine(string.Format(\"Directory
+    %s is not exists.\", dir));\n\t\t\t}\n\t\t}\n\t}\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '49'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/49
+  :user_name: kaorun
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/61/
+  :language: Batchfile
+  :time: 2007/07/02 02:43 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  つか、del /s *~というのは反則ですか? そうですか...。\n\t"
+  :code: |
+    del /s *~
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '57'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/57
+  :user_name: PHO
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/69/
+  :language: Haskell
+  :time: 2007/07/02 07:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    import Control.Monad
+    import System
+    import System.Directory
+
+    main :: IO ()
+    main = do [root] &lt;- getArgs
+              removeBackup root
+
+    removeBackup :: FilePath -&gt; IO ()
+    removeBackup dir
+        = getDirectoryContents dir &gt;&gt;= mapM_ (removeIfBackupFile dir)
+        where
+          removeIfBackupFile :: FilePath -&gt; FilePath -&gt; IO ()
+          removeIfBackupFile _ "."  = return ()
+          removeIfBackupFile _ ".." = return ()
+          removeIfBackupFile dir file
+              = do let path = dir ++ "/" ++ file
+
+                   isDir &lt;- doesDirectoryExist path
+
+                   if last path == '~' then
+                       if isDir then
+                           removeDirectoryRecursive path
+                       else
+                           removeFile path
+                     else
+                       when isDir $ removeBackup path
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '58'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/58
+  :user_name: 匿名
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/07/02 08:52 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">それはどうかな。\r\n[5:51PM shyouhei]% mkdir tmp~\r\n[5:51PM
+    shyouhei]% ruby -e\"\r\ndquote&gt; Dir.glob('**/*~') do |path|\r\ndquote&gt;   File.unlink(path)\r\ndquote&gt;
+    end\"\r\n-e:3:in `unlink': Is a directory - tmp~ (Errno::EISDIR)\r\n        from
+    -e:3\r\n        from -e:2:in `glob'\r\n        from -e:2\r\nzsh: exit 1     ruby
+    -e\" Dir.glob('**/*~') do |path|   File.unlink(path) end \"\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '67'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/67
+  :user_name: 匿名
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/07/03 00:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">まぁ、わざわざオブジェクト思想にこだわる必要もないか。</pre>\n\t"
+  :code: "import java.io.File;\n\npublic class DelteFile {\n\t\n\tpublic static void
+    main(String[] args) throws Exception {\n\t\tfor (int i = 0; i &lt; args.length;
+    i++) delete(new File(args[i]));\n\t}\n\t\n\tprivate static void delete(File f)
+    throws Exception {\n\t\tif (f.isDirectory()) {\n\t\t\tfor (int i = 0; i &lt; f.listFiles().length;
+    i++) {\n\t\t\t\tdelete(f.listFiles()[i]);\n\t\t\t}\n\t\t} else {\n\t\t\tif (f.getName().endsWith(\"~\"))
+    {\n\t\t\t\tif (!f.delete()) {\n\t\t\t\t\tthrow new Exception(\"何らかの原因で削除できず\");\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '69'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/69
+  :user_name: 匿名
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2007/07/03 01:17 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    main(){system("find . -type f -name '*~' | xargs rm");}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '118'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/118
+  :user_name: mjy
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/94/
+  :language: Bash
+  :time: 2007/07/04 07:47 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: |
+    #! /bin/bash
+
+    shopt -s dotglob #for dotfile
+
+    function rm_g(){
+        local file proc_dir=$1
+        for file in ${proc_dir}/*; do
+            [ ${file:(-1):1} == '~' ] &amp;&amp; rm $file
+            [ -d $file ] &amp;&amp; rm_g $file
+        done
+    }
+
+    rm_g ~/tmp
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '135'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/135
+  :user_name: 沢渡 みかげ
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/101/
+  :language: Erlang
+  :time: 2007/07/04 15:31 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">erl -noshell -eval 'delbackup:delbackup(\".\"),
+    halt().'\r\nのように実行します．</pre>\n\t"
+  :code: |
+    -module(delbackup).
+    -export([delbackup/1]).
+
+    delbackup(RootPath) -&gt;
+            check_dir(RootPath).
+
+    check_dir(Path) -&gt;
+            case file:list_dir(Path) of
+                    {ok, FileList} -&gt;
+                            check_file(Path, FileList);
+                    {error, Reason} -&gt;
+                            io:format("Error. ~s (~p)~n", [Path, Reason])
+            end.
+
+    check_file(Path, [File|RestFile]) -&gt;
+            FilePath = Path ++ "/" ++ File,
+            io:format("~s~n", [FilePath]),
+            IsDir = filelib:is_dir(FilePath),
+            IsFile = filelib:is_file(FilePath),
+            case {IsDir, IsFile} of
+                    {true, _} -&gt;
+                            check_dir(FilePath);
+                    {_, true} -&gt;
+                            check_backup(FilePath);
+                    _Other -&gt;
+                            ok
+            end,
+            check_file(Path, RestFile);
+    check_file(_Path, []) -&gt;
+            ok.
+
+    check_backup(FilePath) -&gt;
+            case regexp:match(FilePath, "~$") of
+                    {match, _, _} -&gt;
+                            file:delete(FilePath),
+                            io:format("delete ~s~n", [FilePath]);
+                    _Else -&gt;
+                            ok
+            end.
+  :tags:
+  - Erlang
+  :references:
+    :url: 
+    :title: 
+- :id: '144'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/144
+  :user_name: tench@n
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/57/
+  :language: Batchfile
+  :time: 2007/07/04 17:08 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  しかも間違ってるorz\n\t"
+  :code: |
+    for /D /R %%d in (*~) do (rd "%%d" /s /q)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '156'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/156
+  :user_name: 匿名
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/07/05 02:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">find -name '*~' -exec rm -f \\{\\} \\;</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '173'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/173
+  :user_name: id:nekoruri
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/111/
+  :language: Bash
+  :time: 2007/07/05 06:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  なにもかんがえずにコマンド1行\r\ncoreutils/findutiles使うのはBash扱いでよい？\n\t"
+  :code: |
+    find . -name '*~' -exec /bin/rm {} \;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '175'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/175
+  :user_name: id:nekoruri
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/111/
+  :language: 
+  :time: 2007/07/05 06:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  上の人のを見ていて、 -type f もつけておいた方が良いことに気づいた:)\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '276'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/276
+  :user_name: tsekine
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/124/
+  :language: Bash
+  :time: 2007/07/06 16:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Bash というか find コマンド。\n\t"
+  :code: |
+    find $dir -type f -name \*~ -print0 | xargs -0 rm -f
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '326'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/326
+  :user_name: ultraist
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/17/
+  :language: Perl
+  :time: 2007/07/07 23:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  コマンドっぽく\n\t"
+  :code: "# dma.pl\n$ARGV[0] or die \"Usage: $0 DIRECTORY...\\n\";\n\nforeach my $dir
+    (@ARGV) {\n    dfswalk($dir, sub {\n            my $path = shift;\n            if
+    ($path =~ /~$/ and -f $path) {\n                unlink($path) or warn(\"$path:
+    $!\\n\");\n            }\n    });\n};\n\nsub dfswalk\n{\n    my ($dir, $fn) =
+    @_;\n    \n    unless (opendir(D, $dir)) {\n        warn \"$dir: $!\\n\";\n        return;\n
+    \   }\n    foreach my $name (readdir(D)) {\n        next if ($name eq '.' or $name
+    eq '..');\n        my $path = sprintf(\"%s/%s\", $dir, $name);\n        \n        &amp;$fn($path);\n
+    \       if (-d $path) {\n            dfswalk($path, $fn);\n        }\n    }\n
+    \   closedir(D);\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '332'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/332
+  :user_name: 匿名
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/4/
+  :language: Bash
+  :time: 2007/07/08 01:12 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  とりあえずこんなところでしょうか。\r\n「指定されたフォルダ」はカレントディレクトリに置き換えてしまいました。引数で指定すべきであれば
+    . を $1 に変更してください。ちまりに試験はしてません :-)\n\t"
+  :code: |
+    #!/bin/sh
+    find . -name '*~' -print | xargs rm
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '350'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/350
+  :user_name: hi_saito
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/149/
+  :language: awk
+  :time: 2007/07/08 13:43 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  awk で。\r\n普通に実行した方が楽です。\n\t"
+  :code: |
+    BEGIN{system("find . -type f -name '*~' | xargs rm")}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '417'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/417
+  :user_name: cats
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/07/10 02:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  既に回答済みですが、メモがわりに\n\t"
+  :code: |
+    using System;
+    using System.IO;
+    class Program
+    {
+      static void Main()
+      {
+        string dir = @"C:\test";
+        foreach (string s in Directory.GetFiles(dir, "*~", SearchOption.AllDirectories))
+          File.Delete(s);
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '480'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/480
+  :user_name: iwk
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/49/
+  :language: OCaml
+  :time: 2007/07/10 12:16 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: |
+    open System;;
+    open System.IO;;
+    open Array;;
+    open Printf;;
+
+    let del path =
+        let dirFiles = Directory.GetFiles(path, "*~", SearchOption.AllDirectories) in
+        iter File.Delete dirFiles;;
+
+    if length Sys.argv = 2
+    then
+        del Sys.argv.(1)
+    else
+        ();;
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '612'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/612
+  :user_name: にしお
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/12 06:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  これ今*.pycを消すのに使ってみて便利さに感動しました！\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '621'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/621
+  :user_name: sumim
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/07/12 08:58 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Squeak Smalltalk で手続き的に。</pre>\n\t"
+  :code: |
+    | startDir queue |
+    startDir := FileDirectory default.
+    queue := OrderedCollection with: startDir.
+    [queue notEmpty] whileTrue: [
+       | dir subDirs fileNames |
+       dir := queue removeFirst.
+       subDirs := dir directoryNames collect: [:dirName | dir directoryNamed: dirName].
+       queue addAll: subDirs.
+       fileNames := dir fileNames select: [:fileName | fileName endsWith: '~'].
+       fileNames do: [:fileName | dir deleteFileNamed: fileName]]
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '660'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/660
+  :user_name: ether
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/96/
+  :language: Other
+  :time: 2007/07/12 13:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Windows PowerShell です。rm (Remove-Item コマンドレット) にも -recurse があるのですがヘルプには「このコマンドレットでは、Recurse
+    パラメータは正常に機能しません。」との注意が･･･\n\t"
+  :code: |
+    ls $args[0] -include *~ -recurse | rm
+  :tags:
+  - PowerShell
+  :references:
+    :url: 
+    :title: 
+- :id: '675'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/675
+  :user_name: ocean
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/177/
+  :language: C
+  :time: 2007/07/12 16:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Windows専用。\n\t"
+  :code: |
+    #include &lt;windows.h&gt;
+    #include &lt;string&gt;
+
+    void traverse(const std::string&amp; parent, void (*func)(const std::string&amp; path))
+    {
+        WIN32_FIND_DATA wfd;
+
+        HANDLE h = ::FindFirstFile((parent + "\\*").c_str(), &amp;wfd);
+
+        if (h == INVALID_HANDLE_VALUE)
+        {
+            return;
+        }
+
+        do
+        {
+            const std::string name = wfd.cFileName;
+
+            if (name == "." || name == "..")
+            {
+                continue;
+            }
+
+            const std::string child = parent + "\\" + name;
+
+            if (wfd.dwFileAttributes &amp; FILE_ATTRIBUTE_DIRECTORY)
+            {
+                traverse(child, func);
+            }
+            else // file
+            {
+                func(child);
+            }
+        }
+        while (::FindNextFile(h, &amp;wfd));
+
+        ::FindClose(h);
+    }
+
+    void delete_garbage(const std::string&amp; path)
+    {
+        if (!path.empty() &amp;&amp; path[path.size() - 1] == '~')
+        {
+            ::DeleteFile(path.c_str());
+        }
+    }
+
+    int main()
+    {
+        traverse("foo", &amp;delete_garbage);
+    }
+  :tags:
+  - Windows
+  :references:
+    :url: 
+    :title: 
+- :id: '677'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/677
+  :user_name: ocean
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/177/
+  :language: diff
+  :time: 2007/07/12 16:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  フォルダ名が指定できるようになってなかったので修正。\n\t"
+  :code: "--- orig.cpp\tFri Jul 13 01:13:55 2007\n+++ main.cpp\tFri Jul 13 01:15:08
+    2007\n@@ -45,7 +45,10 @@\n     }\n }\n \n-int main()\n+int main(int argc, char*
+    argv[])\n {\n-    traverse(\"foo\", &amp;delete_garbage);\n+    if (argc == 2)\n+
+    \   {\n+        traverse(argv[1], &amp;delete_garbage);\n+    }\n }\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '686'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/686
+  :user_name: tell
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/228/
+  :language: Ruby
+  :time: 2007/07/12 17:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  とりあえず作った．\r\n散らかし器付き．\n\t"
+  :code: "require \"pathname\"\n\nclass Pathname\n  def scatter( upper, upper_h =
+    0 )\n    raise \"`#{ self }' is not directory, ;-&lt;\" unless self.directory?\n
+    \   (10**upper).times {|i|\n      r = rand( 2 + ( upper_h &gt; 0 ? 1 : 0 ) )\n
+    \     case r\n      when 0, 1\n        nfile = self + ( \"%0#{ upper }d#{ r ==
+    0 ? \"\" : \"~\" }\" % i)\n        nfile.open( \"w\" ) {|fd|\n          fd.write(
+    File.open( \"/dev/random\" ) {|rdev| rdev.read( 8 ) } )\n        } unless nfile.exist?
+    and nfile.directory?\n      when 2\n        ndir = self + (\"%0#{ upper }d\" %
+    i)\n        ndir.mkdir unless ndir.exist?\n        ndir.scatter( upper, upper_h
+    - 1 ) if ndir.directory?\n      end\n    }\n    self\n  end\n  \n  def cleaner\n
+    \   raise \"`#{ self }' is #{ self.ftype }, :-)\" unless self.directory?\n    self.children.each
+    {|epath|\n      if epath.file?\n        epath.delete if /~\\Z/ =~ epath\n      elsif
+    epath.directory?\n        epath.cleaner\n      end\n    }\n  end\nend\nPathname.new(
+    \"temp\" ).scatter( 2, 2 ).cleaner\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '738'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/738
+  :user_name: onjo
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/235/
+  :language: Common
+  :time: 2007/07/13 10:53 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  CL-FAD ライブラリの walk-directory 関数を使ってます。\n\t"
+  :code: |
+    (defun remove-backup ()
+      (let ((str (or (pathname-type path) (pathname-name path))))
+        (when (char= #\~ (char str (1- (length str))))
+          (delete-file path))))
+
+    (fad:walk-directory ディレクトリ名 #'remove-backup)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '822'
+  :parent_id: '5'
+  :url: http://ja.doukaku.org/comment/822
+  :user_name: rubikitch
+  :user_url: /web/20081120084928/http://ja.doukaku.org/user/105/
+  :language: Emacs
+  :time: 2007/07/14 06:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    (require 'cl)
+    (defun directory-files-recursively (dir &amp;optional match-regexp nosort)
+      (loop for f in (directory-files dir t "." nosort)
+            when (and (not (string-match "/\\.+$" f)) (file-directory-p f))
+            appending (directory-files-recursively
+                       f match-regexp nosort)
+            when (string-match match-regexp f) collect f))
+
+    (defun delete-backup-files-recursively (dir)
+      (mapcar #'delete-file (directory-files-recursively dir "~$" t)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 

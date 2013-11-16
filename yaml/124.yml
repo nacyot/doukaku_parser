@@ -1,0 +1,1570 @@
+---
+:id: '124'
+:title: 除算・余剰を使わずに閏年
+:comments:
+- :id: '5245'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5245
+  :user_name: greentea
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/573/
+  :language: 
+  :time: 2008/01/09 02:46 GMT
+  :vote_count: '13'
+  :vote_score: '-1'
+  :body: "\r\n\t  ある西暦が閏年か否かを判定するプログラムを書いてください。\r\n\r\nただし、除算・余剰を求める演算子、組み込み関数、ライブラリ関数等を使用してはいけません。\r\n\r\nまた、閏年は以下のように定義されています。\r\n
+    \  1. 西暦年が4で割り切れる年は閏年\r\n   2. ただし、西暦年が100で割り切れる年は平年\r\n   3. ただし、西暦年が400で割り切れる年は閏年\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20090329074204/http://ja.wikipedia.org/wiki/%E9%96%8F%E5%B9%B4
+    :title: Wikipedia 閏年
+- :id: '5332'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5332
+  :user_name: nobsun
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/01/15 22:14 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">無限リストつかいます。\r\n\r\n実行例：\r\n*Main&gt; :main
+    1900\r\nFalse\r\n*Main&gt; :main 2000\r\nTrue\r\n*Main&gt; :main 2008\r\nTrue\r\n*Main&gt;
+    :main 2100\r\nFalse\r\n\r\n</pre>\n\t"
+  :code: |
+    module Main (main) where
+
+    import System.Environment
+
+    main :: IO ()
+    main = print . (ys !!) . read . head =&lt;&lt; getArgs
+
+    y4s = [True,False,False,False]
+    y100s = False : tail (take 100 $ cycle y4s)
+    y400s = True : tail (take 400 $ cycle y100s)
+
+    ys = cycle y400s
+  :tags:
+  - ghc-6.2.8
+  :references:
+    :url: 
+    :title: 
+- :id: '5333'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5333
+  :user_name: mc
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/01/15 22:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>割り切れる数字の部分だけ真で他は偽の値を持つ循環リストを作成し、\n周期4、100、400を重ね合せて判定してみました。</p>\n\n\t"
+  :code: |
+    (defun leap-year-p (y)
+      (do ((i y (1- i))
+           (c4 (%clist 4) (cdr c4))
+           (c100 (%clist 100) (cdr c100))
+           (c400 (%clist 400) (cdr c400)))
+          ((zerop i) (or (and (car c100) (car c400))
+                         (and (not (car c100)) (car c4))))))
+
+    (defun %clist (freq)
+      (let ((l (make-list freq)))
+        (setf (car l) t)
+        (rplacd (last l) l)
+        l))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5334'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5334
+  :user_name: xsd
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/154/
+  :language: Perl
+  :time: 2008/01/15 22:53 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">正規表現で。\r\nsub judge()はうるう年のとき1、通常年のときは0を返します。\r\n\r\n実行結果：\r\n$
+    ./dk124.pl\r\n1900 0\r\n2000 1\r\n2008 1\r\n2100 0</pre>\n\t"
+  :code: |
+    #!/usr/bin/perl
+
+    sub judge($)
+    {
+        $_ = shift;
+        return 0 != (/(([13579][26])|([02468][048]))00$/ || (!/00$/ &amp;&amp; /(([13579][26])|([02468][048]))$/));
+    }
+
+    for (1900, 2000, 2008, 2100) {
+        printf("%d %d\n", $_, judge($_));
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5335'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5335
+  :user_name: mc
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/405/
+  :language: diff
+  :time: 2008/01/15 22:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>すいません、紀元前に対応してませんでしたので、修正します…。</p>\n\n\t"
+  :code: |
+    --- 5333.txt    2008-01-16 07:51:10.085978672 +0900
+    +++ 5333.txt.fix        2008-01-16 07:51:54.569311280 +0900
+    @@ -2 +2 @@
+    -  (do ((i y (1- i))
+    +  (do ((i (abs y) (1- i))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5336'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5336
+  :user_name: sumim
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/01/16 00:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    | 閏年か？ |
+
+    閏年か？ := [:int |
+        ((0 to: Float infinity by: 4) includes: int)
+            and: [((0 to: Float infinity by: 100) includes: int) not
+                or: [(0 to: Float infinity by: 400) includes: int]]].
+
+    閏年か？ value: 1900.   "=&gt; false "
+    閏年か？ value: 2000.   "=&gt; true "
+    閏年か？ value: 2008.   "=&gt; true "
+    閏年か？ value: 2100.   "=&gt; false "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '5337'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5337
+  :user_name: にしお
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2008/01/16 02:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>とても素朴な書き方。剰余の計算を禁止しても引き算の繰り返しでできてしまいますね。一応、大きい順に引くことで繰り返しの回数を減らしてあります。</p>\n\n\t"
+  :code: |
+    &gt;&gt;&gt; def leap(x, d=400):
+        if x &lt; 0:
+            return leap(-x, d)
+
+        if x == 0:
+            if d == 400:
+                return True
+            if d == 100:
+                return False
+            if d == 4:
+                return True
+
+        if x &lt; d:
+            if d == 400:
+                return leap(x, 100)
+            if d == 100:
+                return leap(x, 4)
+            if d == 4:
+                return False
+
+        return leap(x - d, d)
+
+    &gt;&gt;&gt; leap(1900)
+    False
+    &gt;&gt;&gt; leap(2000)
+    True
+    &gt;&gt;&gt; leap(2008)
+    True
+    &gt;&gt;&gt; leap(2100)
+    False
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5338'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5338
+  :user_name: horiuchi
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/01/16 02:12 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>一応、条件は満たしているかと思います。\nこんな感じでどうでしょうか？</p>\n\n\t"
+  :code: |
+    public class Sample124 {
+        public static boolean isLeepYear(int year) {
+            if (!isDividedBy4(year)) return false;
+            String sYear = String.valueOf(year);
+            if (sYear.endsWith("00")) {
+                return isDividedBy4(Integer.parseInt(sYear.substring(0, sYear.length() - 2)));
+            }
+            return true;
+        }
+        private static boolean isDividedBy4(int num) {
+            return (num &amp; 3) == 0;
+        }
+
+        public static void main(String[] args) {
+            System.out.println("1900:" + isLeepYear(1900));
+            System.out.println("2000:" + isLeepYear(2000));
+            System.out.println("2008:" + isLeepYear(2008));
+            System.out.println("2100:" + isLeepYear(2100));
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '5339'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5339
+  :user_name: sumim
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/01/16 02:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>考えたら、べつに無限にせずともこれで十分ですね(^_^;)。</p>\n\n\t"
+  :code: |
+    | 閏年か？ |
+
+    閏年か？ := [:int |
+        ((0 to: int by: 4) includes: int)
+            and: [((0 to: int by: 100) includes: int) not
+                or: [(0 to: int by: 400) includes: int]]].
+
+    閏年か？ value: 1900.   "=&gt; false "
+    閏年か？ value: 2000.   "=&gt; true "
+    閏年か？ value: 2008.   "=&gt; true "
+    閏年か？ value: 2100.   "=&gt; false "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '5340'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5340
+  :user_name: こう。
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2008/01/16 02:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>こういうことかな？</p>\n\n\t"
+  :code: |
+    /*うるう年なら1、平年なら0を返す*/
+    int IsUruuDoshi(int year){
+        int uruu=0;
+        int uruu_check[]={800,400,100,40,4,0};    //800,40はループ数短縮用
+        int count=0;
+        while(uruu_check[count]){
+            if(uruu==year){
+                if(uruu_check[count]==100) return 0;
+                else return 1;
+            }
+            if(uruu+uruu_check[count]&gt;year){
+                count++;
+            }else{
+                uruu+=uruu_check[count];
+            }
+        }
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5341'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5341
+  :user_name: yohei
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/415/
+  :language: Prolog
+  :time: 2008/01/16 02:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    leap(N) :- N &lt; 0, N1 is N + 400, !, leap(N1).
+    leap(N) :- N &gt;= 400, N1 is N - 400, !, leap(N1).
+    leap(N) :- N /\ 0b11 =:= 0b00, N \= 100, N \= 200, N \= 300.
+  :tags:
+  - SWI-Prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '5342'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5342
+  :user_name: にしお
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2008/01/16 02:23 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>ついにゅっとなってやってしまった。</p>\n\n\t"
+  :code: |
+    def leap(x, d=400):
+        return (
+            not d and [d]
+            or
+            x == 0 and [[1, 0, 1][d &gt;&gt; 6 &amp; 3]]
+            or
+            x &lt; d and [leap(x, [0, 4, 100][d &gt;&gt; 6 &amp; 3])]
+            or
+            [leap(x - d, d)]
+        )[0]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5343'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5343
+  :user_name: こう。
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/134/
+  :language: 
+  :time: 2008/01/16 02:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>にしおさんのを見て引き算のがらくだと思ったので修正。</p>\r\n(失敗投稿を削除しておきましたby管理者)\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5344'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5344
+  :user_name: こう。
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/134/
+  :language: 
+  :time: 2008/01/16 02:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  投稿失敗しました････\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5345'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5345
+  :user_name: katsu
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/117/
+  :language: Prolog
+  :time: 2008/01/16 02:39 GMT
+  :vote_count: '6'
+  :vote_score: '6'
+  :body: "\n\t  <pre class=\"compact\">まあ、かけ算でも出来るわけでして。\r\n＃なんか揚げ足取りばっかしているように思われ\r\n＃ちゃうだろうなぁ。マイナス評価でもしょうがないか。\r\n\r\n\r\n$
+    pl -qs 124.pl\r\n?- uru(1900).\r\n\r\nNo\r\n?- uru(2000).\r\n\r\nYes\r\n?- uru(2008).\r\n\r\nYes\r\n?-
+    uru(2100).\r\n\r\nNo\r\n?-\r\n</pre>\n\t"
+  :code: |
+    uru(X):- divideby400(X).
+    uru(X):- divideby4(X), not(divideby100(X)).
+
+    divideby(X, Y, Z) :- 0 =:= X - integer(X * Y) * Z.
+    divideby4(X) :- divideby(X, 0.25, 4).
+    divideby100(X) :- divideby(X, 0.01, 100).
+    divideby400(X) :- divideby(X, 0.0025, 400).
+  :tags:
+  - SWI-prolog
+  - ＋しすぎ
+  :references:
+    :url: 
+    :title: 
+- :id: '5346'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5346
+  :user_name: こう。
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2008/01/16 02:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">引き算に修正</pre>\n\t"
+  :code: |
+    int IsUruuDoshi(int year){
+        int uruu_check[]={800,400,100,40,4,0};    //800,40はループ数短縮用
+        int count=0;
+        while(uruu_check[count]){
+            if(year){
+                if(uruu_check[count]&gt;year){
+                    count++;
+                }else{
+                    uruu-=uruu_check[count];
+                }
+            }else{
+                if(uruu_check[count]==100) return 0;
+                else return 1;
+            }
+        }
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5347'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5347
+  :user_name: 梅紫蘇
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/596/
+  :language: C
+  :time: 2008/01/16 03:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>4の倍数チェック以外、減算で剰余を求めてるだけなんですが。何かアクロバティックな方法でもあるんでしょか？</p>\n\n\t"
+  :code: |
+    bool isLeapYear(int y) {
+    /*    return ((y % 4) == 0) &amp;&amp; (((y % 400) == 0) || ((y % 100) != 0)); */
+        if (y &lt; 0)
+            y *= -1;                /* y = abs(y); */
+        if ((y &amp; 0x03) != 0x00)     /* (y != 4×n) */
+            return false;
+        while (y &gt;= 400) { y -= 400; }
+        if (y == 0)
+            return true;
+        while (y &gt;= 100) { y -= 100; }
+        return (y != 0);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5348'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5348
+  :user_name: saws
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/01/16 04:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    N = 2000
+    checker = Hash['4', 0, '100', 0, '400', 0]
+    1.upto(N){|i|
+      checker.each_key{|k| checker[k] += 1 and k.to_i == checker[k] and checker[k] = 0}
+    }
+    evaluate = checker['400'] == 0 || checker['100'] != 0 &amp;&amp; checker['4'] == 0
+    puts "#{N} is a " +  (evaluate ? 'bissextile' : 'normal') + ' year.'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5349'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5349
+  :user_name: anekos
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/170/
+  :language: Haskell
+  :time: 2008/01/16 04:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>それぞれの条件を無限リストにした。</p>\n\n\t"
+  :code: |
+    isLeapYear x = d !! x
+        where a = cycle $ True  : replicate 3   False
+              b = cycle $ False : replicate 99  True
+              c = cycle $ True  : replicate 399 False
+              d = zipWith3 (\a b c -&gt; (a &amp;&amp; b) || c) a b c
+
+    main = do putStr "&gt;&gt; "
+              l &lt;- getLine
+              print $ isLeapYear $ read l
+              main
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5350'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5350
+  :user_name: minke
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/28/
+  :language: Ruby
+  :time: 2008/01/16 04:48 GMT
+  :vote_count: '15'
+  :vote_score: '13'
+  :body: "\n\t  <p>subが成功したかどうかで処理が分岐します</p>\n\n\t"
+  :code: |
+    def leap?(n)
+      0 == (3 &amp; n.abs.to_s.sub(/00$/,'').to_i)
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5351'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5351
+  :user_name: ところてん
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2008/01/16 05:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">str使っていいのかなぁと。\r\nstrで100で割るを実現しています。</pre>\n\t"
+  :code: "def div4(n):\n    return (n &gt;&gt; 2 , n &amp; 3)\n\ndef div100(n):\n
+    \   m = str(n)\n    return (int(m[:-2]), int(m[-2:]))\n\ndef uruudoshi(year):\n
+    \   n = div4(year)\n    if n[1] == 0:\n        m = div100(year)\n        if m[1]
+    == 0:\n            if div4(m[0])[1] == 0:\n                return 1\n            else:\n
+    \               return 0\n        return 1\n    else:\n        return 0\n    \nif
+    __name__==\"__main__\":\n    print uruudoshi(1900)\n    print uruudoshi(2000)\n
+    \   print uruudoshi(2008)\n    print uruudoshi(2100)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5352'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5352
+  :user_name: fujidig
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/507/
+  :language: Ruby
+  :time: 2008/01/16 06:14 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  正規表現。\n\t"
+  :code: |
+    def leap?( year )
+        return false unless /((^|[02468])[048]|[13579][26])$/.match( year.to_s )
+        return true unless /00$/.match( year.to_s )
+        return false unless /((^|[02468])[048]|[13579][26])00$/.match( year.to_s )
+        return true
+    end
+  :tags: []
+  :references:
+    :url: /web/20090329074204/http://www.din.or.jp/~ohzaki/regex.htm#Four
+    :title: Perl正規表現雑技
+- :id: '5355'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5355
+  :user_name: naranja
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/448/
+  :language: D
+  :time: 2008/01/16 08:22 GMT
+  :vote_count: '18'
+  :vote_score: '18'
+  :body: "\n\t  正弦関数の周期性を利用しました。\n\t"
+  :code: |
+    import std.stdio;
+    import std.math;
+
+    bool isLeapYear(int year){
+        return abs(sin(year * PI * 0.25)) &lt; 0.0001 &amp;&amp;
+               abs(sin(year * PI * 0.01)) &gt; 0.0001 ||
+               abs(sin(year * PI * 0.0025)) &lt; 0.0001;
+    }
+
+    void main(){
+        writefln(isLeapYear(1900));  // false
+        writefln(isLeapYear(1978));  // false
+        writefln(isLeapYear(1988));  // true
+        writefln(isLeapYear(2000));  // true
+        writefln(isLeapYear(2001));  // false
+        writefln(isLeapYear(2008));  // true
+    }
+  :tags:
+  - その発想はなかった
+  - ＋しすぎ
+  :references:
+    :url: 
+    :title: 
+- :id: '5356'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5356
+  :user_name: 梅紫蘇
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/596/
+  :language: Other
+  :time: 2008/01/16 08:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>10進で下4桁を分解できればループする必要すらないのか....なるほどね。</p>\n<p>sprintf使わない方法が思いつかんのでダメっぽい。</p>\n\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+
+    int isLeapYear2(int y) {
+        char sn[20];
+        int n, low, high;
+
+        if (y &lt; 0) { y *= -1; }
+
+        n = sprintf(buff, "%d", y);
+
+        low = 0;    /* 10進数 1～2桁目 */
+        if (n &gt; 0) { low += (sn[n-1] - '0'); }
+        if (n &gt; 1) { low += (sn[n-2] - '0') * 10; }
+        if ((low &amp; 0x03) != 0x00)
+            return false;
+
+        high = 0;    /* 10進数 3～4桁目 */
+        if (n &gt; 2) { high += (sn[n-3] - '0'); }
+        if (n &gt; 3) { high += (sn[n-4] - '0') * 10; }
+        return (low != 0) || ((high &amp; 0x03) == 0x00);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5357'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5357
+  :user_name: squld
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/643/
+  :language: Java
+  :time: 2008/01/16 08:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">素直にやってみました。\r\n\r\n実行結果\r\n-------\r\nA.D.
+    1900: false\r\nA.D. 2000: true\r\nA.D. 2008: true\r\nA.D. 2009: false\r\nA.D.
+    2100: false\r\n-------\r\n</pre>\n\t"
+  :code: |
+    public class LeapYear {
+        public static void main(String[] args) {
+            System.out.println("A.D. 1900: " + isLeapYear(1900));
+            System.out.println("A.D. 2000: " + isLeapYear(2000));
+            System.out.println("A.D. 2008: " + isLeapYear(2008));
+            System.out.println("A.D. 2009: " + isLeapYear(2009));
+            System.out.println("A.D. 2100: " + isLeapYear(2100));
+        }
+
+        public static boolean isLeapYear(int aYear) {
+            return isDivisible(aYear, 4) ? (isDivisible(aYear, 100) ? (isDivisible(aYear, 400) ? true : false) : true) : false;
+        }
+
+        public static boolean isDivisible(int aLeft, int aRight) {
+            while (aLeft &gt;= aRight) {
+                aLeft -= aRight;
+            }
+            return aLeft == 0;
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5358'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5358
+  :user_name: 99yen
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2008/01/16 09:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>余剰を自前で作ってみました。\n</p>\n<p><a href=\"/web/20090329074204/http://pc11.2ch.net/test/read.cgi/tech/1158367586/n355-\">参考</a>\n</p>\n\n\n\n\t"
+  :code: "year=2000\nもし,yearが閏年ならば\n    \"{year}年は閏年です\"を表示\n違えば\n    \"{year}年は閏年ではありません\"を表示\n\n●閏年(yが)\n
+    \   もし((MOD(y,4)=0) &amp;&amp; (MOD(y,100)&lt;&gt;0||MOD(y,400)=0))ならば\n        1で戻る\n
+    \   違えば\n        0で戻る\n\n●MOD(a,b)\n　　Nとは整数。Xとは整数。Yとは整数\n　　もし(a=b)ならば,0で戻る\n　　もし(a&lt;b)ならば,aで戻る\n　　(2^N&lt;b)の間\n　　　　N=N+1\n　　X=2^N-b\n　　Y=2^N-1\n　　(a&gt;=2*b)の間\n　　　　a=X*(a&gt;&gt;N)+AND(a,Y)
+    \n　　もし(a&gt;=b)ならば,a=a-b\n　　aで戻る\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5359'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5359
+  :user_name: katsu
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/117/
+  :language: 
+  :time: 2008/01/16 09:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>なんか、この解答にはワクワクさせるものがあります。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5360'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5360
+  :user_name: ところてん
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2008/01/16 09:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">入力が離散的だから、こういう答えもありなのかー。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5363'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5363
+  :user_name: sumim
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/01/16 10:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>まあ、こういうのもあるということで。</p>\n\n\t"
+  :code: |
+    | 閏年か？ |
+
+    閏年か？ := [:int |
+        (int isDivisibleBy: 4)
+            and: [(int isDivisibleBy: 100) not or: [int isDivisibleBy: 400]]].
+
+    閏年か？ value: 1900.   "=&gt; false "
+    閏年か？ value: 2000.   "=&gt; true "
+    閏年か？ value: 2008.   "=&gt; true "
+    閏年か？ value: 2100.   "=&gt; false "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '5367'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5367
+  :user_name: 匿名
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/01/16 15:44 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <pre class=\"compact\">閏年なら１を、平年なら０を返します☆</pre>\n\t"
+  :code: |
+    #include&lt;stdio.h&gt;
+    int isleapyear(int y){
+      int i = y * 0.01;
+      return !(y == i * 100 ? i &amp; 3 : y &amp; 3);
+    }
+    int main(void){
+      printf("%d\n", isleapyear(1900));
+      printf("%d\n", isleapyear(2000));
+      printf("%d\n", isleapyear(2008));
+      printf("%d\n", isleapyear(2100));
+      return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5368'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5368
+  :user_name: matyr
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2008/01/16 22:29 GMT
+  :vote_count: '4'
+  :vote_score: '2'
+  :body: "\n\t  組み込み「メソッド」は使ってもいいのかな。\r<br>(でないとRuby/Smalltalkあたりは解答のしようが無いし)\n\t"
+  :code: |
+    function doukaku124a(y){
+      return new Date(y, 1, 29).getMonth() &lt; 2;
+    }
+
+    function doukaku124b(y){
+      return !((y +'').replace(/00$/, '') &amp; 3);
+    }
+  :tags: []
+  :references:
+    :url: /web/20090329074204/http://golf.shinh.org/p.rb?leap+year
+    :title: anarchy golf - leap year
+- :id: '5369'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5369
+  :user_name: sumim
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/01/17 01:13 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <p>その手がありましたか！って、もはや悪のりでしかありませんね(^_^;)。</p>\n\n\t"
+  :code: |
+    | 閏年か？ |
+
+    閏年か？ := [:int | int asYear daysInYear = 366].
+
+    閏年か？ value: 1900.   "=&gt; false "
+    閏年か？ value: 2000.   "=&gt; true "
+    閏年か？ value: 2008.   "=&gt; true "
+    閏年か？ value: 2100.   "=&gt; false "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '5370'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5370
+  :user_name: Jlake
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/658/
+  :language: JavaScript
+  :time: 2008/01/17 02:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">結果:\r\n1900年 は 平年\r\n1901年 は 平年\r\n1902年 は
+    平年\r\n1903年 は 平年\r\n1904年 は 閏年\r\n... ...\r\n2000年 は 閏年\r\n2001年 は 平年\r\n2002年
+    は 平年\r\n2003年 は 平年\r\n2004年 は 閏年\r\n2005年 は 平年\r\n2006年 は 平年\r\n2007年 は 平年\r\n2008年
+    は 閏年</pre>\n\t"
+  :code: |
+    &lt;html&gt;
+    &lt;head&gt;
+    &lt;title&gt;除算・余剰を使わずに閏年&lt;/title&gt;
+    &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;
+    &lt;script type="text/javascript"&gt;
+    &lt;!--
+    //閏年の判断
+    function isLeap(year) {
+        var nNum = parseInt((year + '').substr(-4));
+        while(nNum &gt;= 400) {
+            nNum -= 400;
+        }
+        if(nNum == 0) {
+            return true;
+        } else {
+            while(nNum &gt;= 100) {
+                nNum -= 100;
+            }
+            if(nNum == 0) {
+                return false;
+            } else {
+                while(nNum &gt;= 4) {
+                    nNum -= 4;
+                }
+                if(nNum == 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    //getElementByIdの短縮
+    function $(id) {
+        return document.getElementById(id);
+    }
+    //テスト
+    window.onload = function() {
+        var sResult = '';
+        for(var y=1900; y&lt;2009; y++) {
+            sResult += y + '年 は ' + (isLeap(y) ? '閏年':'平年') + '&lt;br/&gt;';
+        }
+        $('result').innerHTML = sResult;
+    }
+    //--&gt;
+    &lt;/script&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+    &lt;input type="text" id="year" value="2008" size="6" /&gt;年は
+    &lt;input type="button" value="閏年？" onclick="alert($('year').value + '年 は ' + (isLeap($('year').value) ? '閏年':'平年'));" /&gt;
+    &lt;br/&gt;
+    &lt;br/&gt;
+    結果:&lt;br/&gt;
+    &lt;div id="result"&gt;&amp;nbsp;&lt;/div&gt;
+    &lt;/body&gt;
+    &lt;/html&gt;
+  :tags:
+  - JavaScript
+  :references:
+    :url: 
+    :title: 
+- :id: '5372'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5372
+  :user_name: dankogai
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2008/01/17 21:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>perlらしく。</p>\n<p>Dan the Perl Monger</p>\n\n\t"
+  :code: |
+    #!/usr/local/bin/perl
+    use strict;
+    use warnings;
+    sub is_leap{!($_[0]&amp;0b11)&amp;&amp;($_[0]!~/00$/||($_[0]&gt;&gt;2)=~/00$/)}
+    print is_leap(shift), "\n";
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5409'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5409
+  :user_name: pooq
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/606/
+  :language: BASIC
+  :time: 2008/01/20 14:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">文字列にしてやってみました。うるう年のときに1を\r\nそれ以外のとき0を返します。\r\n\r\n1800
+    0 \r\n2000 1 \r\n2007 0 \r\n2008 1 \r\n</pre>\n\t"
+  :code: "FUNCTION leap(n)\n   LET  y$ = STR$(n)\n   LET  a$ = RIGHT$(y$,2)\n   IF
+    a$ = \"00\" THEN  LET  a$ = LEFT$(y$,LEN(y$)-2)\n   IF RIGHT$(BSTR$(VAL(a$),2),2)
+    = \"00\" THEN\n      LET  leap = 1\n   ELSE\n      LET  leap = 0\n   END IF  \nEND
+    FUNCTION\n\nPRINT \"1800\";leap(1800)\nPRINT \"2000\";leap(2000)\nPRINT \"2007\";leap(2007)\nPRINT
+    \"2008\";leap(2008)\nEND\n"
+  :tags:
+  - 十進BASIC
+  :references:
+    :url: 
+    :title: 
+- :id: '5441'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5441
+  :user_name: EnogunoCap
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/683/
+  :language: SQL
+  :time: 2008/01/24 03:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>SQLで書いてみました。\n十分な行数をもつテーブルT_DUMMYがあるものとします。</p>\n\n\t"
+  :code: "SELECT CASE WHEN TB_FORE.Y IS NULL\n           THEN '平年'\n            ELSE
+    CASE WHEN TB_FOREHANDRED.Y IS NOT NULL\n                      THEN '閏年'\n                      WHEN
+    TB_HANDRED.Y IS NOT NULL\n                      THEN '平年'\n                 ELSE
+    '閏年'\n            END\n       END AS RESULT \nFROM (SELECT ABS(:ARG) AS Y FROM
+    DUAL) TB_ARG\nLEFT JOIN (SELECT ROWNUM *   4 AS Y FROM T_DUMMY ) TB_FORE \n     ON
+    TB_ARG.Y = TB_FORE.Y\nLEFT JOIN (SELECT ROWNUM * 100 AS Y FROM T_DUMMY ) TB_HANDRED\n
+    \    ON TB_ARG.Y = TB_HANDRED.Y\nLEFT JOIN (SELECT ROWNUM * 400 AS Y FROM T_DUMMY
+    ) TB_FOREHANDRED\n     ON TB_ARG.Y = TB_FOREHANDRED.Y\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5579'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5579
+  :user_name: Nemo
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/685/
+  :language: PostScript
+  :time: 2008/01/30 17:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">PostScript で。我ながら汚ないコード。\r\n紀元前はマイナス符号で与えてやって下さい。\r\n#
+    紀元前対応をやってみたら無駄に複雑に...\r\n# 動作はあってますよね?\r\n\r\nAD: 2008: true\r\nAD: 2007: false\r\nAD:
+    2000: true\r\nAD: 1900: false\r\nAD: 1500: true\r\nAD: 100: true\r\nAD: 8: true\r\nAD:
+    4: false\r\nBC: 4: false\r\nBC: 8: true\r\nBC: 9: false\r\nBC: 10: false\r\nBC:
+    11: true\r\n</pre>\n\t"
+  :code: |
+    %!PS
+
+    /IsLeapYear {
+        dup 1582 ge { % Gregorian Calendar AD 1582-
+            10 string cvs dup
+            0 2 getinterval cvi
+            exch 2 2 getinterval cvi
+            dup 0 eq dup not % mod 100
+            3 -1 roll 3 and 0 eq % mod 4
+            and
+            exch 3 -1 roll 3 and 0 eq and or % mod 400
+        } { % Julian Calendar BC 45 - AD 1582
+            dup -8 le { % BC44 - BC8
+                neg
+                dup 10 ge {
+                    10 string cvs
+                    dup 0 1 getinterval cvi exch 1 1 getinterval cvi add
+                } if
+                dup dup dup 2 eq exch 5 eq or exch 8 eq or exch 11 eq or % mod 3
+            } {
+                dup 8 lt { % BC7 - AD 7
+                    pop
+                    false
+                } { % AD 8- AD 1582
+                    3 and 0 eq
+                } ifelse
+            } ifelse
+        } ifelse
+    } def
+
+    % Test Code -----------------------
+
+    /TestLeapYear {
+        dup dup 0 eq exch -45 lt or {
+            10 string cvs print ( is Invalid ) =
+        } {
+            dup dup 0 lt {
+                (BC: ) print neg
+            } {
+                (AD: ) print
+            } ifelse
+            10 string cvs print (: ) print
+            IsLeapYear =
+        } ifelse
+    } def
+
+    /TestLeapYear2 {
+        2008 -1 -50 {
+            TestLeapYear
+        } for
+    } def
+
+    % TestLeapYear2
+
+    2008 TestLeapYear
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5583'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5583
+  :user_name: はやみず
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/440/
+  :language: Scheme
+  :time: 2008/01/30 21:31 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>ビット演算を利用しました。</p>\n<p>yearが4の倍数 &lt;=&gt; year &amp; b'11' == 0</p>\n<p>yearが100の倍数の条件下で
+    :\nyearが400の倍数 &lt;=&gt; year &amp; b'1111' == 0</p>\n\n\t"
+  :code: |
+    (define (leap-year? year)
+      (if (= (logand year 3) 0)
+          ;; multiple of 4
+          (let* ((nstr (number-&gt;string year))
+             (len (string-length nstr)))
+        (cond
+         ((&lt; year 100) #t)
+         ((equal? "00" (substring nstr (- len 2) len))
+          (if (= 0 (logand year 15)) #t #f))
+         (else #t)))
+          ;; not multiple of 4
+          #f))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5590'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5590
+  :user_name: minke
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/28/
+  :language: Haskell
+  :time: 2008/01/31 06:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>400(= 2^4 * 5^2) の倍数\r</p>\n<p>⇔ 100(=
+    2^2 * 5^2) の倍数かつ 16(=2^4) の倍数\r</p>\n<p>ですね。なるほど、賢い。</p>\n</div>\n\t"
+  :code: |
+    import Data.Bits
+    leapYear :: Int -&gt; Bool
+    leapYear year =
+        case reverse $ show $ year of
+          '0':'0':_ -&gt; year .&amp;. 0x0f == 0
+          _ -&gt; year .&amp;. 0x03 == 0
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5654'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5654
+  :user_name: turkey
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/699/
+  :language: PHP
+  :time: 2008/02/02 20:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "//グレゴリオ暦における閏年かどうかを返す\n//1. 西暦年が4で割り切れる年は閏年\n//2. ただし、西暦年が100で割り切れる年は平年\n//3.
+    ただし、西暦年が400で割り切れる年は閏年\n//@param string $y YYYY\n//@return bool  \n//checkdate('2','29',$y);\nfunction
+    is_leap($y) {\n    $c = array(400,100,4);\n    foreach ($c as $v) {\n        $i
+    = $y;\n        while ($i &gt;= $v) {\n            $i -= $v;\n            if ($i
+    === 0) {\n                if ($v === 100) {\n                    return false;\n
+    \               } else {\n                    return true;\n                }\n
+    \           }\n        }\n    }\n    return false;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5710'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5710
+  :user_name: matarillo
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/136/
+  :language: C
+  :time: 2008/02/09 01:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>400の倍数は、100の倍数かつ16の倍数。</p>\n\n\t"
+  :code: |
+    static bool IsLeap(int y) { return m4(y) &amp;&amp; (!m100(y) || m16(y)); }
+    static bool m4(int y) { return (y &amp; 3) == 0; }
+    static bool m16(int y) { return (y &amp; 15) == 0; }
+    static bool m100(int y)
+    {
+      string s = y.ToString();
+      return s.Length &gt; 1 &amp;&amp; s.Substring(s.Length - 2) == "00";
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5838'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5838
+  :user_name: silverwire
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/646/
+  :language: Batchfile
+  :time: 2008/02/23 17:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ビット演算を利用して除算を実装しました。(ちなみに、紀元前には対応していません。)\r\n\r\n
+    \ e.g.\r\n    C:&gt;@echo off &amp; (for %y in (1000 2000 2008) do is_leap_year
+    %y) &amp; echo on\r\n    1000年は平年です。\r\n    2000年は閏年です。\r\n    2008年は閏年です。\r\n\r\n遅延環境変数展開を利用しているので、Windows
+    NTでは動作しません。Windows XPで動作\r\nを確認。</pre>\n\t"
+  :code: |
+    :: is_leap_year.bat
+    @echo off
+      setlocal
+        set l=0
+        set s=平年
+
+        echo %1|findstr /r "[^0-9\-]" &gt;NUL 2&gt;&amp;1
+        if %ERRORLEVEL% equ 0 (echo %~n0 [YEAR] &amp; goto :EOF)
+
+        call :L %1 l
+        if %l% equ 1 set s=閏年
+      endlocal &amp; echo %1年は%s%です。
+    goto :EOF
+
+    :L
+      setlocal
+        set m=0
+
+        call :mod %1 400 m
+        if %m% equ 0 endlocal &amp; set %2=1 &amp; goto :EOF
+
+        call :mod %1 100 m
+        if %m% equ 0 endlocal &amp; set %2=0 &amp; goto :EOF
+
+        call :mod %1   4 m
+        if %m% equ 0 endlocal &amp; set %2=1 &amp; goto :EOF
+    goto :EOF
+
+    :mod
+      setlocal
+        set m=0
+        set q=0
+
+        call :div %1 %2 q
+
+        set /a m=%2*%q%
+      endlocal &amp; set /a %3=%1-%m%
+    goto :EOF
+
+    :div
+      setlocal enabledelayedexpansion
+        set i=0
+        set m=%1
+        set m_=0
+        set n=%2
+        set n_=0
+        set q=0
+
+        if %n% gtr %m% endlocal &amp; set %3=%q% &amp; goto :EOF
+
+        call :msb %m% m_
+        call :msb %n% n_
+        set /a i=%m_%-%n_%
+
+        :loop_div
+          if %i% lss 0 endlocal &amp; set %3=%q% &amp; goto :EOF
+          set /a "q&lt;&lt;=1"
+          set /a "m_=%m%&gt;&gt;%i%"
+          if %m_% geq %n% (
+            set /a "n_=%n%&lt;&lt;%i%"
+            set /a m-=!n_!
+            set /a q+=1
+          )
+          set /a i-=1
+        goto loop_div
+      endlocal
+    goto :EOF
+
+    :: 最上位ビットを取得(most significant bit)
+    :msb
+      setlocal
+        set i=%1
+        set n=0
+
+        :loop_msb
+          set /a "i&gt;&gt;=1"
+          set /a n+=1
+        if %i% neq 0 goto loop_msb
+      endlocal &amp; set %2=%n%
+    goto :EOF
+  :tags: []
+  :references:
+    :url: /web/20090329074204/http://d.hatena.ne.jp/nitoyon/20070629/four_operations_implementation_in_javascript
+    :title: 四則演算を JavaScript で実装する
+- :id: '5846'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/5846
+  :user_name: yuin
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/02/26 01:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>無限リストで。</p>\n\n\t"
+  :code: |
+    import Stream._
+    def leapyear_?(year:int) = {
+      def cycle[T](a:Iterable[T]) = const(a).flatMap(v=&gt;v)
+      val y4   = cycle(List(true,false,false,false).toStream)
+      val y100 = cycle(concat(List(true).toStream, make(99, false)))
+      val y400 = cycle(concat(List(true).toStream, make(399, false)))
+      (y4(year) &amp;&amp; !y100(year)) || y400(year)
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6008'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/6008
+  :user_name: niha
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/160/
+  :language: Ruby
+  :time: 2008/03/13 06:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>出てなさそうな奴を。ゴルフとかはあんまり考えてません。</p>\n\n\t"
+  :code: |
+    def f i
+    /^(....)*$/==="1"*i.to_s.sub(/00$/).to_i
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6024'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/6024
+  :user_name: Songmu
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/763/
+  :language: Perl
+  :time: 2008/03/20 15:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>愚直に足し算だけでやってみた。</p>\n\n\t"
+  :code: |
+    #!c:\perl\bin\perl.exe
+    use strict;
+    my $flag = 0;
+    if($#ARGV){
+        print "引数を一つ指定してください";
+        exit;
+    }
+    while(&lt;@ARGV&gt;){
+        my $i = 0;
+        my $year = shift;
+        unless($year =~ /^\d{1,4}$/){
+            print "不正な引数です。";
+            exit;
+        }
+        while($i &lt;= $year){
+            $i += 4;
+            if($i == $year){
+                $i = 0;
+                while($i &lt;= $year){
+                    $i += 400;
+                    if($i == $year){
+                        $flag = 1;
+                    }
+                }
+                unless($flag){
+                    $i = 0;
+                    $flag = 1;
+                    while($i &lt;= $year){
+                        $i += 100;
+                        if($i == $year){
+                            $flag = 0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if($flag){
+        print "閏年です！";
+    }else{
+        print "残念！";
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6417'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/6417
+  :user_name: lunlumo
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/813/
+  :language: Erlang
+  :time: 2008/06/03 10:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    -module(leap_year).
+    -import(lists).
+    -export([is_leap_year/1]).
+
+    list_multiple_of(B,M,[]) -&gt;
+        if
+            B &gt; M -&gt; [];
+            true -&gt; list_multiple_of(B,M,[B])
+        end;
+    list_multiple_of(B,M,L) -&gt;
+        C = lists:nth(1,L),
+        if
+            C + B &gt; M -&gt; L;
+            true -&gt; list_multiple_of(B,M,[C + B|L])
+        end.
+
+    list_leap_year(M) -&gt;
+        ((list_multiple_of(4,M,[]) -- list_multiple_of(100,M,[])) ++ list_multiple_of(400,M,[])) -- list_multiple_of(1000,M,[]).
+
+    is_leap_year(Y) -&gt;
+        length(lists:filter(fun(X) -&gt; X == Y end, list_leap_year(Y))) &gt; 0.
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6486'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/6486
+  :user_name: syat
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/766/
+  :language: Brainf
+  :time: 2008/06/13 21:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Brainf*ck入門しました。もう頭の中がカオスです。\r<br>割り算と if ～ else 構造がもっと簡単に使えたらいいのになぁ。。。\r<br><br>コメントは参考サイトに習ってつけてみました。出鱈目英語でごめんなさい。コメントの中に、つい「－」などを入れてしまい嵌ること多々。\r<br><br>実行結果（４桁の数字を入力し、閏年だったら1を出力）\r<br>19000\r<br>20001\r<br>20081\r<br>21000\r<br>"
+  :code: |
+    ●コメント版（#以降の文字と、空白・改行はコメントです。）
+    # {3} = input two-digit number
+    &gt;&gt; ,.&lt;++++++[-&gt;--------&lt;]&gt; [-&gt;++++++++++&lt;] ,.&lt;++++++[-&gt;--------&lt;]&gt; [-&gt;+&lt;]
+    &lt;&lt;
+    # {2} = input two-digit number
+    &gt; ,.&lt;++++++[-&gt;--------&lt;]&gt; [-&gt;++++++++++&lt;] ,.&lt;++++++[-&gt;--------&lt;]&gt; [-&gt;+&lt;]
+    &lt;
+    # if ( {2} not zero ) then {3} = !{2} ; pointer moves to {3}.
+    &gt;&gt; [&gt;[-]&lt;[-&gt;+&lt;]]
+    &gt;
+    # subtract 4 from {3} while ( {3} != 0 ), and if remainder exists then {5} is not 0.
+    &gt;++++&lt;                     # {4} = 4
+    [&gt;                         # while ({3}) {
+      [-&gt;+&gt;+&gt;+&lt;&lt;&lt;]             #   {5:6:7} = !{4}
+      &gt;&gt;
+        &gt;[-&lt;&lt;&lt;+&gt;&gt;&gt;]&lt;           #   {4} = !{7}
+        [                      #   while ({6}) {
+          &lt;&lt;&lt; [-&gt;&gt;&gt;&gt;+&lt;&lt;&lt;&lt;]     #     {7} = !{3}
+          &gt;&gt;&gt;&gt;[                #     if ({7} not zero) {
+            -[-&lt;&lt;&lt;&lt;+&gt;&gt;&gt;&gt;]&lt;&lt;-&gt;&gt; #       {3} = !{7} minus 1 ; decr({5})
+          ]&lt;                   #     }
+          -                    #     decr({6})
+        ]                      #   }
+      &lt;&lt;
+    &lt;]                         # }
+    # show result
+    &lt;+++++++[-&gt;+++++++&lt;]&gt;      # {3} = 49
+    &gt;&gt;[[-]&lt;&lt;-&gt;&gt;]&lt;&lt;             # if ({5} not zero) then decr({3})
+    .                          # putchar({3})
+
+
+    ●コメントなし版
+    &gt;&gt;,.&lt;++++++[-&gt;--------&lt;]&gt;[-&gt;++++++++++&lt;],.&lt;++++++[-&gt;--------&lt;]&gt;[-&gt;+&lt;]&lt;&lt;&gt;,.&lt;++++++[-&gt;--------&lt;]&gt;[-&gt;++++++++++&lt;],.&lt;++++++[-&gt;--------&lt;]&gt;[-&gt;+&lt;]&lt;&gt;&gt;[&gt;[-]&lt;[-&gt;+&lt;]]&gt;&gt;++++&lt;[&gt;[-&gt;+&gt;+&gt;+&lt;&lt;&lt;]&gt;&gt;&gt;[-&lt;&lt;&lt;+&gt;&gt;&gt;]&lt;[&lt;&lt;&lt;[-&gt;&gt;&gt;&gt;+&lt;&lt;&lt;&lt;]&gt;&gt;&gt;&gt;[-[-&lt;&lt;&lt;&lt;+&gt;&gt;&gt;&gt;]&lt;&lt;-&gt;&gt;]&lt;-]&lt;&lt;&lt;]&lt;+++++++[-&gt;+++++++&lt;]&gt;&gt;&gt;[[-]&lt;&lt;-&gt;&gt;]&lt;&lt;.
+  :tags: []
+  :references:
+    :url: /web/20090329074204/http://www.kmonos.net/alang/etc/brainfuck.php
+    :title: Brainf*ck（わかりやすい解説）
+- :id: '6487'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/6487
+  :user_name: syat
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2008/06/13 21:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ちなみに、実行環境はBrainfuck Developerを使いました。このデバッグ機能を使わないと、やってらんないです。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20090329074204/http://4mhz.de/
+    :title: 4mhz.de
+- :id: '7109'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/7109
+  :user_name: kurimura
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/864/
+  :language: C
+  :time: 2008/08/11 20:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  除算を無くす+ループ使わない+変な機能使わないを目標に。\n\t"
+  :code: |
+    int isleapyear(unsigned int year){
+        int d25 = (year * 171798692LL &gt;&gt; 32);
+        int c  = (year &amp; 3);
+        return !c &amp;&amp; (!(d25&amp;12)||d25*25!=year);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7110'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/7110
+  :user_name: kkobayashi
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2008/08/12 00:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Dateクラスをそのまま使うというのは思いつきませんでした。コロンブスの卵すぎる・・・！</p>\n<p>一応正攻法も載せておきますね。</p>\n\n\t"
+  :code: |
+    is.leap.year1 &lt;- function(y){
+        !is.na(ISOdate(y,2,29))
+    }
+
+    is.leap.year2 &lt;- function(y){
+        y %in% union(setdiff(seq(0,y,4), seq(0,y,100)), seq(0,y,400))
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7311'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/7311
+  :user_name: turugina
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/760/
+  :language: XSLT
+  :time: 2008/08/24 19:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">そうか、その手が。。。</pre>\n\t"
+  :code: |
+    &lt;xsl:stylesheet version="2.0"
+      xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+      xmlns:xs="http://www.w3.org/2001/XMLSchema"
+      xmlns:fn="http://www.w3.org/2005/xpath-functions"
+      &gt;
+
+      &lt;xsl:output method="text" /&gt;
+
+      &lt;xsl:template match="/" &gt;
+        &lt;xsl:for-each select="1900 to 2100"&gt;
+          &lt;xsl:variable name="thisYear" as="xs:date"
+            select="xs:date(fn:concat(xs:string(.), '-01-01'))" /&gt;
+          &lt;xsl:variable name="nextYear" as="xs:date"
+            select="xs:date(fn:concat(xs:string(1+.), '-01-01'))" /&gt;
+          &lt;xsl:if test="fn:days-from-duration($nextYear - $thisYear)=366"&gt;
+            &lt;xsl:value-of select="." /&gt;
+            &lt;xsl:text&gt; 年は閏年♪&amp;#xA;&lt;/xsl:text&gt;
+          &lt;/xsl:if&gt;
+        &lt;/xsl:for-each&gt;
+      &lt;/xsl:template&gt;
+
+    &lt;/xsl:stylesheet&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8162'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/8162
+  :user_name: taninsw
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/973/
+  :language: Haskell
+  :time: 2008/12/13 23:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>引き算を使って倍数かどうか確かめています。</p>\n<p>なぜか自分の環境ではバッククオートが入力できないので、バッククオートの文字だけネットからコピペしました。</p>\n\n\t"
+  :code: "infixl 4 `isMultipleOf`\nisMultipleOf 0 d = True\nisMultipleOf n d \n  |
+    n &gt; 0        = isMultipleOf (n-d) d\n  | otherwise    = False \n\nisLeapYear
+    year =  year `isMultipleOf` 400 ||\n                  (year `isMultipleOf` 4   &amp;&amp;
+    \n                   not (year `isMultipleOf` 100))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8382'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/8382
+  :user_name: tsekine
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/124/
+  :language: sed
+  :time: 2009/01/22 01:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">cat &lt;&lt; EOF | sed -f \"sedスクリプトファイル\"\r\n&gt;
+    1900\r\n&gt; 2000\r\n&gt; 2008\r\n&gt; 2009\r\n&gt; 2100\r\n1900: False\r\n2000:
+    True\r\n2008: True\r\n2009: False\r\n2100: False\r\n</pre>\n\t"
+  :code: |
+    h
+    s/^/000/
+    s/\(.*\)00$/\1/
+    /[02468][048]$/ b TRUE
+    g
+    s/$/: False/
+    b
+    :TRUE
+    g
+    s/$/: True/
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8384'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/8384
+  :user_name: tsekine
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/124/
+  :language: 
+  :time: 2009/01/22 01:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>3行目は \"s/00$//\" だけでいいですね。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8406'
+  :parent_id: '124'
+  :url: http://ja.doukaku.org/comment/8406
+  :user_name: pooq
+  :user_url: /web/20090329074204/http://ja.doukaku.org/user/606/
+  :language: J
+  :time: 2009/01/26 15:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#5409のJ版。\r\n\r\n   leap 1800\r\n0\r\n   leap
+    2000\r\n1\r\n   leap 2007\r\n0\r\n   leap 2008\r\n1</pre>\n\t"
+  :code: |
+    leap=:3 :'0 0-:_2{.#:".;(''00''-:_2{.a){(_2{.a);2{._4{.a=.":y'
+  :tags: []
+  :references:
+    :url: 
+    :title: 

@@ -1,0 +1,802 @@
+---
+:id: '198'
+:title: 'LL Golf Hole 4 - 文章から単語の索引を作る '
+:comments:
+- :id: '6986'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/6986
+  :user_name: takano32
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/148/
+  :language: Ruby
+  :time: 2008/08/05 04:55 GMT
+  :vote_count: '7'
+  :vote_score: '-1'
+  :body: "\r\n\t  \n<p><a href=\"/web/20081119142159/http://www.gnu.org/licenses/gpl.txt\">GNU
+    GENERAL PUBLIC LICENSE Version 3</a>に登場する単語について、単語が登場する行を示した索引を作成してください。\n</p>\n<p>与えられる文章についてはリテラルで表記する、標準入力で与えられる、引数でファイル名が与えられるなどは自由とします。\n</p>\n<p>余力のあるものはこのプログラムを短くしてみたり、短くしてみたり、短くしてください。\n</p>\n<p>※LL
+    Future実行委員の高野光弘です。この出題は <a href=\"/web/20081119142159/http://ll.jus.or.jp/2008/\">LL
+    Future</a>公式の出題であり、優れたものについては<a href=\"/web/20081119142159/http://ll.jus.or.jp/2008/program/doukaku\">LL
+    Golf</a>のセッションでご紹介させていただくかもしれません。ご理解の上、ご投稿ください。また、<a href=\"/web/20081119142159/http://ll.jus.or.jp/2008/ticket\">LL
+    Futureのチケットは現在も発売中</a>です。よろしければ、メインイベントの方にもぜひご参加ください。\n</p>\n\n\n\r\n\t"
+  :code: |
+    #!/usr/bin/env ruby
+    require 'open-uri'
+    lines = open('http://www.gnu.org/licenses/gpl.txt').readlines
+    dic = {}
+    lines.each_with_index do |line, index|
+        line.scan(/\w+/).each do |word|
+            dic[word] = dic[word] ? dic[word] &lt;&lt; index + 1 : [index + 1]
+        end
+    end
+    p dic
+  :tags:
+  - LLGolf
+  - doukaku
+  - llfuture
+  :references:
+    :url: /web/20081119142159/http://www.ruby-lang.org/ja/man/html/open_uri.html
+    :title: open-uri - Rubyリファレンスマニュアル
+- :id: '7068'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7068
+  :user_name: koguro
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/438/
+  :language: Scheme
+  :time: 2008/08/09 07:29 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <p>普通に解いてみました(294 bytes)。ファイル名を引数で与えます。</p>\n<p>ハッシュテーブルのままだと分からないので最後に
+    alist に変換して出力しています。また、大文字小文字は無視して、かつインデックスのリストを作るときに同一行番号が重複することは避けています。</p>\n<p>実行例:</p>\n<pre
+    class=\"literal-block\">\n% gosh gpl.txt\n... 略 ...\n</pre>\n\n\t"
+  :code: |
+    (use util.list)(use srfi-13)(let1 t(hash-table'equal?)(call-with-input-file(car *argv*)(#0=lambda(i)(port-fold(#0#(s n)(for-each(#0#(w)(hash-table-update! t(string-downcase w)(#0#(l)(if(memq n l)l(cons n l)))'()))(string-split s #[\W]))(+ n 1))1(cut read-line i))))(print(hash-table-&gt;alist t)))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '7069'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7069
+  :user_name: koguro
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/438/
+  :language: Scheme
+  :time: 2008/08/09 07:34 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <p>with-input-from-fileを使えばもっと短くなりました (284 bytes)。</p>\n\n\t"
+  :code: |
+    (use util.list)(use srfi-13)(let1 t(hash-table'equal?)(with-input-from-file(car *argv*)(cut port-fold(#0=lambda(s n)(for-each(#0#(w)(hash-table-update! t(string-downcase w)(#0#(l)(if(memq n l)l(cons n l)))'()))(string-split s #[\W]))(+ n 1))1|read-line|))(print(hash-table-&gt;alist t)))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '7070'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7070
+  :user_name: koguro
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/438/
+  :language: Scheme
+  :time: 2008/08/09 07:54 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <p>まだ無駄があった (277 bytes)。</p>\n\n\t"
+  :code: |
+    (use util.list)(use srfi-13)(let1 t(hash-table'equal?)(with-input-from-file(car *argv*)(cut port-fold(#0=lambda(s n)(map(#0#(w)(hash-table-update! t(string-downcase w)(#0#(l)(if(memq n l)l(cons n l)))()))(string-split s #[\W]))(+ n 1))1 read-line))(print(hash-table-&gt;alist t)))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '7071'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7071
+  :user_name: ocean
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/08/09 08:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>空気読まずに、普通にGO</p>\n\n\t"
+  :code: |
+    url = "http://www.gnu.org/licenses/gpl.txt"
+    dic = {}
+    for index, line in enumerate(urllib.urlopen(url)):
+        for word in re.findall('\w+', line):
+            dic.setdefault(word, []).append(index + 1)
+    print dic
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7072'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7072
+  :user_name: kkobayashi
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2008/08/09 09:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>コード内にURLが出るかでないかで長さがだいぶ違ってくるのでは・・・。</p>\n<p>とりあえず普通に。</p>\n\n\t"
+  :code: |
+    f &lt;- 'http://www.gnu.org/licenses/gpl.txt'
+    sapply(names(table(unlist(strsplit((l&lt;-readLines(f)),"\\W+")))), function(s) grep(s,l))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7075'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7075
+  :user_name: athos
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/755/
+  :language: Scheme
+  :time: 2008/08/09 11:24 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <p>もっと素直にやっても結構短くなるみたいですよ(262bytes)。</p>\n\n\t"
+  :code: |
+    (use file.util)(use util.list)(use srfi-13)(do((t(make-hash-table 'string=?))(ls(file-&gt;string-list(car *argv*))(cdr ls))(n 1 (+ n 1)))((null? ls)(print(hash-table-&gt;alist t)))(dolist(w(string-split(car ls)#[\W]))(hash-table-push! t (string-downcase w) n)))
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '7076'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7076
+  :user_name: sumim
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/08/09 11:28 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: "| dict stream delimiters lineCount |\ndict := Dictionary new.\nstream :=
+    HTTPSocket httpGet: 'http://www.gnu.org/licenses/gpl.txt'.\ndelimiters := Character
+    allCharacters reject: [:each | each isLetter].\nlineCount := 0.\n[stream atEnd]
+    whileFalse: [\n    lineCount := lineCount + 1.\n    ((stream upTo: Character lf)
+    subStrings: delimiters) do: [:word | \n        | lines |\n        lines := dict
+    at: word ifAbsentPut: [OrderedCollection new].\n        lines add: lineCount]].\n^dict\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '7078'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7078
+  :user_name: 匿名
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/08/09 14:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">文書データを取得するのも問題に含まれるのでしょうか？</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7079'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7079
+  :user_name: ika
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2008/08/09 14:44 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>文章はコンパイル時に文字列リテラルとして取り込むので、dmdの-Jオプションでgpl.txtのあるディレクトリを指定してください。</p>\n\n\t"
+  :code: |
+    private import std.stdio, std.string, std.regexp;
+
+    auto text = import("gpl.txt");
+
+    void main() {
+        int[][string] dict;
+        auto re = RegExp(r"[\w-]+");
+        foreach(i, line; text.splitlines()) {
+            foreach(m; re.search(line)) {
+                dict[m[0].tolower()] ~= i + 1;
+            }
+        }
+        writeln(dict);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7082'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7082
+  :user_name: あにす
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/08/10 02:26 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  どうやっても短くならないです。\n\t"
+  :code: |
+    using System;using System.Collections.Generic;using System.IO;using System.Net;class P{static void Main(){char[]c=new char[]{' ',',','.','\'',';',':','-','?','\n','\r','(',')','/','\\','&lt;','&gt;','\"'};Dictionary&lt;string,List&lt;int&gt;&gt;d=new Dictionary&lt;string,List&lt;int&gt;&gt;();StreamReader s=new StreamReader(WebRequest.Create("http://www.gnu.org/licenses/gpl.txt").GetResponse().GetResponseStream());for(int l=1;!s.EndOfStream;l++){foreach(string t in s.ReadLine().Split(c)){string w=t.Trim().ToLower();if(w!="")if(d.ContainsKey(w)){if(!d[w].Contains(l))d[w].Add(l);}else d.Add(w,new List&lt;int&gt;(new int[]{l}));}}List&lt;string&gt;k=new List&lt;string&gt;(d.Keys);k.Sort((x,y)=&gt;{int r=d[y].Count-d[x].Count;if(r==0){r=d[x][0]-d[y][0];}return r;});foreach(string m in k){Console.WriteLine("&lt;&lt;"+m+"&gt;&gt;"+" "+d[m].Count+"回");foreach(int u in d[m]){Console.Write(u.ToString()+", ");}Console.WriteLine("\n");}Console.ReadLine();}}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7083'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7083
+  :user_name: oooooooo
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/874/
+  :language: PHP
+  :time: 2008/08/09 21:58 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>「g」がファイル名の場合 107 bytes です。</p>\n\n\t"
+  :code: |
+    &lt;?php foreach(file(g)as$l=&gt;$d){preg_match_all('/\w+/',$d,$m);foreach($m[0]as$w)$D[$w][]=$l+1;}print_r($D);
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7084'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7084
+  :user_name: 匿名
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2008/08/09 22:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>単語の定義は、正規表現で w+ としています。大文字小文字を区別しません（小文字に変換しています）。同じ行に同じ単語が複数出現する場合でも、行番号は1つのみ出力します。</p>\n\n\t"
+  :code: "import java.io.*;\nimport java.net.*;\nimport java.util.regex.*;\nimport
+    java.util.*;\n\npublic class Sample {\n    private final static Pattern WORD =
+    Pattern.compile(\"(\\\\w+)\");\n\n    public static Map&lt;String, Set&lt;Integer&gt;&gt;
+    indexWords(LineNumberReader r) throws IOException {\n        TreeMap&lt;String,
+    Set&lt;Integer&gt;&gt; ref = new TreeMap&lt;String, Set&lt;Integer&gt;&gt;();\n
+    \       String line;\n        while ((line = r.readLine()) != null) {\n            Matcher
+    m = WORD.matcher(line);\n            while (m.find()) {\n                String
+    w = m.group().toLowerCase();\n                if (ref.get(w) == null)\n                    ref.put(w,
+    new TreeSet&lt;Integer&gt;());\n                ref.get(w).add(r.getLineNumber());\n
+    \           }\n        }\n        return ref;\n    }\n    \n    public static
+    void main(String[] args) throws IOException {\n        URL u = new URL(\"http://www.gnu.org/licenses/gpl.txt\");\n
+    \       LineNumberReader r = new LineNumberReader(new InputStreamReader(u.openStream()));\n
+    \       Map&lt;String, Set&lt;Integer&gt;&gt; ref = indexWords(r);\n        for
+    (String key: ref.keySet()) {\n            System.out.println(key + ref.get(key));\n
+    \       }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7085'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7085
+  :user_name: kkobayashi
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2008/08/09 22:54 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>ちょっと短くしました。</p>\n\n\t"
+  :code: |
+    f &lt;- 'http://www.gnu.org/licenses/gpl.txt'
+    sapply(unique(unlist(strsplit((l&lt;-readLines(f)),"\\W+"))),grep,l)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7086'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7086
+  :user_name: kozima
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2008/08/10 00:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ゴルフじゃないけど汚くならない程度に短くした版。</p>\n\n\t"
+  :code: |
+    (loop with table = (make-hash-table :test 'equal)
+      for i from 1 while (listen) do
+      (loop with a = 0 and b = 0 and s = (read-line)
+        while (and (setf a (position-if #'alpha-char-p s :start b))
+                   (setf b (position-if-not #'alpha-char-p s :start a)))
+        do (push i (gethash (subseq s a b) table)))
+      finally
+      (loop for k being each hash-key of table using (hash-value v)
+        do (format t "~A: ~{~D~^, ~}~%" k (nreverse v))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7088'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7088
+  :user_name: emasaka
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/08/10 05:05 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <p>sh + nl + sed + sort。標準入力。</p>\n\n\t"
+  :code: |
+    nl -ba|sed 's/[^[:alnum:]#]\+\|$/#/g;:a;s/^\(#\([0-9]*\)#.*\)#/\1\t\2\n/;ta;s/.*#//'|sort -u -k 1,1 -k 2n|sed 'h;:a;$b;N;/^\(.*\t\)\(.*\)\n\1\(.*\)$/{s//\1\2,\3/;ba};$b;P;D'
+  :tags:
+  - nl
+  - sed
+  - sh
+  - sort
+  :references:
+    :url: 
+    :title: 
+- :id: '7089'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7089
+  :user_name: syat
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/766/
+  :language: C
+  :time: 2008/08/10 05:38 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  標準入力から読み込み。スペース・改行を省いたら363byte。\r<br>そういえば C#ってカンマ演算子使えないんですね。短くならないわけだ。\n\t"
+  :code: |
+    using System;
+    using System.Text.RegularExpressions;
+    class P
+    {
+        static void Main()
+        {
+            var d = new System.Collections.Generic.Dictionary&lt;String, int&gt;();
+            var n = 1;
+            for (var s = "" ; (s = Console.ReadLine()) != null ; n++)
+                new Regex("\\w+").Replace(s, delegate(Match m)
+                {
+                    var k = m.ToString();
+                    if (!d.ContainsKey(k)) d[k] = n;
+                    return k;
+                });
+            foreach (var k in d)
+                Console.Write("{0}: {1}\n", k.Key, k.Value);
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7090'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7090
+  :user_name: emasaka
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/08/10 06:05 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <p>pure bashで。標準入力。</p>\n\n\t"
+  :code: |
+    shopt -s extglob
+    while read s;do
+      ((++i))
+      for w in ${s//+([^[:alnum:]])/ };do
+        eval _X_$w=\${_X_$w}$i,
+      done
+    done
+    for w in ${!_X_*};do
+      echo ${w#_X_}: ${!w}
+    done
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7091'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7091
+  :user_name: yohei
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/415/
+  :language: Prolog
+  :time: 2008/08/10 07:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  SWI-Prologで。大文字は小文字に変換しました。次のようにして、参照できます。\r<br>?- index('future', N).\r<br>N = 58 ;\r<br>N = 579.\n\t"
+  :code: |
+    :- use_module(library('http/http_open')).
+
+    assert_word(_, '') :- !.
+    assert_word(In, W) :- downcase_atom(W, WL), line_count(In, N), assert(index(WL, N)).
+
+    make_index(In, W) :- at_end_of_stream(In), assert_word(In, W), !.
+    make_index(In, W) :- peek_char(In, C), (char_type(C, csym) -&gt; atom_concat(W, C, W1);
+         assert_word(In, W), W1 = ''), get_char(In, _), make_index(In, W1).
+
+    :- http_open('http://www.gnu.org/licenses/gpl.txt', In, []), make_index(In, ''), close(In).
+  :tags:
+  - SWI-Prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '7092'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7092
+  :user_name: crane
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/458/
+  :language: awk
+  :time: 2008/08/10 09:01 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>gawk 一行野郎で。文章は標準入力、出力は標準出力です。</p>\n\n\t"
+  :code: |
+    gawk -F'\\W' '{ for (i=1; i&lt;= NF; i++) { if ($i != ""){h[$i, NR] = NR; }}} END { for (k in h){split(k,s,SUBSEP);print s[1], h[k];}}'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7093'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7093
+  :user_name: hogee
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/826/
+  :language: Perl
+  :time: 2008/08/10 11:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>覚えたてのmap使ってみました。\n文章は標準入力で。83byte。</p>\n\n\t"
+  :code: |
+    map{map{push@{$w{lc$_}},$l+1}/\w+/gi;$l++}&lt;&gt;;
+    map{print"$_ @{$w{$_}}\n"}sort keys%w;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7094'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7094
+  :user_name: matyr
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/343/
+  :language: Groovy
+  :time: 2008/08/10 12:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">stdin → stderrで76B。\r\nURLから読む場合は「System.in」を「new
+    URL('http://..')」に。</pre>\n\t"
+  :code: |
+    i=0
+    m=[:]
+    System.in.eachLine{++i;(it=~/\w+/).each{m[it]=(m[it]?:[])&lt;&lt;i}}
+    0|m
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7095'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7095
+  :user_name: matyr
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/343/
+  :language: Scheme
+  :time: 2008/08/10 13:44 GMT
+  :vote_count: '4'
+  :vote_score: '0'
+  :body: "\n\t  <p>素直にstdinから読んで146B。</p>\n\n\t"
+  :code: |
+    (let([t(hash-table'equal?)][n 1])(guard,,(hash-table-map t print)(while(map(cut hash-table-push! t &lt;&gt; n)(string-split(read-line)#[\W]))(inc! n))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7096'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7096
+  :user_name: horiuchi
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/08/10 20:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>また、Javaで頑張ってGolfしてみました。\n改行とTabを除いて、283byteでした。</p>\n\n\t"
+  :code: |
+    import java.util.*;
+    class P{
+        public static void main(String[]a){
+            Map m=new TreeMap();
+            Scanner i=new Scanner(System.in);
+            for(int l=0;i.hasNext();l++)
+                for(String w:i.nextLine().split("\\W")){
+                    if(m.get(w)==null)
+                        m.put(w,new TreeSet());
+                    ((Set)m.get(w)).add(l);
+                }
+            System.out.println(m.entrySet());
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7098'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7098
+  :user_name: mattsan
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/833/
+  :language: C
+  :time: 2008/08/11 05:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Boost(1.35.0)を使ってどうにかこうにか。</p>\n<p>もはやGolfではないです。</p>\n\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    #include &lt;vector&gt;
+    #include &lt;map&gt;
+    #include &lt;iterator&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;boost/asio.hpp&gt;
+    #include &lt;boost/regex.hpp&gt;
+
+    using namespace std;
+    using namespace boost;
+    using namespace boost::asio;
+
+    typedef vector&lt;string&gt;            Strings;
+    typedef map&lt;string, vector&lt;int&gt; &gt; Dic;
+
+    int main()
+    {
+        ip::tcp::iostream src( "www.gnu.org", "http" );
+
+        src &lt;&lt; "GET /licenses/gpl.txt HTTP/1.0\r\n"
+            &lt;&lt; "Host: www.gnu.org\r\n"
+            &lt;&lt; "\r\n"
+            &lt;&lt; flush;
+
+        // 読み込み
+        Strings lines;
+        string  s;
+        bool    body = false;
+        while(getline(src, s))
+        {
+            if(body) lines.push_back(s);
+            if(s == "\r") body = true;
+        }
+
+        // 解析
+        regex re("¥¥w+");
+        Dic   dic;
+        int   lineno = 1;
+        for(Strings::const_iterator i = lines.begin(); i != lines.end(); ++i)
+        {
+            sregex_iterator ri(i-&gt;begin(), i-&gt;end(), re);
+            sregex_iterator end;
+            for(; ri != end; ++ri)
+            {
+                dic[ri-&gt;str()].push_back(lineno);
+            }
+            ++lineno;
+        }
+
+        // 書き出し
+        for(Dic::const_iterator i = dic.begin(); i != dic.end(); ++i)
+        {
+            cout &lt;&lt; i-&gt;first &lt;&lt; ":";
+            copy(i-&gt;second.begin(), i-&gt;second.end(), ostream_iterator&lt;int&gt;(cout, ","));
+            cout &lt;&lt; endl;
+        }
+
+        return 0;
+    }
+  :tags:
+  - Boost
+  - Boost1.35.0
+  :references:
+    :url: 
+    :title: 
+- :id: '7099'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7099
+  :user_name: sawat
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/322/
+  :language: JavaScript
+  :time: 2008/08/11 02:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>JavaScript(Rhino)で。入力は標準入力から。\n225byte。</p>\n\n\t"
+  :code: |
+    r=new java.io.BufferedReader(new java.io.InputStreamReader(java.lang.System["in"]));
+    d={};
+    for(i=1;l=r.readLine();i++)for(a=l.match(/\w+/g);w=a&amp;&amp;a.pop();)(d[w]=d[w]||[]).push(i);
+    for(w in d)println(w+":"+d[w].join(" "));
+  :tags:
+  - Rhino
+  :references:
+    :url: 
+    :title: 
+- :id: '7103'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7103
+  :user_name: matyr
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2008/08/11 06:32 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  たぶん狐限定114B。\n\t"
+  :code: |
+    javascript:for(d={},i=1;l=/.+/g(document.body.textContent);++i)for(;w=/\w+/g(l);)(d[w]=d[w]||[]).push(i);uneval(d)
+  :tags:
+  - Bookmarklet
+  - Firefox
+  :references:
+    :url: 
+    :title: 
+- :id: '7104'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7104
+  :user_name: emasaka
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/08/11 08:58 GMT
+  :vote_count: '3'
+  :vote_score: '-1'
+  :body: "\n\t  <p>マイナスモデもらったので、sed 3丁がけで再投稿。時間がかかります。</p>\n\n\t"
+  :code: |
+    sed =|sed 'N;s/[^[:alnum:]]\+\|$/#/g;:a;s/^\(\([0-9]*\)#.*\)#/\1\t\2\n/;ta;s/.*#//'|sed ':a;$b;N;/\n$/{s///;ba};:b;/\([[:alnum:]]*\t\)\([0-9,]*\)\(\n.*\)\n\1\([0-9]*\)$/{s//\1\2,\4\3/;bb};ba'
+  :tags:
+  - sed
+  - sh
+  :references:
+    :url: 
+    :title: 
+- :id: '7105'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7105
+  :user_name: quabbin
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/878/
+  :language: Ruby
+  :time: 2008/08/11 14:27 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <p>標準入力からで63Byte。</p>\n\n\t"
+  :code: |
+    d=Hash.new [];$&lt;.map{|l|l.scan(/\w+/){d[$&amp;]+=[$&lt;.lineno]}};p d
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7108'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7108
+  :user_name: lunlumo
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/813/
+  :language: Scala
+  :time: 2008/08/11 12:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>　お世辞にも短いとは言い難いですが...。</p>\n\n\t"
+  :code: |
+    import scala.io._
+    import java.net._
+    import scala.collection.mutable._
+    import scala.util.matching._
+    object M extends Application{
+        Source.fromURL(new URL("http://www.gnu.org/licenses/gpl.txt")).getLines.toList.zipWithIndex.foldLeft(new HashMap[String,List[Int]]){(h,d) =&gt;
+            (new Regex("\\w+")).findAllIn(d._1).foreach{w=&gt;if(h.isDefinedAt(w))h.update(w,h.apply(w)+(d._2+1))else h.update(w,List(d._2+1))};h
+        }.elements.toList.sort{(a,b)=&gt;a._1&lt;b._1}.foreach{e=&gt;
+            printf("%s\t%s\n",e._1,e._2.tail.foldLeft(e._2.head.toString){(j,i)=&gt;j+","+i.toString})
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7111'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7111
+  :user_name: lufia
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/242/
+  :language: awk
+  :time: 2008/08/12 13:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  awk -f word.awk gpl.txt\n\t"
+  :code: |
+    {gsub(/[^a-zA-Z0-9]/, " ");for(i=1;i&lt;=NF;i++)t[$i]=t[$i]":"NR}
+    END{for(k in t)print k t[k]}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7113'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7113
+  :user_name: quabbin
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/878/
+  :language: Ruby
+  :time: 2008/08/12 12:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>前回の、数え間違えてました。\nついでなので少し改良して、55byte。</p>\n\n\t"
+  :code: |
+    d=Hash.new [];$&lt;.map{|l|l.scan(/\w+/){d[$&amp;]+=[$.]}};p d
+  :tags:
+  - LLGolf
+  - doukaku
+  - llfuture
+  :references:
+    :url: 
+    :title: 
+- :id: '7117'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7117
+  :user_name: nobsun
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/08/12 22:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ナイーブに。全然短くない</p>\n\n\t"
+  :code: "module Main where\n\nimport Control.Arrow\nimport Data.Char\nimport Data.Function\nimport
+    Data.List\n\nmain :: IO ()\nmain = print\n     . map (first head . unzip)\n     .
+    groupBy ((==) `on` fst)\n     . sortBy (compare `on` fst)\n     . concat\n     .
+    zipWith (map . flip (,)) [1..]\n     . map (map head . group . sort . map (map
+    toLower) . words')\n     . lines =&lt;&lt; getContents\n\nws :: [Char]\nws = '_':concat
+    [['0'..'9'],['a'..'z'],['A'..'Z']]\n\nwords' :: String -&gt; [String]\nwords'
+    = unfoldr phi\n  where phi ss = case dropWhile (flip notElem ws) ss of \n                   \"\"
+    \ -&gt; Nothing\n                   ss' -&gt; Just $ span (flip elem ws) ss'\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7121'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7121
+  :user_name: mc
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/08/13 13:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  seriesとcl-ppcreとdrakmaを使ってみました。\n\t"
+  :code: "(require :cl-ppcre)\n(defpackage :doukaku-198 (:use :cl :drakma :series))\n(in-package
+    :doukaku-198)\n\n(let* ((text (http-request \"http://www.gnu.org/licenses/gpl.txt\"))\n
+    \      (ht (collect-hash (scan (ppcre:all-matches-as-strings \"\\\\w+\" text))
+    \n                         (series () )\n                         :test #'equalp)))\n
+    \ (iterate ((line (scan (ppcre:split \"\\\\n\" text)))\n            (num (scan-range
+    :from 1)))\n    (dolist (w (ppcre:all-matches-as-strings \"\\\\w+\" line))\n      (push
+    num (gethash w ht))))\n  (iterate (((k v) (scan-hash ht)))\n    (format t \"~A
+    =&gt; ~A~%\" k (nreverse v))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7128'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7128
+  :user_name: hogee
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/826/
+  :language: Perl
+  :time: 2008/08/15 07:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>苦し紛れに少し短くしてみました。\n出力がイマイチ (;&lt;&gt;;)な71バイト。文章はstdin、出力はstderrで。</p>\n\n\t"
+  :code: |
+    use Data::Dumper;
+    for(;&lt;&gt;;){map{push@{$w{lc$_}},$.}/\w+/gi}warn Dumper%w
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7129'
+  :parent_id: '198'
+  :url: http://ja.doukaku.org/comment/7129
+  :user_name: terurou
+  :user_url: /web/20081119142159/http://ja.doukaku.org/user/880/
+  :language: 
+  :time: 2008/08/15 07:51 GMT
+  :vote_count: 
+  :vote_score: 
+  :body: ''
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 

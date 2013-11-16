@@ -1,0 +1,975 @@
+---
+:id: '149'
+:title: 総当たり戦の日程作成
+:comments:
+- :id: '5661'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5661
+  :user_name: ryugate
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/674/
+  :language: 
+  :time: 2008/02/03 05:10 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  <pre class=\"compact\">任意の偶数Nのチームの総当たり戦を最短日数（N-1日）で行う場合の日程表を１つ作成してください。\r\n\r\n解はひとつではない場合もあります。\r\nもし、余力があれば、全ての可能性も求めてください。\r\n\r\nこれは、スポーツスケジューリングと言う分野の問題で、数学的には、カークマンの問題と言うのが近いようです。\r\n\r\n例えば、４チームであれば、\r\n\r\n1-2
+    3-4\r\n1-3 2-4\r\n1-4 2-3\r\n\r\n６チームであれば\r\n\r\n1-2 3-4 5-6 \r\n1-3 2-5 4-6 \r\n1-4
+    2-6 3-5 \r\n1-5 2-4 3-6 \r\n1-6 2-3 4-5\r\n\r\nが解のひとつです。</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20110110025636/http://www004.upp.so-net.ne.jp/s_honma/kirkman/kirkman.htm
+    :title: カークマンの組分け
+- :id: '5720'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5720
+  :user_name: 匿名
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/4/
+  :language: Scheme
+  :time: 2008/02/10 05:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>参考にあったアルゴリズムを使いました。</p>\n\r\n\t"
+  :code: |
+    (define (kirkman-2 n)
+      (define (first n)
+        (append '((1 2)) (comb 3 n)))
+      (define (comb low high)
+        (if (= (- high low) 1)
+        (list (list low high))
+        (cons (list low high)(comb (+ low 1) (- high 1)))))
+      (define (rotate m n list)
+        (map
+         (lambda (ilist) (map (lambda (i) (+ (% (+ i m) n) 1)) ilist))
+         list))
+
+      (define (iter-rotate m datalist)
+        (if (= m 0)
+        '()
+        (cons (rotate m n datalist) (iter-rotate (- m 1) datalist))))
+      (iter-rotate n (first n)))
+    (display (kirkman-2 6))
+    (newline)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5703'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5703
+  :user_name: あにす
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/02/08 11:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>参考資料にあった方法で実装しました。</p>\n\r\n\t"
+  :code: |
+    //http://ja.doukaku.org/149/　投稿用
+    using System;
+    using System.Collections.Generic;
+
+    class Program {
+        static void Main(string[] args) {
+            int teamCount = int.Parse(args[0]);
+            List&lt;List&lt;int[]&gt;&gt; leageSchedule = Leage(teamCount);
+
+            //出力
+            for(int day = 0; day &lt; leageSchedule.Count; day++) {
+                for(int game = 0; game &lt; leageSchedule[day].Count; game++) {
+                    int min = Math.Min(leageSchedule[day][game][0], leageSchedule[day][game][1]);
+                    int max = Math.Max(leageSchedule[day][game][0], leageSchedule[day][game][1]);
+                    Console.Write("{0}-{1} ", min, max);
+                }
+                Console.WriteLine();
+            }
+            Console.ReadLine();
+        }
+
+        static List&lt;List&lt;int[]&gt;&gt; Leage(int teamCount) {
+            //チームリスト生成
+            List&lt;int&gt; teamList = new List&lt;int&gt;();
+            for(int teamNumber = 1; teamNumber &lt;= teamCount; teamNumber++) {
+                teamList.Add(teamNumber);
+            }
+
+            //各組み合わせを生成
+            List&lt;List&lt;int[]&gt;&gt; leageSchedule = new List&lt;List&lt;int[]&gt;&gt;();
+            for(int day = 0; day &lt; teamCount - 1; day++) {
+                List&lt;int[]&gt; daySchedule = new List&lt;int[]&gt;();
+                daySchedule.Add(new int[] { teamList[0], teamList[1] });
+                for(int game = 1; game &lt;= teamCount / 2 - 1; game++) {
+                    daySchedule.Add(new int[] { teamList[1 + game], teamList[teamList.Count - game] });
+                }
+                leageSchedule.Add(daySchedule);
+                teamList.Add(teamList[1]);
+                teamList.RemoveAt(1);
+            }
+            return leageSchedule;
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5712'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5712
+  :user_name: yuin
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/02/09 02:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>すみません、いらないprintlnが入ってました。</p>\n\r\n\t"
+  :code: "def cycleS[T](a:Seq[T],i:int,j:int) = Stream.const(a).flatMap(v=&gt;v).slice(i,j)\ndef
+    sportsScheduling(n:int) = {\n  List((1 to n)).map{ lst =&gt; \n    val x = n/2-1;val
+    root = lst(0)\n    (0 to n-2).map{i =&gt;\n      val c = cycleS(cycleS(lst, 1,
+    n), i+x+1, i+x+n)\n      (root, c(x))::((1 to x).map{j =&gt; (c(x+j), c(x-j))}.toList)\n
+    \   }.toList\n  }.toList\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5908'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5908
+  :user_name: ryugate
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/674/
+  :language: Erlang
+  :time: 2008/03/01 12:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>無かったので、書いてみました。\nScala版の移植です。</p>\n\r\n\t"
+  :code: "-module(match_sche).\n-export([make/1]).\n\nmake(L) -&gt; make_loop([],
+    L).\n\nmake_loop(Acc, [H|L]) -&gt;\n  if\n    length(Acc) =:= length(L) -&gt;
+    Acc;\n    true -&gt; \n      {A,B}   = lists:split(round(length([H|L])/2), [H|L]),\n
+    \     Newacc  = [lists:zip(A, lists:reverse(B))|Acc],\n      [LH|LL] = L,\n      Newl
+    \   = [H|lists:append(LL,[LH])],\n      make_loop(Newacc, Newl)\n  end.\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5711'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5711
+  :user_name: yuin
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/02/09 02:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>とりあえず。</p>\n\r\n\t"
+  :code: "def cycleS[T](a:Seq[T],i:int,j:int) = Stream.const(a).flatMap(v=&gt;v).slice(i,j)\ndef
+    sportsScheduling(n:int) = {\n  List((1 to n)).map{ lst =&gt; \n    val x = n/2-1;val
+    root = lst(0)\n    (0 to n-2).map{i =&gt;\n      println(i)\n      val c = cycleS(cycleS(lst,
+    1, n), i+x+1, i+x+n)\n      (root, c(x))::((1 to x).map{j =&gt; (c(x+j), c(x-j))}.toList)\n
+    \   }.toList\n  }.toList\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5901'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5901
+  :user_name: margarite
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/741/
+  :language: Perl
+  :time: 2008/02/29 19:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Perlが無かったので投稿します。\n参考ページを見たのにこんなソースになりました。</p>\n\r\n\t"
+  :code: |
+    #!/usr/bin/perl
+    use strict;
+
+    sub league{
+        my ($team) = shift;
+        my @rev  = (2 .. $team, 2 .. $team);
+        for(my $h=0; $h&lt;($team-1); $h++){
+            print "[1,$rev[$h]]";
+            for(my $i=1; $i&lt;($team-1)/2; $i++){
+                print "[$rev[$i+$h],$rev[-($i-$h)]]";
+            }
+            print "\n";
+        }
+    }
+
+    league(6);
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6768'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/6768
+  :user_name: ytakenaka
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/35/
+  :language: R
+  :time: 2008/07/19 17:20 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\r\n\t  <pre class=\"compact\">&gt; karkman(6)\r\n[[1]]\r\n[1] \"1-2\" \"1-3\"
+    \"1-4\" \"1-5\" \"1-6\"\r\n\r\n[[2]]\r\n[1] \"2-3\" \"2-4\" \"2-5\" \"2-6\"\r\n\r\n[[3]]\r\n[1]
+    \"3-4\" \"3-5\" \"3-6\"\r\n\r\n[[4]]\r\n[1] \"4-5\" \"4-6\"\r\n\r\n[[5]]\r\n[1]
+    \"5-6\"\r\n\r\n&gt; karkman(4)\r\n[[1]]\r\n[1] \"1-2\" \"1-3\" \"1-4\"\r\n\r\n[[2]]\r\n[1]
+    \"2-3\" \"2-4\"\r\n\r\n[[3]]\r\n[1] \"3-4\"\r\n\r\n&gt; </pre>\r\n\t"
+  :code: |2
+     karkman&lt;-function(y)mapply(function(x)(paste(x,(x+1):y,sep="-")), 1:(y-1))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6455'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/6455
+  :user_name: ytakenaka
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/35/
+  :language: Common
+  :time: 2008/06/09 21:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>今度はマクロ版loop2dは2回連続ループを繰り返すときに使うマクロになってる。ややこしいけど。</p>\n\r\n\t"
+  :code: |
+    (defmacro loop2d (((x xmin xmax &amp;body prebody)
+               (y ymin ymax &amp;body postbody)) &amp;body body)
+      `(loop for ,x from ,xmin to ,xmax do
+        ,@prebody
+        (loop for ,y from ,ymin to ,ymax do
+             ,@body)
+        ,@postbody))
+
+    (defmacro kirkman-macro (team-number)
+      (let ((x (gensym)) (y (gensym)))
+      `(loop2d ((,x 1 ,team-number) (,y ,x ,team-number))
+          (unless (equal ,x ,y)
+        (format t "~a - ~a~%" ,x ,y)))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6595'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/6595
+  :user_name: genzou
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/06/26 08:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\"></pre>\r\n\t"
+  :code: |
+    def n = 6
+    def pairs = []
+    (1..n).each{ x -&gt;
+        (1..n).each{ y -&gt;
+            pairs &lt;&lt; [x, y].sort()
+        }
+    }
+
+    // 出力
+    pairs.findAll{ it[0] != it[1] }.unique().each{
+        println it
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6808'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/6808
+  :user_name: 匿名
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/07/23 03:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>いやそうではなくて、総当たり戦の「最短日程」を求めるのが題意です。総当たり戦の組み合わせを列挙するだけではなく、さらに同時に行える試合を見つけて組み合わせる事が求められています。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6811'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/6811
+  :user_name: kkobayashi
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/232/
+  :language: 
+  :time: 2008/07/23 15:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>あああ、言葉足らずですみません。</p>\n<p>匿名さんのおっしゃる通り、組み合わせを列挙するだけではお題の意図に反するのでは？と思ったのでした。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5704'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5704
+  :user_name: Otter
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2008/02/08 11:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>とりあえず、力技です．．．何とかきれいにしたいと思ったのですが．．．引き続き努力します。</p>\n<p>n=20ぐらいまでやってみました．．．よい問題ですね！</p>\n\r\n\t"
+  :code: "module Main\n    where\n\nn = 6\n\nfirsts = [(1, x) | x &lt;- [2..n]]\nrests
+    = [(x, y) | x &lt;- [2..n], y &lt;- [(x+1)..n]]\n\ncMatchesPerDay = n `div` 2\n\nfilterCollision
+    :: [(Int, Int)] -&gt; (Int, Int) -&gt; [(Int, Int)]\nfilterCollision lst (x, y)
+    = filter (matchxory.fst) $ filter (matchxory.snd) lst\n    where \n        matchxory
+    :: Int -&gt; Bool\n        matchxory a = (a /= x) &amp;&amp; (a /= y)\n\ndayMatches
+    :: [(Int, Int)] -&gt; Int -&gt; [(Int, Int)] -&gt; [(Int, Int)]\ndayMatches (x:xs)
+    1 t = t ++ [x]\ndayMatches [] _ t = t\n\ndayMatches restsFiltered@(x:xs) c daymatch\n
+    \   | (length next) /= cMatchesPerDay = dayMatches xs c daymatch\n    | otherwise
+    = next\n    where\n        next = dayMatches (filterCollision xs x) (c - 1) (daymatch
+    ++ [x])\n\ngenerateTournament :: (Int, Int) -&gt; [(Int, Int)] -&gt; ([(Int, Int)],
+    [(Int, Int)])\ngenerateTournament firstMatch moves = (tournament, moves')\n    where\n
+    \       tournament = dayMatches (filterCollision moves firstMatch) (cMatchesPerDay
+    - 1) [firstMatch]\n        moves' = filter (\\x -&gt; not $ elem x tournament)
+    moves\n\nmapToFirsts [] _ = []\nmapToFirsts (x:xs) moves = (tournament : mapToFirsts
+    xs moves')\n    where\n        (tournament, moves') = generateTournament x moves\n\nshowMatches
+    lst = mapM_ (putStrLn.show) lst\n\nmain = showMatches $ mapToFirsts firsts rests\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5697'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5697
+  :user_name: こう。
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2008/02/07 03:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">あえて参考資料を見ないで作ってみました。\r\nビットでフラグ立ててるので16か32組まで対応しているはず。</pre>\r\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n\nvoid
+    leage(int n){\n    int i,j,k;\n    int mapsize;\n    int *map;\n    mapsize=(n-1)*(n-1)*sizeof(int);\n
+    \   map=(int*)malloc(mapsize);\n    memset(map,0,mapsize);\n/*\n表の割り当て\n実際は半分の容量でよい\n
+    \     j=   0 1 2 ..n-2\n         1 2 3 4 ..n\n i=0  1 XX\n   1  2 XXXX\n   2  3
+    XXXXXX\n   3  4 XXXXXXXX\n   :  :\n  n-1 n\n*/\n    for(i=0;i&lt;n-1;i++){    //行方向のループ\n
+    \       for(j=i;j&lt;n-1;j++){//列方向のループ\n            if(i==0){\n            //1のチームはシンプルな組み合わせとし、\n
+    \           //この部分はチームスケジュールフラグとする\n                map[j]=1&lt;&lt;j;\n            }else{\n
+    \               //あいている日程の検索\n                //とりあえず、上の欄の次にしてみる\n                k=map[(i-1)*(n-1)+j];\n\n
+    \               if((k*=2)&amp;((1&lt;&lt;(n-1))-1)==0) k=1;    //左にビットローテーション\n\n
+    \               \n                while((map[j]|map[i-1])&amp;k){    //両チームの予定が埋まってたら次の日程で\n
+    \                   if((k*=2)&amp;((1&lt;&lt;(n-1))-1)==0) k=1;    //左にビットローテーション\n
+    \               }\n                //日程の決定\n                map[i*(n-1)+j]=k;\n
+    \               //チームスケジュールの登録\n                map[j]|=k;\n            }\n        }\n
+    \   }\n    //スケジュールの表示\n    for(k=0;k&lt;n-1;k++){    //日程のループ\n        //1のチームはシンプルな組み合わせにする。\n
+    \       printf(\"%d:1-%d \",k+1,k+2);\n        //それ以外のチームの検索\n        for(i=1;i&lt;n-1;i++){
+    \   //行方向のループ\n            for(j=i;j&lt;n-1;j++){//列方向のループ\n                if(map[i*(n-1)+j]==(1&lt;&lt;k))
+    \   //予定日だったら表示\n                    printf(\"%d-%d \",i+1,j+2);\n            }\n
+    \       }\n        printf(\"\\n\");\n    }\n    printf(\"\\n\");\n    free(map);\n}\n\nint
+    main(){\n    \n    leage(2);\n    leage(4);\n    leage(6);\n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5709'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5709
+  :user_name: Otter
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/497/
+  :language: 
+  :time: 2008/02/09 01:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>この解にマイナス特典がついている理由は何ですか？回答のうちでは１－２位を争うほどシンプルな回答だと思うのですが？</p>\n<p>コードを読んでいて、なぜこれでちゃんと動くのか、ちょっと不思議な感じもしますが、N=6では確かに動いてますよね？\nなぜ動くのかを理解しようとがんばっていたところです…</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5773'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5773
+  :user_name: mootoh
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/718/
+  :language: C
+  :time: 2008/02/18 11:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>半日ほど、全部の組み合わせを求めてフィルタする方法を考えてたんですが、ギブアップして参考URLの考え方を見ました。シンプルなアルゴリズムに感動。</p>\n<p>簡単なテストケースをつけました。</p>\n\r\n\t"
+  :code: "#include &lt;string&gt;\n#include &lt;sstream&gt;\n#include &lt;vector&gt;\n#include
+    &lt;iostream&gt;\nusing namespace std;\n\ntypedef vector &lt;string&gt; VS;\n\nVS
+    kirkman(int n) {\n  VS result;\n  int ring[n-1], vertex[n-1]; \n\n  for (int i(0);
+    i&lt;n-1; i++)\n    ring[i] = i+2;\n\n  for (int i(0); i&lt;n-1; i++) {\n    //
+    rotate ring\n    for (int j(0); j&lt;n-1; j++)\n      vertex[j] = ring[(j+i) %
+    (n-1)];\n\n    stringstream ss(\"\");\n    // 1 is special case\n    ss &lt;&lt;
+    \"1-\" &lt;&lt; vertex[0] &lt;&lt; ' ';\n\n    for (int j(0); j&lt;n/2-1; j++)\n
+    \     ss &lt;&lt; vertex[j+1] &lt;&lt; '-' &lt;&lt; vertex[n-2-j] &lt;&lt; ' ';\n\n
+    \   string s(ss.str());\n    result.push_back(string(s, 0, s.size()-1)); // chop
+    tail ','\n  }\n\n  return result;\n}\n\nvoid test(string expected[], int n) {\n
+    \ VS vs(expected, expected+n-1);\n  VS result(kirkman(n)); \n  if (vs != result)
+    {\n    cerr &lt;&lt; \"failed:\" &lt;&lt; endl;\n    cerr &lt;&lt; \"  expected:
+    \";\n    for (VS::iterator i(vs.begin()); i!=vs.end(); i++) {\n      cerr &lt;&lt;
+    *i &lt;&lt; \", \";\n    } cerr &lt;&lt; endl;\n    cerr &lt;&lt; \"  actual:
+    \";\n    for (VS::iterator i(result.begin()); i!=result.end(); i++) {\n      cerr
+    &lt;&lt; *i &lt;&lt; \", \";\n    } cerr &lt;&lt; endl;\n  }\n}\n\nvoid test_0()
+    {\n  string ss[] = {\"1-2 3-4\", \"1-3 4-2\", \"1-4 2-3\"};\n  test(ss, 4);\n}\n\nvoid
+    test_1() {\n  string ss[] = {\n    \"1-2 3-6 4-5\", \"1-3 4-2 5-6\", \"1-4 5-3
+    6-2\",\n    \"1-5 6-4 2-3\", \"1-6 2-5 3-4\"};\n  test(ss, 6);\n}\n\nint main(int
+    argc, char **argv) {\n  test_0();\n  test_1();\n  return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6716'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/6716
+  :user_name: 匿名
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/07/11 09:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">これだと肝心の日程の処理がないのでは？\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6819'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/6819
+  :user_name: '[1..100]&amp;gt;&amp;gt;=pen'
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2008/07/24 06:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">全解探索。未対戦相手覚えとく表に Map を利用。\r\n1日目の対戦は [(1,2),(3,4)...(N-1,N)]
+    に固定。\r\ni日目のチーム１の対戦相手はチーム(i+1)に固定。\r\n\r\nstateTモナド変換子の勉強になりました。\r\n</pre>\r\n\t"
+  :code: |
+    import Data.List (delete,intersect)
+    import Data.Map (fromList,(!),update)
+    import Control.Monad (mapM)
+    import Control.Monad.State (get,put,lift,evalStateT)
+
+    roundRobin n = evalStateT (mapM f [2..n]) $ fromList
+      $ [(j,matches)| i &lt;- [1,3..n], j &lt;- [i,i+1],
+          let matches = [2..i-1] ++ [i+2..n]]  where
+
+      f 2 = return [(i,i+1)| i &lt;- [1,3..n]]  -- １日目    [(1,2),(3,4)...(n-1,n)]
+      f i = g [(1,i)] (delete i [2..n])      -- (i-1)日目 [(1,i), ??? ]
+
+      g ms [] = return ms
+      g ms (x1:xs) = do
+        r &lt;- get
+        x2 &lt;- lift $ xs `intersect` (r!x1)
+        put $ update (Just.(delete x1)) x2 $ update (Just.(delete x2)) x1 r
+        g (ms++[(x1,x2)]) (delete x2 xs)
+
+    printRoundRobin n = mapM_ print $ roundRobin n
+    {-
+    &gt; printRoundRobin 6
+    [[(1,2),(3,4),(5,6)],[(1,3),(2,5),(4,6)],[(1,4),(2,6),(3,5)],[(1,5),(2,4),(3,6)],[(1,6),(2,3),(4,5)]]
+    [[(1,2),(3,4),(5,6)],[(1,3),(2,6),(4,5)],[(1,4),(2,5),(3,6)],[(1,5),(2,3),(4,6)],[(1,6),(2,4),(3,5)]]
+    -}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5714'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5714
+  :user_name: ryugate
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/674/
+  :language: Ruby
+  :time: 2008/02/09 15:08 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\r\n\t  <pre class=\"compact\">一応、全ての可能性を探っているはず・・・\r\n（結果表示は数だけ）\r\nだけど、あんまり自信無し・・・（^^;）\r\n\r\nポイントは、「とにかく、injectを使ってみる」です。(^^\r\n</pre>\r\n\t"
+  :code: "def allsche(num)\n  teams = (1..num).to_a\n  headteam = teams[0,1]\n  anotherteams
+    = teams[1..-1]\n  anotherteams.permutations.inject([]) {|result, ar|\n    result
+    &lt;&lt; match_sche(headteam, ar)\n  }\nend\n\ndef match_sche(headteam , anotherteams)\n
+    \ (1..anotherteams.length).inject([]) {|result, notuse|\n    teams = headteam
+    + anotherteams\n    anotherteams = anotherteams.rotate\n    spar = teams.split(teams.length
+    / 2)\n    result &lt;&lt; spar[0].zip(spar[1].reverse)\n  }\nend\n\nclass Array\n
+    \ def permutations\n    if empty?\n      [[]]\n    else\n      inject([]) {|result,
+    item|\n        minusone = self - [item]\n        subperms = minusone.permutations\n
+    \       newperms = subperms.map{|pm| [item] + pm }\n        result + newperms\n
+    \     }\n    end\n  end\n\n  def rotate(n = 1)\n    (1..n).inject(self.dup) {|result,
+    notuse| [result.pop] + result }\n  end\n  \n  def split(n)\n    [self[0,n], self[n..-1]]\n
+    \ end\nend\n\n# MAIN\nrequire 'pp'\nallsche =  allsche(ARGV[0].to_i)\nputs allsche.length\npp
+    allsche[0]\n"
+  :tags: []
+  :references:
+    :url: /web/20110110025636/http://d.hatena.ne.jp/ha-tan/20070611/1181570186
+    :title: 順列の生成とList内包表記
+- :id: '5739'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5739
+  :user_name: ryugate
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/674/
+  :language: Scala
+  :time: 2008/02/11 13:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">Listを引数にとるバージョン\r\n全組み合わせ出力への１歩\r\n（・・・しかし、型がList[List[(T,T)]]とかなると、やっぱりちょっと見難いなぁ）</pre>\r\n\t"
+  :code: |
+    object sche {
+      def match_sche[T](t:List[T]) = match_sche_loop(List(), t)
+      def match_sche_loop[T](acc:List[List[(T,T)]], l:List[T]):List[List[(T,T)]] = {
+        if (acc.length == (l.length-1)) acc
+        else {
+          val sp     = l.splitAt(l.length/2)
+          val newacc = sp._1.zip(sp._2.reverse) :: acc
+          val newl   = l.head :: l.tail.tail ::: List(l.tail.head)
+          match_sche_loop(newacc, newl)
+        }
+      }
+
+      def main(args: Array[String]) {
+        val n = args(0).toInt
+        match_sche((1 to n).toList).foreach {println(_)}
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6286'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/6286
+  :user_name: ytakenaka
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/35/
+  :language: Common
+  :time: 2008/05/17 11:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>再帰版です。</p>\n<p>完全再帰版ではないけどご勘弁を。\nCL-USER&gt; (setf list '(1 2
+    3 4))\n(1 2 3 4)\nCL-USER&gt; (kirkman-result list)\n1-2\n1-3\n1-4\n2-3\n2-4\n3-4\nNIL\nCL-USER&gt;</p>\n\r\n\t"
+  :code: |
+    (defun kirkman (list result)
+           (if (null list)
+           result
+           (kirkman (cdr list)
+                (append result
+                    (mapcar #'(lambda(x)(cons (car list) x))
+                        (cdr list))))))
+
+    (defun kirkman-result (list)
+      (loop for i in (kirkman list nil) do
+           (format t "~s-~s ~%" (car i) (cdr i))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6770'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/6770
+  :user_name: kkobayashi
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2008/07/20 12:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <div class=\"section\">\n<p>出力結果を見ると、お題の意図とは違うような気がします（読み間違えてたらすみません）\r</p>\n<p>\r</p>\n<p>Rらしさは全くありませんが、参考URLに記載されたアルゴリズムを素直に実装してみました。</p>\n</div>\r\n\t"
+  :code: |
+    kirkman &lt;- function(n=6){
+        l &lt;- 2:n
+        fold &lt;- n/2
+
+        for(i in 2:n){
+            print(paste(c(1, l[c(2:fold)]), c(i, l[(n-1):(fold+1)])))
+            l &lt;- c(l[-1], l[1])
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6805'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/6805
+  :user_name: ytakenaka
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/35/
+  :language: R
+  :time: 2008/07/22 22:55 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\r\n\t  <pre class=\"compact\">リストでかえしただけが悪いんですかね?じゃあ追加しておきましょう。\r\n&gt;
+    print.karkman(4)\r\n1-2 \r\n1-3 \r\n1-4 \r\n2-3 \r\n2-4 \r\n3-4 \r\n&gt; print.karkman(6)\r\n1-2
+    \r\n1-3 \r\n1-4 \r\n1-5 \r\n1-6 \r\n2-3 \r\n2-4 \r\n2-5 \r\n2-6 \r\n3-4 \r\n3-5
+    \r\n3-6 \r\n4-5 \r\n4-6 \r\n5-6 \r\n&gt; </pre>\r\n\t"
+  :code: |2
+     print.karkman&lt;-function(x)for(i in karkman(x))for(j in i)cat(j,"\n")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6709'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/6709
+  :user_name: pooq
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/606/
+  :language: J
+  :time: 2008/07/09 01:15 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">   h 4\r\n+---+---+\r\n|1 2|3 4|\r\n+---+---+\r\n|1
+    3|4 2|\r\n+---+---+\r\n|1 4|2 3|\r\n+---+---+\r\n   h 6\r\n+---+---+---+\r\n|1
+    2|3 6|4 5|\r\n+---+---+---+\r\n|1 3|4 2|5 6|\r\n+---+---+---+\r\n|1 4|5 3|6 2|\r\n+---+---+---+\r\n|1
+    5|6 4|2 3|\r\n+---+---+---+\r\n|1 6|2 5|3 4|\r\n+---+---+---+\r\n   h 8\r\n+---+---+---+---+\r\n|1
+    2|3 8|4 7|5 6|\r\n+---+---+---+---+\r\n|1 3|4 2|5 8|6 7|\r\n+---+---+---+---+\r\n|1
+    4|5 3|6 2|7 8|\r\n+---+---+---+---+\r\n|1 5|6 4|7 3|8 2|\r\n+---+---+---+---+\r\n|1
+    6|7 5|8 4|2 3|\r\n+---+---+---+---+\r\n|1 7|8 6|2 5|3 4|\r\n+---+---+---+---+\r\n|1
+    8|2 7|3 6|4 5|\r\n+---+---+---+---+\r\n</pre>\r\n\t"
+  :code: |
+    f=:3 :'1,.(|."0 1(2&amp;+))i.&lt;:y'
+    g=:3 :',&lt;"1|:({.,:|.@{:)(--:#y)[\y'
+    h=:3 :'1|.g"1 f y'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5729'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5729
+  :user_name: Jlake
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/658/
+  :language: JavaScript
+  :time: 2008/02/11 03:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">結果：\r\n1-2 6-3 5-4\r\n1-6 5-2 4-3\r\n1-5
+    4-6 3-2\r\n1-4 3-5 2-6\r\n1-3 2-4 6-5</pre>\r\n\t"
+  :code: |
+    &lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"&gt;
+    &lt;html&gt;
+    &lt;head&gt;
+    &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;
+    &lt;title&gt;総当たり戦の日程作成&lt;/title&gt;
+    &lt;script type="text/javascript"&gt;
+    /**
+     * 配列を回転する
+     */
+    function rotateArray(aOld) {
+        var iLast = aOld.length - 1;
+        return [aOld[iLast]].concat(aOld.slice(0, iLast));
+    }
+
+    /**
+     * 総当たり戦のスケジュール作成
+     */
+    function getLeageSchedule(aTeam) {
+        var aResult = [];
+        if(aTeam.length%2 != 0) {
+            aTeam.push('');
+        }
+        var vFirst = aTeam[0];
+        var aCycle = aTeam.slice(1);
+        var iHalfLen = aTeam.length/2;
+        for(var i=0; i&lt;aCycle.length; i++) {
+            var aLeft = [vFirst].concat(aCycle.slice(iHalfLen).reverse());
+            var aRight = aCycle.slice(0, iHalfLen);
+            var aGames = [];
+            for(var j=0; j&lt;aLeft.length; j++) {
+                if(aLeft[j] != '' &amp;&amp; aRight[j] != '') {
+                    aGames.push(aLeft[j] + '-' + aRight[j]);
+                }
+            }
+            aResult.push(aGames);
+            aCycle = rotateArray(aCycle);
+        }
+        return aResult;
+    }
+
+    //テスト
+    var aTeam = [1,2,3,4,5,6];
+    var aSchedule = getLeageSchedule(aTeam);
+    for(var i=0; i&lt;aSchedule.length; i++) {
+        document.write(aSchedule[i].join('  ') + '&lt;br/&gt;');
+    }
+    &lt;/script&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+    &lt;/body&gt;
+    &lt;/html&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6185'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/6185
+  :user_name: 匿名
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/4/
+  :language: Common
+  :time: 2008/04/19 19:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>オーソドックスに。</p>\n\r\n\t"
+  :code: |
+    (defun kerkman (n)
+      (let ((x (iota n)))
+        (dotimes (cnt (- n 1))
+          (print (comb x))
+          (setq x (rotate x)))))
+
+    (defun comb (x)
+      (labels ((rec (x acc)
+             (if x
+                 (rec (reverse (cdr (reverse (cdr x))))
+                  (cons (cons (car x) (last x)) acc))
+               acc)))
+           (rec x nil)))
+
+    (defun iota (n)
+      (labels ((rec (n acc)
+            (if (zerop n)
+                acc
+              (rec (- n 1) (cons n acc)))))
+          (rec n nil)))
+
+    (defun rotate (x)
+      (append (list (car x)) (cddr x) (list (cadr x))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5705'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5705
+  :user_name: Sixeight
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/710/
+  :language: Ruby
+  :time: 2008/02/08 14:03 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">あまり奇麗ではありませんが。\r\n\r\nscheduling 6\r\n\r\n#
+    =&gt; [[1, 2], [6, 3], [5, 4]]\r\n     [[1, 6], [5, 2], [4, 3]]\r\n     [[1, 5],
+    [4, 6], [3, 2]]\r\n     [[1, 4], [3, 5], [2, 6]]\r\n     [[1, 3], [2, 4], [6,
+    5]]</pre>\r\n\t"
+  :code: |
+    def scheduling(n)
+      teams = [1] + (2..n).to_a.reverse
+      half = n / 2
+      (n - 1).times do
+        p teams[0, half].zip teams[half, half].reverse
+        teams = [1] + teams[2..-1].push(teams[1])
+      end
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5706'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5706
+  :user_name: sumim
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/02/08 17:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>Squeak Smalltalk で。</p>\n\r\n\t"
+  :code: "| チーム数 全試合 待ち行列 全結果 |\nチーム数 := 6.\n全試合 := OrderedCollection new.\n(1 to:
+    チーム数) combinations: 2 atATimeDo: [:対戦ペア | 全試合 add: 対戦ペア copy].\n待ち行列 := OrderedCollection
+    with: {Set new. Set new. 1 to: チーム数. 全試合}.\n全結果 := Set new.\n[待ち行列 notEmpty] whileTrue:
+    [\n    | 分岐点 |\n    分岐点 := 待ち行列 removeFirst.\n    分岐点 third\n        ifEmpty:
+    [待ち行列 add: {分岐点 first, {分岐点 second}. Set new. 1 to: チーム数. 分岐点 last}] \n        ifNotEmpty:
+    [\n            分岐点 last ifEmpty: [全結果 add: 分岐点 first] ifNotEmpty: [\n                分岐点
+    second\n                    ifEmpty: [\n                        | next |\n                        next
+    := 分岐点 last detect: [:each | 分岐点 third includesAllOf: each].\n                        待ち行列
+    add: {\n                            分岐点 first.\n                            Set
+    with: next.\n                            分岐点 third copyWithoutAll: next.\n                            分岐点
+    last copyWithout: next}]\n                    ifNotEmpty: [\n                        (分岐点
+    last reject: [:対戦 |\n                                分岐点 second anySatisfy: [:確定分
+    |\n                                    対戦 includesAnyOf: 確定分]]) do: [:次の試合 |\n
+    \                           待ち行列 add: {\n                                分岐点 first.\n
+    \                               分岐点 second copyWith: 次の試合.\n                                分岐点
+    third copyWithoutAll: 次の試合.\n                                分岐点 last copyWithout:
+    次の試合}]]]]].\n^全結果 asArray collect: [:リーグ |\n    リーグ asArray collect: [:日程 |\n
+    \       日程 asArray collect: [:対戦ペア | 対戦ペア first @ 対戦ペア second]]]\n\n\"=&gt; {\n{{1@2.
+    4@5. 3@6}. {2@6. 1@4. 3@5}. {2@3. 1@5. 4@6}. {2@5. 1@6. 3@4}. {2@4. 1@3. 5@6}}.
+    \n{{2@6. 1@4. 3@5}. {2@4. 1@5. 3@6}. {2@3. 1@6. 4@5}. {2@5. 1@3. 4@6}. {1@2. 5@6.
+    3@4}}. \n{{1@2. 5@6. 3@4}. {2@3. 1@5. 4@6}. {2@6. 1@3. 4@5}. {2@4. 1@6. 3@5}.
+    {2@5. 1@4. 3@6}}. \n{{1@2. 4@6. 3@5}. {2@6. 1@5. 3@4}. {2@4. 1@3. 5@6}. {2@3.
+    1@6. 4@5}. {2@5. 1@4. 3@6}}. \n{{1@2. 4@6. 3@5}. {2@4. 1@5. 3@6}. {2@6. 1@3. 4@5}.
+    {2@3. 1@4. 5@6}. {2@5. 1@6. 3@4}}. \n{{1@2. 4@5. 3@6}. {2@3. 1@4. 5@6}. {2@6.
+    1@5. 3@4}. {2@5. 1@3. 4@6}. {2@4. 1@6. 3@5}}} \"\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5707'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5707
+  :user_name: 匿名
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/02/08 19:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>1日の試合数分のジェネレーターを作って、そこで組み合わせを作成。</p>\n\r\n\t"
+  :code: "from itertools import izip\n\ndef matchmake1(team):\n    for i in xrange(1,
+    team):\n        yield [1, i + 1]\n        \ndef matchmake2(i, j, team):\n    def
+    next_day(k):\n        while 1:\n            yield k\n            k = k + 1 if
+    k &lt; team else 2\n\n    for match in izip(next_day(i), next_day(j)):\n        yield
+    list(match)\n\ndef schedule(team):\n    leagu = [matchmake1(team)]\n    for i,
+    j in izip(xrange(3, team / 2 + 2), xrange(team, 0, -1)):\n        leagu.append(matchmake2(i,
+    j, team))\n\n    for match in izip(*leagu):\n        print list(match)\n\nif __name__
+    == '__main__':\n    schedule(6)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5696'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5696
+  :user_name: yohei
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/415/
+  :language: Prolog
+  :time: 2008/02/06 22:23 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">日にちだけの入れ替えを除いて，全通り出力．並びが逆になってるので見づらいですが．\r\n4
+    teams\r\n[[2-3, 1-4], [2-4, 1-3], [3-4, 1-2]]\r\n6 teams\r\n[[4-5, 2-3, 1-6],
+    [3-6, 2-4, 1-5], [3-5, 2-6, 1-4], [4-6, 2-5, 1-3], [5-6, 3-4, 1-2]]\r\n[[4-5,
+    2-3, 1-6], [3-4, 2-6, 1-5], [3-6, 2-5, 1-4], [5-6, 2-4, 1-3], [4-6, 3-5, 1-2]]\r\n[[3-5,
+    2-4, 1-6], [4-6, 2-3, 1-5], [3-6, 2-5, 1-4], [4-5, 2-6, 1-3], [5-6, 3-4, 1-2]]\r\n[[3-4,
+    2-5, 1-6], [4-6, 2-3, 1-5], [3-5, 2-6, 1-4], [5-6, 2-4, 1-3], [4-5, 3-6, 1-2]]\r\n[[3-5,
+    2-4, 1-6], [3-4, 2-6, 1-5], [5-6, 2-3, 1-4], [4-6, 2-5, 1-3], [4-5, 3-6, 1-2]]\r\n[[3-4,
+    2-5, 1-6], [3-6, 2-4, 1-5], [5-6, 2-3, 1-4], [4-5, 2-6, 1-3], [4-6, 3-5, 1-2]]</pre>\r\n\t"
+  :code: |
+    match([_], []).
+    match([X|Xs], Ys) :-
+        group_pairs_by_key(Y, [X-Xs]), append(Y, Y1, Ys), match(Xs, Y1).
+
+    game([], G, G).
+    game([X1-X2|Xs], Ys, G) :-
+        append(Y1, [Y|Y2], Ys), \+ memberchk(Y, Y2),
+        \+ memberchk(X1-_, Y), \+ memberchk(_-X1, Y),
+        \+ memberchk(X2-_, Y), \+ memberchk(_-X2, Y),
+        append(Y1, [[X1-X2|Y]|Y2], Z), game(Xs, Z, G).
+
+    round_robin(N, G) :- N mod 2 =:= 0,
+        numlist(1, N, X), match(X, Y), N1 is N - 1,
+        length(G0, N1), maplist(ord_empty, G0), game(Y, G0, G).
+
+    :-  writeln('4 teams'), forall(round_robin(4, G), writeln(G)),
+        writeln('6 teams'), forall(round_robin(6, G), writeln(G)).
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5715'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5715
+  :user_name: nskj77
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/375/
+  :language: Haskell
+  :time: 2008/02/09 15:27 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">久し振りの投稿です。\r\n\r\n*Main&gt; :main\r\n[[(1,2),(3,4),(5,6)],[(1,3),(2,5),(4,6)],[(1,4),(2,6),(3,5)],[(1,5),(2,4),(3,6)],[(1,6),(2,3),(4,5)]]\r\n[[(1,2),(3,4),(5,6)],[(1,3),(2,6),(4,5)],[(1,4),(2,5),(3,6)],[(1,5),(2,3),(4,6)],[(1,6),(2,4),(3,5)]]\r\n[[(1,2),(3,5),(4,6)],[(1,3),(2,4),(5,6)],[(1,4),(2,5),(3,6)],[(1,5),(2,6),(3,4)],[(1,6),(2,3),(4,5)]]\r\n[[(1,2),(3,5),(4,6)],[(1,3),(2,6),(4,5)],[(1,4),(2,3),(5,6)],[(1,5),(2,4),(3,6)],[(1,6),(2,5),(3,4)]]\r\n[[(1,2),(3,6),(4,5)],[(1,3),(2,4),(5,6)],[(1,4),(2,6),(3,5)],[(1,5),(2,3),(4,6)],[(1,6),(2,5),(3,4)]]\r\n[[(1,2),(3,6),(4,5)],[(1,3),(2,5),(4,6)],[(1,4),(2,3),(5,6)],[(1,5),(2,6),(3,4)],[(1,6),(2,4),(3,5)]]\r\n</pre>\r\n\t"
+  :code: |
+    import Control.Monad (guard)
+    import Data.List ((\\))
+
+    list _ [] = [[]]
+    list (n,_) xs = concat [f x y | x &lt;- xs, y &lt;- xs, n &lt; x, x &lt; y]
+      where f x y = map ((x,y):) (list (x,y) (xs \\ [x,y]))
+
+    pairs (x:xs) = map (\y -&gt; pairs' x y (xs \\ [y])) xs
+      where pairs' x y xs = map ((x,y):) (list (0,0) xs)
+
+    schedules _ [] = [[]]
+    schedules prev (xs:xss) = concat $ do
+      x &lt;- xs
+      guard $ and $ map (\e -&gt; e `notElem` prev) x
+      return $ map (x:) (schedules (prev ++ x) xss)
+
+    main = mapM_ print (schedules [] (pairs [1..6]))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5768'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/5768
+  :user_name: 匿名
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2008/02/17 09:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  強引に全ての解を求めるプログラムです。チームを区別しないで同じになる解は排除するようになっています。引数にチーム数（偶数）を与えて来どうしてください（奇数を与えても総当たり戦の日程表は求められません）。\r\n\t"
+  :code: |
+    public class Sample {
+        boolean[][] match;
+        int[][] pair;
+        int num;
+        public Sample(int num) {
+            match = new boolean[num][num];
+            pair = new int[num - 1][num/2];
+            this.num = num;
+        }
+        public void work(int count) {
+            if (count &lt; num - 1) {
+                boolean[] done = new boolean[num];
+                work1(count, done, 0, 0);
+            } else {
+                for (int i = 0; i &lt; num - 1; i++) {
+                    for (int j = 0; j &lt; num / 2; j++) {
+                        System.out.printf("%d-%d ", (pair[i][j] &gt;&gt; 8) + 1, (pair[i][j] &amp; 255) + 1);
+                    }
+                    System.out.println();
+                }
+                System.out.println();
+            }
+        }
+        public void work1(int count, boolean[] done, int coat, int origin) {
+            if (coat &lt; num / 2) {
+                for (int i = origin; i &lt; num; i++) {
+                    if (!done[i]) {
+                        for (int j = i + 1; j &lt; num; j++) {
+                            if (!done[j] &amp;&amp; !match[i][j]) {
+                                done[i] = done[j] = match[i][j] = true;
+                                pair[count][coat] = (i &lt;&lt; 8) + j;
+                                work1(count, done, coat + 1, i + 1);
+                                done[i] = done[j] = match[i][j] = false;
+                            }
+                        }
+                    }
+                }
+            } else {
+                work(count + 1);
+            }
+        }
+        public static void main(String[] args) {
+            Sample s = new Sample(Integer.parseInt(args[0]));
+            s.work(0);
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9397'
+  :parent_id: '149'
+  :url: http://ja.doukaku.org/comment/9397
+  :user_name: ワサビ
+  :user_url: /web/20110110025636/http://ja.doukaku.org/user/1045/
+  :language: OCaml
+  :time: 2009/07/19 16:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  チーム数が奇数の場合にも対応しています。\r<br>チーム数が奇数の場合、各チームが1日ずつ休みをとることで日程を調整します。\r\n\t"
+  :code: |
+    let createSchedule n =
+        let rotate = function t1::t2::ts -&gt; t1::ts @ [t2]
+        let createMatchs ts =
+            Seq.zip (Seq.take (List.length ts / 2) ts) (List.rev ts)
+            |&gt; Seq.filter (fun (x, y) -&gt; x &lt;= n &amp;&amp; y &lt;= n) |&gt; Seq.to_list
+        (1, [1..(n + n % 2)]) |&gt; Seq.unfold (fun (i, ts) -&gt;
+            if i &lt; n + n % 2 then Some(createMatchs ts, (i + 1, rotate ts)) else None)
+        |&gt; Seq.to_list
+  :tags: []
+  :references:
+    :url: 
+    :title: 

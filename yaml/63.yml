@@ -1,0 +1,1430 @@
+---
+:id: '63'
+:title: ソートするコードの生成
+:comments:
+- :id: '3419'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3419
+  :user_name: nobsun
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/09/21 16:17 GMT
+  :vote_count: '3'
+  :vote_score: '1'
+  :body: "\r\n\t  <a href=\"/web/20080325151034/http://acm.uva.es/p/v1/110.html\">Meta-Loopless
+    Sorts</a>の改題です．\r\n<p>\r\nn個の整数をソートするプログラムを生成するプログラム gensort を\r\n書いて下さい．条件は以下のとおり\r\n</p>\n<p>\r\n</p>\n<ol>\n<li>
+    生成するプログラム，生成されたプログラムは同じ言語にして下さい．\r\n</li>\n<li> 生成したプログラムはファイルに書き込んでください．\r\n</li>\n<li>
+    生成されたプログラムでは最初に n 個の整数を読み込んで，\r\n   n個の変数を初期化してください．「可能なら」変数名は，アルファベット\r\n   一文字で
+    a，b，c ... の順で使ってください．n = 5 なら\r\n   変数は a, b, c, d, e です．\r\n</li>\n<li> 生成されたプログラムでは，if
+    文あるいは if 式で2つの変数を比較して\r\n   いって，変数の順が確定したら，その順で変数の値を出力するようにして\r\n   下さい．\r\n</li>\n<li>生成される側のプログラムでのアルゴリズムやデータ構造を工夫する問題では\r\n
+    \  ありません :)\r\n</li>\n</ol>\n<p>\r\ngensort 3 で生成した Pascal のプログラム例は以下のとおりです．\r\n</p>\n<p>\r\n</p>\n<pre>\r\nprogram
+    sort(input,output);\r\nvar\r\na,b,c : integer;\r\nbegin\r\n  readln(a,b,c);\r\n
+    \ if a &lt; b then\r\n    if b &lt; c then\r\n      writeln(a,b,c)\r\n    else
+    if a &lt; c then\r\n      writeln(a,c,b)\r\n    else\r\n      writeln(c,a,b)\r\n
+    \ else\r\n    if a &lt; c then\r\n      writeln(b,a,c)\r\n    else if b &lt; c
+    then\r\n      writeln(b,c,a)\r\n    else\r\n      writeln(c,b,a)\r\nend.\r\n</pre>\r\n<p>\r\n\r\nn
+    の値を 2 〜 10 くらいまで変化させて以下の処理時間を測定してください．\r\n</p>\n<p>\r\n\r\n</p>\n<pre>\r\n1. gensort
+    n の処理\r\n2. 生成したプログラムの処理\r\n   2-1. コンパイル言語の場合は，コンパイル時間と実行時間\r\n   2-2. インタプリタ言語の場合，可能ならロード時間と実行時間を別測定，\r\n
+    \       分解できないなら実行時間\r\n</pre>\r\n\r\nごさっしのとおり，出力されたプログラムは n の値で急激に大きくなります．\r\n
+    n が大きいと gensort n で文法的に正しいプログラムは生成できてもコンパ イル\r\nや実行ができないということもありえると思います．処理系ごとの限界がわか\r\nると面白いのではないかと思います．オリジナルの問題は
+    Pascal のプログラム\r\nコードを生成するプログラムを書けという問題でしたが，生成する側とされる側\r\nの言語を同じにするほうが面白いですよね．\r\n\r\n<hr>\r\nこの問題はnobsunさんからの投稿です。ご投稿ありがとうございました。助かります。\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3159'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3159
+  :user_name: shiro
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/09/22 01:38 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">これはなかなか良い処理系いじめですね。\r\n\r\nナイーブに書いてみましたが、生成されるコード量と生成速度は
+    O(n!)、\r\nロード&amp;コンパイルに O(n・n!)くらいかかっているようです。\r\nn=9, 10はロードを諦めました。予想ではそれぞれ30分と5時間ですが、\r\nn=10だと32bitマシンでは実行できないかも。\r\n\r\n\r\nベンチマーク結果
+    (サイズはbyte、時間は秒単位。 Pentium 4 @2GHz, 2GMem)\r\n     filesize      gen (usr/sys)
+    \ load (usr/sys)   run (usr/sys)\r\nn=2          134      0.0/0.0         0.0/0.0
+    \         0.0/0.0 \r\nn=3          276      0.0/0.0         0.0/0.0          0.0/0.0\r\nn=4
+    \         938      0.0/0.0        0.01/0.0          0.0/0.0\r\nn=5         4636
+    \     0.0/0.0        0.01/0.0          0.0/0.0\r\nn=6        28878     0.01/0.0
+    \       0.08/0.0          0.0/0.0\r\nn=7       211760     0.08/0.0        2.39/0.04
+    \        0.0/0.0\r\nn=8      1774162     0.53/0.02     213.94/1.93         0.0/0.0\r\nn=9
+    \    16692564     5.87/0.28          -/-              -/-\r\nn=10   174182487
+    \   65.83/2.94          -/-              -/-\r\n</pre>\n\t"
+  :code: |
+    (use util.match)
+    (use srfi-42)
+
+    (define (gensort n)
+      (define (rec xs ss)
+        (match xs
+          [() `(write (list ,@(reverse ss)))]
+          [(x . xs)
+           (let loop ((ss ss) (rs '()))
+             (match ss
+               [()       (rec xs (reverse (cons x rs)))]
+               [(and (y . ys) ss)
+                `(if (&lt; ,y ,x)
+                   ,(rec xs (append (reverse (cons x rs)) ss))
+                   ,(loop ys (cons y rs)))]))]))
+      (define (wrap vars)
+        `(define (main args)
+           (apply (lambda ,vars ,(rec vars '())) (list-ec (: i ,n) (read))) 0))
+      (write '(use srfi-42))
+      (write (wrap (list-ec (: i n)
+                            (string-&gt;symbol
+                             (string (integer-&gt;digit (+ i 10) 36)))))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '3160'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3160
+  :user_name: shiro
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/09/22 01:43 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  いや、ロード時間の予想は甘いですね。もうひとつnのファクターがかかるから、5時間と2日、かな。\r<br><br>ベンチマークに使ったコードもつけておきます。\n\t"
+  :code: |
+    ;; benchmark code
+    (use gauche.time)
+    (use srfi-27)
+
+    (define (bench n)
+      (let ((gutimer (make &lt;user-time-counter&gt;))
+            (gstimer (make &lt;system-time-counter&gt;))
+            (lutimer (make &lt;user-time-counter&gt;))
+            (lstimer (make &lt;system-time-counter&gt;))
+            (rutimer (make &lt;user-time-counter&gt;))
+            (rstimer (make &lt;system-time-counter&gt;))
+            (data (with-output-to-string
+                    (lambda () (do-ec (: i n) (print (random-integer 100)))))))
+        (with-time-counter gutimer
+          (with-time-counter gstimer
+            (with-output-to-file #`"sort-,|n|.scm" (cut gensort n))))
+        (with-time-counter lutimer
+          (with-time-counter lstimer
+            (load #`"./sort-,|n|.scm")))
+        (with-time-counter rutimer
+          (with-time-counter rstimer
+            (with-output-to-file "/dev/null"
+              (cut with-input-from-string data (cut main '())))))
+        (format #t "n=~d gen=~s/~s load=~s/~s run=~s/~s\n" n
+                (time-counter-value gutimer)
+                (time-counter-value gstimer)
+                (time-counter-value lutimer)
+                (time-counter-value lstimer)
+                (time-counter-value rutimer)
+                (time-counter-value rstimer)
+                )))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '3162'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3162
+  :user_name: 匿名
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/09/22 02:48 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  生成コードは最適化されていません（二分探索していない）。この例では 6 変数までが限界（7変数では「コードが大きすぎます。」というエラー）です。以下は 6 変数での実行例\r<br><br>生成に要した時間\r<br>0.691u 0.252s 0:01.05 89.5%     0+0k 0+13io 0pf+0w\r<br><br>コンパイル時間\r<br>2.020u 0.273s 0:02.52 90.8%     0+0k 0+15io 0pf+0w\r<br><br>実行時間（ロード時間含む）\r<br>0.326u 0.159s 0:00.56 83.9%     0+0k 0+30io 0pf+0w\r<br><br>CPU\r<br>1.67GHz PowerPC G4\r<br><br>Javaのバージョン\r<br>Java HotSpot(TM) Client VM (build 1.5.0_07-87, mixed mode, sharing)\n\t"
+  :code: |
+    import java.io.*;
+    import java.util.*;
+
+    public class GenSort {
+        static PrintStream out;
+        private static void genPrintCode(List&lt;Integer&gt; sorted) {
+            out.print("¥tSystem.out.println(");
+            Iterator&lt;Integer&gt; i = sorted.iterator();
+            while (i.hasNext()) {
+                out.printf("%c%s", 'a'+i.next(), (i.hasNext())?"+ ¥", ¥" + " : "");
+            }
+            out.println(");");
+        }
+        private static void genSort(ArrayList&lt;Integer&gt; sorted, LinkedList&lt;Integer&gt; unsort) {
+            if (unsort.isEmpty()) {
+                genPrintCode(sorted);
+                return;
+            }
+            unsort = new LinkedList&lt;Integer&gt;(unsort);
+            int ele = unsort.remove(0);
+            for (int i = 0; i &lt; sorted.size(); i++) {
+                out.printf("¥t%sif (%c &lt; %c) {%n", (i == 0)?"" : "} else ", 'a'+ele, 'a'+sorted.get(i));
+                ArrayList&lt;Integer&gt; s2 = new ArrayList&lt;Integer&gt;(sorted);
+                s2.add(i, ele);
+                genSort(s2, unsort);
+            }
+            out.printf("¥t} else {%n");
+            ArrayList&lt;Integer&gt; s2 = new ArrayList&lt;Integer&gt;(sorted);
+            s2.add(sorted.size(), ele);
+            genSort(s2, unsort);
+            out.printf("¥t}%n");
+        }
+        public static void main(String args[]) throws IOException {
+            out  = new PrintStream(new FileOutputStream("Sort.java"));
+            int n = Integer.parseInt(args[0]);
+            out.println("import java.io.*;");
+            out.println("public class Sort {");
+            out.println("    public static void main(String[] args) throws IOException{");
+            out.println("¥tBufferedReader r = new BufferedReader(new InputStreamReader(System.in));");
+            LinkedList&lt;Integer&gt; unsort = new LinkedList&lt;Integer&gt;();
+            ArrayList&lt;Integer&gt; sorted = new ArrayList&lt;Integer&gt;();
+            for (int i = 0; i &lt; n; i++) {
+                out.printf("¥tint %c = Integer.parseInt(r.readLine());%n", 'a'+i);
+                unsort.add(i);
+            }
+            sorted.add(unsort.remove(0));
+            genSort(sorted, unsort);
+            out.println("    }");
+            out.println("}");
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3163'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3163
+  :user_name: mc
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2007/09/22 03:41 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">最初、問題を良く理解しないで、condと(&lt;= a b c d ..)使っで作成してしまいまいました。\r\nそのcondの部分を無理矢理ifに展開しています…。\r\n…もしかして、&lt;=も使ってはいけないのでしょうか？…
+    ('-'*;)\r\n\r\nsrfi:partitionは、srfiのpartitionと同じ動きをするものだと思って下さい。\r\n\r\nベンチマークですが、生成は、N=6までできて、他は、N=5までで、それ以上は、\r\nHEAP-EXHAUSTED-ERRORとなってしまいます。\r\n勿論、プログラムがまずいんだと思うのですが、この辺が自分の限界です…。\r\n\r\n\r\n~~~
+    計測結果~~~ \r\n               環境:Pentium III 1GHz Mem 768MB\r\n\r\n生成:\r\n== real
+    \  user     system   cons(B) ==\r\n2: 0.02   0.0      0.0      20,480\r\n3: 0.025
+    \ 0.0      0.004001 24,576\r\n4: 0.053  0.008001 0.0      77,816\r\n5: 0.251  0.088005
+    0.008    450,288\r\n6: 5.307  1.42809  0.088006 3,258,632\r\n7+: ~~HEAP-EXHAUSTED-ERROR~~\r\n\r\nコンパイル:\r\n==
+    real   user      system   cons(B) ==\r\n2: 0.153  0.024002  0.0      290,288\r\n3:
+    0.172  0.064004  0.004    765,768\r\n4: 0.387  0.272017  0.024002 4,796,240\r\n5:
+    6.708  6.040377  0.344021 90,714,536\r\n6+: ~~HEAP-EXHAUSTED-ERROR~~\r\n\r\n実行:\r\n==
+    real   user system  cons(B) ==\r\n2: 0.0    0.0  0.0     0\r\n3: 0.0    0.0  0.0
+    \    3,816\r\n4: 0.001  0.0  0.0     11,896\r\n5: 0.0    0.0  0.0     15,944\r\n6+:
+    ~~HEAP-EXHAUSTED-ERROR~~</pre>\n\t"
+  :code: "(defpackage doukaku-63 (:use #:cl))\n(in-package :doukaku-63)\n\n(defmacro
+    gen-sort (n)\n  (let* ((args-lst '(Z Y X W V U T S R Q P O N M L K J I H G F E
+    D C B A))\n         (args (reverse (last args-lst n))))\n    `(defun ,(intern
+    (format nil \"SORT-~2,'0D\" n)) ,args\n       (let ((res ,(gen-if (apply #'perm-n
+    args))))\n         (format t \"~{~A ~}~%\" res)\n         res))))\n\n;; 式の組み合わせを生成\n(defun
+    perm-n (&amp;rest args)\n  (let ((alen (length args)))\n    (cond ((&gt; 1 alen)
+    () )\n          ((= 1 alen) args )\n          ((= 2 (length args))\n           (destructuring-bind
+    (x y) args\n             `((,x ,y) (,y ,x))))\n          ((&lt;= 3 (length args))\n
+    \          (mapcan (lambda (x)\n                     (multiple-value-bind (top
+    rest)\n                         (srfi:partition (lambda (z) (eq x z)) args)\n
+    \                      (mapcar (lambda (r) (append top r))\n                               (apply
+    #'perm-n rest))))\n                   args) )\n          ('T '(()) ))))\n\n;;
+    妙なif式を生成\n(defun gen-if (clauses)\n  (let (res)\n    (dolist (cl clauses)\n      (push
+    `(if ,(gen-pred cl) (list ,@cl)) res))\n    (reduce (lambda (res x) (append x
+    (list res)))\n            res\n            :initial-value () )))\n\n;; 妙な条件式を生成\n(defun
+    gen-pred (clause)\n  (let ((pred (mapcar (lambda (x y) (list x y)) clause (cdr
+    clause))))\n    (reduce (lambda (x res) `(if (&lt;= ,@x) ,res))\n            pred\n
+    \           :initial-value 'T\n            :from-end 'T )))\n\n;; ファイルへ書き出す関数(生成のベンチマークはこれの時間を測定)\n(defun
+    save-func-to-file (func-gen-expr &amp;optional file)\n  (let ((file \n         (or
+    file (merge-pathnames \n                   (format nil \"doukaku-63-SORT-~2,'0D.lisp\"
+    (cadr func-gen-expr))\n                   (user-homedir-pathname)))))\n    (with-open-file
+    (out file \n                         :direction :output\n                         :if-exists
+    :overwrite\n                         :if-does-not-exist :create)\n      (and (print
+    (macroexpand-1 func-gen-expr) out)\n           t))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3164'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3164
+  :user_name: 匿名
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/09/22 03:57 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">1〜9 で生成時間を計ってみました（10の時は時間がかかりすぎるので計れていません）。\r\n\r\n生成時間\r\n
+    1: 0.330u 0.143s 0:00.58 81.0%     0+0k 0+6io 0pf+0w\r\n 2: 0.332u 0.150s 0:00.50
+    96.0%     0+0k 0+13io 0pf+0w\r\n 3: 0.340u 0.149s 0:00.59 81.3%     0+0k 0+13io
+    0pf+0w\r\n 4: 0.394u 0.154s 0:00.64 84.3%     0+0k 0+0io 0pf+0w\r\n 5: 0.506u
+    0.174s 0:00.74 90.5%     0+0k 0+13io 0pf+0w\r\n 6: 0.682u 0.245s 0:01.04 88.4%
+    \    0+0k 0+0io 0pf+0w\r\n 7: 1.687u 0.777s 0:03.35 73.1%     0+0k 0+6io 0pf+0w\r\n
+    8: 10.038u 5.275s 0:16.47 92.8%    0+0k 0+13io 0pf+0w\r\n 9: 92.618u 49.432s 2:27.27
+    96.4%   0+0k 0+27io 0pf+0w\r\n\r\nコンパイル時間\r\n 1: 0.636u 0.210s 0:01.14 73.6%     0+0k
+    0+3io 0pf+0w\r\n 2: 0.681u 0.212s 0:01.00 89.0%     0+0k 0+15io 0pf+0w\r\n 3:
+    0.724u 0.211s 0:01.07 86.9%     0+0k 0+2io 0pf+0w\r\n 4: 0.794u 0.217s 0:01.55
+    64.5%     0+0k 0+0io 0pf+0w\r\n 5: 1.098u 0.230s 0:01.44 91.6%     0+0k 0+15io
+    0pf+0w\r\n 6: 2.026u 0.280s 0:02.51 91.6%     0+0k 0+0io 0pf+0w\r\n\r\n7以上はコンパイルできず\r\n\r\n実行時間\r\n
+    1: 0.275u 0.136s 0:00.50 80.0%     0+0k 0+0io 0pf+0w\r\n 2: 0.275u 0.132s 0:00.48
+    83.3%     0+0k 0+0io 0pf+0w\r\n 3: 0.275u 0.132s 0:00.48 83.3%     0+0k 0+13io
+    0pf+0w\r\n 4: 0.276u 0.135s 0:00.49 81.6%     0+0k 0+0io 0pf+0w\r\n 5: 0.282u
+    0.135s 0:00.49 83.6%     0+0k 0+0io 0pf+0w\r\n 6: 0.323u 0.142s 0:00.54 85.1%
+    \    0+0k 0+13io 0pf+0w</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3165'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3165
+  :user_name: 匿名
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/09/25 08:10 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">連休中、サイト落ちてました？\r\n\r\n生成時間\r\nifsort02.py  0.007164Sec
+    \      117Byte\r\nifsort03.py  0.000267Sec       281Byte\r\nifsort04.py  0.000533Sec
+    \     1103Byte\r\nifsort05.py  0.002043Sec      6077Byte\r\nifsort06.py  0.026461Sec
+    \    41123Byte\r\nifsort07.py  0.113250Sec    322649Byte\r\nifsort08.py  0.583306Sec
+    \  2862815Byte\r\nifsort09.py  5.099527Sec  28304741Byte\r\nifsort10.py 51.678381Sec
+    308448108Byte\r\n\r\n実行時間は n &lt;= 8 までは瞬時、 n &gt;= 9 は実行不能でした。\r\n\r\nちなみに標準出力にprintすると
+    n = 10 ではものすごく時間がかかりました。\r\n</pre>\n\t"
+  :code: |
+    import sys
+
+    def gensort(n, out=sys.stdout):
+      def f(l, i):
+        if i == len(l)-1:
+          print &gt;&gt; out, '%sprint [%s]' % ('  ' * i, ', '.join(l))
+          return
+        l = l[:]
+        print &gt;&gt; out, '%sif %s &lt; %s:' % ('  ' * i, l[i], l[i+1])
+        f(l, i+1)
+        for j in range(i, 0, -1):
+          l[j], l[j+1] = l[j+1], l[j]
+          print &gt;&gt; out, '%selif %s &lt; %s:' % ('  ' * i, l[j-1], l[j])
+          f(l, i+1)
+        l[0], l[1] = l[1], l[0]
+        print &gt;&gt; out, '%selse:' % ('  ' * i)
+        f(l, i+1)
+
+      print &gt;&gt; out, '%s = %s[:%d]' % (', '.join(abc(n)), "[int(c) for c in raw_input().split(' ') if c]", n)
+      print &gt;&gt; out, 'print [%s],' % ', '.join(abc(n))
+      f(abc(n), 0)
+
+    def abc(n):
+      return [chr(ord('a')+i) for i in range(n)]
+
+    def main():
+      if len(sys.argv) &lt; 2:
+        n = 3
+      else:
+        n = int(sys.argv[1])
+      gensort(n)
+
+    def test():
+      from time import time
+
+      for i in range(2, 11):
+        fn = 'ifsort%02d.py' % i
+        fp = file(fn, 'w')
+        t = time()
+        gensort(i, fp)
+        size = fp.tell()
+        print '%s %sSec %9dByte' % (fn, ('%.6f' % (time() - t)).rjust(9), size)
+        fp.close()
+
+    if __name__ == '__main__':
+    #  main()
+      test()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3166'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3166
+  :user_name: sumim
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/09/25 10:38 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  Squeak Smalltalk で。これまでのものと違い、do it (alt/cmd + D) ではなく file it in (alt/cmd + shift + G) して使うコードになっています。\r<br><br>条件文の生成は、考えているうちに頭が痛くなってきたので自力解決は断念して shiro さんのを参考にさせていただきました。どうかお許しを。あと、残念ながら Squeak Smalltalk のバイトコードにおける仕様上の制約（1 KB 以上のジャンプができない…）から n = 5 以上では生成コードは、コンパイラにはじかれてしまうようです。\r<br><br>仕方がないのでコードの生成のみの測定（単位はミリ秒）の結果を。\r<br><br>(1 to: 9) collect: [:n | n -&gt; [nil genSort: n] timeToRun]\r<br>\"=&gt; {1-&gt;11 . 2-&gt;8 . 3-&gt;12 . 4-&gt;29 . 5-&gt;151 . 6-&gt;720 . 7-&gt;4682 . 8-&gt;38510 . 9-&gt;362363}\"\r<br><br>n = 9 で６分強、出力コードのファイルサイズは 14.5 MB でした（1 GHz PowerPC - OS X）。n = 10 は怖くて試していません(^_^;)。\n\t"
+  :code: "!SequenceableCollection methodsFor: 'doukaku63'!\ngenCond: perm using: memo
+    on: stream\n\tself ifEmpty: [\n\t\tstream nextPut: ${.\n\t\tperm do: [:var | stream
+    nextPut: var] separatedBy: [stream nextPut: $.].\n\t\tstream nextPut: $}.\n\t\t^self].\n\tperm
+    ifEmpty: [^self allButFirst genCond: (self first: 1), memo using: '' on: stream].\n\tstream
+    nextPutAll: ('{1}&lt;{2} ifTrue:[' format: {perm last. self first}).\n\tself allButFirst
+    genCond: perm, (self first: 1), memo using: '' on: stream.\n\tstream nextPutAll:
+    ']ifFalse:['.\n\tself genCond: perm allButLast using: (perm last: 1), memo on:
+    stream.\n\tstream nextPutAll: ']'! !\n\n!UndefinedObject methodsFor: 'doukaku63'!\ngenSort:
+    n\n\t| vars code |\n\tvars := ($a to: $z) first: n.\n\tcode := FileStream forceNewFileNamed:
+    'sort.st'.\n\tcode nextPutAll: '!!UndefinedObject methodsFor: ''doukaku63''!!';
+    cr.\n\tcode nextPutAll: 'doukakuSort'; cr.\n\tcode nextPutAll: '| in result '.\n\tvars
+    do: [:var | code nextPut: var; space].\n\tcode nextPutAll: '|'; cr.\n\tcode nextPutAll:
+    'in := FileStream fileNamed: ''in.txt''.'; cr.\n\tvars do: [:var | code nextPut:
+    var; nextPutAll: ' := in nextLine asNumber.'; cr].\n\tcode nextPutAll: 'World
+    findATranscript: nil.'; cr.\n\tcode nextPutAll: 'result := '.\n\tvars genCond:
+    '' using: '' on: code.\n\tcode nextPutAll: '.'; cr.\n\tcode nextPutAll: 'Transcript
+    cr; show: result!! !!'.\n\tcode close! !\n\n| file |\nfile := FileStream newFileNamed:
+    'io.txt'.\n(1 to: 10) asArray shuffled do: [:each | file nextPutAll: each printString;
+    cr].\nfile close.\n\n{   #generate -&gt; [nil genSort: 4] timeToRun.\n\t#compile
+    -&gt; [(FileStream fileNamed: 'sort.st') fileIn] timeToRun.\n\t#perform -&gt;
+    [nil perform: #doukakuSort] timeToRun}\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '3168'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3168
+  :user_name: yohei
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/415/
+  :language: Prolog
+  :time: 2007/09/25 11:12 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">２分探索で．\r\n--- 処理時間 ---\r\nCPU：Xeon 2.40GHz
+    (2 CPUs) メモリ：1GB OS:WinXP Pro\r\n N  生成   コンパイル 実行\r\n 2  0.0     0.00      0.0\r\n
+    3  0.0     0.00      0.0\r\n 4  0.0     0.00      0.0\r\n 5  0.015   0.02      0.0\r\n
+    6  0.047   0.03      0.0\r\n 7  0.375   0.22      0.0\r\n 8  3.499   2.00      0.0\r\n
+    9 33.563  21.02      0.0\r\n10 ERROR: Out of local stack\r\n\r\n--- gensort(3)
+    の出力 ---\r\nsort3(A, B, C) :-\r\n  A &lt; B,\r\n    (B &lt; C,\r\n      write([A,
+    B, C]);\r\n      A &lt; C,\r\n        write([A, C, B]);\r\n        write([C, A,
+    B])\r\n    );\r\n    A &lt; C,\r\n      write([B, A, C]);\r\n      B &lt; C,\r\n
+    \       write([B, C, A]);\r\n        write([C, B, A]).</pre>\n\t"
+  :code: "mid(X, M, L, R) :- \n\tlength(X, N), N1 is N // 2,\n\tnth0(N1, X, M), append(L,
+    [M|R], X).\n\ngen_begin(   [],    [], N) :- format('~n~t~*|', [N]).\ngen_begin(
+    \  [], [_|_], N) :- format('~n~t~*|(', [N]).\ngen_begin([_|_],     _, N) :- format('~n~t~*|(',
+    [N]).\n\ngen_end(   [],    [], N) :- format(';~n~t~*|', [N]).\ngen_end(   [],
+    [_|_], N) :- format('~n~t~*|);~n~t~*|', [N, N]).\ngen_end([_|_],     _, N) :-
+    format('~n~t~*|);~n~t~*|', [N, N]).\n\ngen(L, [], R, [X], _) :-\n\tappend(L, [X|R],
+    S), format('write(~p)', [S]).\ngen(L, [], R, [X,X1|Xs], N) :-\n\tappend(L, [X|R],
+    C), gen([], C, [], [X1|Xs], N).\ngen(L, [C|Cs], R, [X|Xs], N) :- N1 is N + 2,
+    \n\tmid([C|Cs], M, CL, CR), format('~p &lt; ~p,', [M, X]),\n\tgen_begin(CR, Xs,
+    N), append(L, CL, L1), append(L1, [M], L2),\n\tgen(L2, CR, R, [X|Xs], N1), gen_end(CR,
+    Xs, N),\n\tappend([M|CR], R, R1), gen(L, CL, R1, [X|Xs], N1).\n\ngensort(N) :-
+    N &gt; 1, tell('my_sort.pl'),\n\tsub_atom('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 0, N,
+    _, A),\n\tatom_chars(A, [X|Xs]), concat_atom([X|Xs], ', ', T),\n\tformat('sort~d(~p)
+    :-~n  ', [N, T]),\n\tfindall(_, gen([], [X], [], Xs, 4), _),\n\twriteln('.'),
+    told.\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3170'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3170
+  :user_name: kozima
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/09/25 15:25 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">効率を上げる努力してないのですが\r\nCLISP で n=9 まで試しました。\r\n\r\n生成\r\nn=5
+    0.016u 0.012s 0:00.02 100.0%    0+0k 0+0io 0pf+0w\r\nn=6 0.048u 0.012s 0:00.05
+    100.0%    0+0k 0+0io 0pf+0w\r\nn=7 0.284u 0.052s 0:00.38 86.8%     0+0k 0+0io
+    0pf+0w\r\nn=8 2.068u 0.304s 0:02.46 95.9%     0+0k 0+0io 0pf+0w\r\nn=9 18.369u
+    2.696s 0:21.71 96.9%    0+0k 0+0io 0pf+0w\r\n\r\nコンパイル\r\nn=5 0.080u 0.020s 0:00.10
+    100.0%    0+0k 0+0io 0pf+0w\r\nn=6 2.148u 0.032s 0:02.18 99.5%     0+0k 0+0io
+    0pf+0w\r\nn=7 133.388u 0.108s 2:13.63 99.8%   0+0k 0+0io 0pf+0w\r\nn=8,9 は試してません\r\n\r\nロード
+    (n=7 はバイトコード、他はソース)\r\nn=7 0.017435 sec. \r\nn=8 1.690797 sec.\r\nn=9 17.022305
+    sec.\r\n\r\n実行は一瞬です。\r\nファイルサイズは n=9 で 23MB でした。\r\n</pre>\n\t"
+  :code: |
+    (defconstant *vars* '(a b c d e f g h i j))
+
+    (defun gensort (n)
+      (let ((vars (subseq *vars* 0 n)))
+        `(defun ,(intern (format nil "SORT-~D" n)) ,vars
+           (format t "~{~A~^, ~}" ,(gensort-1 () vars)))))
+
+    (defun gensort-1 (sorted unsorted)
+      (if unsorted
+          (let* ((x (car unsorted))
+                 (rest (cdr unsorted))
+                 (len (length sorted))
+                 (form (gensort-1 `(,@sorted ,x) rest)))
+            (do ((i 1 (1+ i)))
+                ((&gt; i len) form)
+              (setf form
+                    `(if (&lt; ,x ,(nth (- len i) sorted))
+                         ,(gensort-1 `(,@(butlast sorted i) ,x
+                                       ,@(nthcdr (- len i) sorted))
+                                     rest)
+                       ,form))))
+        `(list ,@sorted)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3171'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3171
+  :user_name: nobsun
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/09/26 02:11 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">入れ子になったif式をツリーで表現してから\r\nそれをpretty printerで出力するようにして\r\nモジュラリティを確保した。\r\n\r\npretty
+    printer は Text.Pretty.HughesPJ ではなく\r\nWadlerらのPrettier Printerライブラリを使ってみた\r\n</pre>\n\t"
+  :code: "module Main (main) where\n\nimport Control.Applicative ((&lt;*&gt;))\nimport
+    Data.List\nimport Data.Tree\nimport System.Environment\nimport Text.PrettyPrint.Leijen\n\ntype
+    AccType = (Char,[Char],[Char],[Char])\ntype NodeType = Either (Char, Char) [Char]\n\nvars
+    :: [Char]\nvars = ['a'..]\n\ngentree :: [Char] -&gt; Tree NodeType\ngentree ccs@(c:cs)
+    = unfoldTree phi (c,[],[],cs)\n\nphi :: AccType -&gt; (NodeType, [AccType])\nphi
+    (w,xxs,yys,[])   = (Right (reverse xxs++w:yys), [])\nphi (w,[] ,[] ,z:zs) = (Left
+    (w,z), [(z,[w],[],zs),(w,[z],[],zs)])\nphi (w,[] ,yys,z:zs) = case reverse yys
+    of\n []   -&gt; (Left (w,z), [(z,[w],[],zs),(w,[z],[],zs)])\n y:ys -&gt; (Left
+    (w,z), [(y,ys++[z,w],[],zs),(y,ys++[w,z],[],zs)])\nphi (w,xxs@(x:xs),yys,zzs@(z:zs))
+    = case reverse yys of\n []   -&gt; (Left (w,z), [(z,w:xxs,[],zs),(x,xs,[w],zzs)])\n
+    y:ys -&gt; (Left (w,z), [(y,ys++z:w:xxs,[],zs),(x,xs,w:yys,zzs)])\n\n($$) :: Doc
+    -&gt; Doc -&gt; Doc\nx $$ y = align (x &lt;$&gt; y)\n\npprHs :: [Char] -&gt; Doc
+    -&gt; Doc\npprHs vs ifpart\n =   text \"module Main (main) where\"\n &lt;$&gt;
+    text \"import System.Environment\"\n &lt;$&gt; text \"main :: IO ()\"\n &lt;$&gt;
+    text \"main = do\"\n     &lt;+&gt; ((varlist &lt;+&gt; text \"&lt;- return . map
+    read =&lt;&lt; getArgs\") $$ ifpart)\n  where varlist = text $ \"[\" ++ intersperse
+    ',' vs ++ \"] :: [Int]\"\n\npprHsIf (Node (Right vs) [])\n = text \"print\" &lt;+&gt;
+    brackets (text vs')\n   where vs' = intersperse ',' vs\npprHsIf (Node (Left (x,y))
+    [t,e])\n =   nest 3 (    text \"if\" &lt;+&gt; char x &lt;+&gt; char '&lt;' &lt;+&gt;
+    char y\n             &lt;$&gt; (nest 3 ((text \"then\" &lt;$&gt; pprHsIf t))\n
+    \                &lt;$&gt;\n                 (nest 3 (text \"else\" &lt;$&gt;
+    pprHsIf e))))\n\nmain :: IO ()\nmain = do { vs &lt;- return . flip take vars .
+    read . head =&lt;&lt; getArgs \n\t  ; putDoc $ pprHs &lt;*&gt; pprHsIf . gentree
+    $ vs\n\t  ; putStrLn \"\"\n\t  }\n\n{- \n./gensort  2 &gt; sort2.hs    0.00s user
+    \ 0.00s system 110% cpu    0.004 total\n./gensort  3 &gt; sort3.hs    0.00s user
+    \ 0.00s system   0% cpu    0.003 total\n./gensort  4 &gt; sort4.hs    0.00s user
+    \ 0.00s system  86% cpu    0.005 total\n./gensort  5 &gt; sort5.hs    0.01s user
+    \ 0.00s system  91% cpu    0.013 total\n./gensort  6 &gt; sort6.hs    0.02s user
+    \ 0.00s system  65% cpu    0.042 total\n./gensort  7 &gt; sort7.hs    0.16s user
+    \ 0.00s system  89% cpu    0.179 total\n./gensort  8 &gt; sort8.hs    1.35s user
+    \ 0.08s system  97% cpu    1.462 total\n./gensort  9 &gt; sort9.hs   13.25s user
+    \ 0.88s system  98% cpu   14.353 total\n./gensort 10 &gt; sort10.hs 145.34s user
+    11.68s system  98% cpu 2:40.15  total\n\n-rw-r--r-- 1 nobsun nobsun        234
+    2007-09-26 08:43 sort2.hs\n-rw-r--r-- 1 nobsun nobsun        748 2007-09-26 08:43
+    sort3.hs\n-rw-r--r-- 1 nobsun nobsun       4020 2007-09-26 08:43 sort4.hs\n-rw-r--r--
+    1 nobsun nobsun      27974 2007-09-26 08:43 sort5.hs\n-rw-r--r-- 1 nobsun nobsun
+    \    226336 2007-09-26 08:43 sort6.hs\n-rw-r--r-- 1 nobsun nobsun    2060322 2007-09-26
+    08:43 sort7.hs\n-rw-r--r-- 1 nobsun nobsun   20796020 2007-09-26 08:43 sort8.hs\n-rw-r--r--
+    1 nobsun nobsun  230466934 2007-09-26 08:43 sort9.hs\n-rw-r--r-- 1 nobsun nobsun
+    2782218360 2007-09-26 08:46 sort10.hs\n\n*Main&gt; :load sort2.hs\n[1 of 1] Compiling
+    Main             ( sort2.hs, interpreted )\nOk, modules loaded: Main.\n(0.02 secs,
+    1076068 bytes)\n*Main&gt; :main 2 1\n[1,2]\n(0.00 secs, 0 bytes)\n*Main&gt; :load
+    sort3.hs\n[1 of 1] Compiling Main             ( sort3.hs, interpreted )\nOk, modules
+    loaded: Main.\n(0.02 secs, 2126920 bytes)\n*Main&gt; :main 3 2 1\n[1,2,3]\n(0.00
+    secs, 0 bytes)\n*Main&gt; :load sort4.hs\n[1 of 1] Compiling Main             (
+    sort4.hs, interpreted )\nOk, modules loaded: Main.\n(0.05 secs, 7363040 bytes)\n*Main&gt;
+    :main 4 3 2 1\n[1,2,3,4]\n(0.00 secs, 526936 bytes)\n*Main&gt; :load sort5.hs\n[1
+    of 1] Compiling Main             ( sort5.hs, interpreted )\nOk, modules loaded:
+    Main.\n(0.18 secs, 40947564 bytes)\n*Main&gt; :main 5 4 3 2 1\n[1,2,3,4,5]\n(0.01
+    secs, 1595940 bytes)\n*Main&gt; :load sort6.hs\n[1 of 1] Compiling Main             (
+    sort6.hs, interpreted )\nOk, modules loaded: Main.\n(1.10 secs, 297051132 bytes)\n*Main&gt;
+    :main 6 5 4 3 2 1\n[1,2,3,4,5,6]\n(0.05 secs, 8558272 bytes)\n*Main&gt; :load
+    sort7.hs\n[1 of 1] Compiling Main             ( sort7.hs, interpreted )\nOk, modules
+    loaded: Main.\n(9.02 secs, 2552779536 bytes)\n*Main&gt; :main 7 6 5 4 3 2 1\n[1,2,3,4,5,6,7]\n(0.16
+    secs, 66078212 bytes)\n*Main&gt; :load sort8.hs\n[1 of 1] Compiling Main             (
+    sort8.hs, interpreted )\nOk, modules loaded: Main.\n(85.68 secs, 24937876628 bytes)\n*Main&gt;
+    :main 8 7 6 5 4 3 2 1\n[1,2,3,4,5,6,7,8]\n(1.30 secs, 566054384 bytes)\nsort9.hs
+    と sort10.hs はメモリが足りずロードできなかった．\n-}\t\t\t  \n"
+  :tags:
+  - Text.PrettyPrint.HughesPJ
+  - Text.PrettyPrint.Leijen
+  :references:
+    :url: /web/20080325151034/http://legacy.cs.uu.nl/daan/download/pprint/pprint.html
+    :title: PPrint, a prettier printer
+- :id: '3172'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3172
+  :user_name: yohei
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/415/
+  :language: Prolog
+  :time: 2007/09/26 03:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">冗長なコードを消して整理しました．\r\n（特に，findall が無意味に入ってしまっていたので）\r\nそれと，タグに付け忘れましたが
+    SWI-Prologです．</pre>\n\t"
+  :code: "mid(X, M, L, R) :- \n    length(X, N), N1 is N // 2,\n    nth0(N1, X, M),
+    append(L, [M|R], X).\n\ngen_if([], [], N) :- !, format('~n~t~*|', [N]).\ngen_if(
+    _,  _, N) :- format('~n~t~*|(', [N]).\n\ngen_else([], [], N) :- !, format(';~n~t~*|',
+    [N]).\ngen_else( _,  _, N) :- format('~n~t~*|);~n~t~*|', [N, N]).\n\ngen(L, [],
+    R, [X], _) :- !,\n    append(L, [X|R], S), format('write(~p)', [S]).\ngen(L, [],
+    R, [X|Xs], N) :- !,\n    append(L, [X|R], C), gen([], C, [], Xs, N).\ngen(L, C,
+    R, [X|Xs], N) :- N1 is N + 2, \n    mid(C, M, CL, CR), format('~p &lt; ~p,', [M,
+    X]),\n    gen_if(CR, Xs, N), flatten([L, CL, M], L1),\n    gen(L1, CR, R, [X|Xs],
+    N1), gen_else(CR, Xs, N),\n    append([M|CR], R, R1), gen(L, CL, R1, [X|Xs], N1).\n\ngensort(N)
+    :- N &gt; 1, tell('my_sort.pl'),\n    sub_atom('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 0,
+    N, _, A),\n    atom_chars(A, [X|Xs]), concat_atom([X|Xs], ', ', T),\n    format('sort~d(~p)
+    :-~n  ', [N, T]),\n    gen([], [X], [], Xs, 4), writeln('.'), told.\n"
+  :tags:
+  - SWI-Prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '3174'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3174
+  :user_name: shuyo
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/84/
+  :language: Ruby
+  :time: 2007/09/26 05:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">コード書いたところで達成感を得てしまって、まじめに計測してません……\r\nn=8までは楽勝、n=9
+    は生成に２０秒くらい？　実行に５秒くらい。n=10 はディスク使い切ったりしたらやだなと思って実行してません……</pre>\n\t"
+  :code: "def compare(x, idx, vlist, indent)\n  if vlist.length == 0\n    OUTPUT.puts
+    \"#{indent}p [#{x.join(',')}]\"\n    return\n  end\n  \n  y = vlist[0]\n  OUTPUT.puts
+    \"#{indent}if #{x[idx]}&lt;#{y}\"\n    if idx+1 &lt; x.length\n      compare x,
+    idx+1, vlist, indent+\"  \"\n    else\n      compare x.dup.push(y), 0, vlist[1..-1],
+    indent+\"  \"\n    end\n  OUTPUT.puts \"#{indent}else\"\n    compare x.dup.insert(idx,
+    y), 0, vlist[1..-1], indent+\"  \"\n  OUTPUT.puts \"#{indent}end\"\nend\n\ndef
+    gensort(n)\n  vlist = (1..n).map{|i|(96+i).chr}\n  OUTPUT.puts \"#{vlist.join(',')}
+    = $stdin.read.split(/\\s+/).map{|x|x.to_i}\"\n  x = vlist.shift\n  compare [x],
+    0, vlist.dup, \"\"\nend\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3178'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3178
+  :user_name: shiro
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/41/
+  :language: Other
+  :time: 2007/09/26 11:34 GMT
+  :vote_count: '11'
+  :vote_score: '11'
+  :body: "\n\t  <pre class=\"compact\">当然のことながら、プログラムというのは、マシン語を出力して初めて「生成できる」と言うのです。\r\n\r\nというわけでELFバイナリを直接生成してみました。Linux
+    x86 (32bit)限定。\r\ngensortは1バイトのバイナリ値nを標準入力から受け取り、標準出力にプログラムを吐き出します。\r\n生成されたプログラムは、標準入力からn個のバイナリ整数値(各4バイト、little
+    endian)を読み込み、\r\nソート結果を標準出力にバイナリで書き出します。\r\n\r\nビルドと生成例：\r\n $ cc -nostdlib -o
+    gensort gensort.s\r\n $ echo -e '\\005' | ./gensort &gt; sort5\r\n $ chmod +x
+    sort5\r\n \r\n生成されたコードを走らせる：\r\n $ od -t d4 input\r\n 0000000           4           2
+    \          3           0\r\n 0000020           1\r\n 0000024\r\n $ ./sort5 &lt;input
+    | od -t d4\r\n 0000000           0           1           2           3\r\n 0000020
+    \          4\r\n 0000024\r\n\r\nベンチマーク：\r\n         filesize   gen(real/user/sys)\r\n
+    n=2          252     0.003/ 0.001/ 0.001\r\n n=3          428     0.003/ 0.000/
+    0.003\r\n n=4         1268     0.003/ 0.001/ 0.002\r\n n=5         6164     0.006/
+    0.001/ 0.005\r\n n=6        39764     0.018/ 0.002/ 0.015\r\n n=7       304724
+    \    0.097/ 0.008/ 0.089\r\n n=8      2663444     0.597/ 0.042/ 0.550\r\n n=9
+    \    26049044     5.542/ 0.421/ 5.083\r\n n=10   281516564    57.628/ 3.949/52.343\r\n\r\n実行はn=10でも一瞬です。\r\nn=11になるとファイルサイズが2Gを越え、プログラムも正しくなくなるので\r\n(ジャンプオフセットがオーバフローする)やってません。\r\nなお、「ソースはアセンブリなのに出力はバイナリじゃないか」というツッコミは無しの方向で…\r\n</pre>\n\t"
+  :code: "        .data\nbase:                                    /* %ebp */\nN:      .long
+    \  3                        /* +0  */\ncmpbuf: .byte   0x8b,0x56,0,0x8b,0x46,0,0x39,0xc2,0x0f,0x8d,0,0,0,0
+    /* +4 */\npad:    .byte   0\nsenti:  .byte   -4\npermtab:.space  32,0                     /*
+    +20 */\noutsiz: .long   0                        /* +52 */\noutbuf: .byte   0x8b,0x46,0,0x89,0x47,0
+    \ /* +56 */\n        .space  180,0\nhdr_buf:\n        .long   0x464c457f, 0x00010101,
+    0, 0, 0x00030002, 0x00000001\n        .long   0x08048074, 0x00000034, 0, 0, 0x00200034,
+    2, 0\n        .long   1, 0, 0x08048000, 0x08048000, 0, 0, 5, 0x1000\n        .long
+    \  1, 0x180, 0x7f049180, 0x7f049180, 0, 0x84, 6, 0x1000\n        .long   0x0491c4b9,
+    0xba7f, 0xbb0000, 0xb8000000, 3, 0xb880cd\n        .long   0xa3800000, 0x7f0491c0,
+    0x0491c4be, 0x9180bf7f, 0xa5bd7f04\n        .long   0xeb080480, 0xbaf9891f, 0,
+    0x1bb, 0x4b800, 0x80cd0000\n        .long   0xbb, 0x1b800, 0x80cd0000\n        .text\n.globl
+    _start\n_start: movl    $base, %ebp     /* %ebp = base */\ngetN:   movl    %ebp,
+    %ecx\n        movl    $1, %edx\n        movl    $0, %ebx\n        movl    $3,
+    %eax\n        int     $0x80\nprep:   movl    (%ebp), %ebx    /* prepare out buf
+    */\n        movl    %ebx, %edx\n        decl    %ebx\n        movl    $4, %eax\n
+    \       lea     56(%ebp), %esi\n        lea     62(%ebp), %edi\n        cld\nprep1:
+    \ movl    $6, %ecx\n        rep     movsb\n        movb    %al, -1(%edi)\n        addl
+    \   $4, %eax\n        decl    %ebx\n        jnz     prep1\n        lea     2(%eax,%edx,2),
+    %eax\n        movl    %eax, 52(%ebp)   /* out chunk size */\n        movw    $0xe5ff,
+    %ax\n        movw    %ax, (%edi)\nheader: movl    $hdr_buf, %ecx \n        movl
+    \   (%ebp), %eax\n        shl     $2, %eax\n        movl    %eax, 122(%ecx)  /*
+    patch code+6 */\n        movl    %eax, 168(%ecx)  /* patch code+52 */\n        xor
+    \    %edx, %edx\n        call    offset\n        addl    $196, %eax\n        movl
+    \   %eax, 68(%ecx)   /* patch filesiz */\n        movl    %eax, 72(%ecx)   /*
+    patch memsiz */\n        movl    $196, %edx\n        call    write\n        movl
+    \   $1, %edx         /* start generating body */\n        call    recur\n        movl
+    \   $0, %ebx\n        movl    $1, %eax\n        int     $0x80            /* exit
+    */\nrecur:                           /* %edx = depth */\n        lea     20(%edx,%ebp),
+    %edi\n        movl    %edx, %eax\n        shl     $2, %eax\n        movb    %al,
+    (%edi)\n        movl    %edx, %ecx\n        pushl   %edx\nrecur0: pushl   %ecx\n
+    \       movl    4(%esp), %edx\n        call    write_cmp\n        movl    4(%esp),
+    %edx\n        movl    (%ebp), %eax\n        decl    %eax\n        cmpl    %eax,
+    %edx\n        jne     recur1\n        call    write_out\n        jmp     recur2\nrecur1:
+    inc     %edx\n        call    recur\nrecur2: popl    %ecx\n        lea     20(%ecx,%ebp),
+    %edi\n        movw    -1(%edi), %ax\n        movb    %ah,-1(%edi)\n        movb
+    \   %al,(%edi)\n        decl    %ecx\n        jns     recur0\n        lea     20(%ebp),
+    %esi\n        lea     19(%ebp), %edi\n        movl    $16, %ecx\n        rep     movsb\n
+    \       popl    %edx\n        ret\noffset:                         /* %edx = depth.
+    returns %eax. preserve %ecx */\n        movl    (%ebp), %eax\n        decl    %eax\n
+    \       cmpl    %eax, %edx\n        jne     offset1\n        movl    52(%ebp),
+    %eax\n        ret\noffset1:\n        pushl   %edx\n        incl    %edx\n        call
+    \   offset\n        popl    %edx\n        addl    $14, %eax\n        addl    $2,
+    %edx\n        mull    %edx\n        ret\nwrite_out:                      /* write
+    out part. */\n        movl    (%ebp), %ecx\n        lea     58(%ebp), %edi\n        lea
+    \    20(%ebp), %esi\n        cld\nwrite_out1:\n        movsb\n        addl    $5,
+    %edi\n        decl    %ecx\n        jnz     write_out1\n        lea     56(%ebp),
+    %ecx\n        movl    52(%ebp), %edx\n        jmp     write\nwrite_cmp:                      /*
+    write cmp part.  %ecx: dd, %edx: depth */\n        lea     20(%ecx,%ebp), %esi\n
+    \       lea     4(%ebp), %ecx\n        movw    -1(%esi), %ax\n        movb    %ah,
+    5(%ecx)\n        movb    %al, 2(%ecx)\n        call    offset\n        movl    %eax,
+    14(%ebp)  /* fill relative jump offset */\n        movl    $14, %edx\nwrite:                          /*
+    write.  in: %ecx: ptr, %edx: size */\n        movl    $1, %ebx\n        movl    $4,
+    %eax\n        int     $0x80\n        ret        \n"
+  :tags:
+  - x86assembly
+  - おもしろおかしい
+  - すばらしい洞察
+  :references:
+    :url: 
+    :title: 
+- :id: '3182'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3182
+  :user_name: satooM
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/424/
+  :language: Haskell
+  :time: 2007/09/27 10:41 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">いつも勉強させていただいています。\r\nunfoldTreeは初めて知りましたが、目から鱗が落ちる思いでした。\r\nやっぱりHaskellって面白いですね。\r\n\r\n蛇足ながら、phiの部分をちょっと整理してみました。</pre>\n\t"
+  :code: |
+    phi   (w,xs,ys,[])   = (Right (reverse xs++w:ys), [])
+    phi a@(w,xs,ys,z:zs) = (Left (w,z), [next a, back a])
+      where
+        next (w,xs,ys,z:zs) = (w',xs',[],zs) where (w':xs') = reverse ys ++ z:w:xs
+        back (w,[],ys,z:zs) = (w',xs',[],zs) where (w':xs') = reverse ys ++ [w,z]
+        back (w,x:xs,ys,zs) = (x,xs,(w:ys),zs)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3188'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3188
+  :user_name: nobsun
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/09/27 15:38 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">shiro さんの WiLiKi に以下のような言及があった．\r\n\r\n&gt;
+    (追記) このお題についてはもうひとつネタを思いついていたのだが\r\n&gt; アセンブラと戯れていたら時間がなくなってしまった。\r\n&gt; アイディアをここに記しておくので興味のある人はチャレンジしてみては。\r\n&gt;
+    基本的なアイディアは、コード生成をlazyにやるということ\r\n&gt; (お題を満たすかどうかは微妙だが)\r\n&gt; \r\n&gt; - gensortは入力数Nを受け取ると、ソートプログラム
+    sorter0 を生成する。\r\n&gt; - sorter0 は最初の入力を受け取ると、「残りのN-1個の入力を受け取り、それをソートしてN個の値を出力するプログラムsorter1」を生成してただちに実行する。\r\n&gt;
+    - sorter1も実は同様に、入力を一個受け取ると「残りのN-2個の入力を受け取り、それをソートしてN個の値を出力するプログラムsorter2」を生成してただちに実行する。\r\n&gt;
+    - 以下、入力が全て消費されるまで再帰。\r\n&gt; \r\n&gt; プログラムをカリー化してる、と考えられなくもない。Partial Evaluationの\r\n&gt;
+    限定的な応用とも言えるかな?\r\n&gt; \r\n&gt; 各ステージのプログラムは次のステージの生成規則を持っていればいいはずだし、\r\n&gt;
+    既に受け取った入力によって大幅に枝刈りが出来るから、\r\n&gt; 元のお題のようにn!で大きくなるってことは無いと思うけど、\r\n&gt; どんな姿になるのかは興味がある。\r\n&gt;
+    あと、「「「プログラムを生成するプログラム」を生成するプログラム」…」\r\n&gt; というふうに入れ子になってゆくとS式が圧倒的に有利になるんじゃないかと\r\n&gt;
+    思うんだが、実はそうでもないかもしれない。\r\n\r\nそこでお題とはすこし離れるけれど，Haskellで書いてみた．用意するのは2つ\r\n\r\n*
+    Gensort.hs\r\n* sorter0.hs\r\n\r\nGensort.hs はモジュールとして使う．sorter0.hs が最初に実行するプログラム．\r\nあらかじめ，sorter0.hs
+    をコンパイルしておく(実行ファイルは，sorter0)\r\n\r\nたとえば，\r\n\r\n$ ./sorter0 3 1 2\r\n\r\nのように
+    sorter0 に 3 引数 3 1 2 を与えると\r\n\r\n1. sorter0 は sorter1.hs を生成し，コンパイルして ./sorter1
+    1 2 を呼ぶ\r\n2. sorter1 は sorter2.hs を生成し，コンパイルして ./sorter2. 2 を呼ぶ\r\n3. sorter2
+    は sorter3.hs を生成し，コンパイルして ./sorter3 を呼ぶ\r\n4. sorter3 はソート結果 [1,2,3] を出力する．\r\n\r\nとなっています．\r\n\r\n上の場合に生成される
+    sorter2.hs は以下のとおり\r\n\r\nimport System.Environment\r\nimport Gensort\r\n\r\nprev
+    :: [Int]\r\nprev@[a,b] = [1,3]\r\nnextprog = \"sorter\"++show (length prev + 1)\r\n\r\nmain
+    = do\r\n{ args &lt;- getArgs\r\n; case map read args of\r\n   []   -&gt; print
+    prev\r\n   c:rs -&gt; if c &lt; a\r\n    then\r\n        prog nextprog [c,a,b]
+    rs\r\n    else\r\n        if c &lt; b\r\n            then\r\n                prog
+    nextprog [a,c,b] rs\r\n            else\r\n                prog nextprog [a,b,c]
+    rs\r\n\r\n}\r\n</pre>\n\t"
+  :code: "-- sorter0.hs --------------------------------------------------------\n\nimport
+    System.Environment\nimport Gensort\n\nprev :: [Int]\nprev@[] = []\nnextprog =
+    \"sorter\"++show (length prev + 1)\n\nmain = do { args &lt;- getArgs\n          ;
+    case map read args of \n              []   -&gt; print prev\n              a:rs
+    -&gt; prog nextprog [a] rs\n          }\n\n-- Gensort.hs --------------------------------------------------------\n\nmodule
+    Gensort where\n\nimport Data.Char\nimport Data.List\nimport System.Cmd\n\nvars
+    :: [Char]\nvars = ['a'..]\n\nprog :: String -&gt; [Int] -&gt; [Int] -&gt; IO ()\nprog
+    next vs rs = do { writeFile (next++\".hs\") (gensort vs rs)\n                     ;
+    system (\"ghc -v0 --make \"++next++\".hs\")\n                     ; system (\"./\"++next++'
+    ':unwords (map show rs))\n                     ; return ()\n                     }\n\nindent
+    :: Int -&gt; String -&gt; String\nindent 0 = id\nindent n = (' ':) . indent (n-1)\n\ngensort
+    :: [Int] -&gt; [Int] -&gt; String\ngensort vs rs = unlines\n  [\"import System.Environment\"\n
+    \ ,\"import Gensort\"\n  ,\"\"\n  ,\"prev :: [Int]\"\n  ,\"prev@[\"++intersperse
+    ',' (take (length vs) vars)++\"] = \"++show vs\n  ,\"nextprog = \\\"sorter\\\"++show
+    (length prev + 1)\"\n  ,\"\"\n  ,\"main = do\"\n  ,\"{ args &lt;- getArgs\"\n
+    \ ,\"; case map read args of\"\n  ,\"   []   -&gt; print prev\"\n  ,\"   \"++[c]++\":rs
+    -&gt; \"++unlines (genif c [] (zipWith const vars vs))\n  ,\"}\"\n  ]\n  where
+    c = vars !! length vs\n\ngenif :: Char -&gt; [Char] -&gt; [Char] -&gt; [String]\ngenif
+    c acc []\n = [\"prog nextprog [\"++intersperse ',' (reverse (c:acc))++\"] rs\"]\ngenif
+    c acc (v:vs)\n = [\"if \"++[c]++\" &lt; \"++[v]\n   ,indent 4 \"then\"\n   ,indent
+    8 \"prog nextprog [\"++intersperse ',' (reverse acc++c:v:vs)++\"] rs\"\n   ,indent
+    4 \"else\"]\n   ++\n   map (indent 8) (genif c (v:acc) vs)\n\n  \n \n"
+  :tags: []
+  :references:
+    :url: /web/20080325151034/http://practical-scheme.net/wiliki/wiliki.cgi?Shiro
+    :title: Shiro
+- :id: '3190'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3190
+  :user_name: nobsun
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/09/27 16:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">time による実行時間(引数10個の場合)\r\n\r\n% time ./sorter0
+    9 8 7 6 5 4 3 2 1 0\r\n[0,1,2,3,4,5,6,7,8,9]\r\n./sorter0 9 8 7 6 5 4 3 2 1 0
+    \ 6.81s user 0.70s system 99% cpu 7.564 total\r\n\r\n\r\n生成されたソースコードサイズ\r\n\r\n%
+    ls -rSl sorter{1..10}.hs\r\n-rw-r--r-- 1 nobsun nobsun  293 2007-09-28 01:08 sorter1.hs\r\n-rw-r--r--
+    1 nobsun nobsun  401 2007-09-28 01:08 sorter2.hs\r\n-rw-r--r-- 1 nobsun nobsun
+    \ 545 2007-09-28 01:08 sorter3.hs\r\n-rw-r--r-- 1 nobsun nobsun  725 2007-09-28
+    01:08 sorter4.hs\r\n-rw-r--r-- 1 nobsun nobsun  941 2007-09-28 01:08 sorter5.hs\r\n-rw-r--r--
+    1 nobsun nobsun 1193 2007-09-28 01:08 sorter6.hs\r\n-rw-r--r-- 1 nobsun nobsun
+    1481 2007-09-28 01:08 sorter7.hs\r\n-rw-r--r-- 1 nobsun nobsun 1805 2007-09-28
+    01:08 sorter8.hs\r\n-rw-r--r-- 1 nobsun nobsun 2165 2007-09-28 01:08 sorter9.hs\r\n-rw-r--r--
+    1 nobsun nobsun 2561 2007-09-28 01:08 sorter10.hs\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3219'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3219
+  :user_name: yuin
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/10/01 15:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">最近いろいろ忙しくてねえ・・・\r\n\r\n生成\r\n--------------------\r\n2\r\nElapsed
+    Time:     0:00:01.093\r\nProcess Time:     0:00:00.062\r\n--------------------\r\n3\r\nElapsed
+    Time:     0:00:00.437\r\nProcess Time:     0:00:00.062\r\n--------------------\r\n4\r\nElapsed
+    Time:     0:00:00.437\r\nProcess Time:     0:00:00.062\r\n--------------------\r\n5\r\nElapsed
+    Time:     0:00:00.484\r\nProcess Time:     0:00:00.078\r\n--------------------\r\n6\r\nElapsed
+    Time:     0:00:00.640\r\nProcess Time:     0:00:00.078\r\n--------------------\r\n7\r\nElapsed
+    Time:     0:00:01.046\r\nProcess Time:     0:00:00.062\r\n--------------------\r\n8\r\nElapsed
+    Time:     0:00:04.437\r\nProcess Time:     0:00:00.078\r\n--------------------\r\n9\r\nElapsed
+    Time:     0:00:35.578\r\nProcess Time:     0:00:00.062\r\n--------------------\r\n10\r\nElapsed
+    Time:     0:05:50.531\r\nProcess Time:     0:00:00.046\r\n\r\nコンパイル\r\n--------------------\r\n2\r\nElapsed
+    Time:     0:00:04.406\r\nProcess Time:     0:00:00.093\r\n--------------------\r\n3\r\nElapsed
+    Time:     0:00:03.156\r\nProcess Time:     0:00:00.078\r\n--------------------\r\n4\r\nElapsed
+    Time:     0:00:03.500\r\nProcess Time:     0:00:00.062\r\n--------------------\r\n5\r\nElapsed
+    Time:     0:00:05.093\r\nProcess Time:     0:00:00.062\r\n--------------------\r\n6以上はエラー\r\n</pre>\n\t"
+  :code: "import java.io._\n\nobject gensort {\n  type Vars = List[String]\n\n  def
+    genSort(xs:Vars, ys:Vars, ident:String):unit = ys.size match {\n    case 0 =&gt;
+    \n      printf(\"{0}println({1}.mkString(\\\",\\\"))\\n\",ident, xs)\n    case
+    _ =&gt;\n      val z::zs = ys\n      xs.zipWithIndex.foreach{p =&gt; \n        if(p._2
+    != 0) printf(\"{0}'}else\", ident)\n        printf(\"{0}if({1} &lt; {2})'{\\n\",
+    (if(p._2&gt;0){\" \"}else{ident}), z, p._1)\n        val (xs1, xs2) = xs.splitAt(p._2)\n
+    \       genSort(xs1:::List(z):::xs2, zs, ident+\"  \")\n      }\n      print(ident+\"}else{\\n\")\n
+    \     genSort(xs:::List(z), zs, ident+\"  \")\n      print(ident+\"}\\n\")\n  }\n\n
+    \ def main(args:Array[String]) = {\n    val n = args(0).toInt\n    var out = new
+    PrintStream(\"sort\"+n+\".scala\")\n    Console.withOut(out){\n      print(\"\"\"object
+    sort {\n  def main(args:Array[String]) = {\n    var \"\"\")\n      val vars =
+    (1 to n).map(x=&gt;(96+x).asInstanceOf[char]+\"\").toList\n      print(vars.mkString(\",\")
+    + \" = 0\\n\")\n      print(vars.map{\"    \"+_+\" = readInt\"}.mkString(\"\\n\")+\"\\n\")\n
+    \     val (head,rest) = vars.splitAt(1)\n      genSort(head, rest, \"    \")\n
+    \     print(\"  }\\n}\\n\")\n    }\n    out.close\n  }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3311'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3311
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2007/10/12 09:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">単純な方法で。</pre>\n\t"
+  :code: |
+    import List
+
+    gensort n = putStr $ unlines $ code1 ++ code2  where
+      vs = take n ['a'..]
+      code1 = [
+        "module Main (main) where",
+        "import System.Environment",
+        "main :: IO ()",
+        "main = do",
+        "  " ++ vlist vs ++ " &lt;- (return . map (read :: String -&gt; Int)) =&lt;&lt; getArgs"]
+      code2 = tail $ gensort' 0 "" vs
+      vlist xs = "[" ++ intersperse ',' xs ++ "]"
+      indent = iterate ("  "++) ""
+      gensort' m ws [] = [indent!!m ++ "print " ++ vlist (reverse ws)]
+      gensort' m ws (z:zs) = splits ws &gt;&gt;= f  where
+        splits ws = zip (inits ws) (tails ws)
+        f (xs, ys) = (indent!!m ++ e_cond xs ++ i_cond ys): gensort' (m+1) (xs++[z]++ys) zs
+        e_cond xs = case xs of; [] -&gt; ""; _ -&gt;" else "
+        i_cond ys = case ys of
+          [] -&gt; ""; (y:_) -&gt; concat ["if (", [z], " &gt; ", [y], ") then"]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3783'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3783
+  :user_name: dankogai
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/09 20:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  これまたPerlのCoverage向上のため。\r\nアルゴリズム的にはRubyの\r\n\r\nhttp://ja.doukaku.org/comment/3174/\r\n\r\nと同じですが、ソースも表現もPerlっぽく(それもわけわかめっぽく)してあります。\r\n\r\nEnjoy!\r\n\r\nDan
+    the Perl Monger\r\n\n\t"
+  :code: |
+    #!/usr/local/bin/perl
+    use strict;
+    use warnings;
+
+    sub gencomp{
+        my ($x, $i, $v) = @_;
+        return '(' . join(",", @$x) . ')' unless @$v;
+        my $y = $v-&gt;[0];
+        join "",
+        "$x-&gt;[$i] &lt; $y ? ",
+        ($i &lt; @$x-1) ? gencomp($x, $i+1, $v)
+                     : gencomp([@$x, $y], 0, [ do{ my @v = @$v; shift @v; @v} ]),
+        ":",
+        gencomp([ do{my @x = @$x; splice @x, $i, 0, $y; @x}],
+                0,
+                [do{my @v = @$v; shift @v; @v} ]);
+    }
+
+    sub gensort{
+        my $n = shift;
+        my @v = map{ '$' . chr($_ + 96) }(1..$n);
+        my $x = $v[0];
+        join "",
+            "sub{ my (", join(",", @v), ') = @_;',
+            gencomp([$x], 0, [@v[1..$#v]], 0), '}';
+    }
+
+    # Test Code
+
+    $\="\n";
+    my $order = shift || 3;
+    my $str = gensort($order);
+    my $code = eval $str;
+    $@ and die $@;
+    use B::Deparse;
+    my $bd = B::Deparse-&gt;new();
+    print $bd-&gt;coderef2text($code);
+    print join(", ", $code-&gt;(1..$order));
+    __END__
+    % perl sortgen.pl 3
+    {
+        use warnings;
+        use strict 'refs';
+        my($a, $b, $c) = @_;
+        $a &lt; $b ? $a &lt; $c ? $b &lt; $c ? ($a, $b, $c) : ($a, $c, $b) : ($c, $a, $b) : ($b &lt; $c ? $a &lt; $c ? ($b, $a, $c) : ($b, $c, $a) : ($c, $b, $a));
+    }
+    1, 2, 3
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3921'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3921
+  :user_name: kozima
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/11/13 02:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  思い付きで出力サイズを小さくしてみました。\r<br>n=9 のときで 10.4 MB 弱です。\r<br>変更は以下の二点。\r<br>* (if (&lt; ...) ...) と (list ...) をそれぞれマクロにして字数を削った\r<br>* 出力の際に pretty print をしないようにして空白を減らした\n\t"
+  :code: |
+    (defconstant *vars* '(a b c d e f g h i j))
+
+    (defun gensort (n)
+      (let ((vars (subseq *vars* 0 n)))
+        (write `(defun ,(intern (format nil "SORT-~D" n)) ,vars
+                  (macrolet (($ (small large then else)
+                               `(if (&lt; ,small ,large) ,then ,else))
+                             (% (&amp;rest vars) `(list ,@vars)))
+                    (format t "~{~A~^, ~}" ,(gensort-1 () vars))))
+               :pretty nil)))
+
+    (defun gensort-1 (sorted unsorted)
+      (if unsorted
+          (let* ((x (car unsorted))
+                 (rest (cdr unsorted))
+                 (len (length sorted))
+                 (form (gensort-1 `(,@sorted ,x) rest)))
+            (do ((i 1 (1+ i)))
+                ((&gt; i len) form)
+              (setf form
+                    `($ ,x ,(nth (- len i) sorted)
+                        ,(gensort-1 `(,@(butlast sorted i) ,x
+                                      ,@(nthcdr (- len i) sorted))
+                                    rest)
+                        ,form))))
+        `(% ,@sorted)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3924'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3924
+  :user_name: kozima
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/11/13 04:57 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">出力がかなり異様になりますがリードマクロならもっと短くなりますね。\r\nこれで n=9
+    が 4.5MB です。\r\n\r\n分岐のところが n=4 のときだと\r\n?BA?CB?DC!DCBA?DB!CDBA?DA!CBDA!CBAD?CA?DB!DBCA?DC!BDCA?DA!BCDA...\r\nみたいになるんですが、?
+    が (if (&lt; ...) ...) に、 ! が (list ...) に化けます。</pre>\n\t"
+  :code: |
+    (defconstant *vars* '(a b c d e f g h i j))
+
+    (defun gensort (n)
+      (let ((vars (subseq *vars* 0 n)))
+        (write `(defun if-scanner (s c)
+                  (declare (ignore c))
+                  (let ((small (intern (string (read-char s))))
+                        (large (intern (string (read-char s))))
+                        (then (read s)) (else (read s)))
+                    `(if (&lt; ,small ,large) ,then ,else)))
+               :pretty nil)
+        (write `(defun list-scanner (s c)
+                  (declare (ignore c))
+                  `(list ,@(loop repeat ,n
+                             collect (intern (string (read-char s))))))
+               :pretty nil)
+        (princ "(set-macro-character #\\? #'if-scanner)")
+        (princ "(set-macro-character #\\! #'list-scanner)")
+        (format t "(defun SORT-~D ~A" n vars)
+        (princ "(format t \"~{~A~^, ~}\"")
+        (gensort-1 () vars)
+        (princ "))")))
+
+    (defun gensort-1 (sorted unsorted)
+      (if unsorted
+          (let* ((x (car unsorted))
+                 (rest (cdr unsorted))
+                 (len (length sorted)))
+            (dotimes (i len)
+              (format t "?~A~A" x (nth i sorted))
+              (gensort-1 `(,@(butlast sorted (- len i)) ,x
+                           ,@(nthcdr i sorted))
+                         rest))
+            (gensort-1 `(,@sorted ,x) rest))
+        (format t "!~{~A~}" sorted)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3970'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/3970
+  :user_name: yappy
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/533/
+  :language: C
+  :time: 2007/11/13 16:30 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Cはある一定の基準として必要だと思われるのでやってみました。\r<br><br>Windows XP + cygwin(gcc)\r<br>800Mhz\r<br>512MB\r<br><br>スペックの低さも相まって9,10あたりはかなりきつい。\r<br>7あたりからコンパイルに時間がかかるようになってくるので最適化をOFF。すると7,8は待ちきれる時間で終わったが、9でOutOfMemory。\r<br>実行時間から推測するに、8もぎりぎりだったような気がする・・・。\r<br><br>sort8.c     3.53 MB (3,703,729 バイト)\r<br>sort8.exe 3.14 MB (3,295,540 バイト)\r<br>sort9.c     34.5 MB (36,241,990 バイト)\r<br>sort10.c   373 MB (391,501,531 バイト)\r<br>"
+  :code: |
+    // USAGE
+    // gensort n
+
+    #include &lt;stdio.h&gt;
+    #define NMAX 26
+    #define BASE 'a'
+
+    int n;
+    int order[NMAX] = {-1};
+
+    void print_tab(int num){
+        int i;
+        for(i=0; i&lt;num; i++)
+            putchar('\t');
+    }
+
+    void print_order(int max){
+        int i, cur;
+        static int result[NMAX];
+        cur = max;
+        for(i=0; i&lt;n; i++){
+            result[i] = cur;
+            cur = order[cur];
+        }
+        printf("printf(\"");
+        for(i=0; i&lt;n; i++){
+            printf(i!=n-1 ? "%%d " : "%%d");
+        }
+        printf("\\n\", ");
+        for(i=0; i&lt;n; i++)
+            printf(i!=n-1 ? "%c, " : "%c", BASE+result[n-1-i]);
+        puts(");");
+    }
+
+    void gen_sort(int depth, int max){
+        if(depth == n){
+            print_tab(depth);
+            print_order(max);
+        }
+        else{
+            int i;
+            int cur = depth;
+            int prev = max;
+            // MAX &lt; cur
+            print_tab(depth);
+            printf("if(%c &lt; %c)\n", BASE+max, BASE+cur);
+            order[cur] = max;
+            gen_sort(depth+1, cur);
+            // cur &lt; (*i) &lt; MAX
+            for(i=0; i&lt;depth-1; i++){
+                order[cur] = order[prev];
+                order[prev] = cur;
+                print_tab(depth);
+                printf("else if(%c &lt; %c)\n", BASE+order[cur], BASE+cur);
+                gen_sort(depth+1, max);
+                order[prev] = order[cur];
+                prev = order[prev];
+            }
+            // cur &lt; ALL
+            order[prev] = cur;
+            print_tab(depth);
+            puts("else");
+            gen_sort(depth+1, max);
+        }
+    }
+
+    int main(int argc, char *argv[]){
+        static char filename[256];
+        int i;
+        if(argc &lt; 2)
+            return 1;
+        sprintf(filename, "sort%s.c", argv[1]);
+        freopen(filename, "w", stdout);
+        n = atoi(argv[1]);
+        puts("#include &lt;stdio.h&gt;\n");
+        puts("int main(){");
+        printf("\tint ");
+        for(i=0; i&lt;n; i++)
+            printf(i != n-1 ? "%c, " : "%c;\n", BASE + i);
+        for(i=0; i&lt;n; i++){
+            printf("\tscanf(\"%%d\", &amp;%c);\n", BASE + i);
+        }
+        gen_sort(1, 0);
+        puts("\treturn 0;");
+        puts("}");
+        return 0;
+    }
+
+    /*本体のコンパイルおよび実行
+    gcc -o gensort -O3 gensort.c
+
+    ./gensort 2
+
+    real    0m0.751s
+    user    0m0.020s
+    sys    0m0.050s
+
+    ./gensort 3
+
+    real    0m1.672s
+    user    0m0.030s
+    sys    0m0.060s
+
+    ./gensort 4
+
+    real    0m0.120s
+    user    0m0.040s
+    sys    0m0.040s
+
+    ./gensort 5
+
+    real    0m0.110s
+    user    0m0.030s
+    sys    0m0.020s
+
+    ./gensort 6
+
+    real    0m0.221s
+    user    0m0.040s
+    sys    0m0.070s
+
+    ./gensort 7
+
+    real    0m0.921s
+    user    0m0.100s
+    sys    0m0.010s
+
+    ./gensort 8
+
+    real    0m4.066s
+    user    0m1.602s
+    sys    0m0.230s
+
+    ./gensort 9
+
+    real    0m41.129s
+    user    0m14.510s
+    sys    0m2.062s
+
+    ./gensort 10
+
+    real    4m9.279s
+    user    2m52.768s
+    sys    0m18.296s
+
+    */
+
+    /*生成された各コードのコンパイルおよび実行
+    gcc -o sort2 -O0 sort2.c
+
+    real    0m6.078s
+    user    0m0.330s
+    sys    0m0.370s
+
+    ./sort2 &lt;input.txt
+    5 8
+
+    real    0m0.361s
+    user    0m0.050s
+    sys    0m0.010s
+
+    gcc -o sort3 -O0 sort3.c
+
+    real    0m1.112s
+    user    0m0.360s
+    sys    0m0.360s
+
+    ./sort3 &lt;input.txt
+    5 8 9
+
+    real    0m0.090s
+    user    0m0.020s
+    sys    0m0.040s
+
+    gcc -o sort4 -O0 sort4.c
+
+    real    0m3.214s
+    user    0m0.380s
+    sys    0m0.340s
+
+    ./sort4 &lt;input.txt
+    2 5 8 9
+
+    real    0m0.080s
+    user    0m0.030s
+    sys    0m0.050s
+
+    gcc -o sort5 -O0 sort5.c
+
+    real    0m1.562s
+    user    0m0.560s
+    sys    0m0.350s
+
+    ./sort5 &lt;input.txt
+    1 2 5 8 9
+
+    real    0m0.100s
+    user    0m0.020s
+    sys    0m0.050s
+
+    gcc -o sort6 -O0 sort6.c
+
+    real    0m3.665s
+    user    0m1.842s
+    sys    0m0.410s
+
+    ./sort6 &lt;input.txt
+    1 2 5 6 8 9
+
+    real    0m0.131s
+    user    0m0.040s
+    sys    0m0.020s
+
+    gcc -o sort7 -O0 sort7.c
+
+    real    0m20.299s
+    user    0m13.788s
+    sys    0m0.750s
+
+    ./sort7 &lt;input.txt
+    1 2 5 6 8 9 10
+
+    real    0m0.421s
+    user    0m0.050s
+    sys    0m0.060s
+
+    gcc -o sort8 -O0 sort8.c
+
+    real    12m59.961s
+    user    8m4.334s
+    sys    0m8.791s
+
+    ./sort8 &lt;input.txt
+    1 2 4 5 6 8 9 10
+
+    real    0m1.172s
+    user    0m0.020s
+    sys    0m0.050s
+
+    gcc -o sort9 -O0 sort9.c
+
+    cc1: out of memory allocating 1048576 bytes after a total of 401670144 bytes
+
+    real    13m15.844s
+    user    1m47.133s
+    sys    0m6.028s
+
+    ./sort9 &lt;input.txt
+    ./run.sh: line 13: ./sort9: No such file or directory
+
+    real    0m9.183s
+    user    0m0.020s
+    sys    0m0.020s
+
+    gcc -o sort10 -O0 sort10.c
+
+    */
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4853'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/4853
+  :user_name: matarillo
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/136/
+  :language: C
+  :time: 2007/12/17 07:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>stringでだらだら書くのは.NETらしくないので、CodeDOMで書いてみた。</p>\n\n\t"
+  :code: |
+    using System;
+    using System.CodeDom;
+    using System.Collections.Generic;
+
+    using CSC = System.CodeDom.CodeStatementCollection;
+    using CVD = System.CodeDom.CodeVariableDeclarationStatement;
+    using CC  = System.CodeDom.CodeConditionStatement;
+    using CTR = System.CodeDom.CodeTypeReferenceExpression;
+    using CMR = System.CodeDom.CodeMethodReferenceExpression;
+    using CMI = System.CodeDom.CodeMethodInvokeExpression;
+    using CVR = System.CodeDom.CodeVariableReferenceExpression;
+    using CP  = System.CodeDom.CodePrimitiveExpression;
+    using CBO = System.CodeDom.CodeBinaryOperatorExpression;
+
+    class Program
+    {
+      static void Main(string[] args)
+      {
+        GenSort(5, Console.Out);
+        Console.ReadKey();
+      }
+
+      static void GenSort(int n, System.IO.TextWriter writer)
+      {
+        string[] vName = "a b c d e f g h i j k l m n o p q r s t u v w x y z".Split(' ');
+
+        CodeCompileUnit compileUnit = new CodeCompileUnit();
+        CodeNamespace name = new CodeNamespace();
+        compileUnit.Namespaces.Add(name);
+
+        name.Imports.Add(new CodeNamespaceImport("System"));
+
+        CodeTypeDeclaration type = new CodeTypeDeclaration("Sort");
+        name.Types.Add(type);
+
+        CodeMemberMethod main = new CodeEntryPointMethod();
+        type.Members.Add(main);
+
+        CMI readLine = new CMI(new CMR(new CTR("Console"), "ReadLine"));
+        CMI intParse = new CMI(new CMR(new CTR("System.Int32"), "Parse"), readLine);
+        for (int i = 0; i &lt; n; i++)
+          main.Statements.Add(new CVD(typeof(int), vName[i], intParse));
+
+        CMR writeLine = new CMR(new CTR("Console"), "WriteLine");
+
+        string[] p = new string[n];
+        for (int i = 0; i &lt; n; i++)
+          p[i] = string.Format("{{{0}}}", i);
+        CP format = new CP(string.Join(" ", p));
+
+        CVR[] vars = new CVR[n];
+        for (int i = 0; i &lt; n; i++)
+          vars[i] = new CVR(vName[i]);
+
+        IList&lt;int&gt; orderd = new List&lt;int&gt;(n);
+        IList&lt;int&gt; notyet = new List&lt;int&gt;(n);
+        for (int i = 0; i &lt; n; i++)
+          notyet.Add(i);
+
+        GenIf(main.Statements, orderd, notyet, writeLine, format, vars);
+
+        (new Microsoft.CSharp.CSharpCodeProvider()).GenerateCodeFromCompileUnit
+          (compileUnit, writer, (new System.CodeDom.Compiler.CodeGeneratorOptions()));
+      }
+
+      static void GenIf(CSC statements, IList&lt;int&gt; compared, IList&lt;int&gt; notyet,
+        CMR writeLine, CP format, CVR[] vars)
+      {
+        if (notyet.Count == 0)
+        {
+          CMI method = new CMI(writeLine);
+          method.Parameters.Add(format);
+          foreach (int index in compared)
+            method.Parameters.Add(vars[index]);
+          statements.Add(method);
+          return;
+        }
+        int current = notyet[0];
+        notyet.RemoveAt(0);
+        if (compared.Count == 0)
+        {
+          compared.Add(current);
+          GenIf(statements, compared, notyet, writeLine, format, vars);
+          return;
+        }
+        for (int i = 0; i &lt; compared.Count; i++)
+        {
+          CC ifStatement = new CC();
+          statements.Add(ifStatement);
+          ifStatement.Condition = new CodeBinaryOperatorExpression
+            (vars[current], CodeBinaryOperatorType.LessThan, vars[compared[i]]);
+          compared.Insert(i, current);
+          GenIf(ifStatement.TrueStatements, compared, notyet, writeLine, format, vars);
+          compared.RemoveAt(i);
+          statements = ifStatement.FalseStatements;
+        }
+        compared.Add(current);
+        GenIf(statements, compared, notyet, writeLine, format, vars);
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5618'
+  :parent_id: '63'
+  :url: http://ja.doukaku.org/comment/5618
+  :user_name: ika
+  :user_url: /web/20080325151034/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2008/02/01 07:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">コンパイラはDMD2.009を使用しました。\r\nソートコードのコンパイルは、最適化を有効にした場合、n=6までしか出来ませんでした。\r\n\r\n*
+    ソースコード生成\r\ngensort 7  00:00.062\r\ngensort 8  00:00.515\r\ngensort 9  00:05.312\r\ngensort
+    10 00:57.671\r\n\r\n* コンパイル\r\nsort5  00:00.125\r\nsort6  00:00.156\r\nsort7  00:01.328\r\nsort8
+    \ 00:54.937\r\n// 9,10はメモリ不足でコンパイルできず</pre>\n\t"
+  :code: "import std.stream, std.string, std.conv\n\nvoid gensort(uint n, Stream o)
+    {\n    enum string INDENT = \"\\t\";\n    \n    void _gensort(string[] checked,
+    uint index, string[] vars, uint indent) {\n        if(!vars.length) {\n            o.writefln(\"%swriteln([%s]);\",
+    INDENT.repeat(indent), checked.join(\", \"));\n            return;\n        }\n\n
+    \       o.writefln(\"%sif(%s &lt; %s)\", INDENT.repeat(indent), checked[index],
+    vars[0]);\n        if(index + 1 &lt; checked.length) {\n            _gensort(checked,
+    index + 1, vars, indent + 1);\n        } else {\n            _gensort(checked
+    ~ vars[0], 0, vars[1..$], indent + 1);\n        }\n        o.writefln(\"%selse\",
+    INDENT.repeat(indent));\n        _gensort(checked[0..index] ~ vars[0] ~ checked[index..$],
+    0, vars[1..$], indent + 1);\n    }\n    \n    string[] _variables(uint n) {\n
+    \       auto vars = new string[n];\n        vars[0] = \"a\";\n        foreach(i;
+    1 .. n) {\n            vars[i] = vars[i - 1].succ();\n        }\n        return
+    vars;\n    }\n    \n    o.writefln(\"import std.stdio, std.string, std.conv;\");\n
+    \   o.writefln(\"void main() {\");\n    \n    auto vars = _variables(n);\n    foreach(var;
+    vars) {\n        o.writefln(\"%sint %s = to!(int)(strip(readln()));\", INDENT,
+    var);\n    }\n    _gensort([vars[0]], 0, vars[1..$], 1);\n    \n    o.writefln(\"}\");\n}\n\nvoid
+    main(string[] args) {\n    if(args.length&gt;=2) {\n        auto o = new BufferedFile(\"sort\"
+    ~ args[1] ~ \".d\", FileMode.OutNew);\n        scope(exit) o.close();\n        gensort(to!(int)(args[1]),
+    o);\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

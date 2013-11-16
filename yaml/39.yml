@@ -1,0 +1,1606 @@
+---
+:id: '39'
+:title: アクセスログのIPアドレスを逆引き
+:comments:
+- :id: '3395'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/3395
+  :user_name: 沢渡 みかげ
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/101/
+  :language: 
+  :time: 2007/08/03 11:32 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  アクセスログのIPアドレスを逆引きするフィルタを作成してください．\r\n<p>\r\nアクセスログの各行の先頭にIPアドレスがあります．そのIPアドレスを逆引き結果のFQDNで置き換えてください．\r\n</p>\n<p>\r\n逆引きが出来なかった場合は，IPアドレスのまま残します．\r\nIPアドレス以外の部分は，そのまま加工せずに残してください．\r\n\r\n</p>\n<p>\r\n----\r\n</p>\n<p>\r\n例）192.168.7.1
+    が逆引きできない場合\r\n</p>\n<p>\r\n210.166.209.71 - - [26/Jul/2007:22:32:47 +0900] \"GET
+    / HTTP/1.1\" 403 283 \"-\" \"Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.5)
+    Gecko/20070713 Firefox/2.0.0.5\"<br>\r\n192.168.7.1 - - [26/Jul/2007:22:32:48
+    +0900] \"GET /favicon.ico HTTP/1.1\" 404 290 \"-\" \"Mozilla/5.0 (Windows; U;
+    Windows NT 5.1; ja; rv:1.8.1.5) Gecko/20070713 Firefox/2.0.0.5\"\r\n</p>\n<p>\r\n↓\r\n</p>\n<p>\r\nmikage.to
+    - - [26/Jul/2007:22:32:47 +0900] \"GET / HTTP/1.1\" 403 283 \"-\" \"Mozilla/5.0
+    (Windows; U; Windows NT 5.1; ja; rv:1.8.1.5) Gecko/20070713 Firefox/2.0.0.5\"<br>\r\n192.168.7.1
+    - - [26/Jul/2007:22:32:48 +0900] \"GET /favicon.ico HTTP/1.1\" 404 290 \"-\" \"Mozilla/5.0
+    (Windows; U; Windows NT 5.1; ja; rv:1.8.1.5) Gecko/20070713 Firefox/2.0.0.5\"\r\n</p>\n<p>\r\n----\r\n</p>\n<p>\r\n\r\nアクセスログは膨大な量があるため，現実的な時間で処理できるよう，以下の条件をつけます．\r\n</p>\n<p>\r\n・メモリに入りきらないような巨大なログも処理できるようにしてください．（ファイル全体をメモリに読み込むのはNG）\r\n</p>\n<p>\r\n・十分な速度で処理できるよう，並列化する等の工夫をしてください．\r\n</p>\n<p>\r\n・DNSサーバに大量のリクエストが行かないよう，結果をキャッシュしてDNSサーバへのアクセスを削減してください．\r\n　なお，DNSのTTLは無視して結果をキャッシュしてかまいません．\r\n　（ログの記録された時間の逆引きするタイミングがずれているため，正確な逆引きは元々無理なので）\r\n</p>\n<p>\r\n名前解決はgethostbyaddrを利用しても良いですし，再帰的に名前解決が出来るDNSサーバと直接通信してもかまいません．\r\n\r\n</p>\n<p>\r\nログを順次読み取り処理する部分を，データを共有しつついかに並列化するか，という部分を問うのが目的です．\r\n</p>\n<p>\r\nこのお題は沢渡みかげさんの投稿です。ご投稿ありがとうございます。\r\n\t</p>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3718'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/3718
+  :user_name: dankogai
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/05 17:04 GMT
+  :vote_count: '4'
+  :vote_score: '0'
+  :body: "\r\n\t  \n<p>Perlがなぜかないので。\n</p>\n<p>Regexpは<a href=\"/web/20110416061249/http://blog.livedoor.jp/dankogai/archives/50932438.html\">こちら</a>\n
+    \  を参照のこと。\n</p>\n<p>一行で\n</p>\n<p><code>perl -MSocket -ple 's{((?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))}{$cache{$1}||=(gethostbyaddr(inet_aton($1),AF_INET))[0]}eg'</code>\n</p>\n<p>でもOK.\n</p>\n<p>Dan
+    the Perl Monger\n</p>\n\n\n\r\n\t"
+  :code: |
+    #!/usr/local/bin/perl
+    use strict;
+    use warnings;
+    use Socket;
+    my %cache;
+    while (&lt;&gt;) {
+        s{((?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))}{$cache{$1}||=(gethostbyaddr(inet_aton($1),AF_INET))[0]}eg;
+        print;
+    }
+    __END__
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1896'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1896
+  :user_name: cats
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/08/06 02:43 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\r\n\t  queは、1命令で更新されると思われるので、lockしていない。\r\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Net;
+    using System.Text;
+    using System.Threading;
+    class Program
+    {
+      static void Main()
+      {
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
+        // DNSのキャッシュ
+        Dictionary&lt;string, String&gt; cash = new Dictionary&lt;string, string&gt;();
+        // FIFOで結果を出力するためのデータ
+        Queue&lt;StringBuilder&gt; que = new Queue&lt;StringBuilder&gt;();
+        string s;
+        // 入力が残っているか、未出力の結果がある間、ループ
+        while ((s = Console.ReadLine()) != null || que.Count &gt; 0)
+        {
+          // 出力すべきデータがあれば出力
+          while (que.Count &gt; 0 &amp;&amp; que.Peek().Length &gt; 0)
+            Console.WriteLine(que.Dequeue().ToString());
+          if (string.IsNullOrEmpty(s)) continue;
+          StringBuilder sb = new StringBuilder();
+          int i = s.IndexOf(' ');
+          if (i &lt; 0) continue;
+          string ip = s.Substring(0, i);
+          string msg = s.Substring(i);
+          que.Enqueue(sb);
+          new Thread(delegate()
+          {
+            string ad;
+            if (!cash.TryGetValue(ip, out ad))
+            {
+              ad = GetHost(ip);
+              lock (cash) cash[ip] = ad;
+            }
+            // ここで非同期に結果が作成される
+            sb.Append(ad + msg);
+          }).Start();
+        }
+        sw.Stop();
+        Console.WriteLine(sw.Elapsed.TotalSeconds + " sec");
+      }
+      static string GetHost(string ip)
+      {
+        // 並列化の効果を確認するため、遅延させる
+        Thread.Sleep(ip == "XXX" ? 600 : 300);
+        try { ip = Dns.GetHostEntry(ip).HostName; }
+        catch { }
+        return ip;
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1922'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1922
+  :user_name: ocean
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/177/
+  :language: 
+  :time: 2007/08/06 08:07 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  http://msdn2.microsoft.com/en-us/library/system.collections.queue.aspx\r\nを見ると、QueueはSynchronizeメソッドを使わない限り、スレッドセーフではないようですね。\r\n\r\nというか、このコードだと、最悪入力行の数だけスレッドが立ち、\r\nキューにStringBuilderが追加されることになりませんか？\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1874'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1874
+  :user_name: onjo
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/235/
+  :language: Common
+  :time: 2007/08/05 13:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  とりあえず、ipaddr-to-hostname の解決だけ並列化。まぁ、そもそもこのコードだと resolver 自体が並列動作できないけれど…そこまでやる場合はロックやキューを
+    resolver 内で作って、process-run-function のパラメータとして渡せばいいと思います。\r\n\t"
+  :code: "(defpackage :doukaku-39 (:use :cl))\n(in-package :doukaku-39)\n\n(defvar
+    *endp* nil)\n(defvar *lock* (mp:make-process-lock))\n(defvar *reader-queue* (make-instance
+    'mp:queue))\n(defvar *writer-queue* (make-instance 'mp:queue))\n\n(defmacro with-dequeue
+    ((elem queue lock) &amp;body body)\n  \"キューに要素があるなら、取り出す。なければ別スレッドへ切り換え\"\n  `(let
+    ((,elem (mp:with-process-lock (,lock)\n                  (unless (mp:queue-empty-p
+    ,queue)\n                    (mp:dequeue ,queue)))))\n     (if (null ,elem)\n
+    \        (mp:process-allow-schedule)\n         (progn ,@body))))\n\n(defun process/resolver
+    ()\n  \"ひたすら名前解決\"\n  (loop\n     (when (and (mp:queue-empty-p *reader-queue*)
+    *endp*) (return))\n     ;; キューが空なら待ち、要素があるなら読み出して処理し、結果を書き込みキューに入れる\n     (with-dequeue
+    (line *reader-queue* *lock*)\n       (multiple-value-bind (match? whole ip rest)\n
+    \          (excl:match-re \"(\\\\d+.\\\\d+.\\\\d+.\\\\d+)(.*)\" line)\n         (declare
+    (ignorable match? whole))\n         ;; socket:ipaddr-to-hostname は Lisp レベルで名前のキャッシュを行ってる\n
+    \        (mp:enqueue *writer-queue*\n                     (concatenate 'string\n
+    \                                 (or (socket:ipaddr-to-hostname ip) ip)\n                                  rest))))))\n\n(defun
+    process/writer (output-file)\n  \"ひたすら結果を出力\"\n  (with-open-file (out output-file
+    :direction :output :if-exists :supersede)\n    (loop\n       (when (and *endp*
+    (mp:queue-empty-p *writer-queue*)\n\t\t         (mp:queue-empty-p *reader-queue*))\n
+    \        (return))\n       (with-dequeue (line *writer-queue* *lock*)\n         (write-line
+    line out)))))\n\n(defun resolver (input-file output-file &amp;aux processes)\n
+    \ \"ブロックする可能性のある名前解決をスレッド化して高速化\"\n  (with-open-file (in input-file :direction
+    :input)\n      ;; 並列化\n      (setf *endp* nil)\n      (loop for i from 1 to 5
+    do\n           (push (mp:process-run-function (format nil \"Resolver Process ~D\"
+    i)\n                                          #'process/resolver) processes))\n
+    \     (push (mp:process-run-function \"Writer Process\"\n                                     #'process/writer
+    output-file) processes)\n      ;; ファイルからの読み込み\n      (loop for line = (read-line
+    in nil :eof)\n            until (eql line :eof)  \n            do (mp:enqueue
+    *reader-queue* line) ; 読み込んだ行をリゾルバ用キューに入れる\n            finally (mp:with-process-lock
+    (*lock*) (setf *endp* t)))\n      ;; 全プロセスの終了待ち\n      (loop until (some #'mp:process-active-p
+    processes)\n            do (mp:process-allow-schedule))\n      *endp*))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1786'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1786
+  :user_name: にしお
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/08/03 14:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  おっと、すみません。修正します。\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1798'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1798
+  :user_name: mimizu
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/103/
+  :language: Java
+  :time: 2007/08/03 18:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  一応並列化してみたけど、どの程度効果があるのかは謎\r\n\t"
+  :code: "import java.io.BufferedReader;\nimport java.io.File;\nimport java.io.FileNotFoundException;\nimport
+    java.io.FileReader;\nimport java.io.IOException;\nimport java.io.PrintWriter;\nimport
+    java.net.InetAddress;\nimport java.net.UnknownHostException;\nimport java.util.Map;\nimport
+    java.util.HashMap;\nimport java.util.concurrent.Callable;\nimport java.util.concurrent.ConcurrentLinkedQueue;\nimport
+    java.util.concurrent.ExecutionException;\nimport java.util.concurrent.Executors;\nimport
+    java.util.concurrent.ExecutorService;\nimport java.util.concurrent.FutureTask;\nimport
+    java.util.regex.Pattern;\nimport java.util.regex.Matcher;\n\n\npublic class LogFilter
+    {\n    \n    public static void main(String[] args) {\n        long s  = System.currentTimeMillis();\n
+    \       LogFilter filter = new LogFilter();\n        filter.nameResolve(new File(args[0]),
+    new File(args[1]));\n        System.out.println(System.currentTimeMillis() - s
+    + \"ms\");\n    }\n    \n    public void nameResolve(File input, File output)
+    {\n        Reader r = new Reader(input);\n        Writer w = new Writer(output);\n
+    \       \n        new Thread(r).start();\n        Thread writeThread = new Thread(w);\n
+    \       writeThread.start();\n        try {\n            writeThread.join();\n
+    \       }\n        catch (InterruptedException e) {}\n    }\n    \n    private
+    ConcurrentLinkedQueue&lt;String&gt; addressQueue = new ConcurrentLinkedQueue&lt;String&gt;();\n
+    \   private ConcurrentLinkedQueue&lt;String&gt; restQueue = new ConcurrentLinkedQueue&lt;String&gt;();\n
+    \   \n    private Map&lt;String, FutureTask&lt;String&gt;&gt; cache = new HashMap&lt;String,
+    FutureTask&lt;String&gt;&gt;();\n    \n    private boolean eof = false;\n    \n
+    \   private static final Pattern ipPattern = Pattern.compile(\"^\\\\d{1,3}.\\\\d{1,3}.\\\\d{1,3}.\\\\d{1,3}\\\\b\");\n
+    \   \n    private class Reader implements Runnable {\n        \n        private
+    File file;\n        \n        public Reader(File file) {\n            this.file
+    = file;\n        }\n        \n        public void run() {\n            ExecutorService
+    e = Executors.newCachedThreadPool();\n            try {\n                BufferedReader
+    in = new BufferedReader(new FileReader(file));\n                String line;\n
+    \               FutureTask&lt;String&gt; emptyTask = new FutureTask&lt;String&gt;(new
+    Callable&lt;String&gt;() {\n                    public String call() {\n                        return
+    \"\";\n                    }\n                });\n                cache.put(\"\",
+    emptyTask);\n                e.submit(emptyTask);\n                while ((line
+    = in.readLine()) != null) {\n                    Matcher m = ipPattern.matcher(line);\n
+    \                   if (m.find()) {\n                        String address =
+    m.group();\n                        if (cache.get(address) == null) {\n                            FutureTask&lt;String&gt;
+    task = new FutureTask&lt;String&gt;(new NameResolveTask(address));\n                            cache.put(address,
+    task);\n                            e.submit(task);\n                        }\n
+    \                       addressQueue.add(address);\n                        StringBuffer
+    sb = new StringBuffer();\n                        m.appendReplacement(sb, \"\");\n
+    \                       m.appendTail(sb);\n                        restQueue.add(sb.toString());\n
+    \                   }\n                    else {\n                        addressQueue.add(\"\");\n
+    \                       restQueue.add(line);\n                    }\n                }\n
+    \               in.close();\n                eof = true;\n            }\n            catch
+    (IOException ie) {}\n            finally {\n                e.shutdown();\n            }\n
+    \       }\n        \n    }\n    \n    private class Writer implements Runnable
+    {\n        \n        private File file;\n        \n        public Writer(File
+    file) {\n            this.file = file;\n        }\n        \n        public void
+    run() {\n            try {\n                PrintWriter out = new PrintWriter(this.file);\n
+    \               while (true) {\n                    if (restQueue.size() &gt;
+    0) {\n                        try {\n                            out.print(cache.get(addressQueue.peek()).get());\n
+    \                           out.println(restQueue.poll());\n                            addressQueue.poll();\n
+    \                       }\n                        catch (ExecutionException e)
+    {}\n                        catch (InterruptedException e) {}\n                    }\n
+    \                   else if (eof) {\n                        break;\n                    }\n
+    \                   else {\n                        Thread.yield();\n                    }\n
+    \               }\n                out.close();\n            }\n            catch
+    (FileNotFoundException e) {}\n        }\n        \n    }\n    \n    private class
+    NameResolveTask implements Callable&lt;String&gt; {\n        \n        private
+    final String address;\n        \n        private NameResolveTask(String address)
+    {\n            this.address = address;\n        }\n        \n        public String
+    call() {\n            try {\n                return InetAddress.getByName(this.address).getHostName();\n
+    \           }\n            catch (UnknownHostException e) {\n                return
+    address;\n            }\n        }\n        \n    }\n    \n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1787'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1787
+  :user_name: sumim
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/03 14:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  Squeak Smalltalk で。\r\n\t"
+  :code: |
+    | in out cache nameQueue restQueue mutex |
+    in := FileStream fileNamed: 'access_log'.
+    out := FileStream fileNamed: 'access_log.txt'.
+    cache := Dictionary new.
+    nameQueue := SharedQueue new.
+    restQueue := OrderedCollection new.
+    mutex := Semaphore forMutualExclusion.
+    [in atEnd] whileFalse: [
+        nameQueue size &lt; 1000 ifTrue: [
+            | ip |
+            ip := in upTo: Character space.
+            restQueue add: in nextLine.
+            [   | name |
+                mutex critical: [
+                    name := cache at: ip ifAbsentPut: [
+                        (NetNameResolver
+                            nameForAddress: (NetNameResolver addressFromString: ip)
+                            timeout: 30) ifNil: [ip]]].
+                nameQueue nextPut: name] fork.
+            out nextPutAll: nameQueue next; space; nextPutAll: restQueue removeFirst; cr]].
+    in close.
+    out close
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1799'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1799
+  :user_name: sumim
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/03 18:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  すみません。nameQueue next のところで待ち合わせてしまうので、並列化されていませんでした(^_^;)。ということで、再チャレンジ。\r\n\t"
+  :code: |
+    | in numLines out queue sema mutex cache |
+    in := FileStream fileNamed: 'access_log'.
+    out := FileStream fileNamed: 'access_log.txt'.
+    queue := SharedQueue new.
+    numLines := 0.
+    [in atEnd] whileFalse: [in nextLine. numLines := numLines + 1].
+    sema := Semaphore new.
+    [   numLines timesRepeat: [
+            | pair |
+            pair := queue next.
+            pair first wait.
+            out nextPutAll: pair second; cr].
+        in close.
+        out close.
+        sema signal] fixTemps fork.
+    in reset.
+    cache := Dictionary new.
+    mutex := Semaphore forMutualExclusion.
+    [in atEnd] whileFalse: [
+        queue size &lt; 1000 ifTrue: [
+            | ip rest pair |
+            ip := in upTo: $ .
+            rest := in nextLine.
+            pair := {Semaphore new. #future}.
+            queue nextPut: pair.
+            [   | name |
+                mutex critical: [
+                    name := cache at: ip ifAbsentPut: [
+                        (NetNameResolver
+                            nameForAddress: (NetNameResolver addressFromString: ip)
+                            timeout: 30) ifNil: [ip]]].
+                pair at: 2 put: name, ' ', rest.
+                pair first signal] fixTemps fork]].
+    sema wait
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1846'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1846
+  :user_name: yuin
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/08/04 18:42 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  ScalaといえばActorです。というわけでActor使ってます。\r\n\t"
+  :code: "import java.net.{InetAddress, UnknownHostException}\nimport scala.collection.mutable.{HashMap,
+    Queue}\nimport scala.io._\nimport java.io._\nimport scala.actors._\nimport scala.actors.Actor._\n\nclass
+    Log(in:String, out:String, n:int){\n  val outio = new BufferedWriter(new FileWriter(out))\n
+    \ val inio  = new BufferedReader(new FileReader(in))\n  var resolved = new HashMap[int,
+    String]\n  var writeQueue  = new Queue[int]\n  val readers = (for(i &lt;- 0 to
+    n-1) yield new reader(i)).toArray\n  var done = false\n\n  val lookupCahce = new
+    HashMap[String, String]\n  def lookup(ip:String) = lookupCahce.getOrElseUpdate(ip,
+    (try {\n    InetAddress.getByName(ip).getHostName\n  }catch {\n    case _ =&gt;
+    ip\n  }))\n\n  def process() = {\n    done = false\n    readers.foreach(x =&gt;
+    {\n      x.link(writer)\n      x.trapExit = true\n      x.start\n      x ! 'resolve\n
+    \   })\n  }\n\n  val writer:Actor = actor {\n    loop {\n      react {\n        case
+    'write =&gt;\n          if(writeQueue.size &gt; 0) {\n            if(resolved.contains(writeQueue.front))
+    {\n              val i = writeQueue.dequeue\n              val line = resolved(i)\n
+    \             resolved -= i \n              readers(i) ! 'resolve\n              outio.write(line+\"\\n\")\n
+    \           }\n            writer ! 'write\n          }\n          if(done &amp;&amp;
+    writeQueue.size == 1){\n            outio.close; \n            exit\n          }\n
+    \     }\n    }\n  }\n\n  class reader(i:int) extends Actor {\n    def act() =
+    loop {\n      react {\n        case 'resolve =&gt; \n          if(!done) {\n            writeQueue
+    += i\n            val line = inio.readLine\n            if(line != null) {\n              val
+    (ip::rest) = line.split(\" \").toList\n              resolved(i) = (lookup(ip)::rest).mkString(\"
+    \")\n            }else {\n              done = true\n            }\n            writer
+    ! 'write\n          }\n        case Exit(_, _) =&gt; exit\n      }\n    }\n  }\n}\n\nnew
+    Log(\"test.log\", \"testout.log\", 20) process\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2074'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/2074
+  :user_name: raynstard
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/127/
+  :language: C
+  :time: 2007/08/12 05:08 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">Cの投稿がなかったので作ってみました。\r\n夏休み万歳！\r\n\r\nばかでかくなってしまってごめんなさい。\r\n半分くらいはリスト管理です。\r\n並列化はしていませんorz\r\n入力が1つしかないので\r\nシリアルでも十分な性能は出ていると\r\n思いますけど、動作テストしただけだし\r\n大きなログを持っていないのでそのへんは適当です。\r\nマルチスレッドにするのならどこをやるんだろう？\r\nBTREEにして分割検索？\r\n\r\n#名前解決ができないと3秒くらい止まってしまうのはうちの環境だけ?\r\n\r\ngcc
+    -std=c99 -Wall doukaku039.c -o a</pre>\r\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;limits.h&gt;\n#include
+    &lt;memory.h&gt;\n#include &lt;string.h&gt;\n#include &lt;sys/types.h&gt;\n#include
+    &lt;netdb.h&gt;\n#include &lt;arpa/inet.h&gt;\n#include &lt;netinet/in.h&gt;\n\n#ifdef
+    TEST\n#define DPRINTF(fmt, ...) {  printf(\"#debug(%4d)@%-10s: \", __LINE__, __func__);
+    \\\n                             printf(fmt, ## __VA_ARGS__); fflush(stdout);
+    }\n#else\n#define DPRINTF(fmt, ...) { ; }\n#endif\n\ntypedef struct tagHOSTINFO\n{\n
+    \   struct in_addr addr;\n    char IPv4[16+1];\n    char hostname[63];\n    struct
+    tagHOSTINFO *next;\n} HOSTINFO;\n\ntypedef struct tagROOTNODE\n{\n    int                count;\n
+    \   struct tagHOSTINFO *begin;\n    struct tagHOSTINFO *end;\n} ROOTNODE;\n\nint
+    compare_IPv4(const HOSTINFO  a, const HOSTINFO  b )\n{\n\n    if( a.addr.s_addr
+    &lt; b.addr.s_addr ) return -1;\n    if( a.addr.s_addr &gt; b.addr.s_addr ) return
+    \ 1;\n    return 0;\n}\n\nint clear_list(const ROOTNODE root)\n{\n    int n=1;\n
+    \   HOSTINFO *cursor;\n    HOSTINFO *store;\n    for( cursor=root.begin; n&lt;=root.count;
+    n ++)\n    {\n#ifdef TEST\n        printf(\"%2d:[%s] %s\\n\", n, cursor-&gt;IPv4,
+    cursor-&gt;hostname);\n#endif\n        store = cursor;\n        cursor = cursor-&gt;next;\n
+    \       free(store);\n    }\n    free(store);\n    return 0;\n}\n\nint  addList(ROOTNODE
+    *root, HOSTINFO *before, const HOSTINFO info)\n{\n    HOSTINFO *item = NULL;\n
+    \   int      result;\n\n    /* 追加用のキッシュアイテム 作成 */\n    DPRINTF(\"登録(%d):[%s]\\n\",
+    root-&gt;count+1,info.IPv4);\n    item = (HOSTINFO *)calloc( 1, sizeof(HOSTINFO)
+    );\n    if( item == NULL )\n    {\n        return -1;\n    }\n    memcpy(item,
+    &amp;info, sizeof(HOSTINFO));\n    item-&gt;next = item;\n\n    /* IPアドレスの変換 */\n
+    \   result = inet_aton( item-&gt;IPv4, &amp;item-&gt;addr );\n    if( result ==
+    0 )\n    {\n        DPRINTF(\"IPアドレスの書式不正:[%s]\\n\", info.IPv4);\n        free(item);\n
+    \       return -1;\n    }\n\n#ifdef TEST\n    strncpy(item-&gt;hostname, \"HOSTNAME\",
+    sizeof(item-&gt;hostname));\n#else\n    /* ホスト名取得 */\n    struct hostent *ent;\n
+    \   ent = gethostbyaddr((const char *)&amp;item-&gt;addr.s_addr, sizeof(item-&gt;addr.s_addr),
+    AF_INET);\n    if( ent != NULL )\n    {\n        strncpy(item-&gt;hostname, ent-&gt;h_name,
+    sizeof(item-&gt;hostname));\n    }\n#endif\n    root-&gt;count ++; /* キッシュした数*/\n
+    \   if( root-&gt;count == 1 )\n    {\n        root-&gt;begin  = item;\n        root-&gt;end
+    \   = item;\n        return 0;\n    }\n\n\n    /* 挿入 before item cursor */\n    if(
+    before == NULL )\n    {\n        /* 先頭へ挿入 */\n        item-&gt;next = root-&gt;begin;\n
+    \       root-&gt;begin     = item;\n    }\n    else\n    {\n        if( root-&gt;end
+    == before )\n        {\n            /* 最後尾へ追加 */\n            before-&gt;next
+    = item;\n            root-&gt;end = item;\n        }\n        else\n        {\n
+    \           /* 中間へ挿入 */\n            item-&gt;next = before-&gt;next;\n            before-&gt;next
+    = item;\n        }\n    }\n    return 0;\n}\n\nint find(ROOTNODE *root, HOSTINFO
+    *in)\n{\n    static HOSTINFO *cache = NULL;\n\n    HOSTINFO *cursor = cache;\n
+    \   HOSTINFO *before = root-&gt;begin;\n    HOSTINFO *term   = root-&gt;end;\n
+    \   int      compare_status = 0;\n\n    int      result ;\n    int      n ;\n\n
+    \   memset(in-&gt;hostname, '\\0', sizeof(in-&gt;hostname));\n    result = inet_aton(
+    in-&gt;IPv4, &amp;in-&gt;addr );\n    if( result == 0 )\n    {\n        DPRINTF(\"IPアドレスの書式不正:[%s]\\n\",
+    in-&gt;IPv4);\n        return 1;\n    }\n\n    /* 検索範囲設定 */\n    if( root-&gt;begin
+    == NULL )\n    {\n        /* 初めてなので強制的に追加 */\n        result = addList(root, NULL,
+    *in);\n        if( result == 0 )\n        {\n            cache = root-&gt;begin;\n
+    \           return find(root, in);\n        }\n        return 1;\n    }\n    if(
+    cursor != NULL )\n    {\n        compare_status = compare_IPv4(*cursor, *in);\n
+    \       //DPRINTF(\"a:[%s] / b:[%s] result=[%d]\\n\",cache-&gt;IPv4, in-&gt;IPv4,
+    compare_status );\n        if( compare_status == 0 )\n        {\n            /*
+    前回と同じIPアドレス */\n            if( *cursor-&gt;hostname == '\\0' )\n            {\n
+    \               /* 不明なホスト */\n                return 1;\n            }\n            strncpy(in-&gt;hostname,
+    cursor-&gt;hostname, sizeof(in-&gt;hostname));\n            return 0; /* 検索の必要なし
+    */\n        }\n        else if( compare_status &lt; 0 )\n        {\n            /*
+    前回ヒットした位置から終点まで */\n            cursor = cursor;\n            term   = root-&gt;end;\n
+    \           DPRINTF(\"前回からの続きで検索:[%s] ～ [%s]\\n\", cursor-&gt;IPv4, term-&gt;IPv4);\n
+    \       }\n        else\n        {\n            /* 先頭から前回ヒットした位置まで */\n            cursor
+    = root-&gt;begin;\n            term   = cursor;\n            DPRINTF(\"先頭から検索:[%s]
+    ～ [%s]\\n\", cursor-&gt;IPv4, term-&gt;IPv4);\n        }\n    }\n    else\n    {\n
+    \       cursor = root-&gt;begin;\n    }\n\n    /* キャッシュ内検索開始 */\n\n    /* 最初に最後尾と比較
+    */\n    compare_status = compare_IPv4(*term, *in);\n    if( compare_status ==
+    0 )\n    {\n        if( *term-&gt;hostname == '\\0' )\n        {\n            /*
+    不明なホスト */\n            return 1;\n        }\n        strncpy(in-&gt;hostname,
+    term-&gt;hostname, sizeof(in-&gt;hostname));\n        return 0; /* 検索の必要なし */\n
+    \   }\n    if( compare_status &lt; 0 )\n    {\n        /* 最後尾よりも大きいので検索する必要なし
+    */\n        result = addList(root, term, *in);\n        if( result == 0 )\n        {\n
+    \           cache = term;\n            return find(root, in);\n        }\n        return
+    1;\n    }\n\n    /* おおざっぱに検索 */\n    before = cursor;\n    while( cursor != term
+    )\n    {\n        compare_status = compare_IPv4(*cursor, *in);\n        if( compare_status
+    == 0 )\n        {\n            /* キャッシュヒット */\n            if( *cursor-&gt;hostname
+    == '\\0' )\n            {\n                /* 不明なホスト */\n                return
+    1;\n            }\n            strncpy(in-&gt;hostname, cursor-&gt;hostname, sizeof(in-&gt;hostname));\n
+    \           cache = cursor;\n            return 0;\n        }\n        if( compare_status
+    &gt; 0 )\n        {\n            /* SKIPした範囲内のIPアドレス */\n            break;\n
+    \       }\n        before = cursor;\n        for(n=root-&gt;count/10; n&gt;=0
+    ; n-- )\n        {\n            cursor = cursor-&gt;next;\n            if( cursor-&gt;next
+    == term ) break;\n        }\n    } \n\n    /* SKIPした部分を一つずつ検索 */\n    for( cursor
+    = before; before != term ; cursor = cursor-&gt;next )\n    {\n        compare_status
+    = compare_IPv4(*cursor, *in);\n        if( compare_status == 0 )\n        {\n
+    \           /* キャッシュヒット */\n            if( *cursor-&gt;hostname == '\\0' )\n
+    \           {\n                /* 不明なホスト */\n                return 1;\n            }\n
+    \           strncpy(in-&gt;hostname, cursor-&gt;hostname, sizeof(in-&gt;hostname));\n
+    \           cache = cursor;\n            return 0;\n        }\n        if( compare_status
+    &gt; 0 )\n        {\n            /* 初めてのIPアドレス */\n            break;\n        }\n
+    \       before = cursor;\n    }\n\n    /* 初めてのIPアドレスをキャッシュに登録 */\n    if( cursor
+    == before )\n    {\n        /* 一番小さいので先頭に挿入 */\n        before = NULL;\n    }\n
+    \   result = addList(root, before, *in);\n    if( result == 0 )\n    {\n        cache
+    = before;\n        return find(root, in);\n    }\n    return result;\n}\n\nint\n
+    convertLog(const char *log_filename)\n{\n    ROOTNODE root;\n    HOSTINFO ip;\n\n
+    \   FILE   *fp;\n    char   line[2048];\n    char   *data;\n    size_t length;\n
+    \   int    result ;\n    long   line_count = 0;\n\n    root.begin = NULL;\n    root.end
+    \  = NULL;\n\n    fp = fopen(log_filename, \"rb\");\n    if( fp == NULL )\n    {\n
+    \       return -1;\n    }\n    while( fgets(line, sizeof(line), fp) != NULL )\n
+    \   {\n        line_count ++;\n        data = strchr(line, ' ');\n        if(
+    data == NULL )\n        {\n            /* 空白無しはおかしい */\n            fprintf(stderr,
+    \"FILENAME:[%s] LINE:[%ld]\\n\", log_filename, line_count);\n            fclose(fp);\n
+    \           return -1;\n        }\n        length = data - line;\n        length
+    = (sizeof(ip.IPv4)-1 &lt; length )?sizeof(ip.IPv4)-1:length;\n        memset(&amp;ip,
+    0, sizeof(ip));\n        strncpy(ip.IPv4, line, length);\n        result = find(&amp;root,
+    &amp;ip);\n        if( result == 0 )\n        {\n            printf(\"%s%s\",
+    ip.hostname, data);\n        }\n        else\n        {\n            printf(\"%s\",
+    line);\n        }\n    }\n    fclose(fp);\n    clear_list(root);\n    return 0;\n}\n\nint\n
+    main(int argc, char *argv[])\n{\n\n#ifdef TEST\n    static ROOTNODE root;\n    int
+    result ;\n    HOSTINFO ip;\n\n    root.begin = NULL;\n    root.end   = NULL;\n
+    \   int a,b,c,d;\n    srand( time(NULL) );\n    for( size_t wkA=0; wkA&lt;20;
+    wkA++)\n    {\n        a = ( rand() * 100 ) &amp; 0xff;\n        b = ( rand()
+    * 100 ) &amp; 0xff;\n        c = ( rand() * 100 ) &amp; 0xff;\n        d = ( rand()
+    * 100 ) &amp; 0xff;\n        sprintf(ip.IPv4, \"%d.%d.%d.%d\", a,b,c,d);\n        result
+    = find(&amp;root, &amp;ip);\n        printf(\"result=[%d] / ip=[ %16s ] hostname=[%s]\\n\",
+    result, ip.IPv4, ip.hostname);\n    }\n    clear_list(root);\n#else\n    convertLog(argv[1]);\n#endif\n\n
+    \   return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2197'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/2197
+  :user_name: nobsun
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/15 08:41 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">logを流してみたんだけど、おそっ！</pre>\r\n\t"
+  :code: "import Control.Concurrent\nimport Control.Concurrent.STM\nimport Data.List\nimport
+    qualified Data.Map as M\nimport Network.BSD\nimport Network.Socket\nimport System.Environment\nimport
+    System.IO\n\ntype Table = M.Map HostAddress (TMVar String)\n\nmain :: IO ()\nmain
+    = do { args &lt;- getArgs \n          ; cs   &lt;- getContents\n          ; loop
+    M.empty $ slice (case args of {[]-&gt;20;a:_-&gt;read a}) $ lines cs\n          }\n\nslice
+    :: Int -&gt; [a] -&gt; [[a]]\nslice n = unfoldr phi\n  where phi [] = Nothing\n
+    \       phi xs = Just $ splitAt n xs\n\nloop :: Table -&gt; [[String]] -&gt; IO
+    ()\nloop t0 [] = return ()\nloop t0 (ls:lss)\n = do { let (fss,rss) = unzip $
+    map (splitAt 1 . words) ls\n      ; addrs  &lt;- mapM inet_addr $ concat fss\n
+    \     ; addrs' &lt;- mapM assc $ filter (not . flip M.member t0) addrs\n      ;
+    mapM (forkIO . resolv) addrs'\n      ; let t = foldr (uncurry M.insert) t0 addrs'\n
+    \     ; yield\n      ; fs &lt;- mapM (atomically . readTMVar . head . flip M.lookup
+    t) addrs\n      ; putStr $ unlines $ map unwords $ zipWith (:) fs rss\n      ;
+    loop t lss\n      }\n\nresolv :: (HostAddress, TMVar String) -&gt; IO ()\nresolv
+    (addr, tmv)\n = do { name &lt;- catch (getHostByAddr AF_INET addr &gt;&gt;= return
+    . hostName)\n                      (const $ inet_ntoa addr &gt;&gt;= return)\n
+    \     ; atomically $ putTMVar tmv name\n      }\n                         \nassc
+    :: HostAddress -&gt; IO (HostAddress, TMVar String)\nassc = (newEmptyTMVarIO &gt;&gt;=)
+    .  (return .) . (,)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3709'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/3709
+  :user_name: id:amachang
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/62/
+  :language: JavaScript
+  :time: 2007/11/05 11:21 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">JavaScript だってマルチスレッドできるさ＞＜！\r\nRhino で動かしてください。\r\n\r\nきっと、もっとキレイに書けるんだろうなあ。</pre>\r\n\t"
+  :code: "var lk1 = new java.util.concurrent.locks.ReentrantLock();\r\nvar lk2 = new
+    java.util.concurrent.locks.ReentrantLock();\r\nvar queue1 = [];\r\nvar queue2
+    = [];\r\nvar eof = false;\r\nvar eop = false;\r\nvar infile = arguments[0];\r\nvar
+    outfile = arguments[1];\r\n\r\nspawn(function() {\r\n    var input = new java.io.BufferedReader(new
+    java.io.FileReader(new java.io.File(infile)));\r\n    var line;\r\n    try {\r\n
+    \       while (line = input.readLine()) {\r\n            lk1.lock();\r\n            try
+    {\r\n                queue1.push(line);\r\n            }\r\n            finally
+    {\r\n                lk1.unlock();\r\n            }\r\n        }\r\n    }\r\n
+    \   finally {\r\n        eof = true;\r\n        input.close();\r\n    }\r\n});\r\n\r\nspawn(function()
+    {\r\n    try {\r\nout:\r\n        while (true) {\r\n            lk1.lock();\r\n
+    \           try {\r\n                while (queue1.length == 0) {\r\n                    if
+    (eof) break out;\r\n                    lk1.unlock();\r\n                    lk1.lock();\r\n
+    \               }\r\n                var line = queue1.shift();\r\n            }\r\n
+    \           finally {\r\n                lk1.unlock();\r\n            }\r\n            var
+    m = line.match(/^(\\d+\\.\\d+\\.\\d+\\.\\d+)(.*)$/);\r\n            if (m) {\r\n
+    \               line = java.net.InetAddress.getByName(m[1]).getHostName() + m[2];\r\n
+    \           }\r\n            lk2.lock();\r\n            try {\r\n                queue2.push(line);\r\n
+    \           }\r\n            finally {\r\n                lk2.unlock();\r\n            }\r\n
+    \       }\r\n    }\r\n    finally {\r\n        eop = true;\r\n    }\r\n});\r\n\r\nspawn(function()
+    {\r\n    var output = new java.io.PrintWriter(new java.io.File(outfile));\r\n
+    \   try {\r\nout:\r\n        while (true) {\r\n            lk2.lock();\r\n            try
+    {\r\n                while (queue2.length == 0) {\r\n                    if (eop)
+    break out;\r\n                    lk2.unlock();\r\n                    lk2.lock();\r\n
+    \               }\r\n                var line = queue2.shift();\r\n            }\r\n
+    \           finally {\r\n                lk2.unlock();\r\n            }\r\n            output.println(line);\r\n
+    \       }\r\n    }\r\n    finally {\r\n        output.close();\r\n    }\r\n});\r\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1916'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1916
+  :user_name: shiro
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/08/06 06:48 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">&gt; queは、1命令で更新されると思われるので、lockしていない\r\n\r\nC#はよく知らないのですが、複数のCPUがあってもVM命令レベルでのatomicityというのは\r\n保証されているのでしょうか?\r\n\r\n(queue実装の方で内部的に排他している、とかの方がありそう、と思ってしまいます)\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1974'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1974
+  :user_name: ocean
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/177/
+  :language: diff
+  :time: 2007/08/07 08:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">他の人にコメントして気づいたんだけど、Matcher\r\nに複数スレッドからロックなしにアクセスしてます\r\nね・・・。変更せず取得しているだけだから安全だと\r\n思ってたけど、メソッド内で例えば計算結果を\r\nキャッシュするなどして、メンバ変数を変更して\r\nいたら・・・安全とは言えない気がしてきました。\r\n\r\nというわけで、別スレッドからアクセスするのは\r\nbytes
+    と addr だけにするパッチです。addr は\r\n参照を返してるだけだし、bytes はスレッド\r\n開始以降変更してないので、これで完全に\r\nスレッドセーフなはず。</pre>\r\n\t"
+  :code: |
+    --- MeApp.java.orig     Tue Aug  7 17:12:58 2007
+    +++ MeApp.java  Tue Aug  7 17:14:36 2007
+    @@ -40,37 +40,39 @@
+                             throw new RuntimeException("line should start with IP a
+    ddress");
+                         }
+
+    +                    final String addr = m.group(0);
+    +
+                         final Future&lt;String&gt; future;
+
+    -                    if (_map.containsKey(m.group(0)))
+    +                    if (_map.containsKey(addr))
+                         {
+    -                        future = _map.get(m.group(0));
+    +                        future = _map.get(addr);
+                         }
+                         else
+                         {
+    +                        final byte[] bytes = new byte[m.groupCount()];
+    +
+    +                        for (int i = 0; i &lt; bytes.length; ++i)
+    +                        {
+    +                            bytes[i] = (byte)Integer.parseInt(m.group(i + 1));
+    +                        }
+    +
+                             future = service.submit(new Callable&lt;String&gt;()
+                             {
+                                 public String call() throws Exception
+                                 {
+    -                                final byte[] bytes = new byte[m.groupCount()];
+    -
+    -                                for (int i = 0; i &lt; bytes.length; ++i)
+    -                                {
+    -                                    bytes[i] = (byte)Integer.parseInt(m.group(i
+     + 1));
+    -                                }
+    -
+                                     try
+                                     {
+                                         return InetAddress.getByAddress(bytes).getH
+    ostName();
+                                     }
+                                     catch (UnknownHostException e)
+                                     {
+    -                                    return m.group(0);
+    +                                    return addr;
+                                     }
+                                 }
+                             });
+
+    -                        _map.put(m.group(0), future);
+    +                        _map.put(addr, future);
+                         }
+
+                         _queue.offer(new Callable&lt;String&gt;()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1876'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1876
+  :user_name: 沢渡 みかげ
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/101/
+  :language: Erlang
+  :time: 2007/08/05 14:17 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">自分で出題しておいてあれですが，思ったよりめんどくさかったです．(^^;\r\n\r\nアクセスログの順番を保持しなければいけないところと，\r\n一度名前解決を始めたIPアドレスに対して再度名前解決を\r\n実行しないようにする部分で少し悩みました．\r\n\r\nアクセスログは，同じIPアドレスが連続する事が多いため，\r\nキャッシュミスしてからキャッシュに結果が登録されるまでの間に，\r\n再度同じIPが出てくる可能性が高いので，そこは対処が必要と考えました．\r\n\r\n\r\n&gt;
+    wc access.log\r\n  24093  517929 5088101 access.log\r\n\r\n&gt; time erl -noshell
+    -s iplookup iplookup -s init stop &gt; access.log.2\r\nreal    0m13.260s\r\nuser
+    \   0m6.930s\r\nsys     0m0.693s\r\n\r\n&gt; wc access.log.2\r\n  24093  517929
+    5516010 access.log.2\r\n\r\nといった感じです．\r\n</pre>\r\n\t"
+  :code: "-module(iplookup).\n-export([iplookup/0, reader/0, writer/1, resolver/0,
+    resolve_dns/3]).\n-include_lib(\"kernel/include/inet.hrl\").\n\n-define(MAX_DNS_PARALLEL,
+    1000).\n\n\niplookup() -&gt;\n\tproc_lib:start(?MODULE, writer, [self()]),\n\tproc_lib:start(?MODULE,
+    resolver, []),\n\tproc_lib:start(?MODULE, reader, []),\n\treceive\n\t\tshutdown
+    -&gt; ok\n\tend.\n\n%% reader\n%% ファイルから読み込んで，行番号をつけてresolverへ渡す\n\nreader() -&gt;\n\tregister(reader,
+    self()),\n\tproc_lib:init_ack(ok),\n\t{ok, Fd} = file:open(\"access.log\", [read]),\n\treader_loop(Fd,
+    0),\n\tfile:close(Fd).\n\nreader_loop(Fd, LineNo) -&gt;\n\tNextLineNo = LineNo
+    + 1,\n\tcase io:get_line(Fd, \"\") of\n\t\teof -&gt;\n\t\t\tresolver ! {line,
+    NextLineNo, eof},\n\t\t\tok;\n\t\tLine -&gt;\n\t\t\tresolver ! {line, NextLineNo,
+    Line},\n\t\t\treceive\n\t\t\t\tnext -&gt;\n\t\t\t\t\tok\n\t\t\tend,\n\t\t\treader_loop(Fd,
+    NextLineNo)\n\tend.\n\n\n%% resolver\n%% キャッシュ済みなら変換してwriterへ渡す\n%% 未キャッシュで，名前解決処理を開始していなければ子プロセスを起動\n%%
+    未キャッシュで，名前解決中ならバッファへ蓄える\n%% 名前解決終了のメッセージがあったら，そのデータと，バッファにたまった内容をwriterへ渡す\n\nresolver()
+    -&gt;\n\tregister(resolver, self()),\n\tproc_lib:init_ack(ok),\n\tresolver_loop(false,
+    0).\n\nresolver_loop(ShutdownFlag, ResolvingCount) -&gt;\n\tif\n\t\tShutdownFlag
+    == true, ResolvingCount == 0 -&gt;\n\t\t\tok;\n\t\ttrue -&gt;\n\t\t\treceive\n\t\t\t\t{resolved,
+    Ip, ResolvedIp} -&gt;\n\t\t\t\t\tput({dnscache, Ip}, ResolvedIp),\n\t\t\t\t\tcase
+    get({resolvingbuff, Ip}) of\n\t\t\t\t\t\tundefined -&gt;\n\t\t\t\t\t\t\tok;\n\t\t\t\t\t\tBuff
+    -&gt;\n\t\t\t\t\t\t\tflush_buff(ResolvedIp, lists:reverse(Buff)),\n\t\t\t\t\t\t\terase({resolvingbuff,
+    Ip})\n\t\t\t\t\tend,\n\t\t\t\t\t\n\t\t\t\t\treader_next(),\n\t\t\t\t\tresolver_loop(ShutdownFlag,
+    ResolvingCount - 1);\n\t\t\t\t{line, LineNo, eof} -&gt;\n\t\t\t\t\twriter ! {line,
+    LineNo, eof},\n\t\t\t\t\tresolver_loop(true, ResolvingCount);\n\t\t\t\t{line,
+    LineNo, Line} -&gt;\n\t\t\t\t\tIsResolving = convline(LineNo, Line),\n\t\t\t\t\tcase
+    IsResolving of\n\t\t\t\t\t\tok -&gt;\n\t\t\t\t\t\t\treader_next(),\n\t\t\t\t\t\t\tresolver_loop(ShutdownFlag,
+    ResolvingCount);\n\t\t\t\t\t\ttryresolv -&gt;\n\t\t\t\t\t\t\t% 並列度が最大に達していなければ次のデータを読み込む\n\t\t\t\t\t\t\tif\n\t\t\t\t\t\t\t\tResolvingCount
+    + 1 &lt; ?MAX_DNS_PARALLEL -&gt;\n\t\t\t\t\t\t\t\t\treader_next();\n\t\t\t\t\t\t\t\ttrue
+    -&gt;\n\t\t\t\t\t\t\t\t\tok\n\t\t\t\t\t\t\tend,\n\t\t\t\t\t\t\tresolver_loop(ShutdownFlag,
+    ResolvingCount + 1)\n\t\t\t\t\tend\n\t\t\tend\n\tend.\n\nreader_next() -&gt;\n\t%
+    readerには並列処理分余計にnextメッセージが届くことがあるので\n\t% readerがすでに終了していても落ちないように例外をcatch\n\ttry\n\t\treader
+    ! next\n\tcatch\n\t\terror:badarg -&gt;\n\t\t\tok\n\tend.\n\nflush_buff(ResolvedIp,
+    [Head|Rest]) -&gt;\n\t{LineNo, Line} = Head,\n\twriter ! {line, LineNo, io_lib:format(\"~s~s\",
+    [ResolvedIp, Line])},\n\tflush_buff(ResolvedIp, Rest);\nflush_buff(_, []) -&gt;\n\tok.\n\n\nconvline(LineNo,
+    Line) -&gt;\n\tIndex = string:chr(Line, $ ),\n\tIpStr = string:substr(Line, 1,
+    Index - 1),\n\tRestStr = string:substr(Line, Index),\n\tIsResolving = resolve(LineNo,
+    IpStr, RestStr),\n\tIsResolving.\n\nresolve(LineNo, Ip, RestStr) -&gt;\n\tcase
+    get({dnscache, Ip}) of\n\t\tundefined -&gt;\n\t\t\tcase get({resolving, Ip}) of\n\t\t\t\tundefined
+    -&gt;\n\t\t\t\t\tput({resolving, Ip}, 1),\n\t\t\t\t\tspawn(?MODULE, resolve_dns,
+    [LineNo, Ip, RestStr]),\n\t\t\t\t\ttryresolv;\n\t\t\t\t_ -&gt;\n\t\t\t\t\tcase
+    get({resolvingbuff, Ip}) of\n\t\t\t\t\t\tundefined -&gt;\n\t\t\t\t\t\t\tput({resolvingbuff,
+    Ip}, [{LineNo, RestStr}]);\n\t\t\t\t\t\tBuff -&gt;\n\t\t\t\t\t\t\tput({resolvingbuff,
+    Ip}, [{LineNo, RestStr}|Buff])\n\t\t\t\t\tend,\n\t\t\t\t\tok\n\t\t\tend;\n\t\tResolvedIp
+    -&gt;\n\t\t\twriter ! {line, LineNo, io_lib:format(\"~s~s\", [ResolvedIp,RestStr])},\n\t\t\tok\n\tend.\n\nresolve_dns(LineNo,
+    Ip, RestStr) -&gt;\n\tResolvedIp = case inet:gethostbyaddr(Ip) of\n\t\t{ok, Hostent}
+    -&gt;\n\t\t\tHostent#hostent.h_name;\n\t\t{error, _} -&gt;\n\t\t\tIp\n\tend,\n\twriter
+    ! {line, LineNo, io_lib:format(\"~s~s\", [ResolvedIp,RestStr])},\n\tresolver !
+    {resolved, Ip, ResolvedIp},\n\tok.\n\n\n%% 行番号順に結果を書き出す\n\nwriter(Parent) -&gt;\n\tregister(writer,
+    self()),\n\tproc_lib:init_ack(ok),\n\t\n\twriter_loop(Parent, 1).\n\nwriter_loop(Parent,
+    LineNo) -&gt;\n\treceive\n\t\t{line, LineNo, eof} -&gt;\n\t\t\tParent ! shutdown,\n\t\t\tok;\n\t\t{line,
+    LineNo, Line} -&gt;\n\t\t\tio:format(\"~s\", [Line]),\n\t\t\twriter_loop(Parent,
+    LineNo + 1)\n\tend.\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2075'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/2075
+  :user_name: raynstard
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2007/08/12 05:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">しまったよく考えたらアクセスログなのだから\r\n昇順固定でなく個数制限付きのラウンドロビンにすれば良かったorz\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1801'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1801
+  :user_name: ocean
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/177/
+  :language: 
+  :time: 2007/08/03 18:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  × 童子\r\n○ 同時\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1948'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1948
+  :user_name: ocean
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/08/06 15:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  スレッドの生成コストが気にならなければ、この方がシンプルですね。\r\n\t"
+  :code: |
+    from __future__ import with_statement
+    import collections
+    import threading
+    import socket
+    import sys
+    import re
+
+    cache = {} # addr: host
+    cond = threading.Condition() # protect `cache'
+
+    class Resolver(threading.Thread):
+        def __init__(self, addr):
+            threading.Thread.__init__(self)
+            self._addr = addr
+
+        def run(self):
+            try:
+                host = socket.gethostbyaddr(self._addr)[0]
+            except socket.error:
+                host = self._addr
+            with cond:
+                cache[self._addr] = host
+                cond.notify()
+
+    def main():
+        queue = collections.deque()
+        def output(count):
+            while len(queue) &gt; count:
+                addr, rest = queue.pop()
+                with cond:
+                    while cache[addr] is None:
+                        cond.wait()
+                    sys.stdout.write("%s%s" % (cache[addr], rest))
+        for line in open("access.log"):
+            m = re.search('^' + '\.'.join(['\d+'] * 4), line)
+            if not m:
+                raise ValueError("line should start with IP address")
+            addr, rest = m.group(0), line[m.end(0):]
+            queue.appendleft((addr, rest))
+            with cond:
+                if addr not in cache:
+                    cache[addr] = None
+                    thread = Resolver(addr)
+                    thread.start()
+            output(10) # configure this count!
+        output(0)
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1975'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1975
+  :user_name: rucker
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/130/
+  :language: 
+  :time: 2007/08/07 08:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">9行め\r\nwhile(!feof(STDIN) || count($queue)&gt;0)\r\nです。ハズカシー(;_;)</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1849'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1849
+  :user_name: tomatsu
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/323/
+  :language: Pnuts
+  :time: 2007/08/04 19:09 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  dnsjava使用。\r\n\t"
+  :code: "concurrency = 100\nn = 1000\ninputfile = \"access_log\"\noutputfile \"access_log_out\"\n\nfunction
+    processLog(input){\n  nameservice = LRUcache(10000, reverseDns)\n  pool = threadPool(concurrency)\n
+    \ t = Object[n]\n  i = 0\n  for (line: readLines(input)){\n    idx = line.indexOf('
+    ')\n    t[i] = async({line, idx -&gt; {-&gt;[nameservice[line[0..idx-1]], line[idx..]]}}(line,
+    idx), pool)\n    if (++i &gt;= n){\n      for (j: 0..n-1){\n         r0, r1 =
+    t[j]()\n         println(r0, r1)\n      }\n      i = 0\n    }\n  }\n}\n\nimport
+    org.xbill.DNS.*\nfunction reverseDns(hostIp){\n  answers = Lookup(ReverseMap.fromAddress(hostIp),
+    Type.PTR, DClass.IN).run()\n  (answers == null || answers.length == 0) ? hostIp
+    : answers[0].rdataToString()\n}\n\ninput = reader(inputfile, \"ASCII\")\noutput
+    = writer(outputfile, \"ASCII\")\naddShutdownHook({-&gt;output.close(); input.close()})\ngetContext().setWriter(output)
+    \nprocessLog(input)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1776'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1776
+  :user_name: 沢渡 みかげ
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/101/
+  :language: 
+  :time: 2007/08/03 12:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">例の部分の改行が抜けてしまっているようです．\r\n\r\n210.166.209.71
+    - - [26/Jul/2007:22:32:47 +0900] \"GET / HTTP/1.1\" 403 283 \"-\" \"Mozilla/5.0
+    (Windows; U; Windows NT 5.1; ja; rv:1.8.1.5) Gecko/20070713 Firefox/2.0.0.5\"\r\n192.168.7.1
+    - - [26/Jul/2007:22:32:48 +0900] \"GET /favicon.ico HTTP/1.1\" 404 290 \"-\" \"Mozilla/5.0
+    (Windows; U; Windows NT 5.1; ja; rv:1.8.1.5) Gecko/20070713 Firefox/2.0.0.5\"\r\n\r\n↓\r\n\r\nmikage.to
+    - - [26/Jul/2007:22:32:47 +0900] \"GET / HTTP/1.1\" 403 283 \"-\" \"Mozilla/5.0
+    (Windows; U; Windows NT 5.1; ja; rv:1.8.1.5) Gecko/20070713 Firefox/2.0.0.5\"\r\n192.168.7.1
+    - - [26/Jul/2007:22:32:48 +0900] \"GET /favicon.ico HTTP/1.1\" 404 290 \"-\" \"Mozilla/5.0
+    (Windows; U; Windows NT 5.1; ja; rv:1.8.1.5) Gecko/20070713 Firefox/2.0.0.5\"
+    \r\n\r\n1行目が逆引きできた例，2行目が逆引きできなかった場合の例です．\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1813'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1813
+  :user_name: ocean
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/08/04 10:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  Pythonで組んでみました。最初 thread.join() をせず、Queue.Queue#get() でブロックしたままインタプリタを終了していたところ、時々例外がでるのに悩まされましたが、Queue
+    に None を送ることで明示的にスレッドを終了し、joinで待つことで解決しました（と思う）いまいち美しくない気がしますが、しかたないのかな。（with文を使っているので、Python2.5以降です）\r\n\t"
+  :code: |
+    from __future__ import with_statement
+    import collections
+    import threading
+    import socket
+    import Queue
+    import sys
+    import re
+
+    class Line:
+        _cond = threading.Condition()
+        _dict = {} # addr: host
+
+        def __init__(self, addr, rest):
+            self._addr = addr
+            self._rest = rest
+            with Line._cond:
+                if addr not in Line._dict:
+                    Line._dict[addr] = None
+                    self.resolve = self._resolve
+
+        def resolve(self):
+            pass
+
+        def _resolve(self):
+            try:
+                host = socket.gethostbyaddr(self._addr)[0]
+            except socket.error:
+                host = self._addr
+            with Line._cond:
+                Line._dict[self._addr] = host
+                Line._cond.notifyAll()
+
+        def output(self):
+            with Line._cond:
+                while 1:
+                    host = Line._dict[self._addr]
+                    if host is not None:
+                        break
+                    Line._cond.wait()
+            sys.stdout.write(host)
+            sys.stdout.write(self._rest)
+
+    def read():
+        r = re.compile('^' + '\.'.join(['\d+'] * 4))
+        for line in open("access.log"):
+            m = r.search(line)
+            if not m:
+                raise ValueError("line should start with IP address")
+            yield Line(m.group(0), line[m.end(0):])
+
+    def main():
+        lines = collections.deque()
+        def output(count):
+            while len(lines) &gt; count:
+                lines.pop().output()
+        queue = Queue.Queue()
+        count = 10 # hint: configure thread count here
+        threads = []
+        for _ in xrange(count):
+            def resolve():
+                while 1:
+                    line = queue.get()
+                    if line is None: # terminator
+                        break
+                    line.resolve()
+            thread = threading.Thread(target=resolve)
+            thread.start()
+            threads.append(thread)
+        for line in read():
+            lines.appendleft(line)
+            queue.put(line)
+            output(count)
+        output(0)
+        for _ in xrange(count):
+            queue.put(None) # terminator
+        for thread in threads:
+            thread.join()
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1800'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1800
+  :user_name: ocean
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/177/
+  :language: Java
+  :time: 2007/08/03 18:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  先を越されてしまいましたが(^^; 微妙に違うようなので気にせず投稿。_count の値を変えると、童子に走るスレッドの数を調節できるはずです。\r\n\t"
+  :code: |
+    import java.io.*;
+    import java.net.*;
+    import java.util.*;
+    import java.util.concurrent.*;
+    import java.util.regex.*;
+
+    class MeApp
+    {
+        private static final Queue&lt;Callable&lt;String&gt;&gt; _queue = new LinkedList&lt;Callable&lt;String&gt;&gt;();
+
+        private static final Map&lt;String, Future&lt;String&gt;&gt; _map = new HashMap&lt;String, Future&lt;String&gt;&gt;();
+
+        private static final int _count = 10; // 大きいほど並列度が高いが、より多くのスレッドを必要とする。
+
+        private static void output() throws Exception
+        {
+            System.out.println(_queue.poll().call());
+        }
+
+        public static void main(String[] args) throws Exception
+        {
+            final Pattern pattern = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)");
+
+            final ExecutorService service = Executors.newCachedThreadPool();
+
+            try
+            {
+                final BufferedReader r = new BufferedReader(new FileReader("access.log"));
+
+                try
+                {
+                    String line;
+
+                    while ((line = r.readLine()) != null)
+                    {
+                        final Matcher m = pattern.matcher(line);
+
+                        if (! m.find())
+                        {
+                            throw new RuntimeException("line should start with IP address");
+                        }
+
+                        final Future&lt;String&gt; future;
+
+                        if (_map.containsKey(m.group(0)))
+                        {
+                            future = _map.get(m.group(0));
+                        }
+                        else
+                        {
+                            future = service.submit(new Callable&lt;String&gt;()
+                            {
+                                public String call() throws Exception
+                                {
+                                    final byte[] bytes = new byte[m.groupCount()];
+
+                                    for (int i = 0; i &lt; bytes.length; ++i)
+                                    {
+                                        bytes[i] = (byte)Integer.parseInt(m.group(i + 1));
+                                    }
+
+                                    try
+                                    {
+                                        return InetAddress.getByAddress(bytes).getHostName();
+                                    }
+                                    catch (UnknownHostException e)
+                                    {
+                                        return m.group(0);
+                                    }
+                                }
+                            });
+
+                            _map.put(m.group(0), future);
+                        }
+
+                        _queue.offer(new Callable&lt;String&gt;()
+                        {
+                            public String call() throws Exception
+                            {
+                                return m.replaceAll(future.get());
+                            }
+                        });
+
+                        while (_queue.size() &gt;= _count) output();
+                    }
+                }
+                finally
+                {
+                    r.close();
+                }
+
+                while (! _queue.isEmpty()) output();
+            }
+            finally
+            {
+                service.shutdown();
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1924'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1924
+  :user_name: cats
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/08/06 09:10 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\r\n\t  いろいろ直してみました。\r\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Net;
+    using System.Text;
+    using System.Threading;
+    class Program
+    {
+      static void Main()
+      {
+        // スレッドの最大数
+        const int max = 4;
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
+        // DNSのキャッシュ
+        Dictionary&lt;string, String&gt; cash = new Dictionary&lt;string, string&gt;();
+        // FIFOで結果を出力するためのデータ
+        Queue&lt;StringBuilder&gt; que = new Queue&lt;StringBuilder&gt;();
+        string s;
+        Thread th = new Thread(delegate()
+        {
+          while (true)
+          {
+            // 出力すべきデータがあれば出力
+            while (que.Count &gt; 0 &amp;&amp; que.Peek().Length &gt; 0)
+            {
+              StringBuilder stb;
+              lock (que) stb = que.Dequeue();
+              Console.WriteLine(stb.ToString());
+            }
+            Thread.Sleep(10);
+          }
+        });
+        th.Start();
+        while ((s = Console.ReadLine()) != null)
+        {
+          if (string.IsNullOrEmpty(s)) continue;
+          int i = s.IndexOf(' ');
+          if (i &lt; 0) continue;
+          while (que.Count &gt;= max) Thread.Sleep(10);
+          StringBuilder sb = new StringBuilder();
+          string ip = s.Substring(0, i);
+          string msg = s.Substring(i);
+          lock (que) que.Enqueue(sb);
+          new Thread(delegate()
+          {
+            // Console.WriteLine("Thread start");
+            string ad;
+            if (!cash.TryGetValue(ip, out ad))
+            {
+              ad = GetHost(ip);
+              lock (cash)
+                if (!cash.ContainsKey(ip)) cash[ip] = ad;
+            }
+            // ここで非同期に結果が作成される
+            sb.Append(ad + msg);
+            // Console.WriteLine("Thread end");
+          }).Start();
+        }
+        while (que.Count &gt; 0) Thread.Sleep(10);
+        th.Abort();
+        sw.Stop();
+        Console.WriteLine(sw.Elapsed.TotalSeconds + " sec");
+      }
+      static string GetHost(string ip)
+      {
+        // 並列化の効果を確認するため、遅延させる
+        Thread.Sleep(ip == "XXX" ? 600 : 300);
+        try { ip = Dns.GetHostEntry(ip).HostName; }
+        catch { }
+        return ip;
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1946'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1946
+  :user_name: ocean
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/177/
+  :language: diff
+  :time: 2007/08/06 14:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  そうか、デーモンスレッドでなければ、それが終了するまでメインスレッドは終了しないから、joinする必要はないはず・・・。\r\n\t"
+  :code: |
+    --- prev.py     Mon Aug  6 23:55:36 2007
+    +++ main.py     Mon Aug  6 23:56:02 2007
+    @@ -55,7 +55,6 @@
+                 lines.pop().output()
+         queue = Queue.Queue()
+         count = 10 # hint: configure thread count here
+    -    threads = []
+         for _ in xrange(count):
+             def resolve():
+                 while 1:
+    @@ -65,7 +64,6 @@
+                     line.resolve()
+             thread = threading.Thread(target=resolve)
+             thread.start()
+    -        threads.append(thread)
+         for line in read():
+             lines.appendleft(line)
+             queue.put(line)
+    @@ -73,8 +71,6 @@
+         output(0)
+         for _ in xrange(count):
+             queue.put(None) # terminator
+    -    for thread in threads:
+    -        thread.join()
+
+     if __name__ == '__main__':
+         main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1949'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1949
+  :user_name: ocean
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/177/
+  :language: 
+  :time: 2007/08/06 16:05 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  <pre class=\"compact\">C# の lock って、クリティカルセクションですよ\r\nね？例えば下のコードですが、\r\n\r\n
+    \   if (!cash.TryGetValue(ip, out ad))\r\n    {\r\n      ad = GetHost(ip);\r\n
+    \     lock (cash)\r\n        if (!cash.ContainsKey(ip)) cash[ip] = ad;\r\n    }\r\n\r\nTryGetValue
+    が lock されてないので、他の\r\ncashのロックが意味をなさなくなっていると\r\n思います。複数のスレッドからアクセスされ\r\nる変数は、すべての部分でロックしないと意味\r\nがありません。では、TryGetValue
+    をロックすれ\r\nばいいかというと、もし TryGetValue と \r\nContainsKey の間で別のスレッドが cash を\r\n変更してしまうと条件文で判定したことが意味\r\nをなさなくなってしまうので、全体を
+    lock する\r\n必要があります。しかし単に全体を lock すると\r\nGetHost(ip); で lock を保持したままブロック\r\nしてしまうので・・・という具合に、スレッド\r\nプログラミングは面倒なのです（汗）\r\n\r\n私なら、スレッドで
+    cash をチェックするのでは\r\nなく、cash をメインスレッドでチェックしてから\r\nスレッドを起動する方向で検討すると思います。\r\n\r\nこつとしては、\r\n\r\n1.
+    複数スレッドから参照（変更）される変数は\r\nなるべく減らす。\r\n2. どうしても複数スレッドから参照される変数\r\nは、必ず lock する。（PythonのQueue.Queue\r\nのように、それ自体スレッドセーフで、周囲の\r\nコードと一緒にまとめてlockする必要がない\r\n場合を除く）\r\n3.
+    時間のかかる処理（この場合は逆引き）は\r\nlockの外に置くようにし、処理に必要な共有\r\nデータはlockの中で得て、ローカル変数に\r\n取り出すような実装にする。\r\n\r\nといったところでしょうか。</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1973'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/1973
+  :user_name: rucker
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/08/07 08:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">子プロセスでphpを複数起動して並列化してみた。\r\n</pre>\r\n\t"
+  :code: "&lt;?php\ndefine(\"MAX_RESOLVER\",4);\ndefine(\"MAX_QUEUE\",1024);\n\n$dnscache=array();\n$resolvers=array();\n$queue=array();\n\nwhile(!feof(STDIN)
+    &amp;&amp; count($queue)&lt;=0)\n{\twhile(!feof(STDIN) &amp;&amp; count($resolvers)&lt;MAX_RESOLVER
+    &amp;&amp; count($queue)&lt;MAX_QUEUE)\n\t{\tif(strlen($line=fgets(STDIN))&gt;1)\n\t\t{\t$queue[]=list($ip,$line)=explode(\"
+    \",$line,2);\n\t\t\tif(!isset($dnscache[$ip]))\n\t\t\t{\t$pp=popen('php -r \"echo
+    gethostbyaddr('.\"'$ip'\".');\"',\"r\");\n\t\t\t\tif($pp===false)\n\t\t\t\t\texit(1);\n\t\t\t\t$resolvers[$ip]=$pp;\n\t\t\t\t$dnscache[$ip]=false;\n\t\t\t}\n\t\t}\n\t}\n\t$r=$resolvers;\n\t$w=$e=null;\n\tif(stream_select($r,$w,$e,null)===false)\n\t\texit(1);\n\twhile(list(,$pp)=each($r))\n\t{\tif(($ip=array_search($pp,$resolvers))!==false)\n\t\t{\t$dnscache[$ip]=trim(fgets($pp));\n\t\t\tpclose($pp);\n\t\t\tunset($resolvers[$ip]);\n\t\t}\n\t}\n\twhile(count($queue)
+    &amp;&amp; ($fqdn=$dnscache[$queue[0][0]])!=false)\n\t{\tlist($ip,$line)=array_shift($queue);\n\t\techo
+    \"$fqdn $line\";\n\t}\n}\n\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3078'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/3078
+  :user_name: mamamoto
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2007/09/19 03:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">逆引き部分だけスレッドに。手抜きです。\r\nまだRubyなかったので。</pre>\r\n\t"
+  :code: |
+    require 'resolv'
+
+    class Writer
+      def initialize
+        @a = []
+        @t = Thread.start{
+          while true
+            sleep 0.01 while @a.empty? || @a[0].alive?
+
+            puts @a.shift.result
+          end
+        }
+      end
+
+      def empty?
+        @a.empty?
+      end
+
+      def &lt;&lt;(r)
+        @a &lt;&lt; r
+      end
+
+      def kill
+        @t.kill
+      end
+    end
+
+    class Resolver
+      attr_reader :result
+      @@cache = {}
+
+      def resolv(ip)
+        return @@cache[ip] if @@cache[ip]
+
+        @@cache =
+          begin
+            Resolv.getname(ip)
+          rescue Resolv::ResolvError
+            ip
+          end
+      end
+
+      def initialize(str)
+        @t = Thread.start{
+          reg = /(^\d+?\.\d+?\.\d+?\.\d+?)/
+          if str =~ reg
+            ip = $1
+            @result = str.sub(reg, resolv(ip))
+          else
+            $stderr.puts "does not match."
+          end
+        }
+      end
+
+      def alive?
+        @t.alive?
+      end
+    end
+
+    def reader(f)
+      wtr = Writer.new
+
+      while line = f.gets
+        wtr &lt;&lt; Resolver.new(line)
+      end
+
+      sleep 0.01 until wtr.empty?
+      wtr.kill
+    end
+
+    if __FILE__ == $0
+      require 'stringio'
+
+      log = &lt;&lt;_LOG_
+    210.166.209.71 - - [26/Jul/2007:22:32:47 +0900] "GET / HTTP/1.1" 403 283 "-" "Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.5) Gecko/20070713 Firefox/2.0.0.5"
+    192.168.7.1 - - [26/Jul/2007:22:32:48 +0900] "GET /favicon.ico HTTP/1.1" 404 290 "-" "Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.5) Gecko/20070713 Firefox/2\
+    .0.0.5"
+    _LOG_
+
+      reader(StringIO.new(log))
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6737'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/6737
+  :user_name: lufia
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/242/
+  :language: Other
+  :time: 2008/07/15 11:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  並びをそのまま保つことに悩みました。。\r\n\r\n今回の回答では、chanはブロックされることを利用してのq: array[4]
+    of chan of chan of (string, string)がたぶん中心です。ブロックされるので順番になっているし、ブロック中にスレッドが動いているので並列化も。\r\n\r\n最悪のケース(同じIPが4つ並んだ状態)では並列化の意味がなくなるのが悩みどころ。。\r\n\t"
+  :code: |
+    implement Resolv;
+
+    include "sys.m";
+        sys: Sys;
+        FD, print: import sys;
+    include "draw.m";
+    include "srv.m";
+        srv: Srv;
+    include "hash.m";
+        hash: Hash;
+        HashTable, HashVal: import hash;
+    include "bufio.m";
+        bufio: Bufio;
+        Iobuf: import bufio;
+    include "string.m";
+        str: String;
+
+    Resolv: module
+    {
+        init: fn(ctxt: ref Draw-&gt;Context, argv: list of string);
+    };
+
+    dnsin: chan of (string, string);
+    q := array[4] of chan of chan of (string, string);    # DNS que
+    cache: ref HashTable;
+
+    init(nil: ref Draw-&gt;Context, nil: list of string)
+    {
+        sys = load Sys Sys-&gt;PATH;
+        srv = load Srv Srv-&gt;PATH;
+        srv-&gt;init();
+        hash = load Hash Hash-&gt;PATH;
+        bufio = load Bufio Bufio-&gt;PATH;
+        str = load String String-&gt;PATH;
+
+        dnsin = chan of (string, string);
+        for(i := 0; i &lt; len q; i++)
+            q[i] = chan of chan of (string, string);
+        cache = hash-&gt;new(500);
+        spawn dnstask();
+        spawn readtask(sys-&gt;fildes(0));
+
+        n := 0;
+        for(;;){
+            (addr, opt) := &lt;- (&lt;- q[n++ % len q]);
+            if(addr == nil)
+                break;
+            print("%s%s\n", addr, opt);
+        }
+    }
+
+    readtask(fd: ref FD)
+    {
+        fin := bufio-&gt;fopen(fd, bufio-&gt;OREAD);
+        if(fin == nil)
+            raise "fopen";
+        while((s := fin.gets('\n')) != nil){
+            if(s[len s-1] == '\n')
+                s = s[0:len s -1];
+            dnsin &lt;- = str-&gt;splitl(s, " ");
+        }
+        dnsin &lt;- = (nil, nil);        # term
+    }
+
+    dnstask()
+    {
+        n := 0;
+        for(;;){
+            (addr, opt) := &lt;- dnsin;
+            c := chan of (string, string);
+            spawn dnsquery(c, addr, opt);
+            q[n++ % len q] &lt;- = c;
+            if(addr == nil)
+                break;
+        }
+    }
+
+    dnsquery(c: chan of (string, string), addr, opt: string)
+    {
+        if(addr == nil){
+            c &lt;- = (nil, nil);
+            return;
+        }
+
+        v := cache.find(addr);
+        if(v == nil){
+            #sys-&gt;sleep(1000);
+            v = ref HashVal;
+            hosts := srv-&gt;ipa2h(addr);
+            if(hosts == nil)
+                v.s = addr;
+            else
+                v.s = hd hosts;
+            cache.insert(addr, *v);
+        }
+        c &lt;- = (v.s, opt);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3259'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/3259
+  :user_name: koguro
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/438/
+  :language: Scheme
+  :time: 2007/10/05 13:40 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  <pre class=\"compact\">手抜きをして名前解決は外部コマンドのdigを使っています(あと出力結果を整形するためにawkも)。\r\n\r\n一応特徴としては、\r\n(1)
+    スレッドを使うと排他とか面倒なので、プロセスで並列に動かしている\r\n(2) ログを置換するフィルタプロセスと名前解決のプロセスの両方が並列に動作する\r\n
+    \   (さらに名前解決のプロセスはdigを並列で実行する)\r\n(3) 名前解決のプロセスも自分で勝手にファイルをスキャンしてIPアドレスを抜き出している。\r\n
+    \   ファイルI/Oは通常の2倍になるが、フィルタプロセスとの相互作用が一方通行になるので作りは簡単になる。\r\n\r\n実行は gosh resolv-filter.scm
+    access.logのようにしてください。\r\nmax-processesをいじるとdigの同時実行数が変更できます。</pre>\r\n\t"
+  :code: |
+    (use gauche.process)
+    (use srfi-13)
+
+    (define max-processes 4)
+
+    (define (filter log-port resolver-port)
+      (let ((tbl (make-hash-table 'string=?)))
+        (define (resolv addr)
+          (or (hash-table-get tbl addr #f)
+              (begin
+                (apply hash-table-put! tbl (read resolver-port))
+                (resolv addr))))
+        (port-for-each (lambda (line)
+                         (print (regexp-replace #/^\d+\.\d+\.\d+\.\d+/ line
+                                                (lambda (m)
+                                                  (resolv (m))))))
+                       (cut read-line log-port))))
+
+    (define (resolver log-port resolver-port)
+      (define (notify! nohang)
+        (and-let* ((proc (process-wait-any nohang)))
+          (write (string-split (string-trim-right (port-&gt;string (process-output proc))
+                                                  #[\x0d\x0a]) " ") resolver-port)
+          (flush resolver-port)))
+      (let ((tbl (make-hash-table 'string=?)))
+        (port-for-each (lambda (line)
+                         (rxmatch-if (#/^(\d+\.\d+\.\d+\.\d+)/ line) (addr)
+                           (unless (hash-table-exists? tbl addr)
+                             (hash-table-put! tbl addr #t)
+                             (run-process `("/bin/sh" "-c" ,#`"dig -x ,addr | awk 'BEGIN{f=0}/^[0-9].*[\t ]PTR/&amp;&amp;f==0{sub(/\.$/,,\"\",,$5);print \",addr\",,$5;f=1}END{if(f==0)print \",addr\",,\",addr\"}'")
+                                          :output :pipe))
+                           #f)
+                         (notify! (&lt; (length (process-list)) max-processes)))
+                       (cut read-line log-port))
+        (do () ((not (notify! #f))))))
+
+    (define (main args)
+      (let ((filename (list-ref args 1)))
+        (receive (in out) (sys-pipe)
+          (if (= (sys-fork) 0)
+              (call-with-input-file filename
+                (cut resolver &lt;&gt; out))
+              (call-with-input-file filename
+                (cut filter &lt;&gt; in)))))
+      0)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2046'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/2046
+  :user_name: 匿名
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/08/09 13:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">めんどくさいので終了させていませんが・・・。\r\n\r\nTwistedで非同期処理しています。キャッシュはOSに依存します。</pre>\r\n\t"
+  :code: "from twisted.names import client\nfrom twisted.python import util\nfrom
+    twisted.internet import reactor,defer\nimport fileinput\nimport re\n\n\n\ndef
+    getIp(line):\n    addr_str, remain = line.split(\" \", 1)\n    return addr_str.split(\".\"),
+    remain\n\n@defer.deferredGenerator\ndef lookupPtr(queue):\n    while True:\n        wfd
+    = defer.waitForDeferred(queue.get())\n        yield wfd\n        addr, ip_ptr,
+    remain = wfd.getResult()\n        try:\n            wfd = defer.waitForDeferred(client.lookupPointer(ip_ptr))\n
+    \           yield wfd\n            result = wfd.getResult()\n            name
+    = str(result[0][0].payload.name)\n        except:\n            name = \".\".join(addr)\n
+    \       print name + \" \" + remain\n\ndef load(queue, filename):\n    for line
+    in fileinput.input(filename):\n        line = line.strip()\n        if line:\n
+    \           addr, remain = getIp(line)\n            ptr = '.'.join(addr[::-1])
+    + '.in-addr.arpa'\n            def put(data):\n                queue.put(data)\n
+    \       \n            reactor.callFromThread(put, (addr, ptr, remain))\n\n\nif
+    __name__ == \"__main__\":\n    import sys\n    dlist = []\n    queue = defer.DeferredQueue()\n\n
+    \   for i in range(0, 100):\n        lookupPtr(queue)\n    \n    reactor.callInThread(load,
+    queue, sys.argv[1])\n    \n    reactor.run()\n"
+  :tags: []
+  :references:
+    :url: /web/20110416061249/http://www.liris.org/blog/twisted-lookuppointer/
+    :title: ''
+- :id: '8205'
+  :parent_id: '39'
+  :url: http://ja.doukaku.org/comment/8205
+  :user_name: mamamoto
+  :user_url: /web/20110416061249/http://ja.doukaku.org/user/437/
+  :language: 
+  :time: 2008/12/18 20:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>すげえいまさらですが35行目間違ってますねこれ。正しくは@@cache[ip] =</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 

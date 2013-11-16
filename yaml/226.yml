@@ -1,0 +1,1466 @@
+---
+:id: '226'
+:title: IPv6アドレスの短縮
+:comments:
+- :id: '8308'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8308
+  :user_name: syat
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/766/
+  :language: Other
+  :time: 2009/01/09 11:47 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\r\n\t  いろんなところでIPv6の実用化やそれに向けた実験が進められており、今後IPv6のアドレスを見かけることも多くなりそうなので少し触れてみよう、というお題です。\r<br><br>IPv6アドレスは16進表記した2バイトを、コロンで8つつなげて表記します。\r<br>例）1230:5670:0000:0000:0123:0000:0000:00ab \r<br><br>各部分の頭の0は省略できます。上の例はこうなります。\r<br>例）1230:5670:0:0:123:0:0:ab \r<br><br>また、0 が複数続くところは 「::」に置き換えることができます。（ただしアドレス内で1箇所のみ）\r<br>例）1230:5670::123:0:0:ab \r<br><br>この短縮を行う関数を作ってください。\r<br>余力のある方は逆変換（伸長）も考えてみてください。\r<br>この程度ならライブラリに備わってるかも？？\r\n\t"
+  :code: |
+    &gt; ipv6_compress( '1230:5670:0000:0000:0123:0000:0000:00ab' )
+    1230:5670::123:0:0:ab
+
+    &gt; ipv6_compress( '0000:0000:0000:0000:0000:0000:0000:0001' )
+    ::1
+  :tags: []
+  :references:
+    :url: /web/20090612205550/http://ja.wikipedia.org/wiki/IPv6#IPv6_.E3.81.AE.E3.82.A2.E3.83.89.E3.83.AC.E3.82.B9.E8.A1.A8.E8.A8.98
+    :title: Wikipedia：IPv6
+- :id: '8335'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8335
+  :user_name: mamamoto
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2009/01/16 01:57 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>最後が:0の繰り返しの場合どうすればいいんだろう。</p>\n\n\t"
+  :code: |
+    def ipv6_compress(ip)
+      ip.split(/:/).map{|e| e.to_i(16).to_s(16)}.join(":").sub(/(:0)+:/, "::")
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8336'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8336
+  :user_name: mamamoto
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2009/01/16 02:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ごめんなさい下のほうの::1ってやつ見逃してました。</p>\n\n\t"
+  :code: |
+    def ipv6_compress(ip)
+      ip.split(/:/).map{|e| e.to_i(16).to_s(16)}.join(":").sub(/0?(:0)+:/, "::")
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8337'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8337
+  :user_name: turugina
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/760/
+  :language: Perl
+  :time: 2009/01/16 08:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">CPANモジュールで</pre>\n\t"
+  :code: |
+    use strict;
+    use warnings;
+
+    use NetAddr::IP;
+
+    sub ipv6_compress { NetAddr::IP-&gt;new6(shift)-&gt;short }
+
+    print ipv6_compress('1230:5670:0000:0000:0123:0000:0000:00ab'), "\n";
+    print ipv6_compress('0000:0000:0000:0000:0000:0000:0000:0001'), "\n";
+  :tags: []
+  :references:
+    :url: /web/20090612205550/http://search.cpan.org/~miker/NetAddr-IP-4.022/IP.pm
+    :title: NetAddr::IP
+- :id: '8339'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8339
+  :user_name: 匿名
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2009/01/16 09:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">泥臭く正規表現で手作りしました。</pre>\n\t"
+  :code: |
+    import re
+
+    def ipv6_compress(addr):
+        s = ':' + ':'.join('%x' % int(x, 16) for x in addr.split(':'))
+        for n in range(8, 1, -1):
+            m = re.search('(?&lt;=:)' + ':'.join('0' * n), s)
+            if m: return s[1:m.start()] + ':' + s[m.end():]
+        return s[1:]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8340'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8340
+  :user_name: t_noborio
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/729/
+  :language: Python
+  :time: 2009/01/16 09:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>素直に正規表現で</p>\n\n\t"
+  :code: |
+    def ipv6_compress(ip):
+        reg = re.compile("(?:^|:)0{0,3}")
+        reg2 = re.compile(":0(:0)+")
+        return reg2.sub(":", ":".join(reg.split(ip)), 1)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8341'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8341
+  :user_name: 匿名
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/01/16 03:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>これって連続するゼロが複数箇所ある場合、最左を優先させて置き換えるのか、最長を優先させるのかどっちでしょうか？</p>\n<p>自分はよくわからないので、最長を優先させることにしました。でももっとカッコ良く書けそうだと思いました。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8343'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8343
+  :user_name: sumim
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/01/16 14:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk には正規表現が組み込みでないので、手続き的に。</p>\n\n\t"
+  :code: |
+    | ipv6Compress |
+    ipv6Compress := [:inStr |
+        | subStrings sections max outStream |
+        subStrings := inStr subStrings: #($:).
+        sections := subStrings collect: [:each |
+            (('16r', each asUppercase) asNumber radix: 16) asLowercase].
+        sections := sections as: RunArray.
+        max := ((1 to: sections runs size) select: [:each | (sections values at: each) = '0'])
+            detectMax: [:idx | sections runs at: idx].
+        sections values at: max put: ''.
+        sections runs at: max put: 1.
+        outStream := String new writeStream.
+        sections first ifEmpty: [outStream nextPut: $:].
+        sections do: [:each | outStream nextPutAll: each] separatedBy: [outStream nextPut: $:].
+        sections last ifEmpty: [outStream nextPut: $:].
+        outStream contents].
+
+    ipv6Compress value: '1230:5670:0000:0000:0123:0000:0000:00ab'.  "=&gt; '1230:5670::123:0:0:ab' "
+    ipv6Compress value: '0000:0000:0000:0000:0000:0000:0000:0001'.  "=&gt; '::1' "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '8344'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8344
+  :user_name: raynstard
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/127/
+  :language: C
+  :time: 2009/01/16 09:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ども、raynstardです。\r\n泥臭くループしてみました。\r\n\r\n0000:0000:0000:0000:0000:0000:0000:0000で初期化して\r\n\"%lx\"
+    → \"%04lx\"\r\nstrncat() → memcpy()に変更すると\r\n割と簡単に逆もできる予感。(not ::ffff:)\r\nでも、ここまででだいぶ長くなってしまったので省略(笑\r\nやっぱり、ほかの言語は短いですねぇ。。\r\n\r\n//
+    gcc -std=c99 -Wall doukaku226.c\r\n環境によっては snprintf () が警告でるかも\r\ncygwin は対処できませんでしたorz\r\nどうすればこの警告消えるんだろう</pre>\n\t"
+  :code: |
+    #define _XOPEN_SOURCE 600
+
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;string.h&gt;
+    #include &lt;assert.h&gt;
+
+    #define ASSERT assert
+
+    char * IPv6_compress( const char *ipv6Addr )
+    {
+        static char ipv6_string[39+1];
+
+        memset(ipv6_string, '\0', sizeof(ipv6_string));
+        if( strncmp(ipv6Addr, "::ffff:", 7) == 0 )
+        {
+            /* IPv4 は そのまま返却する */
+            strncpy(ipv6_string, ipv6Addr, sizeof(ipv6_string)-1);
+         }
+        else
+        {
+            /* IPv6 一般(?)形式 */
+            char   *cursor, *cp;
+            char   hex[5];
+            int    compress_zero = 0;
+            for( long num = strtoul(ipv6Addr, &amp;cp, 16); *cp != '\0'; num = strtoul(cursor, &amp;cp, 16) )
+            {
+                cursor = cp + 1;
+                snprintf(hex, sizeof(hex), "%lx", num);
+                if( compress_zero &lt; 0 )
+                {
+                    /* もう圧縮しない or 圧縮の必要がない */
+                    strncat(ipv6_string, hex, sizeof(ipv6_string) - strlen(ipv6_string) - 1 );
+                    strncat(ipv6_string, ":", sizeof(ipv6_string) - strlen(ipv6_string) - 1 );
+                }
+                else if( compress_zero == 0 || compress_zero == 1 )
+                {
+                    /* まだ圧縮したことない */
+                    if( num == 0 )
+                    {
+                        /* 圧縮するかもしれない */
+                        compress_zero ++;
+                    }
+                    else
+                    {
+                        if( compress_zero == 1 )
+                        {
+                            /* 圧宿の必要はないので省略した分を追加する出力 */
+                            strncat(ipv6_string, "0:", sizeof(ipv6_string) - strlen(ipv6_string) - 1 );
+                            compress_zero = 0;
+                        }
+                        strncat(ipv6_string, hex, sizeof(ipv6_string) - strlen(ipv6_string) - 1 );
+                        strncat(ipv6_string, ":", sizeof(ipv6_string) - strlen(ipv6_string) - 1 );
+                    }
+                }
+                else if( compress_zero &gt; 1 )
+                {
+                    /* 圧縮中 */
+                    if( num != 0 )
+                    {
+                        /* もう圧縮しない */
+                        compress_zero = -1;
+                        strncat(ipv6_string, ":", sizeof(ipv6_string) - strlen(ipv6_string) - 1 );
+                        strncat(ipv6_string, hex, sizeof(ipv6_string) - strlen(ipv6_string) - 1 );
+                        strncat(ipv6_string, ":", sizeof(ipv6_string) - strlen(ipv6_string) - 1 );
+                    }
+                }
+                else { /* ありえない */ assert(false); }
+            }
+            snprintf(hex, sizeof(hex), "%lx", strtoul(cursor, &amp;cp, 16));
+            if( *ipv6_string == '\0' )
+            {
+                /* 初っぱなから全部圧縮した */
+                *ipv6_string = ':';
+            }
+            if( compress_zero &gt; 1 )
+            {
+                /* 圧縮中のまま最後まできた */
+                strncat(ipv6_string, ":", sizeof(ipv6_string) - strlen(ipv6_string) - 1 );
+            }
+            /* 最後ののこり出力 */
+            strncat(ipv6_string, hex, sizeof(ipv6_string) - strlen(ipv6_string) - 1 );
+        }
+
+        printf("[%s] =&gt; [%s]\n",ipv6Addr, ipv6_string);
+
+        return ipv6_string;
+    }
+
+    int main(int argc, char *argv[])
+    {
+        ASSERT( strcmp( IPv6_compress("1230:5670:0000:0000:0123:0000:0000:00ab"), "1230:5670::123:0:0:ab") == 0 );
+        ASSERT( strcmp( IPv6_compress("1230:0567:0000:0000:0000:0000:0000:00ab"), "1230:567::ab") == 0 );
+        ASSERT( strcmp( IPv6_compress("1230:0567:0000:0def:0000:0000:0000:00ff"), "1230:567:0:def::ff") == 0 );
+        ASSERT( strcmp( IPv6_compress("0000:0000:0000:0000:0000:0000:0000:0001"), "::1") == 0 );
+        ASSERT( strcmp( IPv6_compress("::ffff:192.168.1.1"), "::ffff:192.168.1.1") == 0 );
+        return 0;
+    }
+
+    /* EOF */
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8346'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8346
+  :user_name: あにす
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2009/01/16 21:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  クラスライブラリ探しても見付からなくてむしゃくしゃして書きました。\r<br>反省してません。\n\t"
+  :code: |
+    using System;
+    using System.Linq;
+
+    class Program {
+        static void Main(string[] args) {
+            Console.WriteLine(ipv6_compress("1230:5670:0000:0000:0123:0000:0000:00ab")); //1230:5670::123:0:0:ab
+        }
+
+        static string ipv6_compress(string address) {
+            return address.Remove(address.IndexOf(":0000:0000:") + 1, 9).Split(new char[] { ':' }).Select&lt;string, string&gt;(str =&gt; str.TrimStart(new char[] { '0' }).PadLeft(Math.Min(str.Length, 1), '0')).Aggregate&lt;string&gt;((a, b) =&gt; (a + ":" + b));
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8347'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8347
+  :user_name: あにす
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2009/01/16 22:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  伸長も書いてみました、1行で。\n\t"
+  :code: |
+    using System;
+    using System.Linq;
+    using System.Net;
+
+    class Program {
+        static void Main(string[] args) {
+            Console.WriteLine(ipv6_compress("1230:5670:0000:0000:0123:0000:0000:00ab")); //1230:5670::123:0:0:ab
+            Console.WriteLine(ipv6_recompress(ipv6_compress("1230:5670:0000:0000:0123:0000:0000:00ab"))); //1230:5670:0000:0000:0123:0000:0000:00ab
+        }
+
+        static string ipv6_compress(string address) {
+            return address.Remove(address.IndexOf(":0000:0000:") + 1, 9).Split(new char[] { ':' }).Select&lt;string, string&gt;(str =&gt; str.TrimStart(new char[] { '0' }).PadLeft(Math.Min(str.Length, 1), '0')).Aggregate&lt;string&gt;((a, b) =&gt; (a + ":" + b));
+        }
+
+        static string ipv6_recompress(string address) {
+            return IPAddress.Parse(address).GetAddressBytes().Select&lt;byte, string&gt;(b =&gt; (string.Format("{0:x2}", b))).Aggregate&lt;string&gt;((a, b) =&gt; (a + (a.LastIndexOf(':') == a.Length - 3 ? "" : ":") + b));
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8348'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8348
+  :user_name: mattsan
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/833/
+  :language: C
+  :time: 2009/01/17 00:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>不格好です(不満)。\nお題にあるものは変換できたんですが、いつでもキチンと変換できるか自信がないです。</p>\n\n\t"
+  :code: |
+    #include &lt;string&gt;
+    #include &lt;sstream&gt;
+    #include &lt;iomanip&gt;
+    #include &lt;vector&gt;
+
+    std::string pv6_compress(const std::string&amp; source)
+    {
+        // 数値列に分解
+        std::vector&lt;int&gt; values;
+        std::istringstream iss(source);
+        iss &gt;&gt; std::hex;
+        int n;
+        while(iss &gt;&gt; n)
+        {
+            values.push_back(n);
+            char c;
+            iss &gt;&gt; c;
+        }
+
+        // 0が続く範囲を抽出
+        std::vector&lt;int&gt;::const_iterator i     = values.begin();
+        std::vector&lt;int&gt;::const_iterator first = values.end();
+        std::vector&lt;int&gt;::const_iterator last  = values.end();
+        while(i != values.end())
+        {
+            if((first == values.end()) &amp;&amp; (*i == 0))
+            {
+                first = i;
+            }
+            else if((first != values.end()) &amp;&amp; (*i != 0))
+            {
+                last = i;
+                break;
+            }
+            ++i;
+        }
+
+        // 再構築
+        std::ostringstream oss;
+        oss &lt;&lt; std::hex;
+        i = values.begin();
+        for(;;)
+        {
+            if(i == first)
+            {
+                oss &lt;&lt; ((i == values.begin()) ? "::" : ":");
+                i = last;
+                continue;
+            }
+            oss &lt;&lt; *i;
+            ++i;
+            if(i == values.end())
+            {
+                break;
+            }
+            oss &lt;&lt; ":";
+        }
+
+        return oss.str();
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8349'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8349
+  :user_name: horiuchi
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2009/01/17 03:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Javaには、IPv6のアドレスも標準で扱えるようになっています。\nただ、アドレスの表示に関してはほとんど省略をしない形になっているため、その辺りを実装しました。逆変換もついでに実装してみました。</p>\n<p>２つの関数の引数は、IPv6で認められている形式ならば、どのような値でも受け付けられます。</p>\n\n\t"
+  :code: |
+    import java.net.InetAddress;
+    import java.net.UnknownHostException;
+
+    public class Sample226 {
+        public static String compressIpv6(String address) throws UnknownHostException {
+            InetAddress ipAddress = InetAddress.getByName(address);
+            String hostAddress = ipAddress.getHostAddress();
+            hostAddress = hostAddress.replaceFirst("(^|:)(0:){2,}", "::");
+            return hostAddress;
+        }
+
+        public static String decompressIpv6(String address) throws UnknownHostException {
+            InetAddress ipAddress = InetAddress.getByName(address);
+            byte[] bs = ipAddress.getAddress();
+            StringBuilder builder = new StringBuilder();
+            for (int index = 0; index &lt; bs.length; index++) {
+                if (index &gt; 0 &amp;&amp; index % 2 == 0) builder.append(':');
+                builder.append(String.format("%02x", bs[index]));
+            }
+            return builder.toString();
+        }
+
+        public static void main(String[] args) {
+            try {
+                String comp1 = compressIpv6("1230:5670:0000:0000:0123:0000:0000:00ab");
+                System.out.println(comp1);
+                System.out.println(decompressIpv6(comp1));
+
+                String comp2 = compressIpv6("0000:0000:0000:0000:0000:0000:0000:0001");
+                System.out.println(comp2);
+                System.out.println(decompressIpv6(comp2));
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: /web/20090612205550/http://java.sun.com/javase/ja/6/docs/ja/api/java/net/Inet6Address.html
+    :title: クラス Inet6Address
+- :id: '8351'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8351
+  :user_name: 匿名
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/4/
+  :language: Ruby
+  :time: 2009/01/17 12:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>文字列の切り貼りのみです。</p>\n\n\t"
+  :code: |
+    def ipv6_compress(ip)
+      ip = ":" + ip + ":"
+      3.times{ip.gsub!(/:0/, ":")}
+      ip.sub!(/(:0)+:0/, "::")
+      ip.slice(1, ip.size - 2).sub(/:::/,"::")
+    end
+
+    a=['1230:5670:0000:0000:0123:0000:0000:00ab'] # =&gt; "1230:5670::123:0:0:ab"
+    a&lt;&lt;'1230:5670:0000:0300:0123:0000:0000:00ab' # =&gt; "1230:5670:0:300:123::ab"
+    a&lt;&lt;'0000:0000:0000:0000:0000:0000:0000:0001' # =&gt; "::1"
+    a&lt;&lt;'0002:0000:0700:0000:0000:0000:0000:0000' # =&gt; "2:0:700::"
+    a.each{|x|p ipv6_compress(x)}
+  :tags:
+  - 1.8.6
+  - ruby
+  :references:
+    :url: 
+    :title: 
+- :id: '8355'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8355
+  :user_name: turugina
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/760/
+  :language: C
+  :time: 2009/01/17 15:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">なるべくalgorithm使って書いてみました。\r\n\r\n…しかし、行数は増えてしまった</pre>\n\t"
+  :code: |
+    #include &lt;algorithm&gt;
+    #include &lt;functional&gt;
+    #include &lt;iostream&gt;
+    #include &lt;iterator&gt;
+    #include &lt;sstream&gt;
+    #include &lt;string&gt;
+    #include &lt;vector&gt;
+
+    inline char
+    transform_delimiter(const char&amp; c)
+    { return c == ':' ? ' ' : c; }
+
+    std::string
+    ipv6_compress(
+            const std::string&amp; source
+            )
+    {
+        // 数値列に分解
+        typedef std::vector&lt;int&gt; elements_t;
+        typedef elements_t::const_iterator elems_iter_t;
+        elements_t elems;
+        std::stringstream ss;
+        std::transform(
+                source.begin(), source.end(),
+                std::ostream_iterator&lt;char&gt;(ss),
+                transform_delimiter
+                );
+
+        ss &gt;&gt; std::hex;
+        std::copy(
+                std::istream_iterator&lt;int&gt;(ss),
+                std::istream_iterator&lt;int&gt;(),
+                std::back_inserter(elems)
+                );
+
+        // 0 が続く範囲を探索
+        elems_iter_t beg0 = elems.begin(), end0 = elems.end();
+        while (true)
+        {
+            beg0 = std::adjacent_find(beg0, end0);
+            if ( beg0 == end0 ) break;
+            if ( *beg0 == 0 )
+            {
+                end0 = find_if(beg0, end0, std::bind1st(std::not_equal_to&lt;int&gt;(), 0));
+                break;
+            }
+
+            beg0 = find_if(beg0, end0, std::bind1st(std::not_equal_to&lt;int&gt;(), *beg0));
+        }
+
+        // 再構築
+        std::ostringstream oss;
+        oss &lt;&lt; std::hex;
+        for (elems_iter_t it = elems.begin(); it != elems.end(); ++it)
+        {
+            if ( it == beg0 )
+            {
+                if ( beg0 == elems.begin() ) oss &lt;&lt; ":";
+                it = end0;
+                --it;
+            }
+            else
+                oss &lt;&lt; *it;
+
+            oss &lt;&lt; ":";
+        }
+        std::string result = oss.str();
+        if ( result[result.length()-1] == ':' &amp;&amp;
+                result[result.length()-2] != ':')
+            result.erase(result.length() - 1);
+
+        return result;
+    }
+
+    int main()
+    {
+        std::cout &lt;&lt; ipv6_compress("1230:5670:0000:0000:0123:0000:0000:00ab") &lt;&lt; "\n";
+        std::cout &lt;&lt; ipv6_compress("0000:0000:0000:0000:0000:0000:0000:0001") &lt;&lt; "\n";
+        std::cout &lt;&lt; ipv6_compress("0001:0000:0000:0000:0000:0000:0000:0000") &lt;&lt; "\n";
+        std::cout &lt;&lt; ipv6_compress("0000:0000:0000:0000:0000:0000:0000:0000") &lt;&lt; "\n";
+        std::cout &lt;&lt; ipv6_compress("0001:0001:0001:0002:0002:0002:0003:0003") &lt;&lt; "\n";
+
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8356'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8356
+  :user_name: syat
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2009/01/17 23:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  0が3個以上続くときも::に置き換えてほしいです。0:0:0:0:0:0:0:1 → ::1 みたいな。（問題文のサンプルが見づらくてすみません・・）\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8359'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8359
+  :user_name: 匿名
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/4/
+  :language: Ruby
+  :time: 2009/01/18 09:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  逆変換(伸長)です。 これ以上短くする方法を思いつかない。\n\t"
+  :code: |
+    def ipv6_decompress(s)
+      s = s.gsub(/::/, " # ").gsub(/:/, " ")
+      s = s.gsub(/#/, " 0000" * (8 - s.split(/ /).size))
+      s.split(/ /).map{|x|
+        "0" * (4 - x.size) + x
+      }.join(":")
+    end
+  :tags:
+  - 1.8.6
+  - ruby
+  :references:
+    :url: 
+    :title: 
+- :id: '8360'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8360
+  :user_name: fumokmm
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/856/
+  :language: Groovy
+  :time: 2009/01/18 10:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">素直に正規表現で。\r\n\r\n複数続く0の数が同じ候補が2つ以上あった場合は、\r\n先頭のものを圧縮するようにしました。\r\n(#replaceFirstを利用)</pre>\n\t"
+  :code: |
+    /** 圧縮 */
+    def ipv6Compress(ipv6) {
+      // 連続する0を除去(先頭の0:0)
+      def ip = ipv6.replaceFirst(/:?0000(:0000)+/, ':')
+      // 先頭の0を除去
+      ip = ip.split(':').collect{
+        (it == '') ? '' : Integer.toHexString(Integer.parseInt(it, 16))
+      }.join(':')
+    }
+
+    /** 伸張 */
+    def ipv6Decompress(ipv6) {
+      // 連続する0を伸張
+      def ip = ipv6.split(':') as List
+      int insert = ip.indexOf('')
+      ip[insert..insert] = ('0' * (8 - ip.size() + 1)) as List
+      // 先頭に0を付加
+      ip.collect{ it.padLeft(4, '0') }.join(":")
+    }
+
+    // 動作確認
+    assert ipv6Compress('1230:5670:0000:0000:0123:0000:0000:00ab') ==
+    '1230:5670::123:0:0:ab'
+    assert ipv6Decompress('1230:5670::123:0:0:ab') ==
+    '1230:5670:0000:0000:0123:0000:0000:00ab'
+    assert ipv6Compress('0000:0000:0000:0000:0000:0000:0000:0001') ==
+    '::1'
+    assert ipv6Decompress('::1') ==
+    '0000:0000:0000:0000:0000:0000:0000:0001'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8361'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8361
+  :user_name: egtra
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/759/
+  :language: Scheme
+  :time: 2009/01/18 14:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>不慣れですがGaucheを使いました。初心者丸出しなコードだと思います。何せ副作用付きの!をまともに使うのは初めてなくらいですし。\n</p>\n<p>まず、分解して(((#x1230
+    #x5670) 2 3) ((#x123) 2 6) ((#xab) 0 8))のようなリストにします。この要素は(非0部分のリスト 後の0の数 元順序)となっています。このあと、ソートして0の数が一番多いのを先頭に持ってきます（ここでyに束縛）。::を使う目印として先頭の0の数を-1に書き換えてから、元順序を頼りに(sort-by!
+    y caddr)して、文字列化しています。\n</p>\n\n\n\n\t"
+  :code: |
+    (use text.tree) ; tree-&gt;string
+    (use util.list) ; intersperse
+    (use srfi-1)    ; iota
+
+    (define (ipv6_compress s)
+        (define x (map (cut string-&gt;number &lt;&gt; 16) (string-split s #\:)))
+        (define (break-zero cur n)
+          (if (null? cur)
+              (list (list () 0 n))
+            (let ((t (break-zero (cdr cur) (+ n 1))))
+              (if (eqv? (car cur) 0)
+                    (if (null? (caar t))
+                        (begin
+                            (inc! (cadar t))
+                            t)
+                        (cons (list () 1 n) t))
+                    (begin
+                        (push! (caar t) (car cur))
+                        t)))))
+        (define y (sort-by! (break-zero x 0) (compose - cadr)))
+        (set-car! (cdar y) -1)
+        (sort-by! y caddr)
+        (tree-&gt;string
+            (map!
+                (lambda (x)
+                    (append!
+                        (intersperse ":" (map (cut number-&gt;string &lt;&gt; 16) (car x)))
+                        (if (eqv? (cadr x) -1)
+                            (list "::")
+                            (map! (lambda (dummy) "0:") (iota (cadr x))))))
+                y)))
+    ;; テスト
+    (ipv6_compress "1230:5670:0000:0000:0123:0000:0000:00ab")
+    (ipv6_compress "0000:0000:0000:0000:0000:0000:0000:0000")
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '8362'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8362
+  :user_name: 匿名
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/4/
+  :language: OCaml
+  :time: 2009/01/18 21:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>OCamlの勉強のために書いてみましたが、ダメすぎな感じです……。</p>\n\n\t"
+  :code: |
+    let ipv6compress addr =
+      let to_hex n = Printf.sprintf "%x" n in
+      let scan_buffer = Scanf.Scanning.from_string (addr ^ ":") in
+      let rec split acc =
+        try
+          let tok = Scanf.bscanf scan_buffer "%x:" to_hex in
+            split (tok::acc)
+        with _ -&gt; List.rev acc
+      in
+      let tokens = split [] in
+      let rec locate index n maxi maxn = function
+          [] -&gt; (maxi - maxn + 1, maxn)
+        | "0"::xs -&gt;
+            if n + 1 &gt; maxn then
+              locate (index + 1) (n + 1) index (n + 1) xs
+            else
+              locate (index + 1) (n + 1) maxi maxn xs
+        | x::xs -&gt; locate (index + 1) 0 maxi maxn xs
+      in
+      let (index, length) = locate 0 0 0 0 tokens in
+        if length &lt; 2 then
+          String.concat ":" tokens
+        else
+          let arr = Array.of_list tokens in
+          let part1 = Array.sub arr 0 index in
+          let pos = index + length in
+          let part2 = Array.sub arr pos (Array.length arr - pos) in
+          let delim =
+            if (Array.length part1) * (Array.length part2) = 0 then ":"
+            else ""
+          in
+            String.concat ":"
+              ((Array.to_list part1) @ (delim :: Array.to_list part2))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8363'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8363
+  :user_name: kozima
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2009/01/19 07:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>0 の並びで最長なものを探すところをどうやったら簡潔に書けるかと考えた末、search を使ってみました。</p>\n\n\t"
+  :code: |
+    (defun ipv6-compress (s)
+      (let ((ip (loop for i below 40 by 5
+                   collect (parse-integer s :start i :end (+ i 4) :radix 16))))
+        (loop for i from 8 above 0
+           as p = (search #8(0) ip :end1 i) ; 0 が i 個並んでいるところを探す
+           ;; 0 があったとき
+           if p return (format nil "~(~{~X~^:~}::~{~X~^:~}~)"
+                               (subseq ip 0 p)
+                               (subseq ip (+ i p)))
+           ;; 0 がひとつもなかったとき
+           finally (return (format nil "~(~{~X~^:~}~)" ip)))))
+
+    (flet ((test (from to) (assert (string= (ipv6-compress from) to))))
+      (test "f0f0:0100:0020:0003:1000:0100:0020:0003" "f0f0:100:20:3:1000:100:20:3")
+      (test "1234:5678:0000:0000:1234:0000:0000:9abc" "1234:5678::1234:0:0:9abc")
+      (test "1234:5678:0000:0000:0000:0000:0000:9abc" "1234:5678::9abc")
+      (test "1230:5670:0000:0000:0123:0000:0000:00ab" "1230:5670::123:0:0:ab")
+      (test "0000:0000:0000:0000:0000:0000:0000:0001" "::1"))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8364'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8364
+  :user_name: creeper
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/994/
+  :language: C
+  :time: 2009/01/19 08:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">・なるべく多くのセクションを圧縮\r\n・展開も対応\r\n・strtolとsprintfだけ\r\n・エラー処理無し</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n\nclass
+    ipv6\n{\npublic:\n    static const int IPV6_STR_LEN = 5*8;\n    \nprotected:\n
+    \   unsigned short val[8];\npublic:\n    ipv6() {}\n    ipv6(const char* str)
+    { set(str); }\n    \n    void set(const char* str)\n    {\n        memset(val,
+    0, sizeof(val));\n        \n        int pos = 0; // 現在位置\n        int comp = -1;
+    // 圧縮位置\n        \n        const char* p = str;\n        if (*p==':')\n        {\n
+    \           comp = pos;\n            p+=2;\n        }\n        while(*p)\n        {\n
+    \           char* next;\n            val[pos++] = strtol(p, &amp;next, 16);\n
+    \           p = next;\n            if(*p==0) break;\n            p++;\n            if
+    (*p==':')\n            {\n                comp = pos;\n                p++;\n
+    \           }\n        }\n        \n        if (comp!=-1)\n        {\n            //
+    圧縮分を後ろにずらす\n            for(int i=pos-1, j=7; i&gt;=comp; i--, j--)\n            {\n
+    \               val[j] = val[i];\n                val[i] = 0;\n            }\n
+    \       }\n    }\n    \n    void get_short(char* str)\n    {\n        // 圧縮位置を決定\n
+    \       int len = 0; // 圧縮長\n        int pos = -1; // 圧縮位置\n        for(int i=0;
+    i&lt;8; )\n        {\n            int n = 0;\n            while(i+n&lt;8 &amp;&amp;
+    val[i+n]==0)\n                n++;\n            if (n&gt;len)\n            {\n
+    \               len = n;\n                pos = i;\n            }\n            i
+    += n+1;\n        }\n        // 出力\n        for(int i=0; i&lt;8; )\n        {\n
+    \           if (i==pos)\n            {\n                i += len;\n                *str++=':';\n
+    \               if (i==8) *str++=':';\n            }\n            else\n            {\n
+    \               str+=sprintf(str, i==0?\"%x\":\":%x\", val[i]);\n                i++;\n
+    \           }\n        }\n        *str=0;\n    }\n    \n    void get_full(char*
+    str)\n    {\n        sprintf(str, \"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x\",\n
+    \           val[0], val[1], val[2], val[3],\n            val[4], val[5], val[6],
+    val[7]);\n    }\n    \n};\n\nstatic void ipv6_test(const char* str)\n{\n    ipv6
+    ip(str);\n    char temp[ipv6::IPV6_STR_LEN];\n    printf(\"set()       %s\\n\",
+    str);\n    ip.get_full(temp);\n    printf(\"get_full()  %s\\n\", temp);\n    ip.get_short(temp);\n
+    \   printf(\"get_short() %s\\n\", temp);\n    printf(\"\\n\");\n}\n\nint main()\n{\n
+    \   ipv6_test(\"1230:5670:0000:0000:0123:0000:0000:00ab\");\n    ipv6_test(\"0000:0000:0000:0000:0000:0000:0000:0001\");\n
+    \   ipv6_test(\"::1:2\");\n    ipv6_test(\"1::2\");\n    ipv6_test(\"1:2::\");\n
+    \   ipv6_test(\"::1\");\n    ipv6_test(\"::\");\n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8369'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8369
+  :user_name: 匿名
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/4/
+  :language: OCaml
+  :time: 2009/01/19 21:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>多少直しました。</p>\n\n\t"
+  :code: |
+    let ipv6compress addr =
+      let to_hex n = Printf.sprintf "%x" n in
+      let rec split ib acc =
+        try
+          let tok = Scanf.bscanf ib "%x:" to_hex in
+            split ib (tok::acc)
+        with _ -&gt; List.rev acc
+      in
+      let enumerate xs =
+        let rec iter i = function
+            [] -&gt; []
+          | x::xs -&gt; (i,x)::(iter (i+1) xs)
+        in
+          iter 0 xs
+      in
+      let rec locate index n maxi maxn = function
+          [] -&gt; (maxi - maxn, maxn)
+        | "0"::xs -&gt;
+            if n + 1 &gt; maxn then
+              locate (index + 1) (n + 1) (index + 1) (n + 1) xs
+            else
+              locate (index + 1) (n + 1) maxi maxn xs
+        | x::xs -&gt; locate (index + 1) 0 maxi maxn xs
+      in
+      let scan_buffer = Scanf.Scanning.from_string (addr ^ ":") in
+      let tokens = split scan_buffer [] in
+      let ntokens = List.length tokens in
+      let (index, length) = locate 0 0 0 0 tokens in
+        if length &lt; 2 then
+          String.concat ":" tokens
+        else if length = ntokens then
+          "::"
+        else
+          let delim =
+            if index &gt; 0 &amp;&amp; index + length &lt; ntokens then ""
+            else ":"
+          in
+            String.concat ":"
+              (List.fold_right
+                 (fun (i,x) xs -&gt;
+                    if i &lt; index || i &gt;= index + length then x::xs
+                    else if i = index then delim::xs
+                    else xs)
+                 (enumerate tokens)
+                 [])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8370'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8370
+  :user_name: mamamoto
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/437/
+  :language: C
+  :time: 2009/01/20 01:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>なんとなくCで。ノーライブラリーで。高級言語の有り難味が身にしみます。</p>\n\n\t"
+  :code: |
+    char* strcpy(char* dest, const char* src){
+        char* ret = dest;
+
+        while(*src) *dest++=*src++;
+        *dest = 0;
+        return ret;
+    }
+
+    char* next_block(char* p){
+        while(*p != ':'){
+            if (!*p) return p;
+            p++;
+        }
+        return p+1;
+    }
+
+    int repeated_zero_size(const char* str){
+        const char* p = str;
+        int size;
+
+        while(p[0]=='0' &amp;&amp; (p[1]==':')){
+            p+=2;
+            if (p[-1]==0) break;
+        }
+        size = p - str;
+        return size &gt;= 4 ? size : 0;
+    }
+
+    char* comp_zero(char* str){
+        char* p = str;
+        char* zero_p = 0;
+        int max_size = 0;
+
+        while(*p){
+            int tmp = repeated_zero_size(p);
+
+            if (!tmp){
+                p = next_block(p);
+                if (!*p) break;
+                continue;
+            }
+            if (tmp &gt; max_size){
+                zero_p = p;
+                max_size = tmp;
+            }
+            p+=tmp;
+        }
+        if (zero_p){
+            *zero_p = ':';
+            strcpy(zero_p+(zero_p==str ? 2 : 1), zero_p+max_size);
+        }
+        return str;
+    }
+
+    char* remove_zero(char* str){
+        const char* p = str;
+
+        while(p[0] &amp;&amp; p[0]=='0' &amp;&amp; p[1] &amp;&amp; p[1]!=':') p++;
+        return strcpy(str, p);
+    }
+
+    char* remove_zero_all(char* str){
+        char* ret = str;
+
+        while(1){
+            remove_zero(str);
+            str = next_block(str);
+            if (!*str) break;
+        }
+        return ret;
+    }
+
+    char* ipv6_compress(char* str){
+        return comp_zero(remove_zero_all(str));
+    }
+
+    #include &lt;stdio.h&gt;
+
+    int main(){
+        char s1[] = "1230:5670:0000:0000:0123:0000:0000:00ab";
+        char s2[] = "0000:0000:0000:0000:0000:0000:0000:0001";
+
+        puts(ipv6_compress(s1));
+        puts(ipv6_compress(s2));
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8371'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8371
+  :user_name: kunitake
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/995/
+  :language: Other
+  :time: 2009/01/20 07:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>turuginaさんのコードにインスパイヤーされて。</p>\n\n\t"
+  :code: |
+    #!/usr/bin/perl
+
+    use strict;
+    use warnings;
+    use Net::IPv6Addr;
+    sub ipv6_compress { Net::IPv6Addr::to_string_compressed(shift) }
+
+    print ipv6_compress('1230:5670:0000:0000:0123:0000:0000:00ab'), "\n";
+    print ipv6_compress('0000:0000:0000:0000:0000:0000:0000:0001'), "\n";
+  :tags: []
+  :references:
+    :url: /web/20090612205550/http://search.cpan.org/~tmonroe/Net-IPv6Addr-0.2/IPv6Addr.pm
+    :title: Net::IPv6Addr
+- :id: '8374'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8374
+  :user_name: raynstard
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2009/01/20 05:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">たいした問題ではないのかもしれないけれど\r\nC++で書くのなら読み込むヘッダファイルはなるべく\r\nC++のもの(c～)を利用した方がよいのではないでしょうか。\r\n#
+    どの程度影響あるのかはしらない。。。\r\n\r\n#include &lt;cstdio&gt;\r\n#include &lt;cstdlib&gt;\r\n#include
+    &lt;cstring&gt;\r\n\r\nついでにいうと unsigned short val[8]は \r\n#include &lt;cstdint&gt;\r\nuint16_t
+    \ にして public にしちゃってもよい予感です。\r\nまぁ、こちらはだいぶ僕の好みがはいっちゃっていますが(笑\r\n\r\n# あっでも、cstdint
+    は c++0x かだめですね。。。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8376'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8376
+  :user_name: tsekine
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/124/
+  :language: Bash
+  :time: 2009/01/20 21:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>言語として \"bash\" と書く以上、bash only で C 風に仕上げてみました。</p>\n\n\t"
+  :code: |
+    ipv6_compress() {
+      local saved_ifs="$IFS"
+      local -ai parsed
+      local -i i j k min
+      local -a compressed
+
+      IFS=":"
+      parsed=(-1 16#${1//:/:16#})
+
+      for ((i=1;i&lt;8;i++)); do
+        if (( (parsed[i]|parsed[i+1]) == 0 )); then
+          break
+        fi
+      done
+
+      if ((i&lt;8)); then
+        # minus value means None
+        parsed[9]=-1
+        for ((j=i+1;j&lt;=8, parsed[j+1]==0;++j)); do
+          :
+        done
+        parsed[i]=-1
+        if ((j&gt;=8)); then
+          :
+        else
+          unset parsed[9]
+        fi
+
+        for ((k=i+1;k&lt;=j;k++)); do
+          unset parsed[k]
+        done
+      fi
+
+      if ((i!=1)); then
+        unset parsed[0]
+      fi
+
+      for k in ${!parsed[@]}; do
+        if ((parsed[k]&gt;=0)); then
+          compressed[k]=$(printf "%x" ${parsed[k]})
+        else
+          compressed[k]=""
+        fi
+      done
+
+      echo "${compressed[*]}"
+      IFS="$saved_ifs"
+    }
+
+    test_args="1230:5670:0000:0000:0123:0000:0000:00ab
+               1111:2222:3333:4444:5555:6666:7777:0000
+               0000:1111:2222:3333:4444:5555:6666:7777
+               0000:0000:0000:0000:0000:0000:0000:0000
+               0000:0000:0000:0000:0000:0000:0000:0001
+               0001:0000:0000:0000:0000:0000:0000:0000"
+
+    while read line; do
+      result=$(ipv6_compress "$line")
+      echo "$line =&gt; '$result'"
+    done &lt;&lt;&lt; "$test_args"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8381'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8381
+  :user_name: creeper
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/994/
+  :language: Python
+  :time: 2009/01/22 00:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#8339を参考に。\r\n#8340は000[1-9]: で始まるアドレスが圧縮できないと思います。</pre>\n\t"
+  :code: |
+    import re
+
+    def ipv6_compress(ip):
+        print re.sub('(^|:)0(:0)+(:|$)', '::', ':'.join('%x'%int(x,16) for x in ip.split(':')),1)
+
+
+    ipv6_compress('1230:5670:0000:0000:0123:0000:0000:00ab')
+    ipv6_compress('0000:0000:0000:0000:0000:0000:0000:0001')
+    ipv6_compress('0001:0000:0000:0000:0000:0000:0000:0001')
+    ipv6_compress('0001:0000:0000:0000:0000:0000:0000:0000')
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8383'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8383
+  :user_name: nobsun
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2009/01/22 01:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">細かいところがけっこう面倒なことになってしまいました。美しくないですがとりあえず。\r\n\r\n実行例\r\n*Main&gt;
+    :main\r\n1230:5670:0000:0000:0123:0000:0000:00ab ==&gt; 1230:5670::123:0:0:ab\r\n0000:0000:0000:0000:0000:0000:0000:0001
+    ==&gt; ::1\r\n0000:0000:000a:0000:0000:0000:0000:0000 ==&gt; 0:0:a::\r\n0000:0000:0000:0000:0000:0000:0000:0000
+    ==&gt; ::\r\n\r\n</pre>\n\t"
+  :code: "compress :: String -&gt; String\ncompress = showAbbr . grouping . split\n\nshowAbbr
+    :: [Either Int String] -&gt; String\nshowAbbr e = xs\n  where \n    (m,xs) = f
+    True True e\n    f _ b []            = (0,\"\")\n    f _ b (Right x :[]) = (0,':':x)\n
+    \   f t b (Left  k :[]) = (k,if b then \"::\" else \":0\")\n    f t b (Right x
+    :ys) \n      = case f False b ys of\n          (n,zs) -&gt; (n,foldr (:) zs (if
+    t then x else ':':x))\n    f t b (Left  k :ys)\n      = let b' = m == k\n        in
+    case f False (not b') ys of\n             (n,zs) -&gt; (max k n\n                       ,let
+    zs' = foldr (++) zs (replicate k \":0\")\n                        in if b &amp;&amp;
+    b' then ':':zs\n                           else if t then tail zs' else zs')\n\ngrouping
+    :: [String] -&gt; [Either Int String]\ngrouping [] = []\ngrouping (\"\":xs) =
+    case grouping xs of\n                     Left k:ys -&gt; Left (k+1):ys\n                     zs
+    \       -&gt; Left 1:zs\ngrouping (x :xs) = Right x : grouping xs\n\nsplit ::
+    String -&gt; [String]\nsplit \"\" = []\nsplit xs = case break (':'==) xs of\n
+    \ (ys,\"\")   -&gt; dropWhile ('0'==) ys:[]\n  (ys,_:zs) -&gt; dropWhile ('0'==)
+    ys:split zs\n\nif' :: Bool -&gt; a -&gt; a -&gt; a\nif' = toBoole\ntoBoole True
+    \ = const\ntoBoole False = flip const\n\n------------------------------------------------------------------------------\n\nsample
+    1 = \"1230:5670:0000:0000:0123:0000:0000:00ab\"\nsample 2 = \"0000:0000:0000:0000:0000:0000:0000:0001\"\nsample
+    3 = \"0000:0000:000a:0000:0000:0000:0000:0000\"\nsample 4 = \"0000:0000:0000:0000:0000:0000:0000:0000\"\n\nmain
+    = mapM_ (putStrLn . disp . sample) [1..4]\ndisp s = s ++ \" ==&gt; \" ++ compress
+    s\n"
+  :tags:
+  - ghc-6.10.1
+  :references:
+    :url: 
+    :title: 
+- :id: '8389'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8389
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2009/01/23 10:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    ipv6Compress xs = concat $ (take 2 =&lt;&lt;)
+      $ group $ concat $ intersperse [":"]
+      $ map (maybe [":",":"] ((:[]).($"").showHex))
+      $ snd =&lt;&lt; cs ++ [(0,[Nothing])] ++ ds  where
+      ys = map (\ts -&gt; (length ts, map Just ts))
+        $ groupBy (\a b -&gt; a==0 &amp;&amp; b==0)
+        $ map (fst.head.readHex) $ words
+        $ map (\c -&gt; if c == ':' then ' ' else c) xs
+      m = maximum $ map fst ys
+      (cs,_:ds) = span ((&lt;m).fst) ys
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8391'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8391
+  :user_name: matori
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/1000/
+  :language: sed
+  :time: 2009/01/24 10:09 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>初投稿。\n関数ではありませんがsedで。</p>\n\n\t"
+  :code: "$ cat ipv6addr-example* ; cat ipv6addr-example* \n　　| sed \"s/00*\\([0-9a-f]\\)/\\1/g;
+    s/^0//; s/\\(:\\)0:0\\(:0\\)*/::/; s/:::/::/\"\n1230:5670:0000:0000:0123:0000:0000:00ab\n0000:0000:0000:0000:0000:0000:0000:0001\n0001:0000:0000:0000:0000:0000:0000:0000\n1230:5670::123:0:0:ab\n::1\n1::\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8429'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8429
+  :user_name: t_noborio
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/729/
+  :language: Other
+  :time: 2009/02/01 18:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>creeperさんのご指摘の通り動作しなかったので修正しました</p>\n\n\t"
+  :code: |
+    import re
+
+    def ipv6_compress(ip):
+        return re.sub("(^|:)0(:0)+", ":", ":".join(
+                [x for x in re.split("(?:^0{,3}|:0{,3})", ip) if x != '']), 1)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8500'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8500
+  :user_name: leque
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2009/02/13 14:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>場当たり的で美しくないですが。</p>\n\n\t"
+  :code: |
+    (import (rnrs)
+            (srfi :13)
+            (srfi :14)
+            (srfi :26))
+
+    (define (ipv6-compress str)
+      (define (f xs)
+        (let loop ((xs xs) (i 0) (n 0) (pos #f) (m 0))
+          (cond ((null? xs) pos)
+                ((string-null? (car xs))
+                 (loop (cdr xs) i (+ n 1) pos m))
+                (else
+                 (loop (cdr xs) (+ i 1) 0 (if (&gt; n m) i pos) (max m n))))))
+      (define (g xs n)
+        (let loop ((xs xs) (i 0) (rs '()))
+          (cond ((null? xs)
+                 (reverse rs))
+                ((string-null? (car xs))
+                 (if (and n (= i n))
+                     (loop (cdr xs) i rs)
+                     (loop (cdr xs) i (cons "0" rs))))
+                (else
+                 (loop (cdr xs) (+ i 1)
+                       (if (and n (= i n))
+                           (cons* (car xs) ":" rs)
+                           (cons (car xs) rs)))))))
+      (let* ((ws (map (cut string-trim &lt;&gt; #\0)
+                      (string-tokenize str char-set:hex-digit)))
+             (n (f ws))
+             (ws* (g ws n)))
+        (call-with-string-output-port
+          (lambda (p)
+            (display (car ws*) p)
+            (for-each (lambda (w)
+                        (unless (string=? w ":")
+                          (display ":" p))
+                        (display w p))
+                      (cdr ws*))))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8722'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8722
+  :user_name: silverwire
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/646/
+  :language: Batchfile
+  :time: 2009/03/25 06:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">バッチで。\r\n\r\n  e.g.\r\n    C:\\&gt;226.bat
+    1230:5670:0000:0000:0123:0000:0000:00ab\r\n    1230:5670::123:0:0:ab\r\n    \r\n
+    \   C:\\&gt;226.bat 0000:0000:0000:0000:0000:0000:0000:0001\r\n    ::1</pre>\n\t"
+  :code: "@echo off\n  setlocal enabledelayedexpansion\n    set #=0\n    set i=0\n
+    \   set t=\n    set v=%~1\n    \n    if \"%v%\" == \"\" (echo usage: %~n0 IPV6_ADDRESS
+    &gt;&amp;2) &amp; exit /b 1\n    \n    for %%v in (%v::= %) do (\n      set /a
+    #+=1\n      set v[!#!]=%%v\n    )\n    \n    if %#% lss 8 (echo usage: %~n0 IPV6_ADDRESS
+    &gt;&amp;2) &amp; exit /b 1\n    \n    for /l %%i in (1,1,%#%) do (\n      set
+    /a x=0x!v[%%i]!\n      call :X !x! v[%%i]\n    )\n    \n    for /l %%i in (1,1,%#%)
+    do (\n      if !v[%%i]! equ 0 (set i=%%i) &amp; goto BREAK_1\n      if %%i gtr
+    1 set t=!t!:\n      set t=!t!!v[%%i]!\n    )\n    :BREAK_1\n    \n    for /l %%i
+    in (%i%,1,%#%) do (\n      if !v[%%i]! neq 0 goto BREAK_2\n      set i=%%i\n    )\n
+    \   :BREAK_2\n    \n    if %i% gtr 0 (\n      set t=!t!:\n      if %i% equ %#%
+    (\n        set t=!t!:\n      ) else (\n        set /a i+=1\n        for /l %%i
+    in (!i!,1,%#%) do set t=!t!:!v[%%i]!\n      )\n    )\n    \n    echo %t%\n  endlocal
+    &amp; exit /b 0\ngoto :EOF\n\n:X\n  setlocal enabledelayedexpansion\n    set m=\n
+    \   set q=%~1\n    set t=\n    set x=0123456789abcdef\n    \n    :_\n      set
+    /a m=%q%%%16\n      set /a q=%q%/16\n      set t=!x:~%m%,1!%t%\n    if %q% gtr
+    0 goto _\n  endlocal &amp; set %~2=%t%\ngoto :EOF\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8727'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8727
+  :user_name: 匿名
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2009/03/26 01:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Linuxで動きます。普通にライブラリ（？）を使いました。inet_ntopが必ず短縮したものを返すかどうかmanには記載されていませんでしたが、私のLinux(gcc
+    4.3.0)では短縮されています。</p>\n\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;netinet/in.h&gt;
+    #include &lt;arpa/inet.h&gt;
+
+    const char *ipv6_compress(const char *str, char *buffer, const int bufferSize)
+    {
+            struct in6_addr addr;
+            if (inet_pton(AF_INET6,str,&amp;addr)==1) {
+                    return inet_ntop(AF_INET6,&amp;addr,buffer,bufferSize);
+            }
+            return buffer;
+    }
+    const char *ipv6_uncompress(const char *str, char *buffer, const int bufferSize)
+    {
+            struct in6_addr addr;
+            if (inet_pton(AF_INET6,str,&amp;addr)==1) {
+                    int pos,writesize;
+                    for (pos=0,writesize=0;pos &lt; 16 &amp;&amp; writesize &lt; bufferSize; pos++) {
+                            writesize += sprintf(buffer+writesize,"%02x",addr.s6_addr[pos]);
+                            if ((pos+1) % 2 == 0) {
+                                    buffer[writesize++] = ':';
+                            }
+                    }
+                    buffer[writesize-1] = '\0';
+            }
+            return buffer;
+    }
+
+    int main(int argc, char *argv[])
+    {
+            char buffer[INET6_ADDRSTRLEN];
+            puts(ipv6_compress(argv[1],buffer,sizeof(buffer)));
+            puts(ipv6_uncompress(argv[1],buffer,sizeof(buffer)));
+            return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8921'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/8921
+  :user_name: lunlumo
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/813/
+  :language: Scala
+  :time: 2009/05/08 13:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>　行けてないかもですが...。</p>\n\n\t"
+  :code: |
+    object CompressIpv6Address {
+        def compress(s:String):String = s.split(':').map(
+                e =&gt; e.take(e.size - 1).dropWhile(_ == '0').mkString("") + e.last
+            ).mkString(":").replaceFirst("(^|:)0(:0)+(:|$)", "::")
+        def decompress(s:String):String =
+            (s.split("::", 2) match {
+                case Array(a) =&gt; a
+                case Array(h,t) =&gt; (
+                    h::List.make(8 - s.split("::?").filter(_.size &gt; 0).size, "0"):::List(t)
+                ).filter(_.size &gt; 0).mkString(":")
+            }).split(":").map(e =&gt; "0" * (4 - e.length) + e).mkString(":")
+        def main(args:Array[String]):Unit = args match {
+                case Array(a) =&gt; println(compress(a))
+                case Array("-d", a) =&gt; println(decompress(a))
+                case _ =&gt; println("usage: CompressIpv6Address [-d] ADDRESS")
+            }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9038'
+  :parent_id: '226'
+  :url: http://ja.doukaku.org/comment/9038
+  :user_name: Songmu
+  :user_url: /web/20090612205550/http://ja.doukaku.org/user/763/
+  :language: Perl
+  :time: 2009/06/02 22:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "sub compress_ipv6{\n    my $ipv6 = shift;\n    return unless $ipv6 =~ /^(?:[0-9a-fA-F]{4}:){7}[0-9a-fA-F]{4}$/;\n
+    \   \n    my @sections = split ':',$ipv6;\n    s/^0{1,3}// for @sections;\n    $ipv6
+    = join ':',@sections;\n    $ipv6 =~ s/(:0){2,}/:/;\n    $ipv6 =~ s/^0::/::/;\n
+    \   return $ipv6;\n}\nsub expand_ipv6{\n    my $ipv6 = shift;\n    return if $ipv6
+    =~ /[^0-9a-fA-F:]/;\n    return if $ipv6 =~ /[0-9a-fA-F]{5}/;\n    \n    if($ipv6
+    =~ /::/){\n        $ipv6 =~ s/^0::/::/;\n        $ipv6 =~ s/::0$/::/;\n        my
+    $cnt = 0;\n        $cnt++ while $ipv6 =~ /:/g;\n        $cnt = 8 - $cnt;\n        my
+    $replace_str = ':0'x$cnt . ':';\n        $ipv6 =~ s/::/$replace_str/;\n        $ipv6
+    .= '0'        if $ipv6 =~ /:$/;\n        $ipv6 = '0' . $ipv6 if $ipv6 =~ /^:/;\n
+    \   }\n    \n    my @sections = split ':',$ipv6;\n    return if $#sections !=
+    7;\n    \n    $_ = sprintf(\"%04s\",$_) for @sections;\n    $ipv6 = join ':',@sections;\n
+    \   return $ipv6;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

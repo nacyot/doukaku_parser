@@ -1,0 +1,699 @@
+---
+:id: '11'
+:title: 入出力の中継
+:comments:
+- :id: '3367'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/3367
+  :user_name: にしお
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/06 06:48 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\r\n\t  以下のようなプログラムを作ってください。\r\n<ul>\n<li>\n<span>コマンドライン引数を二つ取り、引数で指定されたプログラムを起動する(以下A,
+    B)</span>\r\n</li>\n<li>\n<span>Aの標準出力をBの標準入力へ、Bの標準出力をAの標準入力へ中継する。</span>\r\n</li>\n<li>\n<span>A,
+    Bどちらかが終了した場合はもう片方を終了して自身も終了する。 </span>\r\n</li>\n</ul>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '229'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/229
+  :user_name: id:nekoruri
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/111/
+  :language: Perl
+  :time: 2007/07/06 08:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ファイルハンドル難しい＞＜\n\t"
+  :code: |
+    #!/usr/local/bin/perl
+
+    use strict;
+    use warnings;
+
+    use IPC::Open2;
+    use POSIX qw( :sys_wait_h );
+    use Fcntl qw( F_GETFL F_SETFL O_NONBLOCK );
+
+    my ( $fd_from_a, $fd_to_a, $fd_from_b, $fd_to_b );
+
+    $SIG{CHLD} = \&amp;handler_SIGCHLD;
+
+    my @pids;
+
+    push @pids, open2( $fd_from_a, $fd_to_a, '/usr/pkg/sbin/nc -l -p 60001' );
+    push @pids, open2( $fd_from_b, $fd_to_b, '/usr/pkg/sbin/nc -l -p 60002' );
+
+    my $old_flags = fcntl $fd_from_a, F_GETFL, 0;
+    fcntl $fd_from_a, F_SETFL, $old_flags | O_NONBLOCK;
+
+    $old_flags = fcntl $fd_from_b, F_GETFL, 0;
+    fcntl $fd_from_b, F_SETFL, $old_flags | O_NONBLOCK;
+
+    while(1) {
+            sleep 1;
+            print $fd_to_b ( &lt;$fd_from_a&gt; );
+            print $fd_to_a ( &lt;$fd_from_b&gt; );
+    }
+
+    kill 1, @pids;
+
+    sub handler_SIGCHLD
+    {
+            kill 1, @pids;
+            exit;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '230'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/230
+  :user_name: id:nekoruri
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/111/
+  :language: Perl
+  :time: 2007/07/06 08:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  あうあう、プログラムハードコードしてた＞＜\n\t"
+  :code: |
+    #!/usr/local/bin/perl
+
+    use strict;
+    use warnings;
+
+    use IPC::Open2;
+    use POSIX qw( :sys_wait_h );
+    use Fcntl qw( F_GETFL F_SETFL O_NONBLOCK );
+
+    my ( $fd_from_a, $fd_to_a, $fd_from_b, $fd_to_b );
+
+    $SIG{CHLD} = \&amp;handler_SIGCHLD;
+
+    my @pids;
+
+    if ( @ARGV &lt; 2 ) {
+            die "$0 &lt;cmd1&gt; &lt;cmd2&gt;\n";
+    }
+
+    push @pids, open2( $fd_from_a, $fd_to_a, $ARGV[0] );
+    push @pids, open2( $fd_from_b, $fd_to_b, $ARGV[1] );
+
+    my $old_flags = fcntl $fd_from_a, F_GETFL, 0;
+    fcntl $fd_from_a, F_SETFL, $old_flags | O_NONBLOCK;
+
+    $old_flags = fcntl $fd_from_b, F_GETFL, 0;
+    fcntl $fd_from_b, F_SETFL, $old_flags | O_NONBLOCK;
+
+    while(1) {
+            sleep 1;
+            print $fd_to_b ( &lt;$fd_from_a&gt; );
+            print $fd_to_a ( &lt;$fd_from_b&gt; );
+    }
+
+    kill 1, @pids;
+
+    sub handler_SIGCHLD
+    {
+            kill 1, @pids;
+            exit;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '310'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/310
+  :user_name: 匿名
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/07/07 11:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  正統的にやってみたつもりです\n\t"
+  :code: |
+    import java.io.*;
+
+    public class Sample extends Thread {
+        Process pIn, pOut;
+
+        public static void main(String[] args) throws IOException {
+            Runtime r = Runtime.getRuntime();
+            Process p1 = r.exec(args[0]);
+            Process p2 = r.exec(args[1]);
+            new Sample(p1, p2).start();
+            new Sample(p2, p1).start();
+        }
+
+        Sample (Process in, Process out) {
+            pIn = in;
+            pOut = out;
+        }
+
+        public void run() {
+            try {
+                InputStream in = pIn.getInputStream();
+                OutputStream out = pOut.getOutputStream();
+                int c;
+                while ((c = in.read()) != -1) {
+                    out.write(c);
+                }
+                pIn.waitFor();
+                pOut.destroy();
+            }
+            catch (Exception e) {
+    //          e.printStackTrace();
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '335'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/335
+  :user_name: sgk
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/161/
+  :language: Python
+  :time: 2007/07/08 06:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">楽をしようとsubprocessモジュールを使ったけど、どうもかわいくない。\r\nまじめにselectでもした方がよかったかも。</pre>\n\t"
+  :code: |
+    import sys, os, signal
+    from subprocess import Popen, PIPE
+
+    p1 = Popen(sys.argv[1], shell=True, stdin=PIPE, stdout=PIPE)
+    p2 = Popen(sys.argv[2], shell=True, stdin=p1.stdout, stdout=PIPE)
+    try:
+      while p1.poll() == None and p2.poll() == None:
+        p1.stdin.write(p2.stdout.readline())
+    except IOError:
+      pass
+    if p1.poll() == None:
+      os.kill(p1.pid, signal.SIGTERM)
+      p1.wait()
+    if p2.poll() == None:
+      os.kill(p2.pid, signal.SIGTERM)
+      p2.wait()
+  :tags:
+  - Python2.4
+  - Python2.5
+  :references:
+    :url: 
+    :title: 
+- :id: '339'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/339
+  :user_name: sgk
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/161/
+  :language: Python
+  :time: 2007/07/08 07:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">SIGCHLDがかわいくない。</pre>\n\t"
+  :code: |
+    import sys, os, signal
+    from subprocess import Popen, PIPE
+
+    p1 = Popen(sys.argv[1], shell=True, stdin=PIPE, stdout=PIPE)
+    p2 = Popen(sys.argv[2], shell=True, stdin=p1.stdout, stdout=p1.stdin)
+
+    def cleanup(sig, stack):
+      if p1.poll() == None:
+        os.kill(p1.pid, signal.SIGTERM)
+      if p2.poll() == None:
+        os.kill(p2.pid, signal.SIGTERM)
+
+    signal.signal(signal.SIGCHLD, cleanup)
+    signal.pause()
+  :tags:
+  - Python2.4
+  - Python2.5
+  :references:
+    :url: 
+    :title: 
+- :id: '433'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/433
+  :user_name: cats
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/07/10 05:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  確認用にファイルに出力している\n\t"
+  :code: |
+    using System;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Reflection;
+    using System.Threading;
+    class Program
+    {
+      static void Main(string[] args)
+      {
+        Assembly asm = Assembly.GetExecutingAssembly();
+        Directory.SetCurrentDirectory(Path.GetDirectoryName(asm.Location));
+        string exe = Path.GetFileName(asm.Location);
+        if (args.Length == 0)
+        {
+          Process.Start(asm.Location, string.Format("\"{0} -1\" \"{0} -2\"", exe));
+        }
+        else if (args.Length == 1)
+        {
+          if (args[0] == "-1")
+          {
+            using (StreamWriter sw = new StreamWriter("res1.txt"))
+            {
+              Console.WriteLine("一郎: こんちは");
+              sw.WriteLine("一郎: こんちは");
+              string s = Console.ReadLine();
+              Console.WriteLine("一郎: よろしく &gt; " + s);
+              sw.WriteLine("一郎: よろしく &gt; " + s);
+            }
+          }
+          else
+          {
+            using (StreamWriter sw = new StreamWriter("res2.txt"))
+            {
+              string s = Console.ReadLine();
+              Console.WriteLine("二郎: よろしく &gt; " + s);
+              sw.WriteLine("二郎: よろしく &gt; " + s);
+            }
+          }
+        }
+        else if (args.Length == 2)
+        {
+          Process p1 = new Process();
+          Process p2 = new Process();
+          string[] ss1 = args[0].Split();
+          string[] ss2 = args[1].Split();
+          p1.StartInfo.FileName = ss1[0];
+          p2.StartInfo.FileName = ss2[0];
+          p1.StartInfo.Arguments = string.Join(" ", ss1, 1, ss1.Length - 1);
+          p2.StartInfo.Arguments = string.Join(" ", ss2, 1, ss1.Length - 1);
+          p1.StartInfo.UseShellExecute = p2.StartInfo.UseShellExecute = false;
+          p1.StartInfo.RedirectStandardInput = p1.StartInfo.RedirectStandardOutput = true;
+          p2.StartInfo.RedirectStandardInput = p2.StartInfo.RedirectStandardOutput = true;
+          p1.Start();
+          p2.Start();
+          new Thread(delegate()
+          {
+            string s;
+            while ((s = p1.StandardOutput.ReadLine()) != null) p2.StandardInput.WriteLine(s);
+          }).Start();
+          new Thread(delegate()
+          {
+            string s;
+            while ((s = p2.StandardOutput.ReadLine()) != null) p1.StandardInput.WriteLine(s);
+          }).Start();
+          p1.WaitForExit();
+          p2.WaitForExit();
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '476'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/476
+  :user_name: 匿名
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2007/07/10 11:48 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  本来はPIPEを作ってやるべきだろうと思い直しました。Javaでは無理そうなので、C を使います。\n\t"
+  :code: "#include &lt;stdlib.h&gt;\n#include &lt;unistd.h&gt;\n#include &lt;sys/types.h&gt;\n#include
+    &lt;unistd.h&gt;\n#include &lt;sys/wait.h&gt;\n#include &lt;signal.h&gt;\n\nint
+    main(int argc, char *argv[])\n{\n  int p1[2], p2[2];\n  pid_t pid1, pid2, p;\n
+    \ int stat;\n\n  pipe(p1);\n  pipe(p2);\n  pid1 = fork();\n  if (pid1 == 0) {
+    // child process 1\n    dup2(p1[0], 0);\n    close(p1[0]);\n    close(p1[1]);\n
+    \   dup2(p2[1], 1);\n    close(p2[0]);\n    close(p2[1]);\n    execl(argv[1],
+    argv[1], NULL);\n    exit(2);\n  }\n  pid2 = fork();\n  if (pid2 == 0) { // child
+    process 2\n    dup2(p2[0], 0);\n    close(p2[0]);\n    close(p2[1]);\n    dup2(p1[1],
+    1);\n    close(p1[0]);\n    close(p1[1]);\n    execl(argv[2], argv[2], NULL);\n
+    \   exit(2);\n  }\n  \n  close(p2[0]);  // parent process\n  close(p2[1]);\n  close(p1[0]);\n
+    \ close(p1[1]);\n  \n  p = wait(&amp;stat);\n  if (p == pid1)\n    kill(pid2,
+    SIGINT);\n  else if (p == pid2)\n    kill(pid1, SIGINT);\n  p = wait(&amp;stat);\n
+    \ return (0);\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '484'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/484
+  :user_name: ココサブ
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/24/
+  :language: C
+  :time: 2007/07/10 12:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  UNIX系(POSIX互換?)じゃないと動かないと思います。\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;unistd.h&gt;
+    #include &lt;sys/types.h&gt;
+    #include &lt;sys/wait.h&gt;
+    #include &lt;signal.h&gt;
+
+    int main(int argc, char *argv[])
+    {
+            pid_t a, b, c;
+            int pipe_a2b[2];
+            int pipe_b2a[2];
+            int status;
+            char *param[2] = {NULL, NULL};
+
+            if (pipe(pipe_a2b) == -1) { perror("pipe_a2b"); }
+            if (pipe(pipe_b2a) == -1) { perror("pipe_b2a"); }
+
+            a = fork();
+            param[0] = argv[1];
+            if (a == 0) {
+                    close(pipe_a2b[0]);
+                    close(pipe_b2a[1]);
+                    dup2(pipe_b2a[0], 0);
+                    dup2(pipe_a2b[1], 1);
+                    close(pipe_b2a[0]);
+                    close(pipe_a2b[1]);
+                    execvp(argv[1], param);
+            }
+
+            b = fork();
+            param[0] = argv[2];
+            if (b == 0) {
+                    close(pipe_b2a[0]);
+                    close(pipe_a2b[1]);
+                    dup2(pipe_a2b[0], 0);
+                    dup2(pipe_b2a[1], 1);
+                    close(pipe_a2b[0]);
+                    close(pipe_b2a[1]);
+                    execvp(argv[2], param);
+            }
+
+            c = wait(&amp;status);
+            if (a == c) {
+                    kill(b, SIGTERM);
+            }
+            else {
+                    kill(a, SIGTERM);
+            }
+
+            return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '615'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/615
+  :user_name: 匿名
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/07/12 07:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  SIGINTではなくSIGTERMを使うべきらしい……\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '716'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/716
+  :user_name: shiro
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/07/13 04:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ロバストにするのはもっと面倒だけど。\n\t"
+  :code: "(use gauche.threads)\n(use gauche.process)\n(use srfi-42)\n\n(define (main
+    args)\n  (unless (= (length args) 3) (error \"needs two arguments\"))\n\n  (let*
+    ((ps (map (cut run-process &lt;&gt; :input :pipe :output :pipe) (cdr args)))\n
+    \        (is (map process-output ps))\n         (os (map process-input ps)))\n\n
+    \   (define (finish sig)\n      (do-ec (: p ps)\n             (guard (e (else
+    #t)) (process-send-signal p SIGTERM))) (exit 0))\n    \n    (do-ec (: ss (list
+    is os)) (: p ss) (set! (port-buffering p) :none))\n    (set-signal-handler! SIGCHLD
+    finish)\n    (set-signal-handler! SIGPIPE finish)\n    (do-ec (:parallel (: i
+    is) (: o (reverse os)))\n           (thread-start! (make-thread (lambda () (copy-port
+    i o)))))\n    (sys-pause)))\n"
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '731'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/731
+  :user_name: sumim
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/07/13 09:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">OSProcess インストール済みの Squeak Smalltalk で。</pre>\n\t"
+  :code: "| pipe1 pipe2 procA procB semaA semaB |\nOSProcess accessor canAccessSystem
+    ifFalse: [^self].\npipe1 := OSPipe nonBlockingPipe.\npipe2 := OSPipe nonBlockingPipe.\nprocA
+    := UnixProcess\n   forkJob: 'a'\n   arguments: nil\n   environment: nil\n   descriptors:
+    {pipe1 reader. pipe2 writer. nil}.\nprocB := UnixProcess\n   forkJob: 'b'\n   arguments:
+    nil\n   environment: nil\n   descriptors: {pipe2 reader. pipe1 writer. nil}.\nsemaA
+    := Semaphore new.\nsemaB := Semaphore new.\n[[Processor yield. procA isComplete]
+    whileFalse. procB sigterm. semaA signal] fork.\n[[Processor yield. procB isComplete]
+    whileFalse. procA sigterm. semaB signal] fork.\nsemaA wait.\nsemaB wait.\npipe1
+    close.\t\npipe2 close\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '775'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/775
+  :user_name: shuyo
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/84/
+  :language: Ruby
+  :time: 2007/07/13 17:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Rubyを100%にするためにとりあえず。あまりまじめに書いてません……\n\t"
+  :code: |
+    def pipe(f, g, th=nil)
+      while line = g.gets
+        f.puts line
+      end
+      th.exit if th
+    end
+
+    cmd1, cmd2 = ARGV
+    f1 = IO.popen(cmd1, "r+")
+    f2 = IO.popen(cmd2, "r+")
+    begin
+      th1 = Thread.new { pipe f1, f2 }
+      th2 = Thread.new { pipe f2, f1, th1 }
+      th1.join
+    rescue
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '847'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/847
+  :user_name: lufia
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/242/
+  :language: awk
+  :time: 2007/07/14 14:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">厳密にはプロセス監視してないけど、動作は同じということでひとつ。。\r\nBが終了した場合の動作は、OSに依存するかもしれない。</pre>\n\t"
+  :code: "BEGIN {\n\tA = ARGV[1]\n\tB = ARGV[2]\n\tpipe(A, B)\n}\nfunction pipe(from,
+    to) {\n\twhile(from | getline &gt; 0)\n\t\tprint | to\n\tclose(from)\n\tclose(to)\n}\n"
+  :tags:
+  - plan9
+  :references:
+    :url: 
+    :title: 
+- :id: '860'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/860
+  :user_name: onjo
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/235/
+  :language: Common
+  :time: 2007/07/14 18:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  AllegroCL + Windows ですが、fork もシグナルも無いのでこれくらいで許してください…\n\t"
+  :code: "(defun pipe (cmd1 cmd2)\n  (let ((A (run-shell-command cmd1 :input :stream
+    :output :stream :separate-streams nil :wait nil))\n\t(B (run-shell-command cmd2
+    :input :stream :output :stream :separate-streams nil :wait nil))\n\t(continue?
+    T))\n    (labels ((copy-stream (from to)\n\t       (mp:waiting-for-input-available
+    (from)\n\t\t (loop while continue?\n\t\t       for c = (ignore-errors (read-char
+    from nil :eof)) do\n\t\t      (when (eql c :eof)\n\t\t\t(close to)\n\t\t\t(setf
+    continue? nil)\n\t\t\t(return))\n\t\t      (write-char c to)\n\t\t      (force-output
+    to)))))\n      (mp:process-run-function \"A -&gt; B\" #'copy-stream A B)\n      (mp:process-run-function
+    \"B -&gt; A\" #'copy-stream B A)\n      (loop while continue? do (mp:process-allow-schedule)))))\n\n(pipe
+    \"c:\\\\usr\\\\bin\\\\cat.exe z:\\\\home\\\\.wgetrc\"\n\t   \"perl -MIO::File
+    -e \\\"$io=IO::File-&gt;new('&gt;c:\\\\home\\\\output.txt');while(&lt;&gt;){print
+    $_;print $io $_};exit 0;\\\"\")\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '939'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/939
+  :user_name: yuin
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/07/15 16:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">むずかしい・・・</pre>\n\t"
+  :code: "import java.io._\n\nclass LoopTread(in:Process,out:Process) extends Thread
+    {\n  val _pin = in\n  val _pout = out\n\n  override def run = {\n    val in =
+    _pin.getInputStream\n    val out = _pout.getOutputStream\n    var c = in.read\n
+    \   def lambda():Unit =  {\n      try { _pin.exitValue }catch {\n        case
+    ex:IllegalThreadStateException =&gt; \n          in.read match {\n            case
+    -1 =&gt; lambda\n            case i  =&gt; out.write(i);lambda\n          }\n
+    \     }\n      _pin.waitFor\n      _pout.destroy\n    };lambda\n  }\n}\n\ndef
+    loopProcess(a:String, b:String) = {\n  val p1 = Runtime.getRuntime.exec(a)\n  val
+    p2 = Runtime.getRuntime.exec(b)\n  new LoopTread(p1, p2).start\n  new LoopTread(p2,
+    p1).start\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '991'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/991
+  :user_name: PHO
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/69/
+  :language: Haskell
+  :time: 2007/07/16 10:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">手抜きして要らないfd閉じなかったけど\r\n本当は閉じなきゃ駄目かも。</pre>\n\t"
+  :code: "import System\nimport System.Posix.IO\nimport System.Posix.Process\nimport
+    System.Posix.Signals\nimport System.Posix.Types\n\nmain = do [cmdA, cmdB] &lt;-
+    getArgs\n\n          (rPipeAtoB, wPipeAtoB) &lt;- createPipe\n          (rPipeBtoA,
+    wPipeBtoA) &lt;- createPipe\n          \n          pidA &lt;- runChild cmdA rPipeBtoA
+    wPipeAtoB\n          pidB &lt;- runChild cmdB rPipeAtoB wPipeBtoA\n\n          Just
+    (pid, _) &lt;- getAnyProcessStatus True False\n          signalProcess softwareTermination
+    (if pid == pidA then\n                                                 pidB\n
+    \                                            else\n                                                 pidA)\n\nrunChild
+    :: String -&gt; Fd -&gt; Fd -&gt; IO ProcessID\nrunChild cmd rPipe wPipe\n    =
+    forkProcess $\n      do dupTo rPipe stdInput\n         dupTo wPipe stdOutput\n
+    \        executeFile cmd True [] Nothing\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1731'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/1731
+  :user_name: tomatsu
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/323/
+  :language: Pnuts
+  :time: 2007/08/02 13:26 GMT
+  :vote_count: '3'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    function relay(A, B){
+      rt = Runtime.getRuntime()
+      a = rt.exec(A)
+      b = rt.exec(B)
+      t1 = fork({-&gt;read(a.inputStream, b.outputStream); a.waitFor(); b.destroy() })
+      t2 = fork({-&gt;read(b.inputStream, a.outputStream); b.waitFor(); a.destroy() })
+      t1.join()
+      t2.join()
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2800'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/2800
+  :user_name: matyr
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/09/02 16:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t   Java による他の投稿とほぼ同じ内容。\r<br> WSH での挑戦は atEndOfStream が挙動不審なため断念。\n\t"
+  :code: |
+    function pipe(i, o){
+      for(var is = i.inputStream, os = o.outputStream, b; (b = is.read()) != -1; os.write(b));
+      os.close();
+      o.waitFor();
+      i.destroy();
+    }
+    if(arguments.length &lt; 2) quit();
+    with(java.lang.Runtime.runtime) var pp = [exec(arguments[0]), exec(arguments[1])];
+    spawn(function(){ pipe(pp[0], pp[1]) });
+    spawn(function(){ pipe(pp[1], pp[0]) });
+  :tags:
+  - Rhino
+  :references:
+    :url: 
+    :title: 
+- :id: '6330'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/6330
+  :user_name: mad
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/418/
+  :language: Erlang
+  :time: 2008/05/24 12:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">erlang勉強中です。\r\n\r\n$ erlc ipc.erl\r\n$ erl
+    -noshell -s ipc pipe \"command1\" \"command2\"\r\n\r\nと呼び出します。エラー処理,後処理等は一切省いてます。</pre>\n\t"
+  :code: "-module(ipc).\n-export([pipe/1]).\n\npipe([Cmd1, Cmd2]) -&gt;\n    loop(\n
+    \       open_port({spawn, Cmd1}, [in]), \n        open_port({spawn, Cmd2}, [out])\n
+    \   ).\n\nloop(P1, P2) -&gt;\n    receive\n        {P1, {data, D}} -&gt;\n            port_command(P2,
+    D),\n            loop(P1, P2)\n    end.\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '7960'
+  :parent_id: '11'
+  :url: http://ja.doukaku.org/comment/7960
+  :user_name: emasaka
+  :user_url: /web/20090106035232/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/11/06 07:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>FIFO（名前つきパイプ）を使いました。</p>\n\n\t"
+  :code: |
+    #!/bin/bash
+    cmd_a=$1
+    cmd_b=$2
+
+    PIPE_B2A=$(mktemp -u /tmp/pipe_b2a.XXXXXXXXXX)
+    trap "rm -f $PIPE_B2A; exit" EXIT
+    mkfifo $PIPE_B2A
+
+    $cmd_a &lt; $PIPE_B2A | $cmd_b &gt; $PIPE_B2A
+  :tags: []
+  :references:
+    :url: 
+    :title: 

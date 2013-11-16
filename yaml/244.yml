@@ -1,0 +1,723 @@
+---
+:id: '244'
+:title: ACLの制御
+:comments:
+- :id: '8707'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8707
+  :user_name: raynstard
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2009/03/22 22:23 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">通常、作成者以外は、読み書きができないファイルを新規作成してください。\r\n#
+    UNIX的にいうと「0600」のファイルです。\r\n\r\nすでに存在していた場合、新しい内容で上書きしてください。\r\n\r\nsymlinkアタック等を考慮する必要はありません。\r\n\r\n余裕のある人はファイルがすでに存在していた場合、\r\nパーミッションを変更してみてください。\r\n</pre>\r\n\t"
+  :code: ''
+  :tags:
+  - クックブック
+  - セキュリティ
+  :references:
+    :url: 
+    :title: 
+- :id: '8731'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8731
+  :user_name: silverwire
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/646/
+  :language: 
+  :time: 2009/03/26 22:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">バッチというよりは、もはや外部コマンドの使い方になってしまう\r\nのですが、 Windowsでは
+    cacls.exe (Change ACLS)を利用します。\r\n\r\nが、\r\n\r\n読み取り権限と書き込み権限だけ付与したはずなのに、後者を付与\r\nした段階で実行権限も付与されてしまいました。実行権限だけ無効\r\nにするといった細かい設定はxcacls.exeを利用しないとできないの\r\nかもしれません。\r\n\r\n
+    \ e.g.\r\n    :: ファイルを作成\r\n    C\\:&gt;(echo @date /t) &gt; #244.bat\r\n    \r\n
+    \   :: 読み取り権限を付与\r\n    C\\:&gt;echo y|cacls #244.bat /p USERDOMAIN\\username:r\r\n
+    \   \r\n    :: 書き込み権限を付与\r\n    C\\:&gt;echo y|cacls #244.bat /e /g USERDOMAIN\\username:w\r\n
+    \   \r\n    :: アクセス制御リストを確認\r\n    C\\:&gt;cacls #244.bat\r\n    C:\\#244.bat
+    USERDOMAIN\\username:(特殊なアクセス:)\r\n                                    READ_CONTROL\r\n
+    \                                   SYNCHRONIZE\r\n                                    FILE_GENERIC_WRITE\r\n
+    \                                   FILE_WRITE_DATA\r\n                                    FILE_APPEND_DATA\r\n
+    \                                   FILE_WRITE_EA\r\n                                    FILE_EXECUTE
+    \       ← ?\r\n                                    FILE_WRITE_ATTRIBUTES\r\n    \r\n
+    \   (別のユーザーでログオン)\r\n    \r\n    :: ファイルを読み込む\r\n    C\\:&gt;type #244.bat\r\n
+    \   アクセスが拒否されました。\r\n    \r\n    :: ファイルに書き込む\r\n    C\\:&gt;(echo @time /t) &gt;
+    #244.bat\r\n    アクセスが拒否されました。\r\n    \r\n    :: ファイルを実行\r\n    C\\:&gt;#244.bat\r\n
+    \   アクセスが拒否されました。\r\n\r\n# Windows XPで動作を確認しました。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8732'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8732
+  :user_name: 匿名
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2009/03/27 06:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    from __future__ import with_statement
+    import sys
+    import os
+    import ctypes
+    from ctypes.util import find_library
+
+    path = sys.argv[1]
+    fchmod = ctypes.cdll[find_library('c')].fchmod
+
+    with os.fdopen(os.open(path,
+                           os.O_CREAT|os.O_WRONLY|os.O_TRUNC,
+                           0600), 'w') as fp:
+        fchmod(fp.fileno(), 0600)
+        print &gt;&gt;fp, "message in a bottle"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8734'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8734
+  :user_name: nobsun
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2009/03/27 09:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">素朴な実装</pre>\n\t"
+  :code: |
+    import System.Directory
+    import System.Environment
+    import System.IO
+    import System.Posix.Files
+
+    main :: IO ()
+    main = getArgs &gt;&gt;= dispatch (f,g) doesFileExist . head &gt;&gt;= flip setFileMode mode
+      where f fp = return fp
+            g fp = openFile fp WriteMode &gt;&gt;= hClose &gt;&gt; return fp
+
+    mode = foldr unionFileModes nullFileMode [ownerReadMode,ownerWriteMode]
+
+    dispatch :: (a -&gt; IO b,a -&gt; IO b) -&gt; (a -&gt; IO Bool) -&gt; a -&gt; IO b
+    dispatch (f,g) p x = p x &gt;&gt;= \ q -&gt; if q then f x else g x
+  :tags:
+  - System.Posix.FIles
+  :references:
+    :url: 
+    :title: 
+- :id: '8735'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8735
+  :user_name: emasaka
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2009/03/27 15:23 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>お題のタイトルに則って、POSIX ACLを設定します。</p>\n<p>Linux 2.6 (POSIX ACL対応) +
+    ext3 FS (mountオプションにaclを指定) で動作確認しました。</p>\n\n\t"
+  :code: |
+    #!/bin/sh
+
+    filename=$1
+
+    if [ -e "$filename" ]; then
+        if [ -f "$filename" ]; then
+            chmod 600 "$filename"
+            setfacl -b "$filename"
+            setfacl -n -m u:$USER:rw "$filename"
+        else
+            echo "$filename is not file" 1&gt;&amp;2
+            exit 1
+        fi
+    else
+        tmpdir=$(umask 077; mktemp -d acl.XXXXXXXX)
+        (umask 077; touch "$tmpdir/$filename")
+        setfacl -n -m u:$USER:rw "$tmpdir/$filename"
+        mv "$tmpdir/$filename" .
+        rmdir $tmpdir
+    fi
+  :tags: []
+  :references:
+    :url: /web/20100628134446/http://www.itmedia.co.jp/enterprise/0403/06/epn01.html
+    :title: Linuxカーネル2.6で実現するACL
+- :id: '8736'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8736
+  :user_name: 匿名
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2009/03/28 11:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Java6で追加されたFileクラスのsetReadable, setWritableを使ってアクセス権を設定します。\n\t"
+  :code: |
+    import java.io.*;
+
+    public class Sample {
+
+        public static void main(String[] args) throws IOException {
+            File f = new File(args[0]);
+            if (!f.exists())
+                f.createNewFile();            // 無ければ新規に作る
+            f.setReadable(false, false);    // read権を全て削除
+            f.setReadable(true, true);        // ownerのread権のみ設定
+            f.setWritable(false, false);    // write権を全て削除
+            f.setWritable(true, true);        // ownerのwrite権のみ設定
+        }
+
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8742'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8742
+  :user_name: 匿名
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2009/03/29 00:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>お題には明記されていませんが、実行権を削除しろと言っているようにもとれるのでこちらも作ってみました。</p>\n\n\t"
+  :code: |
+    import java.io.*;
+
+    public class Sample {
+
+        public static void main(String[] args) throws IOException {
+            File f = new File(args[0]);
+            if (!f.exists())
+                f.createNewFile();            // 無ければ新規に作る
+            f.setExecutable(false, false);    // 実行権を全て削除
+            f.setReadable(false, false);    // read権を全て削除
+            f.setReadable(true, true);        // ownerのread権のみ設定
+            f.setWritable(false, false);    // write権を全て削除
+            f.setWritable(true, true);        // ownerのwrite権のみ設定
+        }
+
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8748'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8748
+  :user_name: sumim
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/03/29 11:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n<p>…というより、外部コマンドの実行ですが…^^;</p>\n\n\t"
+  :code: |
+    | path user |
+    path := '/path/to/a/file'.
+    (FileStream newFileNamed: path) close.
+    user := (OSProcess thisOSProcess waitForCommandOutput: 'echo $USER') withoutTrailingBlanks.
+    OSProcess thisOSProcess
+        waitForCommand: 'chmod 600 ', path;
+        waitForCommand: 'chmod +a "everyone deny read,write" ', path;
+        waitForCommand: 'chmod +a# 0 "', user, ' allow read,write" ', path
+  :tags:
+  - OSProcess
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '8753'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8753
+  :user_name: raynstard
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2009/03/30 06:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ども、raysntardです。\r\nバッチファイルですしそういうものじゃないでしょうか。\r\nwindows系なら「CREATOR
+    OWNER」の方でくるかなと思っていたのですが\r\n会社のPCで確認したら存在しませんでしたorz\r\n\r\nXPなら共通だと思っていたんだけどメーカーPCだとなかったりするみたいです^^；\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8754'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8754
+  :user_name: raynstard
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/127/
+  :language: C
+  :time: 2009/03/30 11:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">なんと、Linux系でもWindowsみたいなACL使えたのですね。\r\nしらなかったです。\r\nUnix系はふつうにchmodでパーミッションの変更しかできないと思っていました。\r\n\r\n知っていれば、パーミッションの問題で悩むこともへったのに～\r\n残念。\r\n\r\nとりあえず、下記は普通のパーミッション設定を行うだけのものです。\r\nACL版はただいま調査中\r\n\r\nchmod
+    を使っていないのはわざとです(笑\r\n\r\n// gcc -Wall  doukaku244.c</pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;string.h&gt;
+    #include &lt;unistd.h&gt;
+    #include &lt;fcntl.h&gt;
+
+    int main(int argc, char *argv[])
+    {
+      static const char *basename = "a.txt";
+      char filename[255] = "";
+      int fd;
+
+      /* とりあえずファイル作成 */
+      fd = open(basename, O_WRONLY | O_CREAT | O_EXCL | O_SYNC, 0600);
+      if( fd == -1 )
+      {
+        /* すでに存在していた場合、別名でとりあえず作成 */
+        snprintf(filename, sizeof(filename), "%s.%05d", basename, getpid());
+        printf("filename:%s\n", filename);
+        fd = open(filename, O_WRONLY | O_CREAT | O_SYNC, 0600);
+        if( fd == -1 )
+        {
+          printf("create file failed.\n");
+          return 1;
+        }
+      }
+
+      write(fd, filename, strlen(filename));
+      write(fd, "\n", 1);
+
+      /* クローズ、別名で作成した場合、正規の名前に変更する */
+      close(fd);
+      if( strlen(filename) != 0 )
+      {
+        unlink(basename);
+        rename(filename, basename);
+      }
+
+      return 0;
+    }
+    /* EOF */
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8755'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8755
+  :user_name: raynstard
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/127/
+  :language: C
+  :time: 2009/03/30 07:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">FreeBSD 7.1で動作を確認しました。\r\n// gcc (GCC) 4.2.1
+    20070719  [FreeBSD]\r\n\r\n最初、user以外を省略していたら\r\nEINVAL( invalid argument)になってしまってはまりました。\r\n\r\nまだ、開発中とのことなので業務ではまだ利用できないかもしれませんが\r\n使えるようになればパーミッションの問題で悩むことは減らせそうです。\r\n\r\ngcc
+    -Wall -std=c99 doukaku244_acl.c &amp;&amp; ./a.out\r\n$ getfacl b.txt\r\n# file:
+    b.txt\r\n# owner: raynstard\r\n# group: raynstard\r\nuser::rw-\r\nuser:kazuki:r--\r\ngroup::---\r\nmask::r--\r\nother::---</pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;unistd.h&gt;
+    #include &lt;sys/types.h&gt;
+    #include &lt;sys/acl.h&gt;
+    #include &lt;sys/param.h&gt;
+
+    #include &lt;string.h&gt;
+    #include &lt;fcntl.h&gt;
+
+    #include &lt;errno.h&gt;
+
+    int main(int argc, char *argv[])
+    {
+      static const char *basename = "b.txt";
+      char filename[255] = "";
+      int fd;
+
+      acl_t  file_acl;
+
+      /* とりあえずファイル作成 */
+      fd = open(basename, O_WRONLY |O_CREAT | O_EXCL | O_SYNC, 0666);
+      if( fd == -1 )
+      {
+        /* すでに存在していた場合、別名でとりあえず作成 */
+        snprintf(filename, sizeof(filename), "%s.%05d", basename, getpid());
+        printf("filename:%s\n", filename); // 確認用
+        fd = open(filename, O_WRONLY |O_CREAT | O_SYNC, 0666);
+        if( fd == -1 )
+        {
+          printf("create file failed.\n");
+          return 1;
+        }
+      }
+
+      /* ACLの確認用にkazukiだけは読み取りだけ可能とする */
+      file_acl = acl_from_text("mask::r--,u::rw-,u:kazuki:r,g::,o::");
+      if( file_acl == NULL )
+      {
+        printf("acl 生成失敗\n");
+        return 1;
+      }
+
+      /*************************************************************/
+      /* ちょっと確認                */
+      /*************************************************************/
+      if( acl_valid(file_acl) != 0 )
+      {
+        fprintf(stderr, "error:[%d] ", errno);
+        perror("acl_valid() ");
+      }
+
+      char *acl_str = acl_to_text(file_acl, NULL);
+      if( acl_str != NULL )
+      {
+        printf("acl:[%s]\n",  acl_str);
+        if( acl_free( (void*)acl_str) != 0 )
+        {
+          fprintf(stderr, "error:[%d] ", errno);
+          perror("acl_free()");
+        }
+      }
+      /*************************************************************/
+
+
+      /* ファイルにACLをセット */
+      if( acl_set_fd( fd, file_acl ) != 0)
+      {
+        fprintf(stderr, "error:[%d] ", errno);
+        perror("acl_set_fd() ");
+      }
+
+      acl_free( (void*)file_acl );
+
+      write(fd, filename, strlen(filename));
+      write(fd, "\n", 1);
+
+      /* クローズ、別名で作成した場合、正規の名前に変更する */
+      close(fd);
+      if( strlen(filename) != 0 )
+      {
+        unlink(basename);
+        rename(filename,basename);
+      }
+
+      return 0;
+    }
+    /* EOF */
+  :tags: []
+  :references:
+    :url: /web/20100628134446/http://www.jp.freebsd.org/cgi/mroff.cgi?sect=3&amp;cmd=&amp;lc=1&amp;subdir=man&amp;dir=jpman-7.2.2%2Fman&amp;subdir=man&amp;man=acl
+    :title: acl(3)
+- :id: '8756'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8756
+  :user_name: silverwire
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/646/
+  :language: 
+  :time: 2009/03/30 12:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あ、これはどうもご丁寧に。\r\n\r\n CREATOR OWNERは知りませんでした。ちょっと調べてみたのですが、\r\nファイルを作成すると暗黙的に
+    CREATOR OWNER(作成者・所有者)に\r\n所属するようですね。\r\n\r\nお題の「作成者以外読み書きできないようにする」は、言い換えれ\r\nば「作成者だけが読み書きできるようにする」ということなので、\r\n
+    CREATOR OWNERの ACLを設定するのが筋だったかもしれません。\r\n\r\nただ、[ユーザーまたはグループの選択]ダイアログで検索したり、\r\n[コンピューターの管理]
+    - [ローカルユーザーとグループ] を見て\r\nも CREATOR OWNERというエントリが見当たらないんですよね。\r\n\r\n#  ACLの操作云々よりも、先に
+    Windowsの ACLの仕組みを学ぶべき\r\n# だったか orz</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8758'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8758
+  :user_name: Jlake
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/658/
+  :language: PHP
+  :time: 2009/03/31 01:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    &lt;?php
+    $file_name = '/tmp/test.txt';
+    touch($file_name);
+    chmod($file_name, 0600);
+    ?&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8793'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8793
+  :user_name: ポケット
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/828/
+  :language: Perl
+  :time: 2009/04/07 04:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">chmodを使って単純に権限を変更してみました。\r\na.txtファイルが存在すればそのファイルの権限を変更するのにも対応してます。</pre>\n\t"
+  :code: |
+    use strict;
+    use warnings;
+    my $n;
+
+    if(-e "a.txt")
+    {
+        print "a.txt file is already exist.\n";
+        $n = chmod 0600, "a.txt";
+        print "change permission to 0600\n";
+    } else{
+        print "make new file a.txt\n";
+        open NEW, "&gt;a.txt";
+        close NEW;
+        $n = chmod 0600, "a.txt";
+        print "change permission to 0600\n";
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8795'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8795
+  :user_name: genzou
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2009/04/07 08:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">以下の投稿を参考にさせていただき、\r\ngroovyに書き直して見ました。\r\n\r\nどう書く？org
+    8736 匿名: Java6で追加されたFileクラスのs...(ACLの制御) - 投稿の詳細 &lt;http://ja.doukaku.org/comment/8736/&gt;</pre>\n\t"
+  :code: |
+    new File(args[0]).with{
+        if (exists())
+            System.exit(0);
+        createNewFile()
+        setReadable(false, false)
+        setReadable(true, true)
+        setWritable(false, false)
+        setWritable(true, true)
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8837'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8837
+  :user_name: egtra
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2009/04/25 11:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Windows APIです。Cで投稿されているのがいくつかあるので、無理やりC++化しました。まあCオンリーの人も見てくださいな。</p>\n<p>大まかに言うと、目的の状態のDACLを作成→それを指定してファイルを作成
+    or ファイルを開いてDACLを設定の手順です。</p>\n<p>CreateFileでREAD_CONTROL | WRITE_DACを指定しているのは、既存ファイルに設定するためです。新しくファイルを作るなら0で構いません（もちろんRead/WriteFileなどで読み書きするならGENERIC_READ/WRITEなど適宜指定してください）。</p>\n\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;windows.h&gt;
+    #include &lt;aclapi.h&gt;
+
+    // エラーメッセージ出力関数
+    void print_error(DWORD code)
+    {
+        LPTSTR msg;
+        FormatMessage(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+            0, code, LANG_USER_DEFAULT, reinterpret_cast&lt;LPTSTR&gt;(&amp;msg), 0, 0);
+        std::cerr &lt;&lt; msg &lt;&lt; std::endl;
+        LocalFree(reinterpret_cast&lt;HLOCAL&gt;(msg));
+    }
+
+    int main()
+    {
+        PACL pacl;
+        // 所有者のみ読み書きの設定
+        EXPLICIT_ACCESS ea =
+        {
+            /* .grfAccessPermissions = */ GENERIC_READ | GENERIC_WRITE,
+            /* .grfAccessMode = */ SET_ACCESS,
+            /* .grfInheritance = */ NO_INHERITANCE,
+            /* .Trustee = */
+            {
+                /* .pMultipleTrustee = */ 0,
+                /* .MultipleTrusteeOperation = */ NO_MULTIPLE_TRUSTEE,
+                /* .TrusteeForm = */ TRUSTEE_IS_NAME,
+                /* .TrusteeType = */ TRUSTEE_IS_WELL_KNOWN_GROUP,
+                /* .ptstrName = */ TEXT("CREATOR OWNER")
+            },
+        };
+        DWORD res = SetEntriesInAcl(1, &amp;ea, 0, &amp;pacl);
+        if (res != 0)
+        {
+            print_error(res);
+            return 1;
+        }
+        // DACLを保持するセキュリティディスクプリタの作成
+        PSECURITY_DESCRIPTOR psd = static_cast&lt;PSECURITY_DESCRIPTOR&gt;(
+            malloc(SECURITY_DESCRIPTOR_MIN_LENGTH));
+        if (InitializeSecurityDescriptor(psd, SECURITY_DESCRIPTOR_REVISION) == FALSE)
+        {
+            print_error(GetLastError());
+            return 1;
+        }
+
+        if (SetSecurityDescriptorDacl(psd, TRUE, pacl, FALSE) == FALSE)
+        {
+            print_error(GetLastError());
+            return 1;
+        }
+        // 上記設定を指定してファイルを作成
+        SECURITY_ATTRIBUTES sa =
+        {
+            /*.nLength =*/ sizeof sa,
+            /*.lpSecurityDescriptor =*/ psd,
+            /*.bInheritHandle =*/ FALSE,
+        };
+        HANDLE hFile = CreateFile(TEXT("D:\\TEMP\\t.bat"), READ_CONTROL | WRITE_DAC,
+            FILE_SHARE_WRITE, &amp;sa, CREATE_ALWAYS, 0, 0);
+        if (hFile == INVALID_HANDLE_VALUE)
+        {
+            print_error(GetLastError());
+            return 1;
+        }
+        // ファイルが既に開かれていた場合、sa.lpSecurityDescriptorの指定が反映されないので、ここで設定している
+        res = SetSecurityInfo(hFile, SE_FILE_OBJECT,
+            DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
+            0, 0, pacl, 0);
+        if (res != 0)
+        {
+            print_error(res);
+            return 1;
+        }
+        CloseHandle(hFile);
+        LocalFree(pacl);
+        free(psd);
+        return 0;
+    }
+  :tags:
+  - Windows
+  :references:
+    :url: 
+    :title: 
+- :id: '8950'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/8950
+  :user_name: maco
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/1050/
+  :language: Common
+  :time: 2009/05/19 09:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Common Lisp版です。短いけどosicatを使っているのでOSが限定されるのがちとイタイ。</p>\n\n\t"
+  :code: |
+    (asdf:operate 'asdf:load-op :osicat)
+    (let ((filename "foo"))
+      (with-open-file (dummy filename :direction :output :if-exists :supersede)
+                      (princ "bar" dummy))
+      (setf (osicat:file-permissions filename) (list :user-read :user-write)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9011'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/9011
+  :user_name: ポケット
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/828/
+  :language: Scheme
+  :time: 2009/05/26 02:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>file.utilのfile-exists?をつかって存在確認し、\nsys-chmodをつかって権限変更しました。</p>\n\n\t"
+  :code: |
+    (use file.util)
+    (define (main args)
+      (if (file-exists? "./a.txt")
+          (begin (sys-chmod "./a.txt" #o600))
+          (begin (touch-file "./a.txt") (sys-chmod "./a.txt" #o600))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9054'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/9054
+  :user_name: seri
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/641/
+  :language: Ruby
+  :time: 2009/06/05 18:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">chmodでパーミッションを0600に変更しています。\r\n</pre>\n\t"
+  :code: |
+    filename = 'a.txt'
+    open(filename, 'w') { } unless File.exist?(filename)
+    File.chmod(0600, filename)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9262'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/9262
+  :user_name: matarillo
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/136/
+  :language: C
+  :time: 2009/06/30 04:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>.NET Framework限定 (Monoでは動きそうにない)</p>\n\n\t"
+  :code: |
+    using System.IO;
+    using System.Security.AccessControl;
+    using System.Security.Principal;
+
+    class P
+    {
+      static void Main(string[] args)
+      {
+        if (args.Length == 0) return;
+        using (Stream s = File.Open
+          (args[0],
+          FileMode.CreateNew,
+          FileAccess.Write,
+          FileShare.ReadWrite))
+        {
+          FileSecurity sec = File.GetAccessControl(args[0]);
+          IdentityReference owner = sec.GetOwner(typeof(NTAccount));
+          sec.SetAccessRuleProtection(true, false);
+          foreach (AuthorizationRule r
+            in sec.GetAccessRules(true, true, typeof(NTAccount)))
+          {
+            sec.RemoveAccessRule((FileSystemAccessRule)r);
+          }
+          sec.AddAccessRule
+            (new FileSystemAccessRule
+              (owner,
+              FileSystemRights.Read | FileSystemRights.Write,
+              AccessControlType.Allow));
+          File.SetAccessControl(args[0], sec);
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9554'
+  :parent_id: '244'
+  :url: http://ja.doukaku.org/comment/9554
+  :user_name: kzfm
+  :user_url: /web/20100628134446/http://ja.doukaku.org/user/106/
+  :language: OCaml
+  :time: 2009/09/04 18:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "let file = Sys.argv.(1) in \nlet f = try open_out_gen [Open_wronly; Open_creat;
+    Open_trunc; Open_text] 0o600 file\nwith Sys_error msg -&gt; failwith (\"Couldn't
+    write to \" ^ msg) in \noutput_string f \"OCaml\\n\";close_out f;;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

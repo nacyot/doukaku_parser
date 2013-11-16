@@ -1,0 +1,255 @@
+---
+:id: '165'
+:title: タイムコードを表すクラス
+:comments:
+- :id: '5892'
+  :parent_id: '165'
+  :url: http://ja.doukaku.org/comment/5892
+  :user_name: ryugate
+  :user_url: /web/20081227095629/http://ja.doukaku.org/user/674/
+  :language: 
+  :time: 2008/02/28 13:15 GMT
+  :vote_count: '12'
+  :vote_score: '-10'
+  :body: "\r\n\t  以下の条件でタイムコード「時：分：秒:フレーム」を表すクラスを書いてください。\r<br><br>1. 最低限、「時、分、秒、フレーム、フレームレート」を引数にするコンストラクタが必要です\r<br>2.フレームレートには数値の他\"ntsc\"（ドロップフレーム 29.97pfs）も指定できること\r<br>3.ありえない引数に対するバリデーションはあっても無くてもかまいません。\r<br>4.生成してから、フレームレートの変更が出来ること（自身を変更しても、新しいインスタンスを生成してもかまいません。）\r<br>5.保持しているタイムコードを「時：分：秒:フレーム」という文字列に変換できること。（ただしドロップフレームの場合には「時：分：秒;フレーム」であること）\r<br><br>以上\r<br><br>ドロップフレームについては以下を参考にして下さい。\r<br>http://www.ite.or.jp/study/musen/tips/tip06.html\r<br>http://qtake.hp.infoseek.co.jp/1-4.html\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5912'
+  :parent_id: '165'
+  :url: http://ja.doukaku.org/comment/5912
+  :user_name: cho45
+  :user_url: /web/20081227095629/http://ja.doukaku.org/user/579/
+  :language: Ruby
+  :time: 2008/03/01 16:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>そのまんまなのですが、こういうことなんでしょうか</p>\n</div>\n\t"
+  :code: |
+    class TimeCode
+
+        attr_reader :h, :m, :s, :frame, :frame_rate
+
+        def initialize(h, m, s, frame, frame_rate)
+            @h, @m, @s, @frame, @frame_rate = h, m, s, frame, frame_rate
+            if frame &gt; (frame_rate == "ntsc" ? 29.97 : frame_rate)
+                raise ArgumentError, "Invalid frame number."
+            end
+        end
+
+        def frame_rate=(v)
+            @frame_rate = v
+        end
+
+        def to_s
+            if @frame_rate == "ntsc" &amp;&amp; @m != 10 &amp;&amp; @s == 0 &amp;&amp; (@frame == 0 || @frame == 1)
+                "%02d:%02d:%02d;%02d" % [@h, @m, @s, @frame]
+            else
+                "%02d:%02d:%02d:%02d" % [@h, @m, @s, @frame]
+            end
+        end
+
+    end
+
+    p TimeCode.new( 0,  0,  0,  0, "ntsc").to_s #=&gt; "00:00:00;00"
+    p TimeCode.new( 0,  0,  0,  1, "ntsc").to_s #=&gt; "00:00:00;01"
+    p TimeCode.new( 0,  0,  0,  2, "ntsc").to_s #=&gt; "00:00:00:02"
+    p TimeCode.new( 0, 10,  0,  0, "ntsc").to_s #=&gt; "00:10:00:00"
+    p TimeCode.new( 0, 10,  0,  1, "ntsc").to_s #=&gt; "00:10:00:01"
+    p TimeCode.new( 0, 10,  0,  2, "ntsc").to_s #=&gt; "00:10:00:02"
+
+    p TimeCode.new( 0,  0,  0,  0, 10).to_s #=&gt; "00:00:00:00"
+    p TimeCode.new( 0,  0,  0, 11, 10).to_s #=&gt; ArgumentError
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5913'
+  :parent_id: '165'
+  :url: http://ja.doukaku.org/comment/5913
+  :user_name: cho45
+  :user_url: /web/20081227095629/http://ja.doukaku.org/user/579/
+  :language: Ruby
+  :time: 2008/03/01 16:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>あ、ドロップフレームの処理を読みまちがえていました。こうでしょうか。そもそもなんか違うのかもしれないですが</p>\n</div>\n\t"
+  :code: |2
+        def to_s
+            if @frame_rate == "ntsc" &amp;&amp; (@m % 10 != 0) &amp;&amp; @s == 0 &amp;&amp; (@frame == 0 || @frame == 1)
+                "%02d:%02d:%02d;%02d" % [@h, @m, @s, @frame]
+            else
+                "%02d:%02d:%02d:%02d" % [@h, @m, @s, @frame]
+            end
+        end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5919'
+  :parent_id: '165'
+  :url: http://ja.doukaku.org/comment/5919
+  :user_name: ryugate
+  :user_url: /web/20081227095629/http://ja.doukaku.org/user/674/
+  :language: 
+  :time: 2008/03/02 00:32 GMT
+  :vote_count: '4'
+  :vote_score: '-4'
+  :body: "\n\t  <p>お題について</p>\n<p>すみません。狙いがうまく伝わっていませんでした。\nポイントは、総フレーム数とタイムコードの相互変換です。\n以下の仕様を追加してみてください。</p>\n<ul
+    class=\"simple\">\n<li>総フレーム数を指定するコンストラクタ持つこと</li>\n<li>総フレーム数を取得するメソッドを持つこと</li>\n</ul>\n<p>また、オブジェクト指向言語で無い場合には、\n単純に任意のフレームレートにおいて、タイムコードと総フレーム数を相互変換する関数を書いてもOKとしたいと思います。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5922'
+  :parent_id: '165'
+  :url: http://ja.doukaku.org/comment/5922
+  :user_name: mc
+  :user_url: /web/20081227095629/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/03/02 06:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  題意をいまいち汲み取れてない気がするのですが、とりあえず条件を\r<br>満たすように努力してみました。\r<br>フレームレートは可変とのことですが、NTSC以外ではどのように\r<br>フレームをドロップして良いのか分からなかったので、単純にfpsと\r<br>時間を掛けて取得しています。\r<br><br>;; 動作\r<br>; インスタンス作成\r<br>(setq tc (make-instance 'timecode :h 30 :m 31 :s 00 :f 0 :fps :ntsc))\r<br><br>(total-frames tc)\r<br>;=&gt; 3292505\r<br>(timecode tc)\r<br>;=&gt; \"30:31:00;00\"\r<br><br>(setf (fps tc) 10)\r<br>;フレームレートを変更\r<br><br>(total-frames tc)\r<br>;=&gt; 1098600\r<br>(timecode tc2)\r<br>;=&gt; \"30:31:00:00\"\n\t"
+  :code: "(defpackage :doukaku-165 (:use :cl))\n(in-package :doukaku-165)\n\n(defclass
+    timecode ()\n  ((h :accessor h :initarg :h :initform 0)\n   (m :accessor m :initarg
+    :m :initform 0)\n   (s :accessor s :initarg :s :initform 0)\n   (f :accessor f
+    :initarg :f :initform 0)\n   (fps :accessor fps :initarg :fps :initform 0)))\n\n(defmethod
+    drop-frame-p ((tc timecode))\n  (and (/= 10 (m tc)) \n       (zerop (s tc))\n
+    \      (or (&lt;= 0 (f tc) 1))))\n\n(defun tv-frame (f)\n  (cond ((numberp f)
+    f)\n        ((string-equal \"NTSC\" (string f)) 29.97)\n        ('T 0)))\n\n(defmethod
+    ntsc-p ((tc timecode))\n  (= 29.97 (tv-frame (fps tc))))\n\n(defmethod timecode
+    ((tc timecode))\n  (format nil \"~2,'0D:~2,'0D:~2,'0D~A~2,'0D\"\n          (h
+    tc) (m tc) (s tc) \n          (if (and (ntsc-p tc) (drop-frame-p tc)) \";\" \":\")
+    (f tc)))\n\n(defmethod total-frames ((tc timecode))\n  (flet ((frs (fps tc)\n
+    \          (+ (* (h tc) fps 60 60)\n              (* (m tc) fps 60)\n              (*
+    (s tc) fps)\n              (f tc))))\n    (if (ntsc-p tc)\n        (let* ((fps
+    (ceiling (tv-frame (fps tc))))  ;整数に切り上げ\n               (non-drop-total (frs
+    fps tc)))\n          (- non-drop-total (truncate non-drop-total 1000)))\n        (frs
+    (fps tc) tc))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5923'
+  :parent_id: '165'
+  :url: http://ja.doukaku.org/comment/5923
+  :user_name: ryugate
+  :user_url: /web/20081227095629/http://ja.doukaku.org/user/674/
+  :language: Scala
+  :time: 2008/03/02 09:10 GMT
+  :vote_count: '7'
+  :vote_score: '-7'
+  :body: "\n\t  <pre class=\"compact\">出題者です・・・\r\nううむ、お題が言葉たらずでした。すみません。\r\n意図していたのは、以下のようなものです。\r\n\r\n実行結果はこうなります。\r\n\r\nDROP\r\n00:00:59;28\r\n00:00:59;29\r\n00:01:00;02\r\n00:01:00;03\r\n00:01:00;04\r\nNONDROP\r\n00:00:59:28\r\n00:00:59:29\r\n00:01:00:00\r\n00:01:00:01\r\n00:01:00:02\r\nDROP
+    10min\r\n00:09:59;28\r\n00:09:59;29\r\n00:10:00;00\r\n00:10:00;01\r\n00:10:00;02\r\nNONDROP
+    10min\r\n00:09:59:28\r\n00:09:59:29\r\n00:10:00:00\r\n00:10:00:01\r\n00:10:00:02\r\n</pre>\n\t"
+  :code: |
+    class Timecode(val frames:Int, val rate:Any) {
+      def this(hh:Int, mm:Int, ss:Int, ff:Int, rate:Any) = this( rate match {
+        case "ntsc" =&gt;
+          val minutes = hh * 60 + mm
+          17982 * (minutes/10) + 1798 * (minutes%10) + ss * 30 + ff
+        case r:Int =&gt;
+          val mrate = r * 60
+          val hrate = mrate * 60
+          hh * hrate + mm * mrate + ss * r + ff
+      }, rate)
+
+      def changeRate(r:Any) = new Timecode(frames, r)
+
+      override def toString = rate match {
+        case "ntsc" =&gt;
+          val hh = frames / 17982 / 6
+          val mm = frames / 17982 % 6 * 10 + (frames % 17982 - 2) / 1798
+          val ss = ((frames % 17982 - 2) % 1798 + 2) / 30
+          val ff = ((frames % 17982 - 2) % 1798 + 2) % 30
+          sprIntf("%02d:%02d:%02d;%02d", hh,mm,ss,ff)
+        case r:Int =&gt;
+          val m = r * 60
+          val h = m * 60
+          val hh = frames / h
+          val mm = (frames % h) / m
+          val ss = ((frames % h) % m) / r
+          val ff = ((frames % h) % m) % r
+          sprIntf("%02d:%02d:%02d:%02d", hh,mm,ss,ff)
+      }
+
+      def +(add:Int) = new Timecode(frames + add, rate)
+      def -(sub:Int) = new Timecode(frames - sub, rate)
+
+      private def sprIntf(fmt:String, args:Any*) = String.format(fmt, args.map(e =&gt; e.asInstanceOf[AnyRef]).toArray)
+    }
+
+    object TimecodeTest extends Application {
+      println("DROP")
+      val t1 = new Timecode(0,0,59,27,"ntsc")
+      (1 to 5).foreach {i =&gt; println(t1 + i) }
+
+      println("NONDROP")
+      val t2 = t1.changeRate(30)
+      (1 to 5).foreach {i =&gt; println(t2 + i) }
+
+      println("DROP 10min")
+      val t4 = new Timecode(0,9,59,27, "ntsc")
+      (1 to 5).foreach {i =&gt; println(t4 + i) }
+
+      println("NONDROP 10min")
+      val t3 = new Timecode(0,9,59,27, 30)
+      (1 to 5).foreach {i =&gt; println(t3 + i) }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5928'
+  :parent_id: '165'
+  :url: http://ja.doukaku.org/comment/5928
+  :user_name: saws
+  :user_url: /web/20081227095629/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/03/03 15:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ドロップフレームの処理が地味に面白かったです.\nアニメ用のフレームレートも設定してみた.</p>\n\n\t"
+  :code: |
+    class TimeCode
+      def initialize(h, m, s, f, frate)
+        @hour, @minute, @second = h, m, s
+        @frame, @frame_rate = f, frate
+      end
+      def treat
+        form = proc{|*ary| ary.map{|s| format("%02d", s)}.join(':')}
+        drop_frame
+        "#{form.call(@hour, @minute, @second)}; #{@frame}."
+      end
+      attr_writer :frame_rate
+      private
+      def inspect() treat end
+      def drop_frame
+        check = @second.zero? &amp;&amp; (@minute.modulo(10).nonzero? || @minute.zero?)
+        @frame = [@frame%get_frate.ceil, check ? 0 : 2].max
+      end
+      def get_frate
+        case @frame_rate.to_s
+        when 'ntsc'  then 29.97
+        when 'anime' then 24
+        else
+          raise RangeError if out_of_range?
+          @frame_rate.to_i
+        end
+      end
+      def out_of_range?() @frame_rate.to_i &lt;= 0 end
+    end
+    p tc = TimeCode.new(22, 0, 0, 37, 'ntsc') #=&gt; 22:00:00; 6.
+    tc.frame_rate = 5
+    p tc                                      #=&gt; 22:00:00; 1.
+    p TimeCode.new(22,  0, 0, 0, 'anime')     #=&gt; 22:00:00; 0.
+    p TimeCode.new(22, 10, 0, 0, 'anime')     #=&gt; 22:10:00; 2.
+    p TimeCode.new(22, 10, 0, 0, -1)          #=&gt; RangeError (RangeError)
+  :tags: []
+  :references:
+    :url: 
+    :title: 

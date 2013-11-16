@@ -1,0 +1,1132 @@
+---
+:id: '249'
+:title: ケブンッリジ関数
+:comments:
+- :id: '8920'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8920
+  :user_name: lunlumo
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/813/
+  :language: Ruby
+  :time: 2009/05/08 13:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>　与えた文章の各単語の最初と最後の文字以外の文字を入れ替えた文章を出力する処理を実装して下さい。元の文章の与え方は特に問いません。</p>\n\r\n\t"
+  :code: |
+    #! c:\ruby\bin\ruby.exe -Ks
+
+    class Cmabrigde
+        def self.convert(word)
+            cs = word.split("")
+            (cs.size &lt;= 3) ? word : cs.first + cs[1..-2].sort_by { |c| rand }.join("") + cs.last
+        end
+    end
+
+    source = &lt;&lt;EOS
+    こんにちは みなさん おげんき ですか？ わたしは げんき です。
+    この ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか
+    にんげん は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば
+    じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて
+    わざと もじの じゅんばん を いれかえて あります。
+    どうです？ ちゃんと よめちゃう でしょ？
+    ちゃんと よめたら はんのう よろしく
+    EOS
+    source.each_line do |line|
+        puts line.chomp.split(/\s+/).map { |word| Cmabrigde.convert(word) }.join(" ")
+    end
+  :tags: []
+  :references:
+    :url: /web/20090524020410/http://www.itmedia.co.jp/news/articles/0905/08/news021.html
+    :title: 確かに"読めてしまう"コピペ
+- :id: '8931'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8931
+  :user_name: turugina
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/760/
+  :language: Perl
+  :time: 2009/05/14 09:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>単語ごとにs///による置換一行でやってみました。</p>\n\n\t"
+  :code: |
+    use strict;
+    use warnings;
+    use utf8;
+    use encoding "utf8", STDOUT =&gt; "cp932";
+
+    use List::Util qw/shuffle/;
+
+    sub cmabrigde
+    {
+      my $word = shift;
+      $word =~ s{
+        ^(.)(.+)(.)$
+      }{
+        join('', $1, (split(//,$2))[shuffle 0 .. length($2)-1], $3)
+      }ex;
+      $word;
+    }
+
+    for my $line (&lt;DATA&gt;) {
+      print join(" ", map { cmabrigde($_) } split(" ", $line)), "\n";
+    }
+
+    __DATA__
+    こんにちは みなさん おげんき ですか？ わたしは げんき です。
+    この ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか
+    にんげん は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば
+    じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて
+    わざと もじの じゅんばん を いれかえて あります。
+    どうです？ ちゃんと よめちゃう でしょ？
+    ちゃんと よめたら はんのう よろしく
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8932'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8932
+  :user_name: teppey
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/1006/
+  :language: Scheme
+  :time: 2009/05/14 10:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    (define *source*
+      "こんにちは みなさん おげんき ですか？ わたしは げんき です。
+      この ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか
+      にんげん は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば
+      じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて
+      わざと もじの じゅんばん を いれかえて あります。
+      どうです？ ちゃんと よめちゃう でしょ？
+      ちゃんと よめたら はんのう よろしく")
+
+    (use text.tree)
+    (use gauche.sequence)
+
+    (define (cmabrigde word)
+      (let1 len (string-length word)
+        (if (&lt;= len 3)
+          word
+          (tree-&gt;string
+            (list (string-ref word 0)
+                  (shuffle (substring word 1 (- len 1)))
+                  (string-ref word (- len 1)))))))
+
+    (define (cmabrigde-test)
+      (print (string-join (map cmabrigde (string-split *source* #/\s+/)) " ")))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8933'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8933
+  :user_name: athos
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/755/
+  :language: Scheme
+  :time: 2009/05/14 10:42 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>データは標準入力から受けとります。</p>\n\n\t"
+  :code: |
+    (use gauche.sequence)
+
+    (define (cmabrigde word)
+      (rxmatch-if (#/^(.)(.+)(.)$/ word) (_ h m t)
+        #`",h,(shuffle m),t"
+        word))
+
+    (define (main args)
+      (dolist (line (port-&gt;list read-line (current-input-port)))
+        (print (string-join (map cmabrigde (string-split line " "))))))
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '8934'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8934
+  :user_name: kkobayashi
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2009/05/14 11:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    source.text &lt;- "こんにちは みなさん おげんき ですか？ わたしは げんき です。
+    この ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか
+    にんげん は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば
+    じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて
+    わざと もじの じゅんばん を いれかえて あります。
+    どうです？ ちゃんと よめちゃう でしょ？
+    ちゃんと よめたら はんのう よろしく"
+
+    writeLines(sapply(readLines(textConnection(source.text)), function(x){
+      paste(sapply(strsplit(x, " ")[[1]], function(word){
+        lt  &lt;- strsplit(word, "")[[1]]
+        len &lt;- length(lt)
+        ifelse(len&lt;=3, word, paste(lt[c(1,sample(len-2)+1,len)], collapse=""))
+      }), collapse=" ")}))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8935'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8935
+  :user_name: ワサビ
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/1045/
+  :language: OCaml
+  :time: 2009/05/14 12:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    #light
+
+    open System.Text.RegularExpressions
+
+    let cmabrigde text =
+        let rand = new System.Random()
+        Regex.Replace(text, @"(?&lt;=\w)\w{2,}(?=\w)", fun (m : Match) -&gt;
+            new string(m.Value |&gt; Seq.sort_by (ignore &gt;&gt; rand.Next) |&gt; Seq.to_array))
+
+    @"こんにちは みなさん おげんき ですか？ わたしは げんき です。
+    この ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか
+    にんげん は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば
+    じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて
+    わざと もじの じゅんばん を いれかえて あります。
+    どうです？ ちゃんと よめちゃう でしょ？
+    ちゃんと よめたら はんのう よろしく"
+    |&gt; cmabrigde |&gt; printfn "%s"
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '8936'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8936
+  :user_name: 匿名
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/05/14 14:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  乱数を使っていますけど、入れ替わらない場合があってもＯＫなのですか？\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8937'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8937
+  :user_name: sumim
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/05/15 03:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    | source convert stream separators buffer next |
+
+    source := 'こんにちは みなさん おげんき ですか？ わたしは げんき です。
+    この ぶんしょう は イギリス の ケンブリッジ だいがく の けんきゅう の けっか
+    にんげん は もじ を にんしき する とき その さいしょ と さいご の もじさえ あっていれば
+    じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて
+    わざと もじの じゅんばん を いれかえて あります。
+    どうです？ ちゃんと よめちゃう でしょ？
+    ちゃんと よめたら はんのう よろしく。'.
+
+    convert := [:word |
+        | specialChars chars |
+        specialChars := 'ゃゅょっャュョッー'.
+        chars := word inject: OrderedCollection new into: [:out :char |
+            (specialChars includes: char)
+                ifFalse: [out add: (OrderedCollection with: char)]
+                ifTrue: [out last add: char].
+            out].
+        chars size &lt;= 3 ifTrue: [chars concatenation as: String] ifFalse: [
+            | shuffled middle |
+            shuffled := (middle := chars copyFrom: 2 to: chars size - 1) shuffled.
+            [shuffled = middle] whileTrue: [shuffled := middle shuffled].
+            ((chars first: 1), shuffled, (chars last: 1)) concatenation as: String]].
+
+    World findATranscript: nil. Transcript clear.
+    stream := source readStream.
+    separators := Character separators, '。？'.
+    buffer := WriteStream on: String new.
+
+    [(next := stream next) notNil] whileTrue: [
+        (separators includes: next) ifFalse: [buffer nextPut: next] ifTrue: [
+            Transcript show: (convert value: buffer contents); nextPut: next.
+            buffer reset]].
+    Transcript show: (convert value: buffer contents)
+
+    "=&gt; こにちんは みさなん おんげき ですか？ わしたは げんき です。
+    この ぶしょんう は イリギス の ケブンリッジ だがいく の けきゅんう の けっか
+    にげんん は もじ を にしんき する とき その さいしょ と さいご の もさじえ あっいてれば
+    じゅばんん は めくちゃちゃ でも ちゃんと よめる という けきゅんう に もづいとて
+    わざと もじの じゅばんん を いかれえて あまりす。
+    どでうす？ ちゃんと よちゃめう でしょ？
+    ちゃんと よためら はのんう よしろく。 "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '8938'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8938
+  :user_name: selpo
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/1013/
+  :language: C
+  :time: 2009/05/15 05:37 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>並び変えないことも並び替えることの一つと判断しました。</p>\n<p>並び変えたり、並び替えなかったりします。</p>\n<p>（本音を言うと、必ず違う配列になる確認がめんどかっただけ）</p>\n\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+
+    class Pair&lt;S, T&gt;
+    {
+        public S s { get; set; }
+        public T t { get; set; }
+        public Pair(S s, T t) { this.s = s; this.t = t; }
+        public Pair() { s = default(S); t = default(T); }
+    }
+    static class Program
+    {
+        static Random rand = new Random();
+        static void Main(string[] args)
+        {
+            var str = "こんにちは みなさん おげんき ですか？ わたしは げんき です。\n"
+                        + "この ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか\n"
+                        + "にんげん は もじ を にんしき する とき その さいしょ と さいご の もじさえ あっていれば\n"
+                        + "じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて\n"
+                        + "わざと もじの じゅんばん を いれかえて あります。\n"
+                        + "どうです？ ちゃんと よめちゃう でしょ？\n"
+                        + "ちゃんと よめたら はんのう よろしく\n";
+            Console.WriteLine(CmabridgeConvert(str));
+        }
+        static string CmabridgeConvert(string str)
+        {
+            int from = 0;
+            int to = 0;
+            var words = new List&lt;Pair&lt;string, bool&gt;&gt;();
+            for (int i = 0; i &lt; str.Length; i++)
+            {
+                if (str[i] != ' ' &amp;&amp; str[i] != '　' &amp;&amp; str[i] != '\n'
+                    &amp;&amp; !char.IsSymbol(str[i]) &amp;&amp; str[i] != '？' &amp;&amp; str[i] != '。'
+                    &amp;&amp; str[i] != '、' &amp;&amp; str[i] != '！' &amp;&amp; str[i] != ' ' &amp;&amp; !char.IsSeparator(str[i]))
+                    to++;
+                else
+                {
+                    words.Add(new Pair&lt;string, bool&gt;(str.Substring(from, to - from), true));
+                    words.Add(new Pair&lt;string, bool&gt;(str.Substring(to, 1), false));
+                    from = i + 1;
+                    to = i + 1;
+                }
+            }
+            if (from != str.Length)
+                words.Add(new Pair&lt;string, bool&gt;(str.Substring(from, to - from), true));
+            var sb = new StringBuilder(str.Length);
+            foreach (var word in words)
+            {
+                if (word.t &amp;&amp; word.s.Length &gt; 3)
+                    sb.Append(Shuffle(new StringBuilder(word.s)));
+                else
+                    sb.Append(word.s);
+            }
+            return sb.ToString();
+        }
+        static string Shuffle(StringBuilder word)
+        {
+            if (word.Length == 4)
+            {
+                if (rand.Next(2) == 0)
+                {
+                    char tmp = word[1];
+                    word[1] = word[2];
+                    word[2] = tmp;
+                }
+            }
+            else
+            {
+                for (int i = 1; i &lt; word.Length - 1; i++)
+                {
+                    int j = rand.Next(1, i + 1);
+                    char tmp = word[i];
+                    word[i] = word[j];
+                    word[j] = tmp;
+                }
+            }
+            return word.ToString();
+        }
+    }
+  :tags:
+  - C#3.0
+  :references:
+    :url: 
+    :title: 
+- :id: '8940'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8940
+  :user_name: pooq
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/606/
+  :language: J
+  :time: 2009/05/16 16:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">   convert ucp data\r\nこにちんは みなさん おんげき でかす？
+    わしたは げんき です。\r\nこの ぶんょしう は いぎりす の ケリブッンジ だいがく の けゅんきう の けっか\r\nにげんん は もじ を にしんき
+    する とき その さしいょ と さいご の もさじえ あっれいてば\r\nじんばゅん は めちちゃくゃ でも ちゃんと よめる という けきんゅう に もといづて\r\nわざと
+    もじの じんばゅん を いれかえて あすまり。\r\nどうです？ ちゃんと よゃちめう でしょ？\r\nちんゃと よめたら はんのう よろしく\r\n</pre>\n\t"
+  :code: "Cagrdibme=:3 :';(3&lt;#y){y;((0,(&gt;:?~#}:}.y),_1){y)'   \nconvert=:3 :';&gt;,&amp;(&lt;LF)@((,''
+    ''&amp;;)/)(L:1)Cagrdibme(L:0)cutopen&amp;.&gt;cutopen y'\n\ndata=:0 :0\nこんにちは
+    みなさん おげんき ですか？ わたしは げんき です。\nこの ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか\nにんげん
+    は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば\nじゅんばん は めちゃくちゃ でも ちゃんと よめる という
+    けんきゅう に もとづいて\nわざと もじの じゅんばん を いれかえて あります。\nどうです？ ちゃんと よめちゃう でしょ？\nちゃんと よめたら はんのう
+    よろしく\n)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8941'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8941
+  :user_name: syat
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/766/
+  :language: C
+  :time: 2009/05/17 02:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  qsortにランダム関数をつっこんで大丈夫なのだろうか（無限ループになったりしないかな？）\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n\n#define IS_SPACE(c)
+    ( (c) == ' ' || (c) == '\\n' )\n#define MBCLEN 2\n\n/* ランダム比較関数 */\nint compare_random(const
+    void *a, const void *b) {\n    return rand() - RAND_MAX / 2;\n}\n\n/* ケブンリッジ関数
+    */\nvoid ciambrgde(char *buf) {\n    char *p = buf;\n\n    while (*p) {\n        char
+    *word_head;\n\n        /* 空白を読み飛ばす */\n        while (IS_SPACE(*p)) { p++; }\n
+    \       if (! *p) { break; }\n        /* 単語の末尾を探す */\n        word_head = p;\n
+    \       while (*p &amp;&amp; ! IS_SPACE(*p)) { p += MBCLEN; }\n        /* ４文字以上の単語なら入れ替えを行う
+    */\n        if ( (p - word_head) &gt;= MBCLEN * 4 ) {\n            qsort(word_head
+    + MBCLEN, (p - word_head)/MBCLEN - 2, MBCLEN, compare_random);\n        }\n    }\n
+    \   \n    return;\n}\n\nint main() {\n    char buf[] = \"こんにちは みなさん おげんき ですか？
+    わたしは げんき です。\\n\\\nこの ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか\\n\\\nにんげん は もじ
+    を にんしき する とき その さしいょ と さいご の もじさえ あっていれば\\n\\\nじゅんばん は めちゃくちゃ でも ちゃんと よめる という
+    けんきゅう に もとづいて\\n\\\nわざと もじの じゅんばん を いれかえて あります。\\n\\\nどうです？ ちゃんと よめちゃう でしょ？\\n\\\nちゃんと
+    よめたら はんのう よろしく\";\n    \n    ciambrgde(buf);\n    printf(buf);\n\n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8942'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8942
+  :user_name: genzou
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2009/05/18 08:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>結構短くできた！</p>\n\n\t"
+  :code: |
+    source = """\
+    こんにちは みなさん おげんき ですか？ わたしは げんき です。
+    この ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか
+    にんげん は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば
+    じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて
+    わざと もじの じゅんばん を いれかえて あります。
+    どうです？ ちゃんと よめちゃう でしょ？
+    ちゃんと よめたら はんのう よろしく
+    """
+
+    println source.replaceAll(/\S\S{4,}/){
+        it[0] + it[1..-2].toList().sort{ Math.random() }.join() + it[-1]
+    }
+
+    println source.replaceAll(/(?&lt;=\S)\S{2,}(?=\S)/){
+        it.toList().sort{ Math.random() }.join()
+    }
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '8943'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8943
+  :user_name: genzou
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2009/05/18 08:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">し、しまた！！コピペミスです・・・\r\n\r\n\\S\\S{4,}になってる・・・</pre>\n\t"
+  :code: |
+    source = """\
+    こんにちは みなさん おげんき ですか？ わたしは げんき です。
+    この ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか
+    にんげん は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば
+    じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて
+    わざと もじの じゅんばん を いれかえて あります。
+    どうです？ ちゃんと よめちゃう でしょ？
+    ちゃんと よめたら はんのう よろしく
+    """
+
+    println source.replaceAll(/\S{4,}/){
+        it[0] + it[1..-2].toList().sort{ Math.random() }.join() + it[-1]
+    }
+
+    println source.replaceAll(/(?&lt;=\S)\S{2,}(?=\S)/){
+        it.toList().sort{ Math.random() }.join()
+    }
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '8945'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8945
+  :user_name: 99yen
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2009/05/18 08:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "文章=「こんにちは みなさん おげんき ですか？ わたしは げんき です。\nこの ぶんしょう は イギリス の ケンブリッジ だいがく の けんきゅう
+    の けっか\nにんげん は もじ を にんしき する とき その さいしょ と さいご の もじさえ あっていれば\nじゅんばん は めちゃくちゃ でも ちゃんと
+    よめる という けんきゅう に もとづいて\nわざと もじの じゅんばん を いれかえて あります。\nどうです？ ちゃんと よめちゃう でしょ？\nちゃんと
+    よめたら はんのう よろしく。」\n文章を反復\n    KEBUNNRIDI=\"\"\n    対象を「 」で区切って反復    \n        もし、対象の文字数&gt;3ならば\n
+    \           TMP=対象を文字列分解\n            START=TMP[0]\n            END=TMP[TMPの配列要素数-1]\n
+    \           TMPの0を配列削除\n            TMPの(TMPの配列要素数-1)を配列削除\n            SHUFFLE=TMP\n
+    \           (SHUFFLE=TMP)の間\n                TMPを配列シャッフル\n            KEBUNNRIDIにSTART&amp;(TMPを空で配列結合)&amp;ENDを配列追加\n
+    \       違えば\n            KEBUNNRIDIに対象を配列追加\n    KEBUNNRIDIを「 」で配列結合して表示\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8948'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8948
+  :user_name: kotas
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/1048/
+  :language: Python
+  :time: 2009/05/18 11:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  random.shuffle なのです\n\t"
+  :code: |
+    # -*- coding: utf-8 -*-
+
+    import re
+    import random
+
+    source = u"""
+    こんにちは みなさん おげんき ですか？ わたしは げんき です。
+    この ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか
+    にんげん は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば
+    じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて
+    わざと もじの じゅんばん を いれかえて あります。
+    どうです？ ちゃんと よめちゃう でしょ？
+    ちゃんと よめたら はんのう よろしく
+    """
+
+    def cmabridge(source):
+        def shuffle_word(matched):
+            word = list(matched.group(0))
+            middle = word[1:-1]
+            random.shuffle(middle)
+            return word[0] + u"".join(middle) + word[-1]
+        return re.sub(r"\S{3,}", shuffle_word, source)
+
+    print cmabridge(source)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8949'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8949
+  :user_name: greentea
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/573/
+  :language: Python
+  :time: 2009/05/18 12:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>以前http://slashdot.jp/~greentea/journal/475228で作ったものを、今回の問題に適したように改造+句読点や疑問符、改行などがちゃんと特別扱いされるようデバッグ</p>\n</div>\n\t"
+  :code: |
+    #!/usr/bin/python
+    # coding: utf-8
+
+    import sys
+    import random
+
+    def kambridge(s):
+            strlist = s.replace('\n', '\n ').split(' ')
+            li = []
+            for word in [x for x in strlist]:
+                    if len(word) &lt; 2:
+                            li.append(word)
+                            continue
+                    endindex = -1
+                    while u',.!?、。！？\n'.find(word[endindex]) != -1:
+                            endindex -= 1
+                    chars = list(word[1:endindex])
+                    random.shuffle(chars)
+                    li.append(''.join([word[0]] + chars + list(word[endindex:])))
+            return ' '.join(li).replace('\n ', '\n')
+
+    if __name__ == '__main__':
+            s = u"""こんにちは みなさん おげんき ですか？ わたしは げんき です。
+    この ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか
+    にんげん は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば
+    じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて
+    わざと もじの じゅんばん を いれかえて あります。
+    どうです？ ちゃんと よめちゃう でしょ？
+    ちゃんと よめたら はんのう よろしく"""
+
+            print kambridge(s)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8954'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8954
+  :user_name: 匿名
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2009/05/19 09:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>正規表現で「文字」の連続を単語として切り出しています（記号は1文字単位で別単語の扱いとしています）。単語が4文字以上からなる場合に最初と最後以外の文字を並び替え（順番を入替）ます。並び替えた結果、偶然、同じ単語になってしまった場合は再度並び替えるようにしています。</p>\n\n\t"
+  :code: "import java.util.regex.*;\nimport java.util.*;\n\npublic class Sample {\n
+    \   private static final Pattern SEP = Pattern.compile(\"(?&lt;!\\\\p{L})|(?!\\\\p{L})\");\n
+    \   private static Random random = new Random();\n    \n    public static String
+    shuffle(String word) {\n        StringBuilder sb = new StringBuilder(word);\n
+    \       while (sb.toString().equals(word)) {\n            for (int i = 1; i &lt;
+    word.length() - 2; i++) {\n                int j = random.nextInt(word.length()
+    - i - 1) + i;\n                char ci = sb.charAt(i);\n                sb.setCharAt(i,
+    sb.charAt(j));\n                sb.setCharAt(j, ci);\n            }\n        }\n
+    \       return sb.toString();\n    }\n\n    public static String cmabrigde(String
+    source) {\n        StringBuilder sb = new StringBuilder();\n        for (String
+    word : SEP.split(source)) {\n            if (word.length() &lt; 4)\n                sb.append(word);\n
+    \           else\n                sb.append(shuffle(word));\n        }\n        return
+    sb.toString();\n    }\n    public static void main(String[] args) {\n        System.out.println(cmabrigde(\"こんにちは
+    みなさん おげんき ですか？ わたしは げんき です。 \" +\n                \"この ぶんしょう は いぎりす の ケンブリッジ だいがく
+    の けんきゅう の けっか \" +\n                \"にんげん は もじ を にんしき する とき その さいしょ と さいご の もじさえ
+    あっていれば \" +\n                \"じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて \"
+    +\n                \"わざと もじの じゅんばん を いれかえて あります。 \" +\n                \"どうです？
+    ちゃんと よめちゃう でしょ？ \"+\n                \"ちゃんと よめたら はんのう よろしく\"));\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8956'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8956
+  :user_name: kiris
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/912/
+  :language: Scala
+  :time: 2009/05/20 03:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    import scala.util.Sorting.stableSort
+
+    object Q249 {
+      def cmabrigde(str :String) = str match {
+        case _ if str.length &gt;= 4 =&gt; str.first + suffle(str.slice(1, str.length-1)).mkString + str.last
+        case _ =&gt; str
+      }
+      def suffle[E](seq :Seq[E]) = stableSort[E, double] (seq, {x =&gt; Math.random})
+    }
+
+    """こんにちは みなさん おげんき ですか？ わたしは げんき です。
+       この ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか
+       にんげん は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば
+       じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて
+       わざと もじの じゅんばん を いれかえて あります。
+       どうです？ ちゃんと よめちゃう でしょ？
+       ちゃんと よめたら はんのう よろしく""".split("\\s+") map(Q249.cmabrigde) mkString(" ")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8957'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8957
+  :user_name: sawa
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/1052/
+  :language: Ruby
+  :time: 2009/05/20 05:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    #! /usr/bin/ruby
+
+    class String
+        def cambridge
+            gsub (/(\b\w)(\w+)(?=\w\b)/) {$1+$2.split(//).sort_by{rand}.join}
+        end
+    end
+
+    p 'Hello everyone, how are you doing? I am fine. This text has the had the characters permutated intentionally based on a study conducted at Cambridge University in UK, according to which a human can read documents with characters randomly permutated within each word as long as the first and the last are retained. How is it? Aren\'t you able to read this?'.cambridge
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8964'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8964
+  :user_name: Otter
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2009/05/21 06:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Win32版です。\nUnicodeのサポートが甘いのでメモリマップドファイルで読み込んでごにょごにょやってます…入力ファイルは\"wstr.txt\"というUnicodeテキストファイルにあると仮定して、そのファイルの中身を処理結果で書き換えます。</p>\n<p>順番の変え方は単純にreverse何ですが、時々順番が変わっているのに築いちゃうところもありました…「にんげん」→「にげんん」とか…英語のほうが気づきやすいかも…</p>\n<p>出力はこちら:\n「こちにんは
+    みさなん おんげき ですか？ わしたは げんき です。 この ぶょしんう は いりぎす の ケッリブンジ だがいく の けゅきんう の けっか にげんん は
+    もじ を にしんき する とき その さいしょ と さいご の もさじえ あれいてっば じばんゅん は めちくゃちゃ でも ちんゃと よめる という けゅきんう
+    に もいづとて わざと もじの じばんゅん を いえかれて あすまり。 どでうす？ ちんゃと よゃちめう でしょ？ ちんゃと よためら はのんう よしろく」</p>\n\n\t"
+  :code: |
+    module Main where
+
+    import System.Win32.FileMapping
+    import Foreign.C.Types
+    import Foreign.C.String
+    import Foreign.Ptr
+    import Foreign.Marshal.Utils
+
+    cambridgeStr :: String -&gt; String
+    cambridgeStr = unwords . map cambridge . words
+    cambridge :: String -&gt; String
+    cambridge str
+        | null $ drop 3 str = str
+        | otherwise = (head str) : (cambridge' $ tail str)
+
+    isPunct :: Char -&gt; Bool
+    isPunct ch
+        | (fromEnum ch) == 0xff1f = True
+        | (fromEnum ch) == 0x3020 = True
+        | otherwise = False
+
+    cambridge' as = fixPunct $ reverse as
+
+    fixPunct [] = []
+    fixPunct (a:as)
+        | isPunct a = (fixPunct as) ++ [a]
+        | otherwise = as ++ [a]
+
+    cmbrInPlaceW :: Int -&gt; Ptr CWchar -&gt; IO ()
+    cmbrInPlaceW c pwzInOut = do
+        (ch:str) &lt;- peekCWStringLen (pwzInOut, c `div` 2)
+        withCWString (ch:(cambridgeStr str)) (\pwzResult -&gt; do
+            copyBytes pwzInOut pwzResult (2 * (length str))    )
+
+
+    withMappedArea' :: (Int -&gt; Ptr a -&gt; IO b) -&gt; Integer -&gt; Integer -&gt; MappedObject -&gt; IO b
+    withMappedArea' f off c o = withMappedArea o off (fromIntegral c) (f $ fromIntegral c)
+
+    cambrFileInPlace :: String -&gt; IO ()
+    cambrFileInPlace fnm =
+        withMappedFile fnm True {-Write-} Nothing {- Share None-} $ withMappedArea' cmbrInPlaceW 0
+
+    main = cambrFileInPlace "wstr.txt"
+  :tags:
+  - Win32
+  :references:
+    :url: 
+    :title: 
+- :id: '8965'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8965
+  :user_name: silverwire
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/646/
+  :language: Batchfile
+  :time: 2009/05/21 10:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">バッチで。</pre>\n\t"
+  :code: "@echo off\n  setlocal enabledelayedexpansion\n    set n=0\n    set s=\n
+    \   set t=\n    set w=\n    \n    if \"%~1\" == \"\" (echo usage: %~n0 FILE &gt;&amp;2
+    &amp; exit /b 1)\n    \n    for /f \"tokens=*\" %%l in (%~1) do (\n      set t=\n
+    \     \n      for %%w in (%%l) do (\n        set w=%%w\n        \n        call
+    :length !w! n\n        \n        if !n! gtr 3 (\n          call :shuffle !w:~1,-1!
+    s\n          set t=!t!!w:~0,1!!s!!w:~-1! \n        ) else (\n          set t=!t!!w!
+    \n        )\n      )\n      \n      echo !t!\n    )\n  endlocal\ngoto :EOF\n\n:shuffle\n
+    \ setlocal enabledelayedexpansion\n    set i=0\n    set j=0\n    set m=0\n    set
+    n=0\n    set t=\n    set w=%~1\n    set v=0\n    \n    call :length %w% n\n    \n
+    \   for /l %%i in (0,1,%n%) do set v[%%i]=%%i\n    \n    set i=0\n    :L1\n      set
+    /a j=%RANDOM%%%%n%\n      set v=!v[%i%]!\n      set v[%i%]=!v[%j%]!\n      set
+    v[%j%]=%v%\n      set /a i+=1\n    if %i% lss %n% goto L1\n    \n    set i=0\n
+    \   :L2\n      set m=!v[%i%]!\n      set t=%t%!w:~%m%,1!\n      set /a i+=1\n
+    \   if %i% lss %n% goto L2\n  endlocal &amp; set %~2=%t%\ngoto :EOF\n\n:length\n
+    \ setlocal enabledelayedexpansion\n    set i=0\n    set t=%~1\n    \n    if not
+    \"%t%\" == \"\" (\n      :_\n        set t=!t:~1!\n        set /a i+=1\n      if
+    not \"!t!\" == \"\" goto _\n    )\n  endlocal &amp; set %~2=%i%\ngoto :EOF\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8967'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8967
+  :user_name: fumokmm
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/856/
+  :language: Groovy
+  :time: 2009/05/21 14:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>メソッドを駆使してやってみました。\r</p>\n<p>Collections#shuffle()が使いたかったので\r</p>\n<p>#withでごちょごちょやっています。</p>\n</div>\n\t"
+  :code: |
+    source = """\
+    こんにちは みなさん おげんき ですか？ わたしは げんき です。
+    この ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか
+    にんげん は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば
+    じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて
+    わざと もじの じゅんばん を いれかえて あります。
+    どうです？ ちゃんと よめちゃう でしょ？
+    ちゃんと よめたら はんのう よろしく
+    """
+
+    println source.readLines()*.split(/\s+/).collect{
+        it.collect{ it.size() &lt;= 3 ? it : it.toList().with{
+            it.first() +                                            // 最初
+            it[1..-2].with{ Collections.shuffle(it); it.join() } + // 真ん中
+            it.last()                                               // 最後
+        } }.join(' ')
+    }.join('\n')
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8968'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8968
+  :user_name: 割と普通
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/581/
+  :language: C
+  :time: 2009/05/22 02:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>LINQ使って素直に書くとこんなものでしょうか。\r</p>\n<p>しかしLL系はさすがだなぁ・・・。この手のコード、短いこと短いこと・・・。</p>\n</div>\n\t"
+  :code: |
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var list = ケンブリッジ関数(@"こんにちは みなさん おげんき ですか？ わたしは げんき です。
+    この ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか
+    にんげん は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば
+    じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて
+    わざと もじの じゅんばん を いれかえて あります。
+    どうです？ ちゃんと よめちゃう でしょ？
+    ちゃんと よめたら はんのう よろしく
+    ");
+            foreach (var str in list)
+                Console.WriteLine(str);
+            Console.ReadLine();
+        }
+
+        static public IEnumerable&lt;string&gt; ケンブリッジ関数(string str)
+        {
+            return str.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).
+                Select(elem =&gt; ケンブリッジ関数を一つづつ(elem));
+        }
+
+        static public string ケンブリッジ関数を一つづつ(string str)
+        {
+            Random rand = new Random();
+            var elements = str.Split(new char[] { ' ', '　' });
+            var first = elements.First();
+            var last = elements.Last();
+            var middle = string.Join(" ", elements.Except(new List&lt;string&gt;() { first, last }).
+                OrderBy(element =&gt; rand.NextDouble()).ToArray());
+            return string.Join(" ", new string[] { first, middle, last });
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8969'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8969
+  :user_name: 割と普通
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/581/
+  :language: 
+  :time: 2009/05/22 02:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>やばい、題意を取り違えた、出直してきます・・・。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8970'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8970
+  :user_name: discus
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/1053/
+  :language: Other
+  :time: 2009/05/22 04:39 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  おもしろそうなので、つい、つい。\r\n\r\nアウェイ感たっぷりのOracle PL/SQLで書いてみました。\r\n\r\nOracle10g
+    R2 10.2.0.4.0 for MacOSX(Intel x86-64)、データベースキャラクタセット:AL32UTF8\r\n\r\n\n\t"
+  :code: "CREATE OR REPLACE FUNCTION Cambridge( iWords IN CLOB )\nRETURN CLOB\nIS\n
+    \ words           CLOB := EMPTY_CLOB();\n  word            CLOB := EMPTY_CLOB();\n
+    \ nonwords        CLOB := EMPTY_CLOB();\n  TYPE            t_char_table_type IS
+    TABLE OF CHAR(1 CHAR);\n  chars           t_char_table_type := t_char_table_type();\n
+    \ charsInit       t_char_table_type := t_char_table_type();\n  startpos        PLS_INTEGER
+    := 1;\n  endpos          PLS_INTEGER;\n  l               PLS_INTEGER;\n  endpos_nonwords
+    PLS_INTEGER;\n  tempwords       CLOB := EMPTY_CLOB();\n  done            BOOLEAN;\n
+    \ --\n  FUNCTION getShuffledWord RETURN CLOB\n  IS\n    workCLOB CLOB := EMPTY_CLOB();\n
+    \ BEGIN\n    IF chars.COUNT &gt; 0 THEN\n      FOR j IN chars.FIRST..chars.LAST
+    LOOP\n        workCLOB := workCLOB || chars(j);\n      END LOOP;\n    END IF;\n
+    \   RETURN workCLOB;\n  END;\n--\nBEGIN\n  words := iWords;\n  LOOP\n    endpos
+    := REGEXP_INSTR(words, '(\\s+|[[:punct:]]+|$)', startpos);\n    EXIT WHEN endpos
+    = 0;\n    --\n    word := DBMS_LOB.SUBSTR(words, endpos - startpos, startpos);\n
+    \   chars := charsInit;\n    --\n    IF DBMS_LOB.getLength(word) &gt; 3 THEN\n
+    \     FOR i IN 1..DBMS_LOB.getLength(word) LOOP\n        chars.EXTEND();\n      END
+    LOOP;\n      chars(chars.FIRST) := DBMS_LOB.SUBSTR(word, 1, 1);\n      chars(chars.LAST)
+    \ := DBMS_LOB.SUBSTR(word, 1, DBMS_LOB.getLength(word));\n      --\n      FOR
+    k IN 2..DBMS_LOB.getLength(word) - 1 LOOP\n          done := FALSE;\n          WHILE
+    NOT done LOOP\n            l := ROUND(DBMS_RANDOM.VALUE(2, DBMS_LOB.getLength(word)
+    - 1));\n            IF chars(l) IS NULL THEN\n              chars(l) := DBMS_LOB.SUBSTR(word,
+    1, k);\n              done := TRUE;\n            END IF;\n          END LOOP;\n
+    \     END LOOP;\n      word := getShuffledWord();\n    END IF;\n    --\n    endpos_nonwords
+    := REGEXP_INSTR(words, '(\\s+|[[:punct:]]+|$)', startpos, 1, 1);\n    nonwords
+    := DBMS_LOB.SUBSTR(words, endpos_nonwords - endpos, endpos);\n    startpos :=
+    endpos + 1;\n    tempwords := tempwords || word || nonwords;\n  END LOOP;\n  RETURN
+    tempwords;\nEND;\n/\n\n\nSCOTT&gt; /\n\nファンクションが作成されました。\nSCOTT&gt; \nSCOTT&gt;
+    set linesize 80\nSCOTT&gt; desc wordstable\n 名前                                    NULL?
+    \   型\n ----------------------------------------- -------- ----------------------------\n
+    ID                       NOT NULL NUMBER\n WORDS                            CLOB\n\nSCOTT&gt;
+    set long 4000\nSCOTT&gt; set longchunk 400\nSCOTT&gt; select words from wordstable
+    where id = 1;\n\nWORDS\n---------------------------------------------------------------------------\nこんにちは
+    みなさん おげんき ですか？ わたしは げんき です。\nこの ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか\nにんげん
+    は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば\nじゅんばん は めちゃくちゃ でも ちゃんと よめる という
+    けんきゅう に もとづいて\nわざと もじの じゅんばん を いれかえて あります。\nどうです？ ちゃんと よめちゃう でしょ？\nちゃんと よめたら はんのう
+    よろしく\n\n\nSCOTT&gt; select cambridge(words) from wordstable where id = 1;\n\nCAMBRIDGE(WORDS)\n---------------------------------------------------------------------------\nこちにんは
+    みさなん おんげき ですか？ わたしは げんき です。\nこの ぶょんしう は いりぎす の ケブンリッジ だいがく の けゅんきう の けっか\nにげんん
+    は もじ を にしんき する とき その さしいょ と さいご の もさじえ あてっいれば\nじゅんばん は めゃくちちゃ でも ちんゃと よめる という
+    けゅんきう に もとづいて\nわざと もじの じばんゅん を いかれえて あまりす。\nどうです？ ちゃんと よめちゃう でしょ？\nちゃんと よためら はのんう
+    よろしく\n\n経過: 00:00:00.07\nSCOTT&gt;\n"
+  :tags:
+  - PL/SQL
+  :references:
+    :url: 
+    :title: 
+- :id: '8971'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8971
+  :user_name: ivoryworks
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/647/
+  :language: PHP
+  :time: 2009/05/22 00:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ホントは\"。\"や\"？\"を除外して考えるべきですよね？</p>\n\n\t"
+  :code: |
+    $utf8_str = &lt;&lt;&lt;HERE
+    こんにちは みなさん おげんき ですか？ わたしは げんき です。
+    この ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか
+    にんげん は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば
+    じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて
+    わざと もじの じゅんばん を いれかえて あります。
+    どうです？ ちゃんと よめちゃう でしょ？
+    ちゃんと よめたら はんのう よろしく
+    HERE;
+    echo Cmabrigde( $utf8_str, 'UTF-8' );
+
+    function Cmabrigde( $text, $enc )
+    {
+        $ret = '';
+        $lines = explode( "\n", $text );
+        foreach ( $lines as $line ) {
+            $words = explode( ' ', trim($line) );
+            foreach ( $words as $word ) {
+                $len = mb_strlen( $word, $enc );
+                if ( 3 &lt;  $len ) {
+                    $head = mb_substr( $word, 0, 1, $enc );
+                    $body = mb_str_shuffle( mb_substr( $word, 1, $len-2, $enc ), $enc );
+                    $foot = mb_substr( $word, $len-1, 1, $enc );
+                    $word = $head.$body.$foot;
+                }
+                $ret .= $word.' ';
+            }
+            $ret = rtrim( $ret )."\n";
+        }
+        return $ret;
+    }
+
+    function mb_str_shuffle( $str, $enc )
+    {
+        $buff = array();
+        while ( $len = mb_strlen( $str, $enc ) ) {
+            $buff[] = mb_substr( $str, 0, 1, $enc );
+            $str = mb_substr( $str, 1, $len, $enc);
+        }
+        shuffle( $buff );
+        return implode( '', $buff );
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8977'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8977
+  :user_name: 割と普通
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/581/
+  :language: C
+  :time: 2009/05/22 04:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>でなおしました・・・orz</p>\n</div>\n\t"
+  :code: |
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var str = ケンブリッジ関数(@"こんにちは みなさん おげんき ですか？ わたしは げんき です。
+    この ぶんしょう は いぎりす の ケンブリッジ だいがく の けんきゅう の けっか
+    にんげん は もじ を にんしき する とき その さしいょ と さいご の もじさえ あっていれば
+    じゅんばん は めちゃくちゃ でも ちゃんと よめる という けんきゅう に もとづいて
+    わざと もじの じゅんばん を いれかえて あります。
+    どうです？ ちゃんと よめちゃう でしょ？
+    ちゃんと よめたら はんのう よろしく
+    ");
+            Console.WriteLine(str);
+            Console.ReadLine();
+        }
+
+        static public string ケンブリッジ関数(string lines)
+        {
+            var tokenLines = lines.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).
+                Select(line =&gt; ケンブリッジ関数を一行(line));
+            return string.Join(Environment.NewLine, tokenLines.ToArray());
+        }
+
+        static public string ケンブリッジ関数を一行(string line)
+        {
+            var tokens = line.Split(new char[] { ' ' }).
+                Select(token =&gt; ケンブリッジ関数を一単語(token));
+            return string.Join(" ", tokens.ToArray());
+        }
+
+        static public string ケンブリッジ関数を一単語(string str)
+        {
+            if (str.Length &lt;= 3) return str;
+            Random rand = new Random();
+            var elements = str.ToCharArray();
+            var first = elements.First();
+            var last = elements.Last();
+            var middle = new string(elements.Except(new List&lt;char&gt;() { first, last }).
+                OrderBy(element =&gt; rand.NextDouble()).ToArray());
+            return new StringBuilder().Append(first).Append(middle).Append(last).ToString();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8990'
+  :parent_id: '249'
+  :url: http://ja.doukaku.org/comment/8990
+  :user_name: lufia
+  :user_url: /web/20090524020410/http://ja.doukaku.org/user/242/
+  :language: Other
+  :time: 2009/05/22 22:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>標準入力から読みます。</p>\n<blockquote>\n% cmbr &lt;cmbr.data</blockquote>\n<p>考慮した点</p>\n<ul
+    class=\"simple\">\n<li>シャッフルした後は必ず元の語と異なるように</li>\n<li>句読点は除いてシャッフルするように</li>\n</ul>"
+  :code: |
+    implement Cmabrigde;
+
+    include "sys.m";
+        sys: Sys;
+        print, sprint: import sys;
+    include "draw.m";
+    include "bufio.m";
+        bufio: Bufio;
+        Iobuf: import bufio;
+    include "rand.m";
+        rand: Rand;
+    include "daytime.m";
+
+    Cmabrigde: module
+    {
+        init: fn(ctxt: ref Draw-&gt;Context, argv: list of string);
+    };
+
+    MAXRUNE: con 16rffff;
+    ispunct := array[MAXRUNE] of {
+        '。' =&gt; 1,
+        '？' =&gt; 1,
+    };
+
+    init(nil: ref Draw-&gt;Context, nil: list of string)
+    {
+        sys = load Sys Sys-&gt;PATH;
+        bufio = load Bufio Bufio-&gt;PATH;
+        rand = load Rand Rand-&gt;PATH;
+
+        daytime := load Daytime Daytime-&gt;PATH;
+        rand-&gt;init(daytime-&gt;now());
+        task(sys-&gt;fildes(0));
+    }
+
+    task(fd: ref Sys-&gt;FD)
+    {
+        fin := bufio-&gt;fopen(fd, bufio-&gt;OREAD);
+        while((line := fin.gets('\n')) != nil){
+            (nil, l) := sys-&gt;tokenize(line, " \t\n");
+            for(p := l; p != nil; p = tl p){
+                s := hd p;
+                ns := len s;
+                while(ispunct[s[ns-1]])
+                    ns--;
+                if(ns &gt;= 2)
+                    s = sprint("%c%s%s", s[0], shuffle(s[1:ns-1]), s[ns-1:len s]);
+                print("%s ", s);
+            }
+            print("\n");
+        }
+    }
+
+    shuffle(s: string): string
+    {
+        t := s[0:];
+        while(len t &gt; 1 &amp;&amp; t == s)
+            for(i := 0; i &lt; len t; i++){
+                n := rand-&gt;rand(len t);
+                c := t[i];
+                t[i] = t[n];
+                t[n] = c;
+            }
+        return t;
+    }
+  :tags:
+  - Limbo
+  :references:
+    :url: 
+    :title: 

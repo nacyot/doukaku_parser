@@ -1,0 +1,566 @@
+---
+:id: '57'
+:title: 改行をBRタグに置き換える
+:comments:
+- :id: '3413'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/3413
+  :user_name: にしお
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/09/04 05:31 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\r\n\t  <a href=\"/web/20081120020222/http://ja.doukaku.org/54/\">一部のHTMLタグを通すフィルタ
+    どう書く？</a>の続編です。\r\n前回の条件を満たしつつ、入力中の改行を&lt;br/&gt;に置き換えてください。ただし、たとえば\"&lt;a\\nhref=...&gt;\"といったようにタグの中に改行がある場合、単純に置換するわけには行かないことに注意してください。\r\n<p>\r\nまた、ユーザの入力注の&lt;br&gt;は&lt;br/&gt;に変換してください。\r\n</p>\n<p>\r\nこのお題はperezvonさんの提案を元にした三部作の二問目です。ご協力ありがとうございました。\r\n\t</p>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2889'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2889
+  :user_name: nobsun
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/09/04 06:11 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">テストケースがあるといいですねぇ。\r\nTag Soup ライブラリをつかってます\r\n#2757にすこし手を入れたものです</pre>\n\t"
+  :code: "module Main (main) where\n\nimport Data.Char\nimport Data.List\nimport Data.Maybe\nimport
+    Text.HTML.TagSoup\n\n-- Parsing\n-- Text.HTML.TagSoup.parseTags :: String -&gt;
+    [Tag Char]\n\n-- Translating\ntranslate :: [Tag Char] -&gt; [Tag Char]\ntranslate
+    = concatMap trans\n\ntrans :: Tag Char -&gt; [Tag Char]\ntrans tag = case tag
+    of\n  TagOpen t attrs | ignore t  -&gt; [escapeTagOpen t attrs]\n                  |
+    otherwise -&gt; [TagOpen t (filterAttr t attrs)]\n  TagClose t      | ignore t
+    \ -&gt; [escapeTagClose t]\n  TagText s -&gt; concat $ intersperse [TagOpen \"br\"
+    [], TagClose \"br\"]\n             $ map ((:[]) . TagText) $ lines s\n  _                           -&gt;
+    [tag]\n\nignore :: String -&gt; Bool\nignore = flip notElem (map fst filterTable)
+    . map toLower\n\nescapeTagOpen t attrs\n = TagText $ \"&amp;lt;\"++t++escape ('
+    ':unwords (map showAttr attrs))++\"&amp;gt;\"\nescapeTagClose t\n = TagText $
+    \"&amp;lt;/\"++t++\"&amp;gt;\"\n\nfilterAttr :: String -&gt; [Attribute Char]
+    -&gt; [Attribute Char]\nfilterAttr t = filter ((maybe (const True) id (lookup
+    t filterTable)) . fst)\n\nfilterTable :: [(String,String-&gt;Bool)]\nfilterTable
+    = [(\"a\",flip elem [\"href\",\"name\"])\n\t      ,(\"strong\",const False)\n\t
+    \     ,(\"br\",const False)]\n\n-- Showing\n\nshowTags :: [Tag Char] -&gt; String\nshowTags
+    [] = \"\"\nshowTags (TagOpen s [] : TagClose e : ts) | isEmptyTag s &amp;&amp;
+    s == e\n = angle (s ++\"/\")++showTags ts\nshowTags (TagOpen s attrs : TagClose
+    e : ts) | isEmptyTag s &amp;&amp; s == e\n = angle (s ++ ' ':unwords (map showAttr
+    attrs)++\"/\")++showTags ts\nshowTags (TagOpen s [] : ts) | isEmptyTag s \n =
+    angle (s ++\"/\")++showTags ts\nshowTags (TagOpen s attrs : ts) | isEmptyTag s
+    \n = angle (s ++ ' ':unwords (map showAttr attrs)++\"/\")++showTags ts\nshowTags
+    (t:ts) \n = showTag t ++ showTags ts\n\nshowTag tag = case tag of\n  TagOpen t
+    attrs -&gt; angle $ t ++ ' ':unwords (map showAttr attrs)\n  TagClose t      -&gt;
+    angle $ t ++ \"/\"\n  TagText s       -&gt; s\n  TagComment c    -&gt; angle $
+    \"!--\" ++ c ++ \"--\"\n  TagSpecial s t  -&gt; angle $ \"!\" ++ s ++ ' ':t\n
+    \ TagWarning s    -&gt; \"\"\n\nangle :: String -&gt; String\nangle s = \"&lt;\"++s++\"&gt;\"\n\nisEmptyTag
+    :: String -&gt; Bool\nisEmptyTag = flip elem [\"br\",\"hr\"]     -- not full fledged\n\nshowAttr
+    :: Attribute Char -&gt; String\nshowAttr (a,v) = a ++ \"=\" ++ q v\n  where q
+    v = if elem sq v then dq:v++[dq]\n              else sq:v++[sq]\n        sq =
+    '\\''\n        dq = '\\\"'\n\nescape :: String -&gt; String\nescape = concatMap
+    esc\n where esc '&lt;' = \"&amp;lt;\"\n       esc '&gt;' = \"&amp;gt;\"\n       esc
+    '&amp;' = \"&amp;amp;\"\n       esc c   = [c]\n\n--\n\nmain :: IO ()\nmain = do
+    { putStrLn . showTags . translate . parseTags $ testdata1\n\t  ; putStrLn . showTags
+    . translate . parseTags $ testdata2\n          ; putStrLn . showTags . translate
+    . parseTags $ testdata3\n          ; putStrLn . showTags . translate . parseTags
+    $ testdata4\n\t  }\n\ntestdata1 = \"&lt;script foo=\\\"&lt;script&gt;alert('bar')&lt;/script&gt;\\\"&gt;alert('foo')&lt;/script&gt;\"\ntestdata2
+    = \"&lt;script foo=\\\"&lt;a href='link'&gt;link&lt;/a&gt;\\\"&gt;alert('foo')&lt;/script&gt;\"\ntestdata3
+    = \"&lt;a href='www.g&gt;oogle.com'&gt;link&lt;/a&gt;\"\ntestdata4 = \"&lt;a\\n
+    href='www.google.com'&gt;link&lt;!-- comment --&gt;&lt;/a&gt; This&lt;br&gt; is
+    an\\n example.\"\n\n{-\n*Main&gt; :main\n&amp;lt;script foo=\"&amp;lt;script&amp;gt;alert('bar')&amp;lt;/script&amp;gt;\"&amp;gt;alert('foo')&amp;lt;/script&amp;gt;\n&amp;lt;script
+    foo=\"&amp;lt;a href='link'&amp;gt;link&amp;lt;/a&amp;gt;\"&amp;gt;alert('foo')&amp;lt;/script&amp;gt;\n&lt;a
+    href='www.g&gt;oogle.com'&gt;link&lt;a/&gt;\n&lt;a href='www.google.com'&gt;link&lt;!--
+    comment --&gt;&lt;a/&gt; This &lt;br/&gt; is an&lt;br/&gt; example.\n-}\n"
+  :tags: []
+  :references:
+    :url: /web/20081120020222/http://www.cs.york.ac.uk/fp/haddock/tagsoup/index.html
+    :title: Tag Soup
+- :id: '2893'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2893
+  :user_name: rucker
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/09/04 07:28 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">通すタグに含まれる改行は一度アトリビュート毎に分解するからそこで\r\n消えるかと思いきや、''で括られてたりすると残るのでした。\r\nURLに改行が含まれるというのもアレですが…\r\n'&amp;lt;～&amp;gt;'に変換されたタグに含まれる改行をどうするか迷ったのですが\r\n今回は&lt;br/&gt;には変換していません。\r\n</pre>\n\t"
+  :code: "&lt;?php\nfunction safehtml($str)\n{\n\t$safetag=array('a'=&gt;array(1,array('href','name')),'strong'=&gt;array(1),'br'=&gt;array(2));\n\t$r=array();\n\t$tags=array();\n\t$offs=0;\n\twhile(preg_match('!&lt;(\\s*(/|)\\s*(([^&gt;\\'\"/]+|\\'[^\\']*\\'|\"[^\"]*\")*)(/|)\\s*)&gt;!',$str,$m1,PREG_OFFSET_CAPTURE,$offs))\n\t{\t$r[]=nl2br(substr($str,$offs,$m1[0][1]-$offs));\n\t\t$offs=$m1[0][1]+strlen($m1[0][0]);\n\t\tpreg_match_all('!([^\\s\\'\"=]+)(\\s*=\\s*(\"[^\"]*\"|\\'[^\\']*\\'|[^\\s]+)|)!im',$m1[3][0],$m2,PREG_SET_ORDER);\n\t\t$tag=strtolower($m2[0][1]);\n\t\tif(isset($safetag[$tag]))\n\t\t{\tif($safetag[$tag][0]&amp;1)\n\t\t\t{\tif($m1[2][0])\n\t\t\t\t{\tif(array_search($tag,$tags)===false)\n\t\t\t\t\t\tcontinue;
+    // 開いてないタグは閉じない\n\t\t\t\t\twhile(($t=array_shift($tags))) // 開いたのと逆順に閉じる\n\t\t\t\t\t{\t$r[]=\"&lt;/$t&gt;\";\n\t\t\t\t\t\tif($t==$tag)\n\t\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tcontinue;\n\t\t\t\t}\n\t\t\t\tif(!$m1[5][0])\n\t\t\t\t\tarray_unshift($tags,$tag);\n\t\t\t}\n\t\t\tif($safetag[$tag][0]&amp;2)\n\t\t\t{\t$m1[2][0]=\"\";\n\t\t\t\t$m1[5][0]=\"/\";\n\t\t\t}\n\t\t\t$t=array($tag);\n\t\t\tif(isset($safetag[$tag][1])
+    &amp;&amp; !$m1[2][0])\n\t\t\t{\tarray_shift($m2);\n\t\t\t\twhile($param=array_shift($m2))\n\t\t\t\t{\tif(array_search(strtolower($param[1]),$safetag[$tag][1])!==false)\n\t\t\t\t\t\t$t[]=$param[0];\n\t\t\t\t}\n\t\t\t}\n\t\t\t$r[]='&lt;'.$m1[2][0].implode(\"
+    \",$t).$m1[5][0].'&gt;';\n\t\t}\n\t\telse\n\t\t\t$r[]=str_replace(array('&lt;','&gt;'),array('&amp;lt;','&amp;gt;'),$m1[0][0]);\n\t}\n\t$r[]=substr($str,$offs);\n\twhile(($tag=array_shift($tags)))
+    // 閉じわすれタグを閉じる\n\t\t$r[]=\"&lt;/$tag&gt;\";\n\treturn implode(\"\",$r);\n}\n\necho
+    safehtml(&lt;&lt;&lt;EOT\n&lt;a href='www.google.com'\ntarget=_blank&gt;link&lt;/a&gt;
+    &lt;blink dummy='&lt;'&gt;and&lt;/blink&gt;&lt;br&gt; &lt;strong onClick='alert(\"NG\")'&gt;cli\nck&lt;br/&gt;me!&lt;/strong&gt;
+    &lt;z foo='&lt;script&gt;alert(\"Boo\")&lt;/script&gt;'&gt;\nEOT\n);\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2895'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2895
+  :user_name: sawat
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/322/
+  :language: JavaScript
+  :time: 2007/09/04 08:57 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  前回のreplaceをwhileループに変更し、マッチしなかった箇所に対しても置換処理をする。\n\t"
+  :code: |
+    var input = "&lt;a title=\"(&gt;_&lt;;)\" href='www.google.com' name='hoge'\n\
+    &gt;link&lt;/a&gt; &lt;blink&gt;and&lt;/blink&gt;\n &lt;strong onClick='alert(\"NG\")'&gt;click&lt;br&gt;me!&lt;/strong&gt;";
+
+    function deleteAttr(attr) {
+      return attr.replace(/\s+(\w+)\s*=\s*(["'])((?:[\r\n]|.)*?)\2/g,
+        function(all, name, q, value) {
+          return name.match(/name|href/i) ? all : '';
+        });
+    }
+    function escapeHtml(h) {
+      return h.replace(/&amp;/g, '&amp;amp;').replace(/&lt;/g, '&amp;lt;').replace(/\r?\n/g, '&lt;br/&gt;');
+    }
+    function escapeTag(all, fslash, tag, attrs, q, rslash) {
+      switch(tag.toUpperCase()) {
+        case 'STRONG' :  // drop through
+        case 'BR' : attrs = ''; rslash = '/'; break;
+        case 'A' : attrs = deleteAttr(attrs); break;
+        default : return escapeHtml(all);
+      }
+      return '&lt;' + fslash + tag + attrs + rslash + '&gt;';
+    }
+    function filter(html) {
+      var reg = /&lt;(\/?)(\w+)((?:\s+\w+\s*=\s*(["'])(?:[\r\n]|.)*?\4)*)?(\/?)&gt;/gmi;
+      var output = [], m, i=0;
+      while(m = reg.exec(html)) {
+        output.push(escapeHtml(html.substring(i, m.index)));
+        output.push(escapeTag.apply(null, m));
+        i= m.index + m[0].length;
+      }
+      output.push(escapeHtml(html.substring(i, html.length)));
+      return output.join('');
+    }
+    document.body.innerHTML=filter(input);
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2899'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2899
+  :user_name: 匿名
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/09/04 10:26 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">前のお題の#2759で実装したクラスを継承します。\r\n#2759には下の方にテスト用の式をトップレベルに\r\n書いてあるので適当に処理してください。\r\n\r\n置き換えたタグ内の改行も、引用符にくくられていようと\r\n無視して&lt;br/&gt;に置換しています。\r\n</pre>\n\t"
+  :code: "from HTMLParser2 import HTMLParser2\n\nclass HTMLParser3(HTMLParser2):\n\n
+    \ def replace(self, s):\n    return s.replace('&amp;', '&amp;amp;').replace('&lt;',
+    '&amp;lt;').replace('&gt;', '&amp;gt;').replace('\\n', '&lt;br/&gt;')\n\n  def
+    handle_starttag(self, tag, attrs):\n    if tag == 'br':\n      self.buf += '&lt;br/&gt;'\n
+    \   else:\n      HTMLParser2.handle_starttag(self, tag, attrs)\n\n  def handle_data(self,
+    data):\n    self.buf += data.replace('\\n', '&lt;br/&gt;')\n  \ndef f(s):\n  h
+    = HTMLParser3()\n  h.feed(s)\n  print s\n  print h.buf\n\nif __name__ == '__main__':\n
+    \ f('''&lt;script foo=\"&lt;script&gt;alert('bar')&lt;/script&gt;\"&gt;alert('foo')&lt;/script&gt;''')\n
+    \ f('''&lt;script foo=\"&lt;a href='link'&gt;link&lt;/a&gt;\"&gt;alert('foo')&lt;/script&gt;''')\n
+    \ f('''&lt;a href='www.g&gt;oogle.com'&gt;link&lt;/a&gt;''')\n  f('''&lt;br&gt;abc\\ndef\\n&lt;br&gt;''')\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2901'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2901
+  :user_name: tea
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/402/
+  :language: Python
+  :time: 2007/09/04 12:11 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">同じく前回の投稿 #2763 を再利用して。\r\n\r\n折角、フィルタ登録型にしたのに、\r\nフィルタ探索関数をクロージャにしてしまったのが裏目にでた。\r\nMyHTMLParserを継承してますが、変更部分は
+    filterメソッド内の find_filter のみです。\r\n\r\n今回のお題の追加分は、\r\nfix_br_tag, nl_to_br_in_text
+    。\r\n\r\n</pre>\n\t"
+  :code: "# wget http://ja.doukaku.org/comment/2763/download/ -O MyHTMLParser.py\n
+    \n\nfrom MyHTMLParser import MyHTMLParser, TEXT,TAG\n\n\nclass MyHTMLParser2(MyHTMLParser):\n\n
+    \   def filter(self, (state,tag,attrs,text)):\n        #  find_filter = lambda
+    x:x.get((state,tag.lower()), lambda x:x)\n        def find_filter(filters):\n
+    \           tag_ = tag.lower()\n            if filters.has_key((state,tag_)):\n
+    \               return filters.get((state,tag_))\n            return filters.get((state,None),
+    lambda x:x)\n\n\n        tag,attrs = find_filter(self.tag_filters)((tag,attrs))\n
+    \       attrs = find_filter(self.attr_filters)(attrs)\n        text = find_filter(self.text_filters)(text)\n\n
+    \       return state,tag,attrs,text\n\n\ndef test(html):\n    import re\n\n    def
+    allow_attrs(*names):\n        return lambda attrs: [(k,quote(v)) for k,v in attrs
+    if k.lower() in names]\n\n    def remove_all_attrs(attrs):\n        return []\n\n
+    \   def fix_br_tag((tag,attrs)):\n        return ('br/',attrs)\n\n    def nl_to_br_in_text(text):\n
+    \       return re.sub(text, r\"(\\r\\n|\\r|\\n)\",\"&lt;br /&gt;\")\n\n    p =
+    MyHTMLParser2()\n    p.allow_tags += ['a', 'br', 'strong']\n    p.attr_filters[(TAG,'a')]
+    = allow_attrs('href', 'name') \n    p.attr_filters[(TAG,'br')] = remove_all_attrs\n
+    \   p.attr_filters[(TAG,'strong')] = remove_all_attrs\n    p.tag_filters[(TAG,'br')]
+    = fix_br_tag\n    p.text_filters[(TEXT,None)] = nl_to_br_in_text\n    p.parse(html)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2902'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2902
+  :user_name: tea
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/402/
+  :language: 
+  :time: 2007/09/04 12:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Copy&amp;Pasteしたらライブラリのimport漏れ。\r\ntest関数内import
+    re の後に、from urllib import quote 追加して下さい。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2903'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2903
+  :user_name: matyr
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/09/04 12:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t   ややこしいので最初に一括エスケープするように方針変更。タグ中の改行はスペースに置き換えて対処。\r<br><br>javascript:with(document.body)(function(s,i,g,n){i=/&amp;lt;(\\/?(?:(a)|br|strong)\\b\\s?)((?:\".*?\"|'.*?'|[^&gt;])*?)(?=\\/?&gt;)/gi,g=/\\b(?:name|href)\\s*=\\s*(?:\".*?\"|'.*?'|[^\\s&gt;]*)/gi,n=/\\r\\n|[\\r\\n]|&lt;br\\s*&gt;/gi;innerHTML=s.replace(/&amp;/g,'&amp;amp;').replace(/&lt;/g,'&amp;lt;').replace(i,function(_,t,A,a){return('&lt;'+t+(A?(a.match(g)||[]).join(' '):'')).replace(n,' ')}).replace(n,'&lt;br/&gt;')})(innerHTML)\n\t"
+  :code: |
+    function doukaku57(s){
+      var xOK = /&amp;lt;(\/?(?:(a)|br|strong)\b\s?)((?:".*?"|'.*?'|[^&gt;])*?)(?=\/?&gt;)/gi,
+          xNH = /\b(?:name|href)\s*=\s*(?:".*?"|'.*?'|[^\s&gt;]*)/gi,
+          xBR = /\r\n|[\r\n]|&lt;br\s*&gt;/gi;
+      return s.replace(/&amp;/g,'&amp;amp;').replace(/&lt;/g,'&amp;lt;').replace(xOK, function(_, tag, A, ats){
+        return ('&lt;'+ tag + (A ? (ats.match(xNH) || []).join(' ') : '')).replace(xBR, ' ');
+      }).replace(xBR, '&lt;br/&gt;');
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2904'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2904
+  :user_name: yuin
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/09/04 12:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  2706をベースにしてます。\r\n\r\n\r\n\n\t"
+  :code: "import java.util.regex._\nclass ExtendedString(self:String) {\n  def gsub(reg:Pattern,
+    f:(Matcher)=&gt;String):String = {\n    val result = new StringBuffer\n    val
+    m = reg.matcher(self)\n    while(m.find) m.appendReplacement(result, f(m))\n    m.appendTail(result)\n
+    \   result.toString\n  }\n  def gsub(reg:String, f:(Matcher)=&gt;String):String
+    = gsub(Pattern.compile(reg), f)\n}\nimplicit def string2ext(self:String) = new
+    ExtendedString(self);\n\nobject htmlEscape{\n  lazy val tagRegex = Pattern.compile(\n
+    \   \"\"\"(&lt;\\s*/?\\s*)([^\"'&lt;\\s&gt;]*\\s*)([^\"'&lt;&gt;]*(?:\"[^\"]*\"[^\"'&lt;&gt;]*|'[^']*'[^\"'&lt;&gt;]*)*)((?:&gt;|(?=&lt;)|$(?!\\n)))\"\"\"\n
+    \ )\n  lazy val attrRegex = Pattern.compile(\n    \"\"\"[\\s'\"](\\w+)\\s*=\\s*([^\\s'\"&gt;]+|'[^']+'|\\\"[^\"]+\")\"\"\"\n
+    \ , Pattern.DOTALL | Pattern.CASE_INSENSITIVE)\n\n  lazy val tagAllowed  = Set(\"a\",
+    \"br\", \"strong\")\n  lazy val attrAllowed = Map(\"a\" -&gt; Set(\"href\", \"name\"))\n\n
+    \ def replace(s:String, rs:Pair[String,String]*) = {\n    rs.foldLeft(s){(r,v)=&gt;
+    r.replace(v._1, v._2)}\n  }\n  def apply(html:String) = {\n    val other = tagRegex.split(html)\n
+    \   val sb    = new StringBuilder\n    val m     = tagRegex.matcher(html)\n    var
+    i = -1;while({\n      i=i+1;\n      try{\n        sb.append(replace(other(i),
+    (\"&lt;\",\"&amp;lt;\"), (\"&gt;\",\"&amp;gt;\"), (\"\\n\",\"&lt;br/&gt;\")));\n
+    \     }catch{case _=&gt; ()};\n      m.find}\n    ) {\n      val tag = replace(m.group(2).toLowerCase,
+    (\"/\",\"\")).trim\n      sb.append(\n        (if(tagAllowed.contains(tag)){\n
+    \         val attrs = m.group(3).gsub(attrRegex, (m2:Matcher) =&gt; {\n            if(attrAllowed.getOrElse(tag,
+    Set[String]()).contains(m2.group(1).toLowerCase)) {\n              m2.group(0)\n
+    \           }else {\n              \"\"\n            }\n          })\n          if(tag
+    == \"br\") List(\"&lt;br/&gt;\")\n          else List(m.group(1),m.group(2), attrs,
+    m.group(4))\n        }else {\n          List(replace(m.group(1), (\"&lt;\", \"&amp;lt;\")),
+    m.group(2), \n               replace(m.group(3), (\"&lt;\", \"&amp;lt;\"), (\"&gt;\",
+    \"&amp;gt;\")), m.group(4))\n        }).mkString(\"\")\n      )\n    }\n    sb.toString\n
+    \ }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2905'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2905
+  :user_name: yuin
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/82/
+  :language: 
+  :time: 2007/09/04 13:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ああやってしまった・・・Markdownにしてるの忘れて行頭に#2706を書いてしまいました。修正お願いできますか？</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2908'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2908
+  :user_name: rucker
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/09/04 18:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#2906を見て&lt;&gt;の対応が崩れている場合にうまく対応できていない事に気がつきました。\r\nそれから最後のタグより後ろの部分の改行を変換し忘れていたので合わせて修正しました。</pre>\n\t"
+  :code: "&lt;?php\nfunction escapetag($str)\n{\n\treturn str_replace(array('&lt;','&gt;'),array('&amp;lt;','&amp;gt;'),$str);\n}\nfunction
+    safehtml($str)\n{\n\t$safetag=array('a'=&gt;array(1,array('href','name')),'strong'=&gt;array(1),'br'=&gt;array(2));\n\t$r=array();\n\t$tags=array();\n\t$offs=0;\n\twhile(preg_match('!&lt;(\\s*(/|)\\s*(([^&lt;&gt;\\'\"/]+|\\'[^\\']*\\'|\"[^\"]*\")*)(/|)\\s*)&gt;!',$str,$m1,PREG_OFFSET_CAPTURE,$offs))\n\t{\t$r[]=nl2br(escapetag(substr($str,$offs,$m1[0][1]-$offs)));\n\t\t$offs=$m1[0][1]+strlen($m1[0][0]);\n\t\tpreg_match_all('!([^\\s\\'\"=]+)(\\s*=\\s*(\"[^\"]*\"|\\'[^\\']*\\'|[^\\s]+)|)!im',$m1[3][0],$m2,PREG_SET_ORDER);\n\t\t$tag=strtolower($m2[0][1]);\n\t\tif(isset($safetag[$tag]))\n\t\t{\tif($safetag[$tag][0]&amp;1)\n\t\t\t{\tif($m1[2][0])\n\t\t\t\t{\tif(array_search($tag,$tags)===false)\n\t\t\t\t\t\tcontinue;
+    // 開いてないタグは閉じない\n\t\t\t\t\twhile(($t=array_shift($tags))) // 開いたのと逆順に閉じる\n\t\t\t\t\t{\t$r[]=\"&lt;/$t&gt;\";\n\t\t\t\t\t\tif($t==$tag)\n\t\t\t\t\t\t\tbreak;\n\t\t\t\t\t}\n\t\t\t\t\tcontinue;\n\t\t\t\t}\n\t\t\t\tif(!$m1[5][0])\n\t\t\t\t\tarray_unshift($tags,$tag);\n\t\t\t}\n\t\t\tif($safetag[$tag][0]&amp;2)\n\t\t\t{\t$m1[2][0]=\"\";\n\t\t\t\t$m1[5][0]=\"/\";\n\t\t\t}\n\t\t\t$t=array($tag);\n\t\t\tif(isset($safetag[$tag][1])
+    &amp;&amp; !$m1[2][0])\n\t\t\t{\tarray_shift($m2);\n\t\t\t\twhile($param=array_shift($m2))\n\t\t\t\t{\tif(array_search(strtolower($param[1]),$safetag[$tag][1])!==false)\n\t\t\t\t\t\t$t[]=$param[0];\n\t\t\t\t}\n\t\t\t}\n\t\t\t$r[]='&lt;'.$m1[2][0].implode(\"
+    \",$t).$m1[5][0].'&gt;';\n\t\t}\n\t\telse\n\t\t\t$r[]=escapetag($m1[0][0]);\n\t}\n\t$r[]=nl2br(escapetag(substr($str,$offs)));\n\twhile(($tag=array_shift($tags)))
+    // 閉じわすれタグを閉じる\n\t\t$r[]=\"&lt;/$tag&gt;\";\n\treturn implode(\"\",$r);\n}\n\necho
+    safehtml(&lt;&lt;&lt;EOT\n&lt;a href='www.google.com'\ntarget=_blank&gt;link&lt;/a&gt;&gt;
+    &lt;blink dummy='&lt;'&gt;and&lt;/blink&gt;&lt;&lt;br&gt; &lt;strong onClick='alert(\"NG\")'&gt;cli\nck&lt;br/&gt;me!&lt;/strong&gt;
+    &lt;z foo='&lt;script&gt;alert(\"Boo\")&lt;/script&gt;'&gt;&lt;\nEOT\n);\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2910'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2910
+  :user_name: にしお
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/09/05 02:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">修正しました。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2912'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2912
+  :user_name: yuin
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/82/
+  :language: 
+  :time: 2007/09/05 07:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>ありがとうございました。\n</p>\n<p>以後気をつけます。\n</p>\n\n\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2915'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2915
+  :user_name: sumim
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/09/05 10:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk で。\n\t"
+  :code: "| string accepts in out upToAnyOf letters separators replaceCRs |\nstring
+    := '&lt;a title=\"(&gt;_&lt;;)\" href=''www.google.com'' \nname=''hoge'' target=_blank&gt;link&lt;/a&gt;
+    &lt;blink&gt;a\nnd&lt;/blink&gt; &lt;strong onClick=''alert(\"NG\")''&gt;click&lt;br&gt;me!&lt;/strong&gt;'.\n\naccepts
+    := {#a-&gt;#(name href). #strong-&gt;#(). #br-&gt;#()} as: Dictionary.\nstring
+    := string copyReplaceAll: '&lt;br&gt;' with: '&lt;br/&gt;'.\nin := string readStream.\nout
+    := String new writeStream.\nupToAnyOf := [:arr | String streamContents: [:ss |\n
+    \   arr := arr copyWith: nil.\n    [arr includes: in peek] whileFalse: [ss nextPut:
+    in next]]].\nletters := Character alphabet asArray, Character alphabet asUppercase.\nseparators
+    := Character separators, #($/ $&gt;).\nreplaceCRs := [:str | str copyReplaceAll:
+    String cr with: '&lt;br/&gt;'].\n\n[out nextPutAll: (replaceCRs value: (in upTo:
+    $&lt;) escapeEntities). in atEnd] whileFalse: [\n    | tag lt isClose isAccepted
+    blank rest |\n    (isClose := in peek == $/) ifTrue: [in next].\n    tag := upToAnyOf
+    value: separators.\n    lt := '&lt;', (isClose ifTrue: ['/'] ifFalse: ['']).\n
+    \   (isAccepted := accepts keys includes: tag asLowercase) ifFalse: [lt := lt
+    escapeEntities].\n    out nextPutAll: lt, tag.\n    [blank := upToAnyOf value:
+    letters, '&gt;'. {nil. $&gt;} includes: in peek] whileFalse: [\n        | attr
+    equal value quote |\n        attr := upToAnyOf value: #($= $&gt;).\n        equal
+    := in peek == $= ifTrue: [in next asString] ifFalse: [''].\n        value := (#($'
+    $\") includes: (quote := in peek))\n            ifTrue: [quote asString, (in next;
+    upTo: quote), quote asString]\n            ifFalse: [upToAnyOf value: #($  $&gt;)].\n
+    \       out nextPutAll: (isAccepted\n            ifFalse: [blank, attr, equal,
+    value escapeEntities]\n            ifTrue: [((accepts at: tag) includes: attr)\n
+    \               ifTrue: [blank, attr, equal, value] ifFalse: ['']])].\n    rest
+    := blank, (in peek == $&gt; ifTrue: [in next asString] ifFalse: ['']).\n    out
+    nextPutAll: (isAccepted ifTrue: [rest] ifFalse: [rest escapeEntities])].\nWorld
+    findATranscript: nil.\nTranscript cr; show: out contents\n\n\"=&gt; &lt;a href='www.google.com'
+    \nname='hoge'&gt;link&lt;/a&gt; &amp;lt;blink&amp;gt;a&lt;br/&gt;nd&amp;lt;/blink&amp;gt;
+    &lt;strong&gt;click&lt;br/&gt;me!&lt;/strong&gt; \"\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '2916'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2916
+  :user_name: mc
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2007/09/05 10:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">今回の改行の処理の対応と、\r\n前回のものが、属性のなかのタグの途中で改行が入った\r\n\"&lt;foo
+    clear='&lt;scr\r\n   ipt&gt;foo&gt;'&gt;foo&lt;/foo&gt;\"\r\nのようなものを上手く処理できていないことに気付いたので直し…\r\n…たつもりですが、私には問題が難し過ぎたようで、\r\n何が何だが分からないものになり果てました…。\r\n\r\nタグのエスケープ処理のため2種の文字を予約で消費してしまいます。\r\n下記では、ここへの投稿のために\"【\"と\"】\"を使いました。\r\n\r\nまた、前回はライブラリが見付けられずAllegroのparse-htmlを\r\n使用して作成しましたが、Clikiにポータブル版のpxmlutilsが\r\nありました。\r\nhttp://www.cliki.net/pxmlutils\r\n今回はそれを導入してsbclで動作確認しています。</pre>\n\t"
+  :code: "(use-package :net.html.parser)\n(use-package :cl-ppcre)\n(use-package :url-rewrite)\n\n(defun
+    html-filter-2 (str)\n  (regex-replace-all-lis \n   '((\"】\" . \"&amp;gt;\") (\"【\"
+    . \"&amp;lt;\") (\"\\\\n\" . \"&lt;br /&gt;\"))\n   (html-filter-1 \n    (prop-filter-2
+    (pickup-tag (&lt;&gt;-to-escape (prop-filter-1 str)))))))\n\n(defun regex-replace-all-lis
+    (repl-alist str \n\t\t\t      &amp;optional &amp;key case-insensitive-mode)\n
+    \ (reduce\n   (lambda (res item)\n     (let ((scan (create-scanner \n\t\t  (car
+    item)\n\t\t  :case-insensitive-mode case-insensitive-mode)))\n       (regex-replace-all
+    scan res (cdr item))))\n   repl-alist :initial-value str))\n\n(defun &lt;&gt;-to-escape
+    (str)\n  (regex-replace-all-lis '((\"&gt;\" . \"】\")(\"&lt;\" . \"【\")) str))\n\n(defun
+    &lt;&gt;-to-ltgt (str)\n  (regex-replace-all-lis '((\"&gt;\" . \"&amp;gt;\")(\"&lt;\"
+    . \"&amp;lt;\")) str))\n\n(defun pickup-tag (str)\n  (regex-replace-all-lis \n
+    \  '((\"【(a\\\\s*[^\\\\s】]*)】\" .  \"&lt;\\\\1&gt;\")\n     (\"【(/a\\\\s*)】\"
+    .  \"&lt;/a&gt;\")\n     (\"【(strong\\\\s*[^\\\\s】]*)】\" .  \"&lt;\\\\1&gt;\")\n
+    \    (\"【(/strong\\\\s*)】\" .  \"&lt;/strong&gt;\")\n     (\"【(br\\\\s*[^\\\\s】]*)】\"
+    .  \"&lt;br /&gt;\"))\n   str))\n\n(defun prop-filter-1 (str)\n  (prop-filter-*
+    str \"('[^']*')\" #'url-encode))\n\n(defun prop-filter-2 (str)\n  (prop-filter-*
+    str \"(【[^】]*】)\" #'&lt;&gt;-to-ltgt))\n\n(defun prop-filter-* (str scan-pat repl-func)\n
+    \ (let ((scan (create-scanner scan-pat :case-insensitive-mode t)))\n    (regex-replace-all
+    scan str \n\t\t       (lambda (match &amp;rest rest)\n\t\t\t (declare (ignore
+    rest))\n\t\t\t (if (scan \"[&lt;&gt;]\" match)\n\t\t\t     (funcall repl-func
+    match)\n\t\t\t     match))\n\t\t       :simple-calls t)))\n\n(defun html-filter-1
+    (string)\n  (let ((form (sanitize-html (parse-html string))))\n    (apply #'concatenate
+    'string (build-html form))))\n\n(defun sanitize-html (form)\n  (mapcar \n   (lambda
+    (item)\n     (if (atom item)\n\t item\n\t (let ((keys `(,(car item) ,(and (consp
+    (car item)) (caar item)))))\n\t   (cond ((member :a keys) \n\t\t  `(,(car item)
+    ,@(sanitize-html (cdr item))))\n\t\t ((member :strong keys)\n\t\t  `(:strong ,@(sanitize-html
+    (cdr item))))\n\t\t ((member :br keys) :br)\n\t\t ('T \"\")))))\n   form))\n\n(defun
+    build-html (form)\n  (if (atom form) \n      form\n      (cond ((and (atom (car
+    form)) (eq :br (car form)))\n\t     `(,(br) ,@(build-html (cdr form))))\n\t    ((consp
+    (car form))\n\t     `(,(let* ((top (car form))\n\t\t       (keys `(,(car top)
+    ,(and (consp (car top)) (caar top)))))\n\t\t      (cond ((member :a keys) (build-a
+    top))\n\t\t\t    ((member :strong keys) (build-strong top))\n\t\t\t    ('T top)))\n\t\t,@(build-html
+    (cdr form))))\n\t    ('T `(,(build-html (car form))\n\t\t   ,@(build-html (cdr
+    form)))))))\n\n(defun br () \"&lt;br /&gt;\")\n\n(defun build-strong (form)\n
+    \ (format nil \"&lt;strong&gt;~{~A~}&lt;/strong&gt;\" (build-html (cdr form))))\n\n(defun
+    build-a (form)\n  (let ((tag (car form))\n\t(body (build-html (cdr form))))\n
+    \   (if (and (consp (car form)) \n\t     (member (second tag) '(:href :name)))\n\t(format
+    nil \"&lt;a ~(~A~)='~A'&gt;~{~A~}&lt;/a&gt;\" \n\t\t(second tag) \n\t\t(put-dotslash
+    (third tag)) body)\n\t(format nil \"&lt;a&gt;~{~A~}&lt;/a&gt;\" (build-html (cdr
+    form))))))\n\n(defun put-dotslash (str)\n  (let ((s (create-scanner \"^([Hh][Tt][Tt][Pp][Ss]*://|^/|\\./)\")))\n
+    \   (if (scan s str)\n\tstr\n\t(concatenate 'string \"./\" str))))\n\n(defun prop-maker
+    (lst)\n  (do ((l lst (cddr l))\n       result)\n      ((endp l) (nreverse result))\n
+    \ (push (format nil \"~A=\\\"~A\\\"\" \n\t\t(car l) (&lt;&gt;-to-ltgt (cadr l)))
+    result)))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2917'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2917
+  :user_name: kozima
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/164/
+  :language: OCaml
+  :time: 2007/09/05 13:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#2911 を改変。変換と出力を分離しました。\r\n74 行目までは同じなのでそれ以降だけ。</pre>\n\t"
+  :code: |
+    let filter_attributes tagname attrlist =
+      List.filter
+        (fun (attrname, _) -&gt; is_allowed_attribute tagname attrname)
+        attrlist
+
+    let filter_input src = function
+      | String _ as x -&gt; x
+      | SingleTag (tagname, attrs, p, q) -&gt;
+          if is_allowed_tag tagname then
+            SingleTag(tagname, filter_attributes tagname attrs, p, q)
+          else
+            String (String.sub src p (q-p))
+      | OpenTag (tagname, attrs, p, q) -&gt;
+          if tagname === "br" then
+            SingleTag(tagname, [], p, q)
+          else if is_allowed_tag tagname then
+            OpenTag(tagname, filter_attributes tagname attrs, p, q)
+          else
+            String (String.sub src p (q-p))
+      | CloseTag (tagname, p, q) as x -&gt;
+          if is_allowed_tag tagname then x else
+            String (String.sub src p (q-p))
+      | Eof -&gt; Eof
+
+    let sanitizing_output buf string p q =
+      for x = p to q-1 do
+        match string.[x] with
+          | '&lt;' -&gt; Buffer.add_string buf "&amp;lt;"
+          | '&gt;' -&gt; Buffer.add_string buf "&amp;gt;"
+          | '&amp;' -&gt; Buffer.add_string buf "&amp;amp;"
+          | '\n' -&gt; Buffer.add_string buf "&lt;br/&gt;"
+          | c -&gt; Buffer.add_char buf c
+      done
+
+    let output_attribute buf (attrname, value) =
+      let quote = if String.contains value '"' then '\'' else '"' in
+        Printf.bprintf buf " %s=%c%s%c" attrname quote value quote
+
+    let output_tag buf name attrs is_single =
+      Printf.bprintf buf "&lt;%s" name;
+      List.iter (output_attribute buf) attrs;
+      if is_single then Buffer.add_char buf '/';
+      Buffer.add_char buf '&gt;'
+
+    let output_text_fragment buf = function
+      | String s -&gt;
+          sanitizing_output buf s 0 (String.length s)
+      | SingleTag (s, attrs, _, _) -&gt;
+          output_tag buf s attrs true
+      | OpenTag (s, attrs, _, _) -&gt;
+          output_tag buf s attrs false
+      | CloseTag (s, _, _) -&gt;
+          Printf.bprintf buf "&lt;/%s&gt;" s
+      | Eof -&gt; ()
+
+    let filter_text text =
+      let list = parse_input text in
+      let flist = List.map (filter_input text) list in
+      let buf = Buffer.create (String.length text) in
+        List.iter (output_text_fragment buf) flist;
+        Buffer.contents buf
+    }
+  :tags:
+  - ocamllex
+  :references:
+    :url: 
+    :title: 
+- :id: '2918'
+  :parent_id: '57'
+  :url: http://ja.doukaku.org/comment/2918
+  :user_name: 匿名
+  :user_url: /web/20081120020222/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/09/05 13:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#2906を元に改造しました。\r\n&lt;/br&gt;は取り除くように変更しています（&lt;br&gt;&lt;/br&gt;の変換結果が不正になるのを防ぐため）。</pre>\n\t"
+  :code: "import java.util.regex.*;\n\npublic class Sample {\n    private static final
+    Pattern TAG_FILTER = Pattern.compile\n        (\"&lt;(¥¥w+)((¥¥s+¥¥w+(¥¥s*=¥¥s*(¥\"[^¥\"]*¥\"|'[^']*'|[¥¥w-:]*))?)*)¥¥s*/?¥¥s*&gt;\");\n
+    \   private static final Pattern END_TAG_FILTER = Pattern.compile\n        (\"(?i)&lt;/(A|STRONG)¥¥s*&gt;\");\n
+    \   private static final Pattern ATTR_FILTER = Pattern.compile\n        (\"(¥¥w+)¥¥s*=¥¥s*(¥\"[^¥\"]*¥\"|'[^']*'|[¥¥w-:]*)\");\n
+    \   public static String sanitizing(String fragment) {\n        fragment = fragment.replaceAll(\"[¥¥p{Cntrl}&amp;&amp;[^¥¥s]]\",
+    \"\");\n        Matcher m = TAG_FILTER.matcher(fragment);\n        StringBuffer
+    sb = new StringBuffer();\n        while (m.find()) {\n            if (\"A\".equalsIgnoreCase(m.group(1)))
+    {\n                String href = null, name = null;\n                Matcher m2
+    = ATTR_FILTER.matcher(m.group(2));\n                while (m2.find()) {\n                    if
+    (\"href\".equalsIgnoreCase(m2.group(1))) {\n                        href = m2.group(2);\n
+    \                   } else if (\"name\".equalsIgnoreCase(m2.group(1))) {\n                        name
+    = m2.group(2);\n                    }\n                }\n                String
+    tag = \"¥001\"+m.group(1) + ((href != null)?\" href=\"+href\n                    :
+    \"\") + ((name != null)? \" name=\"+name : \"\") + \"¥002\";\n                m.appendReplacement(sb,
+    m.quoteReplacement(tag));\n            } else if (\"BR\".equalsIgnoreCase(m.group(1)))
+    {\n                m.appendReplacement(sb, \"¥001\" + m.group(1) + \"/¥002\");
+    \n            } else if (\"STRONG\".equalsIgnoreCase\n\n\n\n\n<!--\n     FILE
+    ARCHIVED ON 2:02:22 Nov 20, 2008 AND RETRIEVED FROM THE\n     INTERNET ARCHIVE
+    ON 13:43:22 Nov 16, 2013.\n     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT
+    INTERNET ARCHIVE.\n\n     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT
+    (17 U.S.C.\n     SECTION 108(a)(3)).\n-->"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

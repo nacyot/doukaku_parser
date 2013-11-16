@@ -1,0 +1,916 @@
+---
+:id: '41'
+:title: JPEGをGETして色反転して保存
+:comments:
+- :id: '3397'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/3397
+  :user_name: sumim
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2007/08/04 15:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  ネットからのデータ取得（これはすでにありましたが…）および画像データの取り扱いに関係したライブラリの理解をとう問題として次のようなものはいかがでしょう。　\r\n<p>\r\n『ネットで公開されている
+    JPEG ファイルを取得し、色反転して保存するスクリプトを記述せよ。』　\r\n</p>\n<p>\r\nもちろん例によって Squeak Smalltalk
+    からの挑戦状でもあります。\r\n</p>\n<p>\r\n</p>\n<p>\r\nこのお題はsumimさんからの投稿です。ご投稿ありがとうございます。\r\n画像の処理という切り口も面白いですね。\r\n\t</p>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1821'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/1821
+  :user_name: ocean
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/08/04 15:41 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  http://www.pythonware.com/products/pil/ から取得できる Python Imaging Library
+    (PIL) を使います。\n\t"
+  :code: |
+    import PIL.Image
+    import PIL.ImageOps
+    import urllib
+    import cStringIO
+
+    def invert(url, path):
+        image = PIL.Image.open(cStringIO.StringIO(urllib.urlopen(url).read()))
+        image = PIL.ImageOps.invert(image)
+        image.save(path)
+
+    def main():
+        invert("http://www.python.org/images/success/nasa.jpg", "nasa.jpg")
+
+    if __name__ == '__main__':
+        main()
+  :tags:
+  - PIL
+  :references:
+    :url: 
+    :title: 
+- :id: '1823'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/1823
+  :user_name: ？せんたくいた
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/241/
+  :language: Bash
+  :time: 2007/08/04 15:48 GMT
+  :vote_count: '8'
+  :vote_score: '8'
+  :body: "\n\t  <pre class=\"compact\">wget と convert 駆使するとワンライナー。\r\nせっかくなので「元ファイル名_r.jpg」で保存するようなスクリプトに。\r\n</pre>\n\t"
+  :code: |
+    #!/bin/bash
+    url="$1"
+    file=${url##*/}
+
+    wget -q -O - $url |convert -negate jpg:- ${file%.jpg}_r.jpg
+  :tags:
+  - ImageMagick
+  - wget
+  :references:
+    :url: 
+    :title: 
+- :id: '1840'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/1840
+  :user_name: hamano
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/25/
+  :language: C
+  :time: 2007/08/04 17:51 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">libcurl と libgd を使用しています。\r\n% gcc invert.c
+    -o invert -lcurl -lgd\r\n% ./invert URL</pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;string.h&gt;
+    #include &lt;libgen.h&gt;
+    #include &lt;curl/curl.h&gt;
+    #include &lt;gd.h&gt;
+
+    #define TMP_FILE "tmp.jpg"
+
+    int main(int argc, char *argv[]){
+        CURL *curl;
+        CURLcode res;
+        FILE *fp;
+        gdImagePtr img;
+        int i;
+
+        if(argc &lt; 2) return EXIT_FAILURE;
+        fp = fopen(TMP_FILE, "w+");
+        if(!fp) return EXIT_FAILURE;
+        curl = curl_easy_init();
+        if(!curl) return EXIT_FAILURE;
+        curl_easy_setopt(curl, CURLOPT_URL, argv[1]);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+        res = curl_easy_perform(curl);
+        curl_easy_cleanup(curl);
+        if(res != CURLE_OK) return EXIT_FAILURE;
+        fseek(fp, 0, SEEK_SET);
+        img = gdImageCreateFromJpeg(fp);
+        if(!img) return EXIT_FAILURE;
+        fclose(fp);
+        fp = fopen(basename(argv[1]), "w");
+        if(!fp) return EXIT_FAILURE;
+        for(i=0; i&lt;img-&gt;colorsTotal; i++){
+            img-&gt;red[i] = 255 - img-&gt;red[i];
+            img-&gt;green[i] = 255 - img-&gt;green[i];
+            img-&gt;blue[i] = 255 - img-&gt;blue[i];
+        }
+        gdImageJpeg(img, fp, 100);
+        fclose(fp);
+        gdImageDestroy(img);
+        return EXIT_SUCCESS;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1844'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/1844
+  :user_name: ocean
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/177/
+  :language: Java
+  :time: 2007/08/04 18:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  JDKのサンプルのJava2D/Images/ImageOpsから引っ張ってきました。（op.filter(image, image);
+    は src と dst で同じイメージを使ってるけど、いいのかな？動いてるからいいか・・・）\n\t"
+  :code: |
+    import java.awt.image.BufferedImage;
+    import java.awt.image.ByteLookupTable;
+    import java.awt.image.LookupOp;
+    import java.io.File;
+    import java.net.URL;
+
+    import javax.imageio.ImageIO;
+
+
+    class MeApp
+    {
+        public static void main(String[] args) throws Exception
+        {
+            invert("http://www.python.org/images/success/nasa.jpg", "nasa.jpg");
+        }
+
+        private static void invert(String url, String path) throws Exception
+        {
+            final BufferedImage image = ImageIO.read(new URL(url));
+
+            final byte[] data = new byte[256];
+
+            for (int i = 0; i &lt; 256; ++i)
+            {
+                data[i] = (byte)(255 - i);
+            }
+
+            final LookupOp op = new LookupOp(new ByteLookupTable(0, data), null);
+
+            op.filter(image, image);
+
+            ImageIO.write(image, "jpeg", new File(path));
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1845'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/1845
+  :user_name: kkobayashi
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2007/08/04 18:25 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Rは標準で様々な画像フォーマットへの書き出しをサポートしているのですが（グラフとか描けます）\r\n読み取りにはrimageライブラリーが必要になるようです。\r\ndoukaku.jpg
+    =&gt; doukaku.inv.jpg という名前で保存します。\r\nグラフィックデバイスの取り扱いに癖があるのであまりキレイではないですね・・・</pre>\n\t"
+  :code: |
+    require(rimage)
+    jpeg.inverter &lt;- function(url.image){
+        filename &lt;- basename(url.image)
+        download.file(url.image, filename, method="auto", mode="wb", quiet=TRUE)
+        img &lt;- read.jpeg(filename)
+        jpeg(sub("(.+)\\.", "\\1.inv.", filename), height=dim(img)[1], width=dim(img)[2])
+        oldpar &lt;- par(no.readonly = TRUE)
+        par(mai=c(0,0,0,0), omi=c(0,0,0,0))
+        plot(1-img)
+        par(oldpar)
+        dev.off()
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1856'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/1856
+  :user_name: shiro
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/08/05 03:37 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Gauche-gd ( http://fixedpoint.jp/gauche-gd/
+    ) を使ってみました。\r\n\r\n実行例:\r\ngosh&gt; (get-and-invert-jpeg \"practical-scheme.net\"
+    \"/images/practical-scheme-icon.jpg\" \"t.jpg\")\r\n</pre>\n\t"
+  :code: |
+    (use graphics.gd)
+    (use rfc.http)
+    (use srfi-42)
+
+    (define (get-and-invert-jpeg host path output)
+      (receive (status hdrs body) (http-get host path)
+        (unless (equal? status "200") (error "http-get failed:" status))
+        (let1 img (read-gd-image (open-input-string body) 'jpg)
+          (do-ec (: x (gd-image-sx img)) (: y (gd-image-sy img))
+                 (let1 pixel (gd-image-get-pixel img x y)
+                   (gd-image-set-pixel img x y
+                                       (gd-true-color (- 255 (gd-image-red img pixel))
+                                                      (- 255 (gd-image-green img pixel))
+                                                      (- 255 (gd-image-blue img pixel))))))
+          (call-with-output-file output (cut write-as img 'jpg &lt;&gt;)))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '1858'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/1858
+  :user_name: whitebell
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/340/
+  :language: Perl
+  :time: 2007/08/05 04:08 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  ImageMagickでもいいのだけど、好みはImager。\r\n\n\t"
+  :code: |
+    #!/usr/bin/perl
+    # perl invert.pl URI
+    use strict;
+    use warnings;
+
+    use Imager;
+    use LWP::Simple;
+
+    my $uri = shift or die "input uri";
+
+    my $content = get $uri;
+    defined $content or die "Could't get it: $uri";
+
+    my $img = Imager-&gt;new;
+
+    $img-&gt;read(data =&gt; $content, type =&gt; 'jpeg')
+        -&gt;filter(type =&gt; 'hardinvert')
+        -&gt;write(file =&gt; (split /\//, $uri)[-1] . '.i.jpg', type =&gt; 'jpeg')
+        or die $img-&gt;errstr;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1860'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/1860
+  :user_name: sumim
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/08/05 04:49 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  Squeak Smalltalk で。\n\t"
+  :code: |
+    | url |
+    url := 'http://static.squeak.org/new_style/mouse.jpg'.
+    (HTTPSocket httpJpeg: url) reverse writeJPEGfileNamed: 'nega.jpg'
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '1864'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/1864
+  :user_name: ocean
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/177/
+  :language: Java
+  :time: 2007/08/05 07:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  安直な方法ですが。（たぶん遅い）\n\t"
+  :code: |
+    import java.awt.image.BufferedImage;
+    import java.io.File;
+    import java.net.URL;
+    import javax.imageio.ImageIO;
+
+    class MeApp
+    {
+        public static void main(String[] args) throws Exception
+        {
+            invert("http://www.python.org/images/success/nasa.jpg", "nasa.jpg");
+        }
+
+        private static void invert(String url, String path) throws Exception
+        {
+            final BufferedImage image = ImageIO.read(new URL(url));
+
+            for (int y = 0; y &lt; image.getHeight(); ++y)
+            {
+                for (int x = 0; x &lt; image.getWidth(); ++x)
+                {
+                    image.setRGB(x, y, 0xffffff - image.getRGB(x, y));
+                }
+            }
+
+            ImageIO.write(image, "jpeg", new File(path));
+        }
+    }
+  :tags:
+  - 　ｄｄｄ　ｄｄ
+  :references:
+    :url: 
+    :title: 
+- :id: '1875'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/1875
+  :user_name: onjo
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/235/
+  :language: Common
+  :time: 2007/08/05 14:01 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  http クライアントとして DRAKMA を、画像処理は CL-GD で。\n\t"
+  :code: |
+    (defpackage :doukaku-41 (:use :cl :cl-gd))
+    (in-package :doukaku-41)
+
+    (defun download-and-invert (url)
+      (let ((vec (drakma:http-request url :force-binary t)))
+        ;; オリジナルの保存
+        (with-open-file (s "original.jpg" :direction :output
+                                          :if-exists :supersede
+                                          :element-type '(unsigned-byte 8))
+          (write-sequence vec s))
+        (with-image-from-file* ("original.jpg")
+          ;; 色調を反転
+          (do-pixels ()
+            (setf (raw-pixel) (lognot (raw-pixel))))
+          ;; 結果を保存
+          (write-image-to-file "output.jpg" :if-exists :supersede))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1892'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/1892
+  :user_name: cats
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/08/06 01:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    using System;
+    using System.IO;
+    using System.Drawing;
+    using System.Net;
+    class Program
+    {
+      static void Main()
+      {
+        WebClient wc = new WebClient();
+        string url = "http://www.google.co.jp/intl/ja_jp/images/logo.gif";
+        using (Stream st = wc.OpenRead(url))
+        {
+          Bitmap bmp0 = new Bitmap(st);
+          Bitmap bmp = new Bitmap(bmp0);
+          for (int i = 0; i &lt; bmp.Width; ++i)
+            for (int j = 0; j &lt; bmp.Height; ++j)
+              bmp.SetPixel(i, j, Color.FromArgb
+                (0x00ffffff ^ bmp.GetPixel(i,j).ToArgb()));
+          string fnam = "test.gif";
+          bmp.Save(fnam);
+          System.Diagnostics.Process.Start(fnam);
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1899'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/1899
+  :user_name: tomatsu
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/323/
+  :language: Pnuts
+  :time: 2007/08/06 02:50 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    import java.awt.image.*
+    b=list(project(range(255,0), byte))
+    invert_op = LookupOp(ByteLookupTable(0,[b,b,b]), null)
+
+    function invert(imagefile, dest){
+      im = readImage(imagefile)
+      im2 = makeImage(im.width, im.height, null, im.type)
+      invert_op.filter(im, im2)
+      writeImage(im2, dest)
+    }
+
+    invert("white-pants.jpg", "black-pants.jpg")
+  :tags:
+  - Pnuts
+  :references:
+    :url: 
+    :title: 
+- :id: '1914'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/1914
+  :user_name: Mistfeal
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/153/
+  :language: PHP
+  :time: 2007/08/06 06:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  PHP5+GD とかなり環境が限定されますが一応。\n\t"
+  :code: "&lt;?php\nfunction GET_jpg($url,$filename) {\n\t$im = imagecreatefromjpeg($url);\n\timagefilter($im,
+    IMG_FILTER_NEGATE);\n\timagejpeg($im, $filename);\n}\n\nGET_jpg(\"http://example.com/sample.jpg\",\"sample.jpg\");\n?&gt;\n"
+  :tags:
+  - GD
+  - PHP5
+  :references:
+    :url: 
+    :title: 
+- :id: '1929'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/1929
+  :user_name: yuin
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/08/06 11:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    import java.awt.Component
+    import java.awt.image._
+    import java.io.File;
+    import java.net.URL;
+    import javax.imageio.ImageIO;
+
+    def invert(url:String, out:String) = {
+      val im = new Component{} createImage(new FilteredImageSource(
+                    ImageIO.read(new URL(url)).getSource,
+                      new RGBImageFilter {
+                        override def filterRGB(x:int,y:int,rgb:int):int = {
+                          (rgb &amp; 0xff000000 )+((rgb &amp; 0xffffff) ^ 0xffffff)
+                        }
+                  }))
+      val bim = new BufferedImage(im.getWidth(null), im.getHeight(null),
+      BufferedImage.TYPE_INT_RGB)
+      val g = bim.createGraphics
+      g.drawImage(im, 0, 0, null)
+      g.dispose
+      ImageIO.write(bim, url.split("\\.").last, new File(out))
+    }
+
+    invert("http://news.google.com/images/jp.gif", "test2.gif")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1979'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/1979
+  :user_name: takano32
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/148/
+  :language: 
+  :time: 2007/08/07 09:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  あら？\r\n仕様ですとネットの画像を操作することになっているようですよ。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2036'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/2036
+  :user_name: rubikitch
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/105/
+  :language: Ruby
+  :time: 2007/08/08 18:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">41.rb http://example.org/foo.jpg /tmp/output.jpg\r\n41.rb
+    /tmp/src.jpg /tmp/output.jpg\r\nなどと使う。Rubyのopen-urlライブラリはopenを拡張するのでローカルファイルでもok。\r\n</pre>\n\t"
+  :code: |
+    require 'rubygems'
+    require 'RMagick'
+    require 'open-uri'
+    require 'tempfile'
+
+    url, output = ARGV
+    tmp = Tempfile.new "doukaku"
+    tmp.write open(url).read
+    tmp.close
+    img = Magick::Image.read(tmp.path).first
+    img = img.negate
+    img.write(output)
+  :tags:
+  - RMagick
+  :references:
+    :url: 
+    :title: 
+- :id: '2308'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/2308
+  :user_name: nobsun
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/08/18 13:54 GMT
+  :vote_count: '3'
+  :vote_score: '-3'
+  :body: "\n\t  <pre class=\"compact\">これを見てしまうと、こんな解しか思い浮ばなくなってしまう。つくづく、怠け者です &gt;
+    儂</pre>\n\t"
+  :code: |
+    module Main (main) where
+
+    import System.Cmd
+    import System.Environment
+    import System.FilePath
+
+    main :: IO ()
+    main = do { url:_ &lt;- getArgs
+              ; let f = dropExtensions (takeFileName url)
+              ; system $ "wget -q -O - "++url++" | gm convert -negate jpg:- "++f++"_r.jpg"
+              ; return ()
+              }
+  :tags:
+  - System.Cmd
+  - gm
+  - wget
+  :references:
+    :url: 
+    :title: 
+- :id: '2548'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/2548
+  :user_name: ocean
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/177/
+  :language: C
+  :time: 2007/08/26 14:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  C++BuilderのVCLを使います。（C++Builder5で確認）\r<br><br>C++Builder上で「VCLを使用するコンソールアプリ」を新規作成し、ソースに以下のコードを指定してください。\n\t"
+  :code: |
+    #include &lt;vcl.h&gt;
+    #pragma hdrstop
+    #include &lt;jpeg.hpp&gt;
+
+    #include &lt;wininet.h&gt;
+    #pragma comment(lib, "wininet.lib")
+
+    #include &lt;iostream&gt;
+    #include &lt;memory&gt;
+
+    class TInternet : public TObject
+    {
+    public:
+        __fastcall TInternet();
+
+        virtual __fastcall ~TInternet();
+
+        void __fastcall Load(const String&amp; url, TStream* stream);
+
+    private:
+        HINTERNET _hInternet;
+    };
+
+    __fastcall TInternet::TInternet()
+    {
+        _hInternet = ::InternetOpen(
+            "",
+            INTERNET_OPEN_TYPE_PRECONFIG,
+            NULL,
+            NULL,
+            0);
+
+        if (! _hInternet)
+        {
+            RaiseLastWin32Error();
+        }
+    }
+
+    __fastcall TInternet::~TInternet()
+    {
+        ::InternetCloseHandle(_hInternet);
+    }
+
+    void __fastcall TInternet::Load(const String&amp; url, TStream* stream)
+    {
+        HANDLE hFile = ::InternetOpenUrl(
+            _hInternet,
+            url.c_str(),
+            NULL,
+            0,
+            INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE | INTERNET_FLAG_EXISTING_CONNECT,
+            0);
+
+        if (hFile == NULL)
+        {
+            RaiseLastWin32Error();
+        }
+
+        try
+        {
+            while (true)
+            {
+                char buf[2048];
+
+                DWORD read = 0;
+
+                if (! ::InternetReadFile(hFile, buf, sizeof(buf), &amp;read))
+                {
+                    RaiseLastWin32Error();
+                }
+
+                if (read == 0)
+                {
+                    break;
+                }
+
+                stream-&gt;Write(buf, read);
+            }
+        }
+        __finally
+        {
+            ::InternetCloseHandle(hFile);
+        }
+    }
+
+    std::auto_ptr&lt;TJPEGImage&gt; Load(const String&amp; url)
+    {
+        const std::auto_ptr&lt;TInternet&gt; internet(new TInternet());
+
+        const std::auto_ptr&lt;TStream&gt; stream(new TMemoryStream());
+
+        internet-&gt;Load(url, stream.get());
+
+        stream-&gt;Position = 0;
+
+        std::auto_ptr&lt;TJPEGImage&gt; image(new TJPEGImage());
+
+        image-&gt;LoadFromStream(stream.get());
+
+        return image;
+    }
+
+    void Invert(Graphics::TBitmap* bitmap)
+    {
+        for (int y = 0; y &lt; bitmap-&gt;Height; ++y)
+        {
+            for (int x = 0; x &lt; bitmap-&gt;Width; ++x)
+            {
+                DWORD color = bitmap-&gt;Canvas-&gt;Pixels[x][y];
+
+                color = (color &amp; 0xff000000) + (0x00ffffff - (color &amp; 0x00ffffff));
+
+                bitmap-&gt;Canvas-&gt;Pixels[x][y] = color;
+            }
+        }
+    }
+
+    void Invert(const String&amp; url, const String&amp; path)
+    {
+        const std::auto_ptr&lt;TJPEGImage&gt; jpeg = Load(url);
+
+        const std::auto_ptr&lt;Graphics::TBitmap&gt; bitmap(new Graphics::TBitmap());
+
+        bitmap-&gt;Assign(jpeg.get());
+
+        Invert(bitmap.get());
+
+        jpeg-&gt;Assign(bitmap.get());
+
+        jpeg-&gt;SaveToStream(std::auto_ptr&lt;TStream&gt;(new TFileStream(path, fmCreate)).get());
+    }
+
+    int main()
+    {
+        try
+        {
+            Invert("http://www.python.org/images/success/nasa.jpg", "nasa.jpg");
+        }
+        catch (Exception&amp; e)
+        {
+            std::cerr &lt;&lt; e.Message.c_str() &lt;&lt; std::endl;
+        }
+    }
+  :tags:
+  - VCL
+  - Windows
+  :references:
+    :url: 
+    :title: 
+- :id: '2553'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/2553
+  :user_name: ocean
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/177/
+  :language: 
+  :time: 2007/08/27 10:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  -1 orz。商用コンパイラが必要だからとかかなあ。そんなにひどいコードじゃないと思うけど・・・\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2558'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/2558
+  :user_name: shimakuma
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/08/27 21:38 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t   Win専用。IE からクリップボード経由で ImageMagick へ。\n\t"
+  :code: |
+    (function(url, out){ var img, rng;
+      with(new ActiveXObject('InternetExplorer.Application')) try { //visible = true;
+        navigate(url);     while(busy || document.readyState != "complete") WSH.sleep(41);
+        img = document.body.firstChild; while(img.readyState != "complete") WSH.sleep(41);
+        (rng = document.body.createControlRange()).add(img);
+        rng.execCommand("copy");
+      } finally { quit() }
+      new ActiveXObject('ImageMagickObject.MagickImage').convert('clipboard:', '-negate', out);
+    })('http://magiccards.info/scans/en/wl/82.jpg', 'shimakuma_inv.jpg');
+  :tags:
+  - IE
+  - ImageMagick
+  - WSH
+  :references:
+    :url: 
+    :title: 
+- :id: '2685'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/2685
+  :user_name: 130R
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/409/
+  :language: PowerShell
+  :time: 2007/08/30 09:24 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">遅い遅い。</pre>\n\t"
+  :code: "[void][reflection.assembly]::loadwithpartialname(\"system.drawing\")\n$img
+    = new-object system.drawing.bitmap(\"c:\\img.jpg\")\n \nfor ($x = 0; $x -lt $img.width;
+    $x++) {\n\tfor ($y = 0; $y -lt $img.height; $y++) {\n\t\t$c = 0xffffffff - $img.getpixel($x,
+    $y).toargb()\n\t\t$img.setpixel($x, $y, [system.drawing.color]::fromargb($c))\n\t}\n}\n$img.save(\"c:\\rev.jpg\")\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2691'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/2691
+  :user_name: 130R
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/409/
+  :language: PowerShell
+  :time: 2007/08/30 11:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">前のは条件満たしてませんでした。すいません。</pre>\n\t"
+  :code: "$url = \"http://***.jpg\"\n$img = new-object system.drawing.bitmap($(new-object
+    net.webclient).openread($url)))\nfor ($x = 0; $x -lt $img.width; $x++) {\n\tfor
+    ($y = 0; $y -lt $img.height; $y++) {\n\t\t$c = 0xffffffff - $img.getpixel($x,
+    $y).toargb()\n\t\t$img.setpixel($x, $y, [system.drawing.color]::fromargb($c))\n\t}\n}\n$img.save(\"c:\\rev.jpg\")\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3295'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/3295
+  :user_name: yohei
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/415/
+  :language: Prolog
+  :time: 2007/10/08 12:27 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">SWI-Prologで，http_client，XPCEを使用．</pre>\n\t"
+  :code: ":- use_module(library('http/http_client')).\n:- use_module(library(pce)).\n\nget_inv(URL,
+    SavePath) :-\n\thttp_get(URL, Buff, [codes]),\n\tnew(Image, image),\n\tsend(Image,
+    load(text_buffer(Buff))),\n\tsend(Image, invert),\n\tsend(Image, save(SavePath,
+    jpeg)).\n\n:- get_inv('http://example.com/sample.jpg', 'sample.jpg').\n"
+  :tags:
+  - SWI-Prolog
+  - XPCE
+  :references:
+    :url: 
+    :title: 
+- :id: '3770'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/3770
+  :user_name: 匿名
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/11/09 06:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  なでしこだと標準でライブラリがあります。\r<br>確認していないが出来るはず...\n\t"
+  :code: |
+    image_uri="image uri"と尋ねる
+    image_file="{テンポラリーフォルダ}temp.{image_uriから拡張子抽出}"
+    image_uriからimage_fileへHTTPダウンロード
+    img_objとはイメージ
+    img_objの画像はimage_file
+    img_objを画像ネガポジ
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5361'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/5361
+  :user_name: fujidig
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/507/
+  :language: HSP
+  :time: 2008/01/16 10:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ローカルのJPEGファイルを読み込んで色反転して表示するだけなら、なんのプラグインやモジュールも使わずに出来るのになーとか思いましたが。\r<br>mod_imgとbmpsaveを使ってみました＞＜\r<br>画像サイズが幅が640px、高さが480pxより大きいときっと切れてしまうと思います。\r<br>保存はBMPでしかできません＞＜\r<br>これじゃあまりにアレなので、後ほどIImgCtxとhspcvを使ったきちんとしたのも投稿したいです。\n\t"
+  :code: |
+    #include "mod_img.as"
+    buffer 2
+    imgload "http://www.example.com/example.jpg"
+    w=size@mod_imgctx:h=size@mod_imgctx.1
+    buffer 1,w,h
+    gmode 6,w,h,256
+    gcopy 2
+    dialog "bmp",17
+    if stat:bmpsave refstr
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5362'
+  :parent_id: '41'
+  :url: http://ja.doukaku.org/comment/5362
+  :user_name: fujidig
+  :user_url: /web/20080331051423/http://ja.doukaku.org/user/507/
+  :language: HSP
+  :time: 2008/01/16 10:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  &gt; これじゃあまりにアレなので、後ほどIImgCtxとhspcvを使ったきちんとしたのも投稿したいです。\r<br>というわけで投稿。\n\t"
+  :code: |
+    #include "hspcv.as"
+    #define IID_IImgCtx   "{3050f3d7-98b5-11cf-bb82-00aa00bdce0b}"
+    #define CLSID_IImgCtx "{3050f3d6-98b5-11cf-bb82-00aa00bdce0b}"
+
+    #usecom  ImgCtx IID_IImgCtx CLSID_IImgCtx
+    #comfunc IImgCtx_Load 3 wstr,int
+    #comfunc IImgCtx_GetStateInfo 8 var,var,int
+    #comfunc IImgCtx_StretchBlt 12 int,int,int,int,int,int,int,int,int,int
+
+        load_url = "http://www.example.com/examle.jpg"
+        save_file_name = "save.jpg"
+
+        newcom pImage, ImgCtx
+        IImgCtx_Load pImage, load_url, 0
+        dim size, 4
+        repeat
+            IImgCtx_GetStateInfo pImage, flg, size, 1
+            if ( flg &amp; 0x00200000 )==0 : break
+            wait 4
+        loop
+        IImgCtx_GetStateInfo pImage, flg, size, 0
+        buffer 1, size(0), size(1)
+        IImgCtx_StretchBlt pImage, hdc, 0, 0, size(0), size(1), 0, 0, size(0), size(1), 0xCC0020
+        delcom pImage
+
+        cvbuffer 0, size(0), size(1)
+        cvputimg 0
+        cvxors
+        cvsave save_file_name, 0
+  :tags: []
+  :references:
+    :url: 
+    :title: 

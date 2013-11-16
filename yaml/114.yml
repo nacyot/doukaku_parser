@@ -1,0 +1,206 @@
+---
+:id: '114'
+:title: メソッド提供クラスの特定
+:comments:
+- :id: '4805'
+  :parent_id: '114'
+  :url: http://ja.doukaku.org/comment/4805
+  :user_name: sumim
+  :user_url: /web/20080229025449/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2007/12/14 03:50 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  \n<p>すでにお題「<a href=\"/web/20080229025449/http://ja.doukaku.org/32/\">メソッド名一覧の表示</a>」がありますが、こうして得られたメソッド群には、そのオブジェクトが属するクラス以外（たとえば、スーパークラスやモジュール）から提供されたメソッドも含まれていると思います。\n</p>\n<p><a
+    href=\"/web/20080229025449/http://arton.no-ip.info/diary/20071214.html#p01\">L'eclat
+    des jours - スパゲッティなJavaなコード</a> のような記事を読んでふと思ったのですが、継承したメソッドがどんなクラスに定義されているのか、どんな内容なのかを知りたいことってよくありませんか？\n</p>\n<p>そこで、あるオブジェクトを介してあるメソッドをコールする場合を想定して、その際に起動されるメソッドが定義されているクラス（and/or
+    それに準ずるエンティティ）を知る方法を教えてください。可能なら、該当するメソッドのソースコードを取得して表示してください。\n</p>\n<p>IDE による同種の支援を期待できる場合があればそれも教えていただけるとうれしいです。\n</p>\n\n\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4806'
+  :parent_id: '114'
+  :url: http://ja.doukaku.org/comment/4806
+  :user_name: sumim
+  :user_url: /web/20080229025449/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/12/14 03:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk では、\r<br><br>　whichClassIncludesSelector: #メソッド名\r<br><br>というメッセージをクラスに送ることで、指定したメソッドを定義しているクラスを得ることが出来ます。\r<br><br><br>メソッド名とそれを定義しているクラスが分かれば、メソッドは一意に定まるので、そのメソッドに対して、\r<br><br>　getSourceFromFile\r<br><br>というメッセージを送るとソースコードが得られます。\r<br><br><br>通常、あるオブジェクトがコールできるメソッド一覧とそれらを定義しているクラス、そのソースを閲覧・編集するのには、「プロトコルブラウザ」というユーティリティを用います。\n\t"
+  :code: |
+    | obj |
+    obj := 'string'.
+    ^obj class whichClassIncludesSelector: #reversed
+    "=&gt; SequenceableCollection "
+
+
+    | obj defClass |
+    obj := 'string'.
+    defClass := obj class whichClassIncludesSelector: #reversed.
+    ^(defClass &gt;&gt; #reversed) getSourceFromFile
+    "=&gt;  a Text for 'reversed
+        "Answer a copy of the receiver with element order reversed."
+        "Example: ''frog'' reversed"
+
+        | n result src |
+        n := self size.
+        result := self species new: n.
+        src := n + 1.
+        1 to: n do: [:i | result at: i put: (self at: (src := src - 1))].
+        ^ result
+    "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '4807'
+  :parent_id: '114'
+  :url: http://ja.doukaku.org/comment/4807
+  :user_name: horiuchi
+  :user_url: /web/20080229025449/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2007/12/14 05:55 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Javaでは、Methodの取得の際に自分のクラスに存在するMethodを取得する方法(Class#getDeclaredMethods)と、継承を辿って取得する方法(Class#getMethods)の両方が存在します。\nただし、継承を辿る場合には
+    publicなMethodしか取得できません。</p>\n<dl class=\"docutils\">\n<dt>IDEに関しては、eclipseの場合は調べたいMethodの上で、</dt>\n<dd>F3</dd>\n<dt>もしくは</dt>\n<dd>右クリック→宣言を開く</dd>\n</dl>\n<div
+    class=\"system-message\">\n<p class=\"system-message-title\">System Message: WARNING/2
+    (<tt class=\"docutils\">&lt;string&gt;</tt>, line 8)</p>\nDefinition list ends
+    without a blank line; unexpected unindent.</div>\n<p>で、実際に呼び出している実装へたどり着けます。</p>\n\n\t"
+  :code: |
+    import java.lang.reflect.Method;
+
+    public class Sample114 {
+        public static void searchMethods(Class&lt;?&gt; target) {
+            Method[] declaredMethods = target.getDeclaredMethods();
+            System.out.println(target.getName() + " に存在する全てのMethod");
+            for (Method m: declaredMethods) {
+                System.out.println("\t" + m.toGenericString());
+            }
+
+            Method[] methods = target.getMethods();
+            System.out.println(target.getName() + " の継承を辿ったpublicなMethod");
+            for (Method m: methods) {
+                System.out.println("\t" + m.toGenericString());
+            }
+        }
+
+        public static void main(String[] args) {
+            searchMethods(Bar.class);
+        }
+
+    }
+
+    class Foo {
+        public void testPublic() {
+            System.out.println("public method");
+        }
+        protected void testProtected() {
+            System.out.println("protected method");
+        }
+        void testPackagePrivate() {
+            System.out.println("package private method");
+        }
+        private void testPrivate() {
+            System.out.println("private method");
+        }
+    }
+
+    class Bar extends Foo {
+        public void testBarPublic() {
+            System.out.println("Bar public method");
+        }
+        protected void testBarProtected() {
+            System.out.println("Bar protected method");
+        }
+        void testBarPackagePrivate() {
+            System.out.println("Bar package private method");
+        }
+        private void testBarPrivate() {
+            System.out.println("Bar private method");
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4809'
+  :parent_id: '114'
+  :url: http://ja.doukaku.org/comment/4809
+  :user_name: SiroKuro
+  :user_url: /web/20080229025449/http://ja.doukaku.org/user/540/
+  :language: C
+  :time: 2007/12/14 14:20 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  C# では、メソッド情報を表すクラス MethodInfo の DeclaringType プロパティから、メソッドを定義したクラスの Type オブジェクトを取得することが出来ます。\r<br><br>IDE の支援については、VisualStudio2005 ではメソッド呼び出しを右クリック→「定義へ移動」で、該当するメソッド定義へとジャンプすることが出来ます。また、同じく右クリックから「すべての参照の検索」を行うと、該当するメソッドの使用箇所全てを列挙することが出来ます。\n\t"
+  :code: |
+    using System;
+    static class Program {
+        static void Main() {
+            Console.WriteLine(typeof(SubClass).GetMethod("Foo").DeclaringType);
+                //-&gt; SuperClass
+            Console.WriteLine(typeof(SubClass).GetMethod("Bar").DeclaringType);
+                //-&gt; SubClass
+            SuperClass sup = new SubClass();
+            sup.Bar();  // これを「定義へ移動」すると SuperClass::Bar へ
+            SubClass sub = new SubClass();
+            sub.Bar();  // これを「定義へ移動」すると SubClass::Bar へ
+        }
+    }
+    class SuperClass {
+        public void Foo() { Console.WriteLine("SuperClass::Foo"); }
+        public virtual void Bar() { Console.WriteLine("SuperClass::Bar"); }
+    }
+    class SubClass : SuperClass {
+        public override void Bar() { Console.WriteLine("SubClass::Bar"); }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4810'
+  :parent_id: '114'
+  :url: http://ja.doukaku.org/comment/4810
+  :user_name: nobsun
+  :user_url: /web/20080229025449/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/12/14 15:14 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Haskellではメソッドの出処がわからないような状態でプログラムを実行することは\r\nできません．つまりコンパイル時にすべて解決されている必要があります．関数が\r\nクラスメソッドかどうかはわかりませんが，どのようなコンテキストで使える関数\r\nかを調べることはできます．型を調べればわかります．型は
+    :type コマンドに式を\r\n渡してしらべます．\r\n\r\n% ghci\r\nGHCi, version 6.8.2: http://www.haskell.org/ghc/
+    \ :? for help\r\nLoading package base ... linking ... done.\r\nPrelude&gt; :type
+    (+)\r\n(+) :: (Num a) =&gt; a -&gt; a -&gt; a\r\nPrelude&gt; :type List.sort\r\nList.sort
+    :: (Ord a) =&gt; [a] -&gt; [a]\r\n\r\n↑の例では，加法演算子 + が Numクラス上で定義されていることが判ります．また，\r\nListモジュールのsort関数はOrdクラスのインスタンスを要素とするリスト上で定義\r\nされていることが判ります．\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5005'
+  :parent_id: '114'
+  :url: http://ja.doukaku.org/comment/5005
+  :user_name: cho45
+  :user_url: /web/20080229025449/http://ja.doukaku.org/user/579/
+  :language: Ruby
+  :time: 2007/12/27 10:55 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>ruby1.9 からは Method#owner が追加され、簡単にオーナークラス/モジュールを取得できるようになりました。</p>\n<p>ただ、ソースコードの取得はあいかわらずめんどくさいっぽいです。</p>\n\n\t"
+  :code: |
+    #!ruby1.9 -v
+
+    o = Object.new
+    method = o.method(:instance_eval)
+    p method #=&gt; #&lt;Method: Object(Kernel)#instance_eval&gt;
+    p method.owner #=&gt; Kernel
+  :tags:
+  - ruby1.9
+  :references:
+    :url: /web/20080229025449/http://subtech.g.hatena.ne.jp/cho45/20071014/1192319823
+    :title: Ruby で、メソッドがどこで定義されたか外から知る方法

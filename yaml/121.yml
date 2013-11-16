@@ -1,0 +1,2322 @@
+---
+:id: '121'
+:title: ポーカーの役判定
+:comments:
+- :id: '4978'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/4978
+  :user_name: xsd
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/154/
+  :language: 
+  :time: 2007/12/26 14:19 GMT
+  :vote_count: '10'
+  :vote_score: '6'
+  :body: "\r\n\t  <p>引数に手札を与えると、ポーカーの役を表示するプログラムを作ってください。</p>\n<p><strong>条件：</strong></p>\n<ul
+    class=\"simple\">\n<li>スートはS,D,H,C、ランクはA,2～9,T,J,Q,Kのそれぞれ一文字で表します。</li>\n<li>手札は
+    S2D5H3CQS9 のように10文字で指定されます。特にソートはされていません。</li>\n<li>手札にジョーカーは含まれません。</li>\n<li>ストレートで取りうるランクの種類はA2345,
+    23456 ... 9TJQK, TJQKAの10種類で、JQKA2のようにK-A-2をまたぐものはストレートではありません。</li>\n</ul>\n<p><strong>実行例：</strong></p>\n<pre
+    class=\"literal-block\">\n% ./poker SQSJSASKST\nRoyal flush\n\n% ./poker D9D7D6D5D8\nStraight
+    flush\n\n% ./poker C2D2S2H3H2\nFour of a kind\n\n% ./poker C2D3S2H3H2\nFull house\n\n%
+    ./poker S9S4S8STSJ\nFlush\n\n% ./poker C4H7D5S6H3\nStraight\n\n% ./poker S6H6C5DQC6\nThree
+    of a kind\n\n% ./poker S6HQC5DQC6\nTwo pair\n\n% ./poker S6H4C5DQC6\nOne pair\n\n%
+    ./poker SJSQSKSAC2\nNo pair\n</pre>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20091225095945/http://ja.wikipedia.org/wiki/%E3%83%9D%E3%83%BC%E3%82%AB%E3%83%BC
+    :title: ポーカー - Wikipedia
+- :id: '4979'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/4979
+  :user_name: xsd
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/154/
+  :language: 
+  :time: 2007/12/26 14:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>お題にしようと思っていたのに間違えてしまいました。今から変更可能でしょうか？</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5167'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5167
+  :user_name: xsd
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/154/
+  :language: 
+  :time: 2008/01/04 09:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">(説明)\r\n当初間違ってトピックに投稿していたので、このようなコメントを付けていたのですが、\r\nこのコメントに気づいた管理人さんにお題に移していただきました。\r\n(最初の2つだけ投稿日時が早いのはそのためです)\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4979'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/4979
+  :user_name: xsd
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/154/
+  :language: 
+  :time: 2007/12/26 14:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>お題にしようと思っていたのに間違えてしまいました。今から変更可能でしょうか？</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4984'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/4984
+  :user_name: horiuchi
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2007/12/27 03:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>素直に順番に条件チェックしてみました。</p>\n\n\t"
+  :code: |
+    import java.util.ArrayList;
+    import java.util.Collections;
+    import java.util.HashMap;
+    import java.util.List;
+    import java.util.Map;
+
+    public class Sample121 {
+        private static final String RANK_LIST = "A23456789TJQKA";
+
+        private static final String ROYAL = "royal ";
+        private static final String STRAIGHT = "straight";
+        private static final String FLUSH = "flush";
+        private static final String FULL_HOUSE = "Full house";
+        private static final String CARDS_4 = "Four of a kind";
+        private static final String CARDS_3 = "Three of a kind";
+        private static final String PAIR_2 = "Two pair";
+        private static final String PAIR_1 = "One pair";
+        private static final String Nothing = "No pair";
+
+        public static String getPokerRole(String cards) {
+            if (cards.length() != 2 * 5) throw new IllegalArgumentException();
+            String rankList = createRankList(cards);
+            boolean flush = isFlush(cards);
+            boolean straight = isStraight(rankList);
+            if (flush || straight) {
+                boolean royal = isRoyal(rankList);
+                if (royal) {
+                    return format(flush? ROYAL + FLUSH: ROYAL + STRAIGHT);
+                } else {
+                    if (flush &amp;&amp; straight) {
+                        return format(STRAIGHT + " " + FLUSH);
+                    } else {
+                        return format(flush? FLUSH: STRAIGHT);
+                    }
+                }
+            }
+            Integer[] integers = countSameNumber(rankList);
+            switch (integers[0]) {
+                case 4:
+                    return CARDS_4;
+                case 3:
+                    if (integers[1] == 2) {
+                        return FULL_HOUSE;
+                    } else {
+                        return CARDS_3;
+                    }
+                case 2:
+                    if (integers[1] == 2) {
+                        return PAIR_2;
+                    } else {
+                        return PAIR_1;
+                    }
+            }
+            return Nothing;
+        }
+
+        private static String format(String str) {
+            return str.substring(0, 1).toUpperCase() + str.substring(1);
+        }
+
+        private static boolean isFlush(String cards) {
+            char suit = cards.charAt(0);
+            for (int index = 1; index &lt; 5; index++) {
+                if (suit != cards.charAt(index * 2)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static String createRankList(String cards) {
+            StringBuilder builder = new StringBuilder();
+            for (int index = 0; index &lt; 5; index++) {
+                final char rank = cards.charAt(index * 2 + 1);
+                int insert = 0;
+                for (; insert &lt; builder.length(); insert++) {
+                    if (RANK_LIST.indexOf(builder.charAt(insert)) &gt; RANK_LIST.indexOf(rank)) {
+                        break;
+                    }
+                }
+                builder.insert(insert, rank);
+            }
+            return builder.toString();
+        }
+        private static boolean isStraight(String rankList) {
+            return RANK_LIST.indexOf(rankList) &gt;= 0;
+        }
+        private static boolean isRoyal(String rankList) {
+            return rankList.equals("ATJQK");
+        }
+
+        private static Integer[] countSameNumber(String rankList) {
+            Map&lt;Character, Integer&gt; map = new HashMap&lt;Character, Integer&gt;();
+            for (int index = 0; index &lt; rankList.length(); index++) {
+                char c = rankList.charAt(index);
+                Integer integer = map.get(c);
+                if (integer == null) {
+                    integer = 1;
+                    map.put(c, integer);
+                } else {
+                    map.put(c, integer + 1);
+                }
+            }
+            List&lt;Integer&gt; result = new ArrayList&lt;Integer&gt;(map.values());
+            Collections.sort(result, Collections.reverseOrder());
+            return result.toArray(new Integer[0]);
+        }
+
+
+        public static void main(String[] args) {
+            System.out.println(getPokerRole("SQSJSASKST"));
+            System.out.println(getPokerRole("D9D7D6D5D8"));
+            System.out.println(getPokerRole("C2D2S2H3H2"));
+            System.out.println(getPokerRole("C2D3S2H3H2"));
+            System.out.println(getPokerRole("S9S4S8STSJ"));
+            System.out.println(getPokerRole("C4H7D5S6H3"));
+            System.out.println(getPokerRole("S6H6C5DQC6"));
+            System.out.println(getPokerRole("S6HQC5DQC6"));
+            System.out.println(getPokerRole("S6H4C5DQC6"));
+            System.out.println(getPokerRole("SJSQSKSAC2"));
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '4987'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/4987
+  :user_name: ocean
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/12/27 03:51 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>こんな感じ？</p>\n\n\t"
+  :code: |
+    import sys
+    import collections
+
+    def solve(s):
+        it = iter(s)
+        cards = []
+        for _ in xrange(5):
+            suit = "SDHC".index(it.next())
+            number = "A23456789TJQK".index(it.next()) + 1
+            cards.append((suit, number))
+
+        counts = collections.defaultdict(int)
+        for suit, number in cards:
+            counts[number] += 1
+        counts = sorted(counts.itervalues())
+
+        flush = all(cards[0][0] == suit for suit, number in cards[1:])
+
+        numbers = sorted(number for suit, number in cards)
+        royal_straight = (numbers == [1, 10, 11, 12, 13])
+        straight = all(numbers[i] + 1 == numbers[i + 1] for i in xrange(4)) or royal_straight
+
+        if royal_straight and flush:
+            return "Royal flush"
+        elif straight and flush:
+            return "Straight flush"
+        elif counts == [1, 4]:
+            return "Four of a kind"
+        elif counts == [2, 3]:
+            return "Full House"
+        elif flush:
+            return "Flush"
+        elif straight:
+            return "Straight"
+        elif counts == [1, 1, 3]:
+            return "Three of a kind"
+        elif counts == [1, 2, 2]:
+            return "Two pair"
+        elif counts == [1, 1, 1, 2]:
+            return "One pair"
+        else:
+            assert counts == [1, 1, 1, 1, 1]
+            return "No pair"
+
+    def main():
+        if len(sys.argv) &gt;= 2:
+            for s in sys.argv[1:]:
+                print solve(s)
+        else:
+            print solve("SQSJSASKST") # Royal flush
+            print solve("D9D7D6D5D8") # Straight flush
+            print solve("C2D2S2H3H2") # Four of a kind
+            print solve("C2D3S2H3H2") # Full house
+            print solve("S9S4S8STSJ") # Flush
+            print solve("C4H7D5S6H3") # Straight
+            print solve("S6H6C5DQC6") # Three of a kind
+            print solve("S6HQC5DQC6") # Two pair
+            print solve("S6H4C5DQC6") # One pair
+            print solve("SJSQSKSAC2") # No pair
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5156'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5156
+  :user_name: yuin
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/01/04 05:39 GMT
+  :vote_count: '6'
+  :vote_score: '6'
+  :body: "\n\t  <p>パターンマッチって素晴らしい。</p>\n\n\t"
+  :code: |
+    object Poker {
+      def whatHand_?(_cs:String) = {
+        val rank = Map((0 to 12).map(i =&gt; "A23456789TJQK"(i) -&gt; (i+1)).toArray:_*)
+        val cs = (0.until(_cs.size, 2)).map(_cs.substring).
+                   map{s=&gt;(s(0), rank(s(1)))}.toList.sort(_._2&lt;_._2)
+        val royalSt_? = cs match{
+          case List((_,1),(_,10),(_,11),(_,12),(_,13)) =&gt; true
+          case _ =&gt; false
+        }
+        val flush_? = cs.forall(cs(0)._1 == _._1)
+        val st_? = (1 to 9).map(i=&gt;cs(0)._2==i &amp;&amp; cs(4)._2==i+4).exists(true==) || royalSt_?
+        val p = (((List(List[(char,int)]())) /: List.make(2, cs)){
+                  for(i &lt;-_; j &lt;-_) yield j::i
+                }.filter(c=&gt;c(0)._2 == c(1)._2).size - 5)/2
+
+        (royalSt_?, flush_?, st_?, p) match {
+          case (true, true, _, _) =&gt; "Royal flush"
+          case (_, true, true,_)  =&gt; "Straight flush"
+          case (_, true, _ ,_)  =&gt; "Flush"
+          case (_, _, true ,_)  =&gt; "Straight"
+          case (_,_,_, 6) =&gt; "Four of a kind"
+          case (_,_,_, 4) =&gt; "Full house"
+          case (_,_,_, 3) =&gt; "Three of a kind"
+          case (_,_,_, 2) =&gt; "Two pairs"
+          case (_,_,_, 1) =&gt; "One pair"
+          case _ =&gt; "No pair"
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5158'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5158
+  :user_name: tosik
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/216/
+  :language: C
+  :time: 2008/01/04 07:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ペア判定以外の上手な判定方法が思いつきませんでした。</pre>\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    using namespace std;
+
+    int main(int argc, char *argv[])
+    {
+        // パラメータのチェック（不十分）
+        if ( argc != 2 )
+        {
+            cout &lt;&lt; "fatal arguments" &lt;&lt; endl &lt;&lt; "exp) ./poker SQSJSASKST" &lt;&lt; endl;
+            return -1;
+        }
+
+        // 手札を配列に直す
+        int a[5];
+        char suit = argv[1][0];
+        bool flush_flag = true;
+        for(char i = 0; i &lt; 5; i++)
+        {
+            char num = argv[1][i*2+1];
+            if ( num == 'A' )
+                a[i] = 1;
+            else if ( num == 'T' )
+                a[i] = 10;
+            else if ( num == 'J' )
+                a[i] = 11;
+            else if ( num == 'Q' )
+                a[i] = 12;
+            else if ( num == 'K' )
+                a[i] = 13;
+            else
+                a[i] = num - '0';
+
+            // フラッシュをついでに計算
+            if ( suit != argv[1][i*2] )
+                flush_flag = false;
+        }
+
+        // ペアを計算
+        int count = 0;
+        for(int y=0; y&lt;5; y++)
+            for(int x=y; x&lt;5; x++)
+                if ( x != y &amp;&amp; a[x] == a[y] )
+                    count ++;
+
+        // ストレートを計算
+        bool straight_flag = true;
+        bool royal_straight_flag = true;
+        // sort
+        for(int y=0; y&lt;5; y++)
+            for(int x=5; x&gt;=y+1; x--)
+                if ( a[x] &lt; a[x-1] )
+                {
+                    int t = a[x];
+                    a[x] = a[x-1];
+                    a[x-1] = t;
+                }
+        if ( a[4] == 13 )
+        {
+            straight_flag = false;
+            for(int i=1; i&lt;5; i++)
+                royal_straight_flag &amp;= (a[i] == i + 9);
+            royal_straight_flag &amp;= (suit == 'S');
+        }
+        else
+        {
+            royal_straight_flag = false;
+            for(int i=0; i&lt;5; i++)
+                straight_flag &amp;= (a[i] == i + a[0]);
+        }
+        straight_flag |= royal_straight_flag;
+
+        // 役の表示
+        if ( straight_flag )
+        {
+            if ( royal_straight_flag &amp;&amp; flush_flag )
+            {
+                cout &lt;&lt; "Royal flush" &lt;&lt; endl; // Royal Straight Flush ??
+            }
+            else if ( flush_flag )
+            {
+                cout &lt;&lt; "Straight flush" &lt;&lt; endl;
+            }
+            else
+            {
+                cout &lt;&lt; "Straight" &lt;&lt; endl;
+            }
+        }
+        else if ( flush_flag )
+        {
+            cout &lt;&lt; "Flush" &lt;&lt; endl;
+        }
+        else
+        {
+            switch ( count )
+            {
+                case 1:
+                    cout &lt;&lt; "One pair" &lt;&lt; endl;
+                    break;
+                case 2:
+                    cout &lt;&lt; "Two pair" &lt;&lt; endl;
+                    break;
+                case 3:
+                    cout &lt;&lt; "Three of a kind" &lt;&lt; endl;
+                    break;
+                case 4:
+                    cout &lt;&lt; "Full house" &lt;&lt; endl;
+                    break;
+                case 6:
+                    cout &lt;&lt; "Four of a kind" &lt;&lt; endl;
+                    break;
+                default:
+                    cout &lt;&lt; "No pair" &lt;&lt; endl;
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5159'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5159
+  :user_name: あにす
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/01/04 07:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  一切コメント無しでも充分な可読性を目指しました。\n\t"
+  :code: "//http://ja.doukaku.org/121/　投稿用\nusing System;\nusing System.Collections.Generic;\n\nclass
+    Program {\n    const string Ranks = \"A23456789TJQKA\";\n    const string Suits
+    = \"SDHC\";\n    static void Main(string[] args) {\n        if(IsRoyalStraightFlush(args[0]))
+    Console.WriteLine(\"Royal straight flush\");\n        else if(IsStraightFlush(args[0]))
+    Console.WriteLine(\"Straight flush\");\n        else if(Is4cards(args[0])) Console.WriteLine(\"Four
+    of a kind\");\n        else if(IsFullHouse(args[0])) Console.WriteLine(\"Full
+    house\");\n        else if(IsFlush(args[0])) Console.WriteLine(\"Flush\");\n        else
+    if(IsStraight(args[0])) Console.WriteLine(\"Straight\");\n        else if(Is3Cards(args[0]))
+    Console.WriteLine(\"Three of a kind\");\n        else if(Is2Pair(args[0])) Console.WriteLine(\"Two
+    pair\");\n        else if(Is1Pair(args[0])) Console.WriteLine(\"One pair\");\n
+    \       else Console.WriteLine(\"No pair\");\n        Console.ReadLine();\n    }\n\n
+    \   static bool IsRoyalStraightFlush(string cards){\n        if(IsFlush(cards)
+    &amp;&amp; IsStraight(cards)){\n            for(int i = 2; i &lt;= 9; i++) {//2～9までの数字が含まれていたらNG\n
+    \               if(cards.IndexOf(i.ToString()) != -1) return false;\n            }\n
+    \           return true;\n        }\n        return false;\n    }\n\n    static
+    bool IsStraightFlush(string cards) {\n        return IsFlush(cards) &amp;&amp;
+    IsStraight(cards);\n    }\n\n    static bool Is4cards(string cards) {\n        return
+    IsAnyCards(cards, 4);\n    }\n\n    static bool IsFullHouse(string cards) {\n
+    \       return Is3Cards(cards) &amp;&amp; Is1Pair(cards);\n    }\n\n    static
+    bool IsFlush(string cards) {\n        foreach(char suit in Suits.ToCharArray())
+    {//あるスーツの文字を切り取って\n            if(cards.Length - cards.Replace(suit.ToString(),\"\").Length
+    == 5) return true;\n            //5文字減ったら5枚全て同じスーツ\n        }\n        return
+    false;\n    }\n\n    static bool IsStraight(string cards) {\n        List&lt;string&gt;
+    rankListInCards = new List&lt;string&gt;();//カードのランクのみ\n        //ランク切り出し\n        for(int
+    i = 1; i &lt;= 9; i = i + 2) {\n            rankListInCards.Add(cards[i].ToString());\n
+    \       }\n        //並び替え\n        rankListInCards.Sort(cardRankSort);\n        //ソート済みカードリスト作成\n
+    \       string sortedCards = \"\";\n        foreach(string card in rankListInCards)
+    {\n            sortedCards += card;\n        }\n        //判定\n        if(Ranks.Contains(sortedCards))
+    return true;\n        if(sortedCards[0] == 'A') {//先頭がAなら\n            //末尾に移してもう一度判定\n
+    \           if(Ranks.Contains(sortedCards.Remove(0, 1).PadRight(5, 'A'))) return
+    true;\n        }\n        return false;\n    }\n\n    static bool Is3Cards(string
+    cards) {\n        return IsAnyCards(cards, 3);\n    }\n\n    static bool Is2Pair(string
+    cards) {\n        foreach(char Rank in Ranks.ToCharArray()) {\n            if(cards.Length
+    - cards.Replace(Rank.ToString(), \"\").Length == 2) {//One pairだったら\n                return
+    Is1Pair(cards.Replace(Rank.ToString(),\"\"));//One pairが2回でTwo pair\n            }\n
+    \       }\n        return false;\n    }\n\n    static bool Is1Pair(string cards)
+    {\n        return IsAnyCards(cards, 2);\n    }\n\n    //あるカードがany枚含まれているかどうかを判定\n
+    \   static bool IsAnyCards(string cards, int any) {\n        foreach(char Rank
+    in Ranks.ToCharArray()) {\n            if(cards.Length - cards.Replace(Rank.ToString(),
+    \"\").Length == any) return true;\n        }\n        return false;\n    }\n\n
+    \   static int cardRankSort(string x, string y) {\n        return Ranks.IndexOf(x)
+    - Ranks.IndexOf(y); \n    }\n}\n"
+  :tags:
+  - C#2.0
+  :references:
+    :url: 
+    :title: 
+- :id: '5163'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5163
+  :user_name: yuin
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/82/
+  :language: diff
+  :time: 2008/01/04 08:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>すみません、１箇所ミスってました。</p>\n\n\t"
+  :code: |
+    @@ -8,7 +8,7 @@
+           case _ =&gt; false
+         }
+         val flush_? = cs.forall(cs(0)._1 == _._1)
+    -    val st_? = (1 to 9).map(i=&gt;cs(0)._2==i &amp;&amp; cs(4)._2==i+4).exists(true==) || royalSt_?
+    +    val st_? = (1 to 9).map(i=&gt;(0 to 4).forall(j=&gt;cs(j)._2==i+j)).exists(true==) || royalSt_?
+         val p = (((List(List[(char,int)]())) /: List.make(2, cs)){
+                   for(i &lt;-_; j &lt;-_) yield j::i
+                 }.filter(c=&gt;c(0)._2 == c(1)._2).size - 5)/2
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5165'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5165
+  :user_name: seri
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/641/
+  :language: C
+  :time: 2008/01/04 08:46 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">思ったより時間かかってしまいました\r\n</pre>\n\t"
+  :code: |
+    using System;
+
+    namespace Poker
+    {
+        class Program
+        {
+            static void Main(string[] args)
+            {
+                if (args.Length != 1)
+                    return;
+
+                Poker poker = new Poker(args[0]);
+                Console.WriteLine(poker.Judge());
+            }
+        }
+
+        public class Poker
+        {
+            static string RANK = "A23456789TJQK";
+            string cards;
+            string ranks;
+
+            public Poker(string card)
+            {
+                cards = card;
+                ranks = SortRanks();
+            }
+
+            public string Judge()
+            {
+                bool isRoyalStraight = ranks == "ATJQK";
+                bool isStraight = RANK.IndexOf(ranks) &gt;= 0;
+                bool isFlush = IsFlush();
+                string sameRanks = GetSameRanks();
+
+                if (isRoyalStraight &amp;&amp; isFlush)
+                    return "Royal flush";
+                else if (isStraight &amp;&amp; isFlush)
+                    return "Straight flush";
+                else if (isStraight)
+                    return "Straight";
+                else if (isFlush)
+                    return "Flush";
+                else if (sameRanks == "4")
+                    return "Four of a kind";
+                else if (sameRanks == "23")
+                    return "Full house";
+                else if (sameRanks == "3")
+                    return "Three of a kind";
+                else if (sameRanks == "22")
+                    return "Two pair";
+                else if(sameRanks == "2")
+                    return "One pair";
+                else
+                    return "No pair";
+            }
+
+            private string GetSameRanks()
+            {
+                int[] rankArray = new int[13];
+                string sameRanks = "";
+
+                for (int i = 0; i &lt; rankArray.Length; i++)
+                    rankArray[i] = 0;
+
+                for (int i = 0; i &lt; ranks.Length; i++) {
+                    switch (ranks[i]) {
+                        case 'A':
+                        rankArray[0]++;
+                        break;
+                        case 'T':
+                        rankArray[9]++;
+                        break;
+                        case 'J':
+                        rankArray[10]++;
+                        break;
+                        case 'Q':
+                        rankArray[11]++;
+                        break;
+                        case 'K':
+                        rankArray[12]++;
+                        break;
+                        default:
+                        rankArray[ranks[i] - 48 - 1]++;
+                        break;
+                    }
+                }
+
+                Array.Sort(rankArray);
+                foreach (int n in rankArray) {
+                    if (n &gt; 1)
+                        sameRanks += n.ToString();
+                }
+
+                return sameRanks;
+            }
+
+            private bool IsFlush()
+            {
+                char suit = cards[0];
+                for (int i = 2; i &lt; cards.Length; i += 2) {
+                    if (cards[i] != suit)
+                        return false;
+                }
+
+                return true;
+            }
+
+            private string SortRanks()
+            {
+                char[] rankBuff = new char[5];
+                string sortedRank = "";
+
+                for (int i = 0; i &lt; rankBuff.Length; i++)
+                    rankBuff[i] = cards[i * 2 + 1];
+
+                for (int i = 0; i &lt; RANK.Length; i++) {
+                    char c = RANK[i];
+                    foreach (char c2 in rankBuff) {
+                        if (c == c2)
+                            sortedRank += c.ToString();
+                    }
+                }
+
+                return sortedRank;
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5166'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5166
+  :user_name: あにす
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/504/
+  :language: 
+  :time: 2008/01/04 09:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>GetSameRanks()で文字列のフラグを生成する発想は無かったです。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5167'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5167
+  :user_name: xsd
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/154/
+  :language: 
+  :time: 2008/01/04 09:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">(説明)\r\n当初間違ってトピックに投稿していたので、このようなコメントを付けていたのですが、\r\nこのコメントに気づいた管理人さんにお題に移していただきました。\r\n(最初の2つだけ投稿日時が早いのはそのためです)\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5168'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5168
+  :user_name: 匿名
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/01/04 09:54 GMT
+  :vote_count: '5'
+  :vote_score: '5'
+  :body: "\n\t  <pre class=\"compact\">文字列のチェックは最低限ですが\r\n役判定も短めにまとめてみました☆</pre>\n\t"
+  :code: |
+    #include&lt;stdio.h&gt;
+    #include&lt;string.h&gt;
+
+    void fortune(char *cards){
+      char *ranklist = "A23456789TJQK";
+      int suit[5], rank[5], straight = 0, flush = 0, pair = 0, i, j;
+
+      for(i = 0; i &lt; 5; i++)
+        suit[i] = cards[i * 2],
+        rank[i] = strchr(ranklist, cards[i * 2 + 1]) - ranklist,
+        straight |= 1 &lt;&lt; rank[i];
+      while(straight % 2 &lt; 1)
+        straight /= 2;
+      for(i = 0; i &lt; 4; i++)
+        for(j = i + 1; j &lt; 5; j++)
+          flush += (suit[i] == suit[j]),
+          pair += (rank[i] == rank[j]);
+
+      if(flush == 10 &amp;&amp; straight == 7681)         printf("Royal flush\n");
+      else if(flush == 10 &amp;&amp; straight == 31)      printf("Straight flush\n");
+      else if(pair == 6)                          printf("Four of a kind\n");
+      else if(pair == 4)                          printf("Full house\n");
+      else if(flush == 10)                        printf("Flush\n");
+      else if(straight == 7681 || straight == 31) printf("Straight\n");
+      else if(pair == 3)                          printf("Three of a kind\n");
+      else if(pair == 2)                          printf("Two pair\n");
+      else if(pair == 1)                          printf("One pair\n");
+      else                                        printf("No pair\n");
+    }
+
+    int main(void){
+      fortune("SQSJSASKST");
+      fortune("D9D7D6D5D8");
+      fortune("C2D2S2H3H2");
+      fortune("C2D3S2H3H2");
+      fortune("S9S4S8STSJ");
+      fortune("C4H7D5S6H3");
+      fortune("S6H6C5DQC6");
+      fortune("S6HQC5DQC6");
+      fortune("S6H4C5DQC6");
+      fortune("SJSQSKSAC2");
+
+      fortune("SQSJDASKST");
+      fortune("S4S3DASKS2");
+      return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5169'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5169
+  :user_name: あにす
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/01/04 11:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ワイルドカード(WWで表す)に対応させてみました。\n\t"
+  :code: "//http://ja.doukaku.org/121/　投稿用\nusing System;\nusing System.Collections.Generic;\n\nclass
+    Program {\n    const string Ranks = \"A23456789TJQKA\";\n    const string Suits
+    = \"SDHC\";\n    enum Hands {\n        Five_of_a_kind = 10,\n        Royal_straight_flush
+    = 9,\n        Straight_flush = 8,\n        Four_of_a_kind = 7,\n        Full_house
+    = 6,\n        Flush = 5,\n        Straight = 4,\n        Three_of_a_kind = 3,\n
+    \       Two_pair = 2,\n        One_pair = 1,\n        No_pair = 0\n    }\n\n    static
+    void Main(string[] args) {\n        Hands hand = 0;\n        foreach(char suit
+    in Suits.ToCharArray()) {\n            foreach(char rank in Ranks.Remove(0, 1).ToCharArray())
+    {\n                string wildCard = suit.ToString() + rank.ToString();\n                Hands
+    tmpHand = GetHands(args[0].Replace(\"WW\", wildCard));\n                hand =
+    tmpHand &gt; hand ? tmpHand : hand;\n            }\n        }\n        Console.WriteLine(hand);\n
+    \       Console.ReadLine();\n    }\n\n    static Hands GetHands(string cards)
+    {\n        if(Is5cards(cards)) return Hands.Five_of_a_kind;\n        else if(IsRoyalStraightFlush(cards))
+    return Hands.Royal_straight_flush;\n        else if(IsStraightFlush(cards)) return
+    Hands.Straight_flush;\n        else if(Is4cards(cards)) return Hands.Five_of_a_kind;\n
+    \       else if(IsFullHouse(cards)) return Hands.Full_house;\n        else if(IsFlush(cards))
+    return Hands.Flush;\n        else if(IsStraight(cards)) return Hands.Straight;\n
+    \       else if(Is3Cards(cards)) return Hands.Three_of_a_kind;\n        else if(Is2Pair(cards))
+    return Hands.Two_pair;\n        else if(Is1Pair(cards)) return Hands.One_pair;\n
+    \       return Hands.No_pair;\n    }\n\n    static bool Is5cards(string cards)
+    {\n        return IsAnyCards(cards, 5);\n    }\n\n    static bool IsRoyalStraightFlush(string
+    cards){\n        if(IsFlush(cards) &amp;&amp; IsStraight(cards)){\n            for(int
+    i = 2; i &lt;= 9; i++) {//2～9までの数字が含まれていたらNG\n                if(cards.IndexOf(i.ToString())
+    != -1) return false;\n            }\n            return true;\n        }\n        return
+    false;\n    }\n\n    static bool IsStraightFlush(string cards) {\n        return
+    IsFlush(cards) &amp;&amp; IsStraight(cards);\n    }\n\n    static bool Is4cards(string
+    cards) {\n        return IsAnyCards(cards, 4);\n    }\n\n    static bool IsFullHouse(string
+    cards) {\n        return Is3Cards(cards) &amp;&amp; Is1Pair(cards);\n    }\n\n
+    \   static bool IsFlush(string cards) {\n        foreach(char suit in Suits.ToCharArray())
+    {//あるスーツの文字を切り取って\n            if(cards.Length - cards.Replace(suit.ToString(),\"\").Length
+    == 5) return true;\n            //5文字減ったら5枚全て同じスーツ\n        }\n        return
+    false;\n    }\n\n    static bool IsStraight(string cards) {\n        List&lt;string&gt;
+    rankListInCards = new List&lt;string&gt;();//カードのランクのみ\n        //ランク切り出し\n        for(int
+    i = 1; i &lt;= 9; i = i + 2) {\n            rankListInCards.Add(cards[i].ToString());\n
+    \       }\n        //並び替え\n        rankListInCards.Sort(cardRankSort);\n        //ソート済みカードリスト作成\n
+    \       string sortedCards = \"\";\n        foreach(string card in rankListInCards)
+    {\n            sortedCards += card;\n        }\n        //判定\n        if(Ranks.Contains(sortedCards))
+    return true;\n        if(sortedCards[0] == 'A') {//先頭がAなら\n            //末尾に移してもう一度判定\n
+    \           if(Ranks.Contains(sortedCards.Remove(0, 1).PadRight(5, 'A'))) return
+    true;\n        }\n        return false;\n    }\n\n    static bool Is3Cards(string
+    cards) {\n        return IsAnyCards(cards, 3);\n    }\n\n    static bool Is2Pair(string
+    cards) {\n        foreach(char Rank in Ranks.ToCharArray()) {\n            if(cards.Length
+    - cards.Replace(Rank.ToString(), \"\").Length == 2) {//One pairだったら\n                return
+    Is1Pair(cards.Replace(Rank.ToString(),\"\"));//One pairが2回でTwo pair\n            }\n
+    \       }\n        return false;\n    }\n\n    static bool Is1Pair(string cards)
+    {\n        return IsAnyCards(cards, 2);\n    }\n\n    //あるカードがany枚含まれているかどうかを判定\n
+    \   static bool IsAnyCards(string cards, int any) {\n        foreach(char Rank
+    in Ranks.ToCharArray()) {\n            if(cards.Length - cards.Replace(Rank.ToString(),
+    \"\").Length == any) return true;\n        }\n        return false;\n    }\n\n
+    \   static int cardRankSort(string x, string y) {\n        return Ranks.IndexOf(x)
+    - Ranks.IndexOf(y); \n    }\n}\n"
+  :tags:
+  - C#2.0
+  :references:
+    :url: 
+    :title: 
+- :id: '5170'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5170
+  :user_name: g000001
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/01/04 11:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  簡潔になるようにしたつもりが、混沌としたものになってしまいました…。\r<br>実行結果:\r<br>(format t \"~A =&gt; ~A~%\" x (hand x \"SQSJSASKST\"))\r<br>;==&gt;\r<br>;SQSJSASKST =&gt; Royal straight flash \n\t"
+  :code: "(defpackage :doukaku-121 (:use :cl :ppcre))\n(in-package :doukaku-121)\n\n(defun
+    break-part (str &amp;optional (ace-val 1) &amp;aux suit rank)\n  (do-matches-as-strings
+    (match \"([SDHC][A2-9TJQK])\" str)\n    (push (schar match 0) suit)\n    (push
+    (schar match 1) rank))\n  (values\n   (sublis `((A . ,ace-val) (T . 10) (J . 11)
+    (Q . 12) (K . 13))\n           (mapcar (lambda (x)(read-from-string (string x)))
+    \n                   (nreverse rank)))\n   suit))\n\n(defun flashp (str)\n  (let
+    ((s (nth-value 1 (break-part str))))\n    (and (every (lambda (x) (char= (car
+    s) x)) s) 'flash)))\n\n(defun kinds (str)\n  (let ((k (length (delete-duplicates
+    (break-part str)))))\n    (if (= k 5) nil k)))\n\n(defun straightp (str)\n  (flet
+    ((check (str ace)\n           (let ((lst (sort (break-part str ace) #'&lt;)))\n
+    \            (mapc (lambda (x y) (unless (= 1 (- y x)) (return-from check nil)))\n
+    \                  lst (cdr lst))\n             (values 'straight (if (= 1 ace)
+    nil 'royal)))))\n    (or (check str 1) (check str 14))))\n\n(defun 3-2p (str)\n
+    \ (do ((l (break-part str) (cdr l)))\n      ((null (cddr l)) nil)\n    (case (count
+    (car l) l)\n      (3 (return t))\n      (4 (return nil)))))\n\n(defun hand (str
+    &amp;optional (out t))\n  (multiple-value-bind (straightp royalp) (straightp str)\n
+    \   (let ((hand (list royalp straightp (flashp str) (kinds str) (3-2p str))))\n
+    \     (destructuring-bind (ignore flashp kinds 3-2p) hand\n        (declare (ignore
+    ignore))\n        (if 3-2p\n            (case kinds\n              (2 (format
+    out \"Full house\"))\n              (3 (format out \"Three of a kind\")))\n            (case
+    kinds\n              (2 (format out \"Four of a kind\"))\n              (3 (format
+    out \"Two pair\"))\n              (4 (format out \"One paire\"))\n              (otherwise
+    (if (or straightp flashp)\n                             (format out \"~@(~{~@[~A
+    ~]~}~)\" hand)\n                             (format out \"No pair\")))))))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5171'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5171
+  :user_name: g000001
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/405/
+  :language: diff
+  :time: 2008/01/04 11:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>すいません、修正前のをコピペしてました。実行例も不要なxが混じってました。正確には、\n(format t \"~A =&gt;
+    ~A~%\" (hand \"SQSJSASKST\"))\nです。</p>\n\n\t"
+  :code: |
+    40c40
+    &lt;       (destructuring-bind (ignore flashp kinds 3-2p) hand
+    ---
+    &gt;       (destructuring-bind (ignore flashp straightp kinds 3-2p) hand
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5172'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5172
+  :user_name: squld
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/643/
+  :language: Java
+  :time: 2008/01/04 12:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  既にJavaで解かれていますが、ちょっと捻ってみました。\n\t"
+  :code: |
+    import java.util.ArrayList;
+    import java.util.Arrays;
+    import java.util.Collections;
+    import java.util.Comparator;
+    import java.util.List;
+
+    public class Poker {
+        public static void main(String[] args) {
+            System.out.println(getPokerRole("SQSJSASKST"));
+            System.out.println(getPokerRole("D9D7D6D5D8"));
+            System.out.println(getPokerRole("C2D2S2H3H2"));
+            System.out.println(getPokerRole("C2D3S2H3H2"));
+            System.out.println(getPokerRole("S9S4S8STSJ"));
+            System.out.println(getPokerRole("C4H7D5S6H3"));
+            System.out.println(getPokerRole("S6H6C5DQC6"));
+            System.out.println(getPokerRole("S6HQC5DQC6"));
+            System.out.println(getPokerRole("S6H4C5DQC6"));
+            System.out.println(getPokerRole("SJSQSKSAC2"));
+        }
+
+        private static String getPokerRole(String aCards) {
+            List&lt;int[]&gt; tCards = new ArrayList&lt;int[]&gt;();
+
+            for (int i = 0; i &lt; aCards.length(); i += 2) {
+                tCards.add(new int[] { aCards.charAt(i), 1 + "A23456789TJQK".indexOf(aCards.charAt(i + 1)) });
+            }
+
+            Collections.sort(tCards, new Comparator&lt;int[]&gt;() {
+                public int compare(int[] aLeftCard, int[] aRightCard) {
+                    return aLeftCard[1] - aRightCard[1];
+                }
+            });
+
+            int tRoyalCardCount = 0;
+            boolean tIsStraight = true;
+            boolean tIsFlush = true;
+            int[] tPairs = new int[5];
+            int tPairKinds = 0;
+            for (int i = 0; i &lt; tCards.size(); i++) {
+                if (Arrays.binarySearch(new int[] { 1, 10, 11, 12, 13 }, tCards.get(i)[1]) &gt;= 0) {
+                    tRoyalCardCount++;
+                }
+                if (i == 0) {
+                    continue;
+                }
+                if (tCards.get(i - 1)[0] != tCards.get(i)[0]) {
+                    tIsFlush = false;
+                }
+                if (tCards.get(i - 1)[1] + 1 != tCards.get(i)[1]) {
+                    tIsStraight = false;
+                }
+                if (tCards.get(i - 1)[1] == tCards.get(i)[1]) {
+                    tPairs[tPairKinds]++;
+                } else {
+                    tPairKinds++;
+                }
+            }
+
+            Arrays.sort(tPairs);
+            if (tRoyalCardCount == 5 &amp;&amp; tIsFlush) {
+                return "Royal flush";
+            } else if (tIsFlush &amp;&amp; tIsStraight) {
+                return "Straight flush";
+            } else if (tIsFlush) {
+                return "Flush";
+            } else if (tIsStraight) {
+                return "Straight";
+            } else if (tPairs[4] == 3) {
+                return "Four of a kind";
+            } else if (tPairs[4] == 2 &amp;&amp; tPairs[3] == 1) {
+                return "Full house";
+            } else if (tPairs[4] == 2) {
+                return "Three of a kind";
+            } else if (tPairs[4] == 1 &amp;&amp; tPairs[3] == 1) {
+                return "Two pair";
+            } else if (tPairs[4] == 1 &amp;&amp; tPairs[3] == 0) {
+                return "One pair";
+            }
+
+            return "No pair";
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5174'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5174
+  :user_name: sumim
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/01/04 15:30 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n<p>バッグ（a Bag）はマルチセットとも呼ばれる特殊なコレクションのひとつで、要素を、その種類と出現数との組として管理しています。情報は内包される辞書に保持され、#valuesAndCounts
+    をコールすることでアクセスできます。なお、Smalltalk で辞書(a Dictionary)とは、連想配列のことを指します。</p>\n<p>辞書は #values
+    で、自らが要素として持つ「キー -&gt; 値」の組の「値」（この場合、出現数）のみを抽出した配列を返します。本スクリプトでは、この出現数のみを抽出した配列（ソート済み）のパターンを見て(#caseOf:otherwise:)、手の役（ストレートやフラッシュ以外の…）を判定しています。</p>\n\n\t"
+  :code: |
+    | 入力 ランク順 ランク スート |
+    入力 := 'SQSJSASKST'.
+    ランク順 := 'A', ($2 to: $9), 'TJQK'.
+    ランク := Bag new.
+    スート := Bag new.
+    入力 pairsDo: [:a :b | スート add: a. ランク add: (ランク順 indexOf: b)].
+    スート asSet size = 1 ifTrue: [
+        ランク asSortedArray = #(1 10 11 12 13) ifTrue: [^'Royal flush'].
+        ランク asSortedArray = (ランク min to: ランク min + 4) ifTrue: [^'Straight flush'].
+        ^'Flush'].
+    ランク asSortedArray = (ランク min to: ランク min + 4) ifTrue: [^'Straight'].
+    ^ランク valuesAndCounts values sort caseOf: {
+        [#(1 4)] -&gt; ['Four of a kind'].
+        [#(2 3)] -&gt; ['Full house'].
+        [#(1 1 3)] -&gt; ['Three of a kind'].
+        [#(1 2 2)] -&gt; ['Two pair'].
+        [#(1 1 1 2)] -&gt; ['One pair']} otherwise: ['No pair']
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '5181'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5181
+  :user_name: katsu
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/117/
+  :language: Prolog
+  :time: 2008/01/05 02:02 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">面倒なので、大文字ではなくて、小文字でカードを記述しています。スマートに出来るかと思ったけど、結局力業でした。\r\n\r\n実行結果：\r\n$
+    pl -qs 121.pl\r\nsqsjsaskst-&gt;Royal flush\r\nd9d7d6d5d8-&gt;Straight flush\r\nc2d2s2h3h2-&gt;four
+    of a kind\r\nc2d3s2h3h2-&gt;Full house\r\ns9s4s8stsj-&gt;Flush\r\nc4h7d5s6h3-&gt;Straight\r\ns6h6c5dqc6-&gt;Three
+    of a kind\r\ns6hqc5dqc6-&gt;Two pair\r\ns6h4c5dqc6-&gt;One pair\r\nsjsqsksac2-&gt;No
+    Pair\r\n?-\r\n\r\n</pre>\n\t"
+  :code: "straight([(_,A)|As]):-seq(A,As).\r\n\r\nseq(_,[]).\r\nseq(P,[(_,N)|Ns]):-succ(P,N),seq(N,Ns).\r\n\r\nflush([(A,_)|As]):-flush0(A,As).\r\nflush0(_,[]).\r\nflush0(A,[(A,_)|As]):-flush0(A,As).\r\n\r\ncount([],[]).\r\ncount([(_,N)|Ns],R):-count(Ns,Rs),countw(N,Rs,R).\r\n\r\ncountw(N,[],[(N,1)]).\r\ncountw(N,[(N,C0)|R],[(N,C)|R]):-succ(C0,C).\r\ncountw(N,[P|R0],[P|R]):-countw(N,R0,R).\r\n\r\nsortcard(C,Cs):-predsort(cmp,C,Cs).\r\ncmp(&gt;,(_,N1),(_,N2)):-N1&gt;N2,!.\r\ncmp(&lt;,_,_):-!.\r\n\r\np([(S,1),(S,10),(S,11),(S,12),(S,13)],'Royal
+    flush'):-!.\r\np(C, 'Straight flush'):-straight(C),flush(C),!.\r\np(C, 'Flush'):-flush(C),!.\r\np(C,
+    'Straight'):-straight(C),!.\r\np(C, R) :- count(C,C1), maplist(arg(2),C1,C2),msort(C2,C3),n(C3,
+    R).\r\np(_, 'No Pair').\r\n\r\nn([2,3],'Full house'):-!.\r\nn([1,4],'four of a
+    kind'):-!.\r\nn([1,1,3],'Three of a kind'):-!.\r\nn([1,2,2],'Two pair'):-!.\r\nn([1,1,1,2],'One
+    pair'):-!.\r\n\r\ntcard1([],[]).\r\ntcard1([S,Na|Cs],[(S,N)|Cs1]):-nth1(N,[a,'2','3','4','5','6','7','8','9',t,j,q,k],Na),tcard1(Cs,Cs1).\r\n\r\npoker(C,R):-atom_chars(C,Cs),tcard1(Cs,R0),sortcard(R0,R1),p(R1,R),!.\r\n\r\ntest(C):-poker(C,R),write(C-&gt;R),nl.\r\n\r\n:-maplist(test,[sqsjsaskst,\r\n
+    \               d9d7d6d5d8,\r\n                c2d2s2h3h2,\r\n                c2d3s2h3h2,\r\n
+    \               s9s4s8stsj,\r\n                c4h7d5s6h3,\r\n                s6h6c5dqc6,\r\n
+    \               s6hqc5dqc6,\r\n                s6h4c5dqc6,\r\n                sjsqsksac2]).\r\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5182'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5182
+  :user_name: katsu
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/117/
+  :language: 
+  :time: 2008/01/05 02:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ああ、そうだ。このお題は良い問題だと思います。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5183'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5183
+  :user_name: szktty
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/648/
+  :language: Other
+  :time: 2008/01/05 06:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Mac OS X (PowerPC 32bit) アセンブリで。PowerPCアセンブリ読めというのも無茶なので、以下やってることの説明です。先にほとんど同じロジック（#5168）で投稿されてしまいましたけど。</p>\n<p>スート役は「すべてのスート役が同じ」場合のみ成り立つので、最初のスートを記録しておき、二枚目以降と比較すれば判断できます。途中に一つでも異なるスートがあれば、スート用レジスタを
+    0 にします。このレジスタには最初のスートのASCIIコードが入っているので、レジスタが 0 でなければフラッシュ系の役が成立することになります。</p>\n<p>ランク役では、重複した枚数ごとにレジスタを用意します。このレジスタは1-13までのランクをビットで表したフラグです。</p>\n<ul
+    class=\"simple\">\n<li>r8:  ノーペア（1枚）</li>\n<li>r9:  ワンペア（2枚）</li>\n<li>r10: スリーカード（3枚）</li>\n<li>r11:
+    フォーカード（4枚）</li>\n</ul>\n<p>最初のカードのランクは、ノーペア用レジスタのビット 1&lt;&lt;ランク を立てます（ランクが5なら
+    1&lt;&lt;4 ）。次のカードのランクも同じであれば、ワンペア用レジスタの同ビットを立てて、ノーペア用レジスタの同ビットを下ろします。これでペアは判断できます。</p>\n<p>最後にストレートとロイヤルフラッシュですが、ノーペア用レジスタを使います。ロイヤルフラッシュはATJQKの組み合わせが決まっていますから、その箇所のビットを立てたビットマスクで判断できます。ストレートは連続した5つのビット（11111）をシフトしながらAND演算して判断します。</p>\n\n\t"
+  :code: ";; ------------------------------------------------\n;; poker.s for Mac
+    OS X (PowerPC 32bit)\n;; % as -o poker.o poker.s &amp;&amp; gcc poker.o -o poker\n;;
+    ------------------------------------------------\n\n        .machine ppc\n        .globl
+    \ _main\n\n;; レジスタ\n;;\n;; r4:  char *argv[]\n;; r5:  残りカードの枚数\n;; r6:  スキャンする文字（スートか数字）\n;;
+    r7:  スート役（フラッシュ）フラグ（役候補スートのASCIIコードが入る）\n;; r8:  ノーペアの数字用フラグ（13ビット使用）\n;; r9:
+    \ ワンペア、ツーペア用フラグ（13ビット使用）\n;; r10: スリーカード用フラグ（13ビット使用）\n;; r11: フォーカード用フラグ（13ビット使用）\n;;\n\n_main:\n
+    \       ;; レジスタの初期化\n        addi    r4, r4, 4       ; argv[1] にポインタを進める\n        lwz
+    \    r4, 0(r4)       ; argv[1] の文字列をレジスタにロード\n        li      r5, 5           ;
+    残りカード5枚\n        li      r7, 0\n        li      r8, 0\n        li      r9, 0\n
+    \       li      r10, 0\n        li      r11, 0\n\n_scan_card:\n        ;; 一文字目（スート）\n
+    \       lbz     r6, 0(r4)\n        bl      _scan_suit      ; サブルーチン\n        addi
+    \   r4, r4, 1\n\n        ;; 二文字目（数字）\n        lbz     r6, 0(r4)\n        bl      _scan_rank
+    \     ; サブルーチン\n\n        ;; 繰り返しの準備\n        subi    r5, r5, 1\n        cmpli
+    \  cr7, r5, 0\n        beq     cr7, _show_hand ; 5枚チェックし終えたら役を表示する\n        addi
+    \   r4, r4, 1\n        b       _scan_card      ; 繰り返し\n\n;; スートのスキャン\n_scan_suit:\n
+    \       ;; 最初のカードならそのままフラグをセット\n        cmpli   cr7, r5, 5\n        beq     cr7,
+    _scan_first_suit\n\n        ;; 二枚目以降\n        cmpli   cr7, r7, 0      ; フラグがゼロならフラッシュの可能性もゼロ\n
+    \       beqlr   cr7\n        cmpl    cr7, r7, r6     ; 前のスートと同じなら戻る\n        beqlr
+    \  cr7\n        li      r7, 0           ; 前のスートと異なるならフラグをクリア\n        blr                     ;
+    サブルーチン終了\n\n;; 最初のカードのスートのスキャン\n_scan_first_suit:\n        add     r7, r0, r6
+    \     ; r0 は 0 とみなされるので、r7 = r6\n        blr                     ; サブルーチン終了\n\n;;
+    ランクのスキャン\n_scan_rank:\n        ;; ASCIIコードを 0-12 の整数にする\n        cmpli   cr7,
+    r6, 65     ; 'A'\n        beq     cr7, _scan_rank_ace\n        cmpli   cr7, r6,
+    84     ; 'T'\n        beq     cr7, _scan_rank_ten\n        cmpli   cr7, r6, 74
+    \    ; 'J'\n        beq     cr7, _scan_rank_jack\n        cmpli   cr7, r6, 81
+    \    ; 'Q'\n        beq     cr7, _scan_rank_queen\n        cmpli   cr7, r6, 75
+    \    ; 'K'\n        beq     cr7, _scan_rank_king\n        \n        ;; 2-9\n        subi
+    \   r6, r6, 49\n        b       _scan_rank_body\n\n_scan_rank_ace:\n        li
+    \     r6, 0\n        b       _scan_rank_body\n\n_scan_rank_ten:\n        li      r6,
+    9\n        b       _scan_rank_body\n\n_scan_rank_jack:\n        li      r6, 10\n
+    \       b       _scan_rank_body\n\n_scan_rank_queen:\n        li      r6, 11\n
+    \       b       _scan_rank_body\n\n_scan_rank_king:\n        li      r6, 12\n
+    \       b       _scan_rank_body\n\n;; r15: ランクのビット表現\n;; r16: 論理演算結果\n_scan_rank_body:\n
+    \       li      r0, 1\n        slw     r15, r0, r6     ; 左シフト (1&lt;&lt;r6)\n
+    \       \n        ;; フォーカード：同ランクのカードが三枚あるかチェック\n        and     r16, r10, r15\n
+    \       cmpli   cr7, r16, 0\n        bgt     cr7, _switch_four_kind_flag\n\n        ;;
+    スリーカード：同ランクのカードが二枚あるかチェック\n        and     r16, r9, r15\n        cmpli   cr7,
+    r16, 0\n        bgt     cr7, _switch_three_kind_flag\n\n        ;; ワンペア：同ランクのカードが一枚あるかチェック\n
+    \       and     r16, r8, r15\n        cmpli   cr7, r16, 0\n        bgt     cr7,
+    _switch_one_pair_flag\n        \n        ;; ノーペア\n        or      r8, r8, r15
+    \    ; ビットフラグを立てる\n        blr                     ; サブルーチン終了\n\n;; ワンペア\n_switch_one_pair_flag:\n
+    \       or      r9, r9, r15     ; ビットフラグを立てる\n        xor     r8, r8, r15     ;
+    ノーペアのフラグを下ろす\n        blr                     ; サブルーチン終了\n\n;; スリーカード\n_switch_three_kind_flag:\n
+    \       or      r10, r10, r15   ; ビットフラグを立てる\n        xor     r9, r9, r15     ;
+    ワンペアのフラグを下ろす\n        blr                     ; サブルーチン終了\n\n;; フォーカード\n_switch_four_kind_flag:\n
+    \       or      r11, r11, r15   ; ビットフラグを立てる\n        xor     r8, r8, r15     ;
+    スリーカードのフラグを下ろす\n        blr                     ; サブルーチン終了\n\n;; 役の表示\n_show_hand:\n
+    \       ;; フラッシュ、ストレートフラッシュ、\n        ;; ロイヤルフラッシュのチェック\n        cmpli   cr7,
+    r7, 0\n        bne     cr7, _check_flushes\n\n        ;; フォーカードのチェック\n        andi.
+    \  r0, r11, 8191   ; (1&lt;&lt;13)-1\n        cmpli   cr7, r0, 0\n        bgt
+    \    cr7, _show_four_kind\n\n        ;; フルハウス、スリーカードのチェック\n        andi.   r0,
+    r10, 8191\n        cmpli   cr7, r0, 0\n        bgt     cr7, _check_full_house_or_three_kind\n\n
+    \       ;; ワンペア、ツーペアのチェック\n        andi.   r0, r9, 8191\n        cmpli   cr7,
+    r0, 0\n        bgt     cr7, _check_one_or_two_pair\n\n        ;; ストレートのチェック\n
+    \       bl      _check_straight\n        cmpli   cr7, r2, 0\n        bne     cr7,
+    _show_straight\n\n        ;; ノーペア\n        b       _show_no_pair\n\n;; フラッシュ、ストレートフラッシュ、ロイヤルフラッシュ\n_check_flushes:\n
+    \       ;; ロイヤルフラッシュのチェック\n        ;; ランク ATJQK のビットマスク\n        li      r0, 1|(1&lt;&lt;9)|(1&lt;&lt;10)|(1&lt;&lt;11)|(1&lt;&lt;12)\n
+    \       and     r2, r8, r0\n        cmpl    cr7, r2, r0\n        beq     cr7,
+    _show_royal_flush\n        \n        ;; ストレートフラッシュのチェック\n        bl      _check_straight\n
+    \       cmpli   cr7, r2, 0\n        bne     cr7, _show_straight_flush\n        \n
+    \       ;; フラッシュ\n        b       _show_flush\n\n;; ストレートのチェック（サブルーチン）\n;; ストレートなら
+    r2 &gt; 0 にして戻る\n_check_straight:\n        ;; ビットマスク 11111 を左にずらしながら9回AND演算する\n
+    \       li      r0, (1&lt;&lt;5)-1    ; ビットマスク\n        li      r2, 0           ;
+    左シフト数\n\n_find_straight:\n        slw     r15, r0, r2     ; 左シフト\n        and
+    \    r17, r8, r15    ; ノーペア用フラグを調べる\n        cmpl    cr7, r17, r15\n        beq
+    \    cr7, _found_straight\n        addi    r2, r2, 1       ; 次のループの準備\n        cmpli
+    \  cr7, r2, 9\n        ble     cr7, _find_straight\n        \n        li      r2,
+    0           ; 5つの連続した数字がなかった\n        blr                     ; サブルーチン終了\n\n_found_straight:\n
+    \       li      r2, 1           ; 5つの連続した数字を発見\n        blr                     ;
+    サブルーチン終了\n\n;; フルハウスかスリーカード\n_check_full_house_or_three_kind:\n        ;; ワンペアがあればフルハウス\n
+    \       andi.   r0, r9, 8191\n        cmpli   cr7, r0, 0\n        bgt     cr7,
+    _show_full_house\n        b       _show_three_kind\n\n;; ワンペアかツーペア\n_check_one_or_two_pair:\n
+    \       li      r0, 1           ; これをシフト\n        li      r2, 0           ; 左シフト数\n
+    \       li      r16, 0          ; ペアの数\n\n;; ペア用フラグからペアの数をカウントする\n_find_pairs:\n
+    \       slw     r15, r0, r2\n        and     r17, r9, r15\n        addi    r2,
+    r2, 1\n        cmpli   cr7, r17, 0\n        bgt     cr7, _found_pair\n        cmpli
+    \  cr7, r2, 13     ; 0-12 の 13 回チェック\n        ble     cr7, _find_pairs\n\n        ;;
+    ペアの数で分岐\n        cmpli   cr7, r16, 1\n        beq     cr7, _show_one_pair     \n
+    \       b       _show_two_pair\n\n;; 見つけたペアの数を増加\n_found_pair:\n        addi    r16,
+    r16, 1\n        b       _find_pairs     ; 戻る\n\n;; ノーペア\n_show_no_pair:\n        lis
+    \    r4, hi16(no_pair)\n        addi    r4, r4, lo16(no_pair)\n        li      r5,
+    8\n        b       _print_and_exit\n\n;; ワンペア\n_show_one_pair:\n        lis     r4,
+    hi16(one_pair)\n        addi    r4, r4, lo16(one_pair)\n        li      r5, 9\n
+    \       b       _print_and_exit\n\n;; ツーペア\n_show_two_pair:\n        lis     r4,
+    hi16(two_pair)\n        addi    r4, r4, lo16(two_pair)\n        li      r5, 9\n
+    \       b       _print_and_exit\n\n;; スリーカード\n_show_three_kind:\n        lis     r4,
+    hi16(three_kind)\n        addi    r4, r4, lo16(three_kind)\n        li      r5,
+    16\n        b       _print_and_exit\n\n;; ストレート\n_show_straight:\n        lis
+    \    r4, hi16(straight)\n        addi    r4, r4, lo16(straight)\n        li      r5,
+    9\n        b       _print_and_exit\n        \n;; フラッシュ\n_show_flush:\n        lis
+    \    r4, hi16(flush)\n        addi    r4, r4, lo16(flush)\n        li      r5,
+    6\n        b       _print_and_exit \n\n;; フルハウス\n_show_full_house:\n        lis
+    \    r4, hi16(full_house)\n        addi    r4, r4, lo16(full_house)\n        li
+    \     r5, 11\n        b       _print_and_exit \n\n;; ストレートフラッシュ\n_show_straight_flush:\n
+    \       lis     r4, hi16(straight_flush)\n        addi    r4, r4, lo16(straight_flush)\n
+    \       li      r5, 15\n        b       _print_and_exit \n\n;; フォーカード\n_show_four_kind:\n
+    \       lis     r4, hi16(four_kind)\n        addi    r4, r4, lo16(four_kind)\n
+    \       li      r5, 15\n        b       _print_and_exit\n\n;; ロイヤルフラッシュ\n_show_royal_flush:\n
+    \       lis     r4, hi16(royal_flush)\n        addi    r4, r4, lo16(royal_flush)\n
+    \       li      r5, 12\n        b       _print_and_exit \n\n;; 文字列を出力して終了する\n;;
+    r4 に文字列のアドレスを、r5 に文字列の長さをセットしておく\n_print_and_exit:\n        ;; sys_write()\n        li
+    \     r3, 1           ; 標準出力\n        li      r0, 4           ; sys_write\n        sc
+    \                     ; 呼び出し\n        b       _exit\n\n_exit:\n        ;; sys_exit()\n
+    \       li      r3, 0\n        li      r0, 1\n        sc\n\n\n;; 定数\n\n        .data\n
+    \       .align 2\n\nno_pair:\n        .asciz  \"No pair\\n\"\n        .align  2\n\none_pair:\n
+    \       .asciz  \"One pair\\n\"\n        .align  2\n\ntwo_pair:\n        .asciz
+    \ \"Two pair\\n\"\n        .align  2\n\nthree_kind:\n        .asciz  \"Three of
+    a kind\\n\"\n        .align  2\n\nstraight:\n        .asciz  \"Straight\\n\"\n
+    \       .align  2\n\nflush:\n        .asciz  \"Flush\\n\"\n        .align  2\n\nfull_house:\n
+    \       .asciz  \"Full house\\n\"\n        .align  2\n\nfour_kind:\n        .asciz
+    \ \"Four of a kind\\n\"\n        .align  2\n\nstraight_flush:\n        .asciz
+    \ \"Straight flush\\n\"\n        .align  2\n        \nroyal_flush:\n        .asciz
+    \ \"Royal flush\\n\"\n        .align  2\n"
+  :tags:
+  - Assembly
+  - MacOSX
+  - PowerPC
+  :references:
+    :url: 
+    :title: 
+- :id: '5184'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5184
+  :user_name: naranja
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/448/
+  :language: D
+  :time: 2008/01/05 06:23 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: |
+    import std.stdio;
+    import std.string;
+
+    string poker(string cards){
+        auto suit = "SDHC";
+        auto rankOrder = "A23456789TJQK";
+        auto transRankOrder = "abcdefghijklm";
+        auto transRank = translate(cards, maketrans(rankOrder, transRankOrder), suit).sort;
+
+        int[char] rankCount;
+        foreach(c; transRank){
+            rankCount[c]++;
+        }
+        auto pairPattern = rankCount.values.sort;
+        auto hand = pairPattern == [1, 1, 1, 2] ? "One pair" :
+                    pairPattern == [1, 2, 2] ? "Two pair" :
+                    pairPattern == [1, 1, 3] ? "Three of a kind" :
+                    pairPattern == [2, 3] ? "Full house" :
+                    pairPattern == [1, 4] ? "Four of a kind" : "";
+        if(hand == ""){
+            auto isFlush = cards[0] == cards[2] &amp;&amp; cards[0] == cards[4] &amp;&amp;
+                           cards[0] == cards[6] &amp;&amp; cards[0] == cards[8];
+            hand = find(transRankOrder, transRank) != -1 ?
+                       (isFlush ? "Straight flush" : "Straight") :
+                   transRank == (transRankOrder[0] ~ transRankOrder[($ - 4)..$]) ?
+                       (isFlush ? "Royal flush" : "Straight") :
+                   (isFlush ? "Flush" : "No pair");
+        }
+        return hand;
+    }
+
+    void main(){
+        writefln(poker("SQSJSASKST")); // Royal flush
+        writefln(poker("D9D7D6D5D8")); // Straight flush
+        writefln(poker("C2D2S2H3H2")); // Four of a kind
+        writefln(poker("C2D3S2H3H2")); // Full house
+        writefln(poker("S9S4S8STSJ")); // Flush
+        writefln(poker("C4H7D5S6H3")); // Straight
+        writefln(poker("S6H6C5DQC6")); // Three of a kind
+        writefln(poker("S6HQC5DQC6")); // Two pair
+        writefln(poker("S6H4C5DQC6")); // One pair
+        writefln(poker("SJSQSKSAC2")); // No pair
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5185'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5185
+  :user_name: 匿名
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/01/05 06:25 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    import sys
+
+    def f(c):
+      d = {'A': '1', 'T': 'a', 'J': 'b', 'Q': 'c', 'K': 'd'}
+      s = len(set([c[i] for i in range(0,10,2)])) == 1
+      r = ''.join(sorted([d[c[i]] if c[i] in d else c[i] for i in range(1,11,2)]))
+      l = len(set(r))
+      if l == 2:
+        print 'Four of a kind' if r.count(r[0]) in [1,4] else 'Full house'
+      elif l == 5:
+        if '123456789abcd 1abcd'.find(r) &gt;= 0:
+          print ('Royal flush 'if r == '1abcd' else 'Straight flush') if s else 'Straight'
+        elif s:
+          print 'Flush'
+        else:
+          print 'No pair'
+      elif s:
+        print 'Flush'
+      elif l == 4:
+        print 'One pair'
+      elif l == 3:
+        print 'Three of a kind' if [i for i in set(r) if r.count(i) &gt;= 3] else 'Two pair'
+
+    f(sys.argv[1])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5186'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5186
+  :user_name: matyr
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2008/01/05 07:23 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  \n\t"
+  :code: |
+    function doukaku121(hand){
+      var S = [], R = [], sd = {S:0, H:1, D:2, C:3}, rd = {A:1, T:10, J:11, Q:12, K:13};
+      hand.toUpperCase().replace(/([SHDC])([2-9TJQKA])/g, function(_, s, r){
+        ++S[s = sd[s]]      || (S[s] = 1);
+        ++R[r = rd[r] || r] || (R[r] = 1);
+      });
+      var flush = /5/.test(S +'');
+      if(/1,1,1,1,1/.test(R +','+ R[1]))
+        return flush ? (R[1] &amp;&amp; R[13] ? 'Royal ' : '') +'Straight Flush' : 'Straight';
+      switch((R = R.sort(function(x, y){ return y - x }))[0]){
+       case 1: return flush     ? 'Flush'      : 'No Pair';
+       case 2: return R[1] == 2 ? 'Two Pair'   : 'One Pair';
+       case 3: return R[1] == 2 ? 'Full House' : 'Three of a Kind';
+       case 4: return 'Four of a Kind';
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5187'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5187
+  :user_name: GEOJ
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/650/
+  :language: Bash
+  :time: 2008/01/05 07:48 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>sedで書けそうな気がするのですが、めんどくさがってsortを使うことにしたのでシェルスクリプトになってしまいました。\n行が長いです。ごめんなさい。</p>\n\n\t"
+  :code: |
+    #!/bin/sh
+
+    if echo $1 | grep -q -v '^\([CDHS][A2-9TJQK]\)\{5\}$'; then
+        echo 'Error: Invalid hand'
+        exit 1
+    fi
+
+    declare n=`echo $1 | sed 's/[CDHS]\(.\)/\1\n/g' | tr 'A2-9TJQK' 'a-m' | sort | tr -d '\n' | sed -e '/[a-e]$/y/abcde/ijklm/' -e '/[f-i]$/y/abcdefghi/efghijklm/' -e '/[jk]$/y/abcdefghijk/cdefghijklm/' -e '/l$/y/abcdefghijkl/bcdefghijklm/'`
+
+    if echo $1 | grep -q '\(.\).\(\1.\)\{4\}'; then
+        echo $n | sed -e 's/ajklm/Royal flush/' -e 's/ijklm/Straight flush/' -e 's/....m/Flush/'
+    elif echo $n | grep -q '[ai]jklm'; then
+        echo Straight
+    elif echo $n | grep -q '\(.\)\1\1\1'; then
+        echo Four of a kind
+    else
+        echo $n | sed -e 's/\(.\)\1\1//' -e 's/\(.\)\1//g' -e 's/^.....$/No pair/' -e 's/^...$/One pair/' -e 's/^..$/Three of a kind/' -e 's/^.$/Two pair/' -e 's/^$/Full house/'
+    fi
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5188'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5188
+  :user_name: いげ太
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/399/
+  :language: OCaml
+  :time: 2008/01/05 07:54 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>素直に</p>\n\n\t"
+  :code: |
+    #light
+    open List
+
+    let poker cs =
+      let is_all_elems_same l = tryfind ((&lt;&gt;) (hd l)) (tl l) |&gt; Option.is_none
+      let tally l =
+        let h = Hashtbl.create (length l)
+        for x in l do
+          if Hashtbl.mem h x then Hashtbl.replace h x (Hashtbl.find h x + 1)
+                             else Hashtbl.add     h x 1
+        h
+      (* 手札の情報をスートとランクの 2 つの情報に分離 *)
+      let maxi = String.length cs - 1
+      let suit = [for i in 0..2..maxi -&gt; cs.[i]]
+      let rank = [for i in 1..2..maxi -&gt; String.index "A23456789TJQK" cs.[i] + 1]
+                 |&gt; sort (-)
+      (* 判定基準となる条件役を算出 *)
+      let rst = rank = [1;10;11;12;13]
+      let flu = is_all_elems_same suit
+      let str = is_all_elems_same (mapi (fun i x -&gt; x - i) rank)
+      let pnt = [for p in (tally rank) when p.Value &gt; 1 -&gt; p.Value] |&gt; sort (-)
+      (* 役判定 *)
+      match rst, flu, str, pnt with
+        true, true, _,    _     -&gt; "Royal flush"
+      | _,    true, true, _     -&gt; "Straight flush"
+      | _,    _,    _,    [4]   -&gt; "Four of a kind"
+      | _,    _,    _,    [2;3] -&gt; "Full house"
+      | _,    true, _,    _     -&gt; "Flush"
+      | _,    _,    true, _     -&gt; "Straight"
+      | _,    _,    _,    [3]   -&gt; "Three of a kind"
+      | _,    _,    _,    [2;2] -&gt; "Two pair"
+      | _,    _,    _,    [2]   -&gt; "One pair"
+      | _ -&gt; "No pair"
+
+    let _ =
+      let ($) f g x = f (g x)
+      ["SQSJSASKST";"D9D7D6D5D8";"C2D2S2H3H2";"C2D3S2H3H2";"S9S4S8STSJ"
+       "C4H7D5S6H3";"S6H6C5DQC6";"S6HQC5DQC6";"S6H4C5DQC6";"SJSQSKSAC2"]
+      |&gt; iter (printfn "%s" $ poker)
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '5190'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5190
+  :user_name: ivoryworks
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/647/
+  :language: PHP
+  :time: 2008/01/05 09:39 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  以下の様にコールすると役を表示します。\r<br><br>echo Poker('SQSJSASKST');\r<br><br>パラメータチェックを怠っています。\n\t"
+  :code: |
+    &lt;?php
+    function Poker($c)
+    {
+        CSort($c);
+        if (IsFlush($c)) {
+            if (IsStraight($c)) {
+                if ($c[1] == 'A') {
+                    return 'Royal flush';
+                }
+                return 'Straight flush';
+            }
+            return 'Flush';
+        } else {
+            if (IsStraight($c)) {
+                return 'Straight';
+            }
+            $wk = array();
+            $wk[$c[1]]++;
+            $wk[$c[3]]++;
+            $wk[$c[5]]++;
+            $wk[$c[7]]++;
+            $wk[$c[9]]++;
+            arsort($wk);
+            switch (array_shift($wk).array_shift($wk)) {
+            case '41':    return 'Four of a kind';
+            case '32':    return 'Full house';
+            case '31':    return 'Three of a kind';
+            case '22';    return 'Two pair';
+            case '21';    return 'One pair';
+            }
+        }
+        return 'No pair';
+    }
+
+    function IsFlush($c)
+    {
+        if ($c[0] == $c[2] &amp;&amp; $c[0] == $c[4] &amp;&amp; $c[0] == $c[6] &amp;&amp; $c[0] == $c[8]) {
+            return TRUE;
+        }
+        return FALSE;
+    }
+
+    function IsStraight($c)
+    {
+        $rank = 'A23456789TJQK';
+        $num = $c[1].$c[3].$c[5].$c[7].$c[9];
+        if (strpos($rank, $num) !== FALSE || $num == 'ATJQK') {
+            return TRUE;
+        }
+        return FALSE;
+    }
+
+    function CSort(&amp;$c)
+    {
+        $rep = array('1'=&gt;'A', '10'=&gt;'T', '11'=&gt;'J', '12'=&gt;'Q', '13'=&gt;'K');
+        $wk = array($c[0].$c[1] =&gt; $c[1], $c[2].$c[3] =&gt; $c[3],
+                    $c[4].$c[5] =&gt; $c[5], $c[6].$c[7] =&gt; $c[7],
+                    $c[8].$c[9] =&gt; $c[9]);
+        $wk = str_ireplace($rep, array_flip($rep), $wk);
+        asort($wk);
+        $c = '';
+        foreach ($wk as $key =&gt; $value) {
+            $c .= $key;
+        }
+    }
+    ?&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5191'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5191
+  :user_name: GEOJ
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/650/
+  :language: sed
+  :time: 2008/01/05 10:51 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <p>その後、まじめにsedで書いてみました。こっちのほうがきれいかも。</p>\n\n\t"
+  :code: |
+    #!/bin/sed -f
+
+    /^\([CDHS][A2-9TJQK]\)\{5\}$/!b
+    /\([CDHS][A2-9TJQK]\).*\1/b
+
+    /\(.\).\(\1.\)\{4\}/{
+        s/^/X/
+    }
+
+    s/[CDHS]//g
+
+    s/\([2468TQK]\+\)\([A3579J]\+\)/\2\1/g
+    s/\([2468TQK]\+\)\([A3579J]\+\)/\2\1/
+
+    s/\([3478JQK]\+\)\([A2569T]\+\)/\2\1/g
+    s/\([3478JQK]\+\)\([A2569T]\+\)/\2\1/
+
+    s/\([5-8K]\+\)\([A2349TJQ]\+\)/\2\1/g
+    s/\([5-8K]\+\)\([A2349TJQ]\+\)/\2\1/
+
+    s/\([9TJQK]\+\)\([A2-8]\+\)/\2\1/g
+    s/\([9TJQK]\+\)\([A2-8]\+\)/\2\1/
+
+    /[2-5]$/y/A2345/9TJQK/
+    /[6-9]$/y/A23456789/56789TJQK/
+    /[TJ]$/y/A23456789TJ/3456789TJQK/
+    /Q$/y/A23456789TJQ/23456789TJQK/
+
+    s/^\(.\)\1\1\1K$\|^.KKKK$/Four of a kind/
+
+    s/\(.\)\1\+//g
+
+    s/^$/Full house/
+    s/^.$/Two pair/
+    s/^..$/Three of a kind/
+    s/^...$/One pair/
+    s/^[A9]TJQK$/Straight/
+    s/^.....$/No pair/
+    s/^XATJQK$/Royal flush/
+    s/^X9TJQK$/Straight flush/
+    s/^X.....$/Flush/
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5192'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5192
+  :user_name: saws
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/642/
+  :language: Ruby
+  :time: 2008/01/05 11:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>rankとsuitを分離して扱いました.</p>\n\n\t"
+  :code: |
+    def poker(hand)
+      def one_pair(rank, count = 0)
+        rank.values.map{|x| count += 1 if x.size == 2}
+        count == 1
+      end
+      def two_pair(rank, count = 0)
+        rank.values.each{|x| count += 1 if x.size == 2}
+        count == 2
+      end
+      def three_cards(rank)
+        rank.values.map{|x| x.size == 3 ? true : nil}.compact.shift
+      end
+      def straight(rank)
+        rank.size == 5 ? rank.keys.sort.first + 4 == rank.keys.sort.last : false
+      end
+      def flush(suit); suit.size == 1 ;end
+      def fourcards(rank)
+        rank.values.map{|x| x.size == 4 ? true : nil}.compact.shift
+      end
+      def convert(char)
+        case char
+        when 'T': 10
+        when 'J': 11
+        when 'Q': 12
+        when 'K': 13
+        when 'A': 14
+        else
+          char.to_i
+        end
+      end
+      def div_suit_and_rank(hand)
+        suit_hash, rank_hash = Hash.new, Hash.new
+        cards = hand.split('')
+        Array.new(hand.size.div(2)){|i| 2*i}.each{|i|
+          suit = cards[i]
+          rank = convert(cards[i+1])
+          eval("suit_hash[suit] #{(suit_hash[suit] ? '&lt;&lt; rank' : '= [rank]')}")
+          eval("rank_hash[rank] #{(rank_hash[rank] ? '&lt;&lt; suit' : '= [suit]')}")
+        }
+        [suit_hash, rank_hash]
+      end
+      suit, rank = *div_suit_and_rank(hand)
+      if straight(rank)
+        "#{rank.keys.sort.first == 10 ? 'Loyal ' : ''}Straight #{(flush(suit) ? 'Flush' : '')}"
+      elsif fourcards(rank)
+        "Four of a Kind"
+      elsif three_cards(rank) and one_pair(rank)
+        "Full House"
+      elsif flush(suit)
+        "Flush"
+      elsif three_cards(rank)
+        "Three of a Kind"
+      elsif two_pair(rank)
+        "Two Pair"
+      elsif one_pair(rank)
+        "One Pair"
+      else
+        "No Pair"
+      end
+    end
+    hands = ['SQSJSASKST', 'D9D7D6D5D8', 'C2D2S2H3H2', 'C2D3S2H3H2', 'S9S4S8STSJ', 'C4H7D5S6H3', 'S6H6C5DQC6', 'S6HQC5DQC6', 'S6H4C5DQC6', 'SJSQSKSAC2']
+    hands.each{|x| puts poker(x)}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5193'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5193
+  :user_name: kozima
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/164/
+  :language: Haskell
+  :time: 2008/01/05 11:59 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>ストレートの判定がなかなかきれいにまとまりませんね。ソートしておいて隣り合う数の差で判断してみましたが……うーん。</p>\n\n\t"
+  :code: |
+    import Data.List as List
+
+    hand :: String -&gt; (String, Bool)
+    hand cards =
+        (case kinds of
+           [1, 4] -&gt; "Four of a kind"
+           [2, 3] -&gt; "Full house"
+           [1, 1, 3] -&gt; "Three of a kind"
+           [1, 2, 2] -&gt; "Two pair"
+           [1, 1, 1, 2] -&gt; "One pair"
+           otherwise -&gt;
+               case rdiff of
+                   [1, 1, 1, 1] | head ranks == 10 &amp;&amp; isFlush -&gt; "Royal"
+                                | True -&gt; "Straight"
+                   [1, 1, 1, 9] -&gt; "Straight"
+                   otherwise -&gt; "No pair"
+        , isFlush)
+        where suits = List.nub [cards !! n | n &lt;- [0,2..8]]
+              isFlush = length suits == 1
+              ranks = List.sort [rankToInt $ cards !! n | n &lt;- [1,3..9]]
+              rankToInt r = case List.elemIndex r "23456789TJQKA" of Just n -&gt; n+2
+              kinds = List.sort $ map length $ List.group ranks
+              rdiff = zipWith (-) (tail ranks) ranks
+
+    main = mapM test ["SQSJSASKST", "D9D7D6D5D8", "C2D2S2H3H2", "C2D3S2H3H2",
+                      "S9S4S8STSJ", "C4H7D5S6H3", "S6H6C5DQC6", "S6HQC5DQC6",
+                      "S6H4C5DQC6" ,"SJSQSKSAC2"]
+        where test s = putStrLn (s ++ " =&gt; " ++ (showHand $ hand s))
+              showHand ("No pair", True) = "Flush"
+              showHand (s, True) = s ++ " flush"
+              showHand (s, False) = s
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5195'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5195
+  :user_name: xsd
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/154/
+  :language: 
+  :time: 2008/01/05 14:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>残念ながらこれだと、xAx2x3x4x5の形のランクの並びがストレートと判断されないようです。</p>\n<p>Aは最初または最後とされているみたいですね。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5196'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5196
+  :user_name: yohei
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/415/
+  :language: Prolog
+  :time: 2008/01/05 15:19 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <p>permutationとパターンマッチで簡単に．効率は犠牲に．．．</p>\n\n\t"
+  :code: |
+    pokerHand([X,X,X,X,X], R, 'Royal flush') :-
+        permutation(R, ['T','J','Q','K','A']).
+
+    pokerHand([X,X,X,X,X], R, 'Straight flush') :-
+        sub_atom('A23456789TJQK', _, 5, _, A),
+        atom_chars(A, P), permutation(R, P).
+
+    pokerHand([X,X,X,X,X], _, 'Flush').
+
+    pokerHand(_, R, 'Straight') :-
+        sub_atom('A23456789TJQKA', _, 5, _, A),
+        atom_chars(A, P), permutation(R, P).
+
+    pokerHand(_, R, 'Four of a kind' ) :- permutation(R, [X,X,X,X,_]).
+    pokerHand(_, R, 'Full house'     ) :- permutation(R, [X,X,X,Y,Y]).
+    pokerHand(_, R, 'Three of a kind') :- permutation(R, [X,X,X,_,_]).
+    pokerHand(_, R, 'Two pair'       ) :- permutation(R, [X,X,Y,Y,_]).
+    pokerHand(_, R, 'One pair'       ) :- permutation(R, [X,X,_,_,_]).
+    pokerHand(_, _, 'No pair'        ).
+
+    poker(Card) :-
+        atom_chars(Card, [S1,R1,S2,R2,S3,R3,S4,R4,S5,R5]),
+        pokerHand([S1,S2,S3,S4,S5], [R1,R2,R3,R4,R5], H), !,
+        writeln(H).
+  :tags:
+  - SWI-Prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '5199'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5199
+  :user_name: lethevert
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/651/
+  :language: Clean
+  :time: 2008/01/05 15:56 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <div class=\"section\">\n<p>初投稿です。Cleanです。この辺のライブラリを使ってます。\r</p>\n<p>http://sourceforge.net/projects/cleanoptenv\r</p>\n</div>\n\t"
+  :code: |
+    module Main
+
+    import System, Int, Char, String, List, Misc, MergeSort, ValueCast
+
+    Start
+      | flush cards
+        | straight cards
+          | 14 == num (head cards)
+            = "Royal flush"
+          = "Straight flush"
+        = "Flush"
+      | straight cards
+        = "Straight"
+      | 4 == head groups
+        = "Four of a kind"
+      | 3 == head groups
+        | 2 == groups !! 1
+          = "Full house"
+        = "Three of a kind"
+      | 2 == head groups
+        | 2 == groups !! 1
+          = "Two pair"
+        = "One pair"
+      = "No pair"
+      where
+      cards = sortBy (&gt;) $ parseCards getCommandLine.[1]
+      groups = sortBy (&gt;) $ map length $ groupCards [[]] 0 cards
+
+    :: Card = Card !Char !Int //suit num(2..14)
+    instance &lt; Card where
+      (&lt;) (Card s0 n0) (Card s1 n1) = n0 &lt; n1
+
+    suit (Card s n) = s
+    num (Card s n) = n
+
+    parseCards t = p 0
+      where
+      l = size t
+      p i | i &gt;= l = []
+          = [Card s n: p (i+2)]
+        where
+        s = t.[i]
+        n = case t.[i+1] of
+              'A' = 14
+              'K' = 13
+              'Q' = 12
+              'J' = 11
+              'T' = 10
+              c   = toInt (c - '0')
+
+    groupCards ls _ [] = ls
+    groupCards [l:ll] m [c=:Card s n: rest]
+      | m == n = groupCards [[c:l]:ll] n rest
+               = groupCards [[c],l:ll] n rest
+
+    flush cards = and $ zipWith (==) suits (tail suits)
+      where
+      suits = map suit cards
+
+    straight cards = (and $ zipWith (\a b = a == b + 1) nums (tail nums))
+                  || caseAce nums
+      where
+      nums = map num cards
+      caseAce [14,5,4,3,2] = True
+      caseAce _ = False
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5200'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5200
+  :user_name: katsu
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/117/
+  :language: 
+  :time: 2008/01/05 16:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">なるほど。permutationでリスト中の順番に関係なくパターンとつきあわせることができるんですか。\r\nソートとかしなくてもいいんだ。（効率を考えなければ）\r\n勉強になります。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5209'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5209
+  :user_name: 匿名
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/01/06 14:57 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">こういうときに便利なスライスの記法を思い出したのと\r\n文字の置換も必要なかったので、ちょっと書き直しました。\r\n</pre>\n\t"
+  :code: |
+    import sys
+
+    def f(c):
+      s = len(set(c[0::2])) == 1
+      r = ''.join(sorted(c[1::2]))
+      l = len(set(r))
+      if l == 2:
+        print 'Four of a kind' if r.count(r[0]) in [1,4] else 'Full house'
+      elif l == 5:
+        if '2345A23456789T789JT89JQT9JKQTAJKQT'.find(r) &gt;= 0:
+          print ('Royal flush' if r == 'AJKQT' else 'Straight flush') if s else 'Straight'
+        elif s:
+          print 'Flush'
+        else:
+          print 'No pair'
+      elif s:
+        print 'Flush'
+      elif l == 3:
+        print 'Three of a kind' if [i for i in set(r) if r.count(i) &gt;= 3] else 'Two pair'
+      else:
+        print 'One pair'
+
+    f(sys.argv[1])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5210'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5210
+  :user_name: xsd
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/154/
+  :language: Perl
+  :time: 2008/01/06 16:31 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  出題者です。\r<br><br>初めにこのお題を思いついたときは、ただのif文の山をどう片付けるかという要素しかないものかと思っていたのですが、試しに自分で解いたときに、\r<br><br>(1)フラッシュかどうかをどう判断するか\r<br>(2)ストレートかどうかをどう判断するか\r<br>(3)ランクの構造はどうなっているか\r<br>(4)上記３つの判断要素をどう組み合わせるか\r<br><br>などが、言語によって特色がでそうなので出題してみました。\r<br><br>(4)の処理はHaskell、OCaml、Scalaなどパターンマッチがある言語や、PythonやD言語などリストの一致を簡単に比較できる言語では書きやすそうに見えましたが、#5186 shimakumaさんのJavaScript版はパターンマッチ/リスト比較など無しでかなりコンパクトにまとめていてうまいと思いました。\r<br><br>そんな中、#5187 GEOJさんのA2-9TJQKをa-mに置換して扱うというアイデアが面白かったので、Perlで真似してみました。\r<br>ランクの構造は、ソートした後に正規表現を使って調べています。\r<br>"
+  :code: |
+    #!/usr/bin/perl
+
+    ($_ = shift) =~ tr /A2-9TJQK/a-m/;
+    $rank = join('', sort(split /[SCDH]/));
+    $flag = (/^(.).((\1).){4}/) * 4 + ($rank eq "ajklm") * 2 + ("abcdefghijklm" =~ /$rank/);
+
+    die "Royal flush\n"     if ($flag == 6);
+    die "Straight flush\n"  if ($flag == 5);
+    die "Flush\n"           if ($flag == 4);
+    die "Straight\n"        if ($flag);
+    die "Four of a kind\n"  if ($rank =~ /(.)\1{3}/);
+    die "Full house\n"      if ($rank =~ /((.)\2\2(.)\3)|((.)\5(.)\6\6)/);
+    die "Three of a kind\n" if ($rank =~ /(.)\1\1/);
+    die "Two pair\n"        if ($rank =~ /(.)\1.?(.)\2/);
+    die "One pair\n"        if ($rank =~ /(.)\1/);
+    die "No pair\n";
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5312'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5312
+  :user_name: saws
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/642/
+  :language: 
+  :time: 2008/01/14 04:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>確かに,  Aを14としたのが敗因でした.\nstraightメソッドに場合分けを追加する必要がありますね.</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5456'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5456
+  :user_name: sshi
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/249/
+  :language: Haskell
+  :time: 2008/01/25 15:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">data使いたがりなhaskellコード。</pre>\n\t"
+  :code: "import System\nimport List(sort,group,elemIndex)\nimport Maybe(fromJust)\n\ndata
+    Card = Card {suits::Suits,rank::Int} deriving Show\ndata Suits = S | D | H | C
+    deriving (Read,Eq,Show)\ndata Hand = RF | STF | FK | FH | F | ST | TK | TP | OP
+    | NO\n\nread_cards :: String -&gt; [Card]\nread_cards str = map read_card $ split_2
+    str\n    where \n      read_card [s,r] = Card (read [s])\n                        (fromJust
+    (elemIndex r \"DD23456789TJQKA\"))\n      split_2 [] = []\n      split_2 list
+    = let (hd,rest) = splitAt 2 list in  hd : split_2 rest\n\ninstance Show Hand where\n
+    \   show h = case h of\n               RF  -&gt; \"Royal flush\"\n               STF
+    -&gt; \"Straight flush\"\n               FK  -&gt; \"Four of a kind\"\n               FH
+    \ -&gt; \"Full House\"\n               F   -&gt; \"Flush\"\n               ST
+    \ -&gt; \"Straight\"\n               TK  -&gt; \"Three of a kind\"\n               TP
+    \ -&gt; \"Two pair\"\n               OP  -&gt; \"One pair\"\n               NO
+    \ -&gt; \"No pair\"\n\nhand :: [Card] -&gt; Hand\nhand  cards\n    | check_st
+    \ &amp;&amp; check_flush  &amp;&amp; head rank_seq == 10 = RF\n    | check_st
+    \ &amp;&amp; check_flush  = STF\n    | max_group == 4 = FK\n    | sort group_count
+    == [2,3] = FH\n    | check_flush  = F\n    | check_st = ST\n    | max_group ==
+    \ 3 = TK\n    | pair_count == 2 = TP\n    | pair_count == 1 = OP\n    | otherwise
+    = NO\n    where\n      rank_seq = sort $ map rank cards\n      groups = group
+    rank_seq\n      group_count = map length groups\n      max_group = foldl1 max
+    group_count\n      pair_count = length (filter (\\l-&gt;length l == 2) groups)\n\n
+    \     check_flush = all (\\c-&gt;suits c==suits (head cards)) cards\n      check_st
+    = normal || rank_seq == [2,3,4,5,14]\n          where\n            normal = and
+    $ zipWith (\\a b-&gt;a-b == head rank_seq) rank_seq [0..]\n\nmain = getArgs &gt;&gt;=
+    print . hand . read_cards . head\n\n-- Test\n\ntest = zip testlist (map (hand
+    .read_cards) testlist)\n\ntestlist = [\"SQSJSASKST\",\n            \"D9D7D6D5D8\",\n
+    \           \"C2D2S2H3H2\",\n            \"C2D3S2H3H2\",\n            \"S9S4S8STSJ\",\n
+    \           \"C4H7D5S6H3\",\n            \"S6H6C5DQC6\",\n            \"S6HQC5DQC6\",\n
+    \           \"S6H4C5DQC6\",\n            \"SJSQSKSAC2\"]\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5602'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/5602
+  :user_name: 匿名
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/4/
+  :language: Ruby
+  :time: 2008/01/31 12:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>短さ優先。</p>\n\n\t"
+  :code: "ranks = []\n1.step(10, 2) do |i| ranks &lt;&lt; ARGV[0][i, 1] end\nrank_hash
+    = Hash.new(0)\nranks.each do |rank| rank_hash[rank] += 1 end\nflush = ARGV[0].count(ARGV[0][0,1].to_s)
+    == 5\nstraight = (\"23456789AJKQT\".include? ranks.sort!.to_s or \"2345A\".include?
+    ranks.to_s)\ncase\nwhen (ranks.to_s == \"AJKQT\" and flush) then puts \"Royal
+    Flush\"\nwhen (straight and flush) then puts \"Straight Flush\"\nwhen rank_hash.values.max
+    == 4 then puts \"Four of a Kind\"\nwhen (rank_hash.values.max == 3 and rank_hash.values.include?
+    2) then puts \"Full House\"\nwhen flush then puts \"Flush\"\nwhen straight then
+    puts \"Straight\"\nwhen rank_hash.values.max == 3 then puts \"Three of a Kind\"\nwhen
+    rank_hash.values.to_s.count(\"2\") == 2 then puts \"Two Pair\"\nwhen rank_hash.values.max
+    == 2 then puts \"One Pair\"\nelse puts \"No Pair\" \nend\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6005'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/6005
+  :user_name: '186'
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/352/
+  :language: Scheme
+  :time: 2008/03/12 14:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Schemeがないので, 適当なパターンマッチで書いたものを投稿します</p>\n<p>エラー判定はしていないので \"ASASASASAS\"等も受け入れます</p>\n\n\t"
+  :code: |
+    (use srfi-1)
+    (use util.match)
+
+    (define (poker hand)
+      (define (rank-&gt;num a)
+        (cond [(char-set-contains? #[\d] a) (digit-&gt;integer a)]
+              [(char=? #\A a) 14]
+              [(char=? #\T a) 10]
+              [(char=? #\J a) 11]
+              [(char=? #\Q a) 12]
+              [(char=? #\K a) 13]
+              [else a]))
+      (define (decision nums suits)
+        (let1 flags (map - (cdr nums) nums) ;;次のカードとの差
+              (cond ((fold (lambda (a r) (and (eq? a (car suits)) r)) #t suits) ;; FLUSH
+                     (match flags
+                            ((1 1 1 1) (if (= 10 (car nums)) "Royal flush" "Straight flush"))
+                            ((1 1 1 9) "Straight flush") ;; 2 3 4 5 14用
+                            (else "Flush")))
+                    (else
+                     (match flags
+                            ((0 0 0 _) "Four of a kind")
+                            ((_ 0 0 0) "Four of a kind")
+                            ((0 0 _ 0) "Full house")
+                            ((0 _ 0 0) "Full house")
+                            ((1 1 1 1) "Straight")
+                            ((1 1 1 9) "Straight") ;; 2 3 4 5 14用
+                            ((_ _ 0 0) "Three of a kind")
+                            ((_ 0 0 _) "Three of a kind")
+                            ((0 0 _ _) "Three of a kind")
+                            (else
+                             (match (sort flags &lt;)
+                                    ((0 0 _ _) "Two pair")
+                                    ((0 _ _ _) "One pair")
+                                    (else "No pair"))))))))
+      (receive (nums suits)
+               (partition number? (map rank-&gt;num (string-&gt;list hand)))
+               (decision (sort nums &lt;) suits)))
+
+    (map poker
+         '("SQSJSASKST" "D9D7D6D5D8" "C2D2S2H3H2" "C2D3S2H3H2" "S9S4S8STSJ"
+           "C4H7D5S6H3" "S6H6C5DQC6" "S6HQC5DQC6" "S6H4C5DQC6" "SJSQSKSAC2"))
+    ;=&gt;
+    ;("Royal flush" "Straight flush" "Four of a kind" "Full house" "Flush"
+    ; "Straight" "Three of a kind" "Two pair" "One pair" "No pair")
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '6046'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/6046
+  :user_name: syat
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/766/
+  :language: PHP
+  :time: 2008/03/22 18:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  PHPの関数はいっぱいある。\r<br>array_count_values は、こんなのあるかな？と思ってマニュアル探したらやっぱりあった。\n\t"
+  :code: |
+    #!/usr/bin/php
+    &lt;?php
+    $suits = array();
+    $ranks = array();
+    for ($i = 0; $i &lt; 10; $i += 2) {
+        $suits[] = $argv[1][$i];
+        $ranks[] = strtr($argv[1][$i+1], "TJQKA", "ABCDE");
+    }
+    sort($suits);
+    sort($ranks);
+    $suitCnt = array_count_values($suits);
+    asort($suitCnt);
+    $rankCnt = array_count_values($ranks);
+    arsort($rankCnt);
+
+    $straight = false;
+    $flush = false;
+    $suitHist = array_values($suitCnt);
+    if ($suitHist[0] == 5) {
+        $flush = true;
+    }
+    $rankHist = array_values($rankCnt);
+    if (strstr("23456789ABCDE,2345E", implode('',$ranks))) {
+        $straight = true;
+    }
+
+    $hand = '';
+    if ($straight &amp;&amp; $flush) {
+        if (implode('', $ranks) == 'ABCDE') {
+            $hand = "Royal straight flush";
+        } else {
+            $hand = "Straight flush";
+        }
+    } else if ($rankHist[0] == 4) {
+        $hand = "Four of a kind";
+    } else if ($rankHist[0] == 3 &amp;&amp; $rankHist[1] == 2) {
+        $hand = "Full house";
+    }
+    if ($hand == '') {
+        if ($flush) {
+            $hand = "Flush";
+        } else if ($straight) {
+            $hand = "Straight";
+        } else if ($rankHist[0] == 3) {
+            $hand = "Three of a kind";
+        } else if ($rankHist[0] == 2 &amp;&amp; $rankHist[1] == 2) {
+            $hand = "Two pairs";
+        } else if ($rankHist[0] == 2) {
+            $hand = "One pair";
+        } else {
+            $hand = "No Pair";
+        }
+    }
+
+    echo $hand . "\n";
+    ?&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6076'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/6076
+  :user_name: tt25
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/772/
+  :language: Ruby
+  :time: 2008/03/26 14:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>素直に書いてみた。</p>\n\n\t"
+  :code: "class Poker\n    def initialize str\n        suits=[]\n        nums=[]\n
+    \       str.scan(/[SDHCTJQKA0-9]{2}/).each{|card|\n            tmp=card.scan(/./)\n
+    \           num=case tmp[1]\n                when \"T\": 10\n                when
+    \"J\": 11\n                when \"Q\": 12\n                when \"K\": 13\n                when
+    \"A\": 1\n                else tmp[1].to_i\n            end\n            suits
+    &lt;&lt; tmp[0]\n            nums &lt;&lt; num\n        }\n        @cards = {\n
+    \           :suit=&gt;suits,\n            :num=&gt;nums,\n            :layer =&gt;
+    nums.inject({}){|result,n| # [1,2,2,2,3,3,4] =&gt; [1,3,2,1]\n                result[n]=0
+    if !result[n]\n                result[n]+=1\n                result\n            }.values\n
+    \       }\n    end\n\n    def one_pair \n        @cards[:layer].max == 2 &amp;&amp;
+    @cards[:layer].length == 4\n    end\n\n    def two_pair \n        @cards[:layer].max
+    == 2 &amp;&amp; @cards[:layer].length == 3 \n    end\n\n    def three_card \n
+    \       @cards[:layer].max == 3 &amp;&amp; @cards[:layer].length == 3 # not full
+    house\n    end\n\n    def four_card \n        @cards[:layer].max == 4 &amp;&amp;
+    @cards[:layer].length == 2 \n    end\n\n    def full_house \n        @cards[:layer].max
+    == 3 &amp;&amp; @cards[:layer].length == 2\n    end\n\n    def five_card\n        @cards[:layer].max
+    == 5 &amp;&amp; @cards[:layer].length == 1\n    end\n\n    def straight \n        ((1..13).to_a.join(\"
+    \")).include?(@cards[:num].sort.join(\" \"))\n    end\n\n    def flush \n        @cards[:suit].uniq.length
+    == 1\n    end\n\n    def royal_straight_flush \n        flush() &amp;&amp; @cards[:num].sort
+    == [1,10,11,12,13]\n    end\n\n    def cards_rank \n        # p @cards\n        case\n
+    \           when (royal_straight_flush()) : \"Royal Straight Flush\"\n            when
+    (straight() &amp;&amp; flush()): \"Straight Flush\"\n            when (four_card()):
+    \"Four of a kind\"\n            when (full_house()): \"Full house\"\n            when
+    (flush()) : \"Flush\"\n            when (straight()) : \"Straight\"\n            when
+    (three_card()): \"Three of a kind\"\n            when (two_pair()) : \"Two pair\"\n
+    \           when (one_pair()) : \"One pair\"\n            else \"No pair\"\n        end\n
+    \   end\nend\n\narr=\"SQSJSASKST D9D7D6D5D8 C2D2S2H3H2 C2D3S2H3H2 S9S4S8STSJ C4H7D5S6H3
+    S6H6C5DQC6 S6HQC5DQC6 S6H4C5DQC6 SJSQSKSAC2\".split(/\\s/)\n\n\narr.each{|cards|\n
+    \   puts Poker.new(cards).cards_rank\n}\n\n\n# str=ARGV.shift\n# puts poker(str)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6077'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/6077
+  :user_name: tt25
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/772/
+  :language: 
+  :time: 2008/03/26 15:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>しまった。ジョーカーないんだからファイブカードになるはずないし、あったとしてもこのチェックじゃダメだ。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8152'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/8152
+  :user_name: taninsw
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/973/
+  :language: Haskell
+  :time: 2008/12/13 07:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>結構綺麗にかけたんじゃないかと自負しています。</p>\n<p>パターンマッチ様々です。</p>\n\n\t"
+  :code: "import List\nimport Maybe\nimport System.Environment\n\ncard str=  map (\\(x:y:_)-&gt;
+    (x,rankInt y)) $ every 2 str\n\ntestData = \"SQSJSASKST\"\n\n\nallRank = \"_A23456789TJQK\"\nrankInt
+    char =  fromJust (elemIndex char allRank)\n\nevery n xs = unfoldr f xs \n    where
+    \ \n     f [] = Nothing\n     f cs = Just (splitAt n cs)\n\n\n\nisRoyal xs  =
+    \ xs == [1,10,11,12,13]\nisStraight xs  = (zipWith (-) (tail xs) xs) == [1,1,1,1]
+    \nsame xs = reverse $ sort $ map (\\x-&gt; length $ filter (\\a-&gt; x == a) xs)
+    (nub xs)\n\nisFlush xs = nub xs == [head xs]\n\ncardAnalysis xs = let ranks    =
+    sort $ map snd xs\n                      suits    = map fst xs\n                      royal
+    \   = isRoyal ranks\n                      straight = isStraight ranks\n                      sameRanks
+    \ = same ranks\n                      flush    = isFlush suits\n--                  in
+    (flush,royal,straight,sameRanks)\n                  in  hand flush royal straight
+    sameRanks\n\n\nhand True True  False _      = \"Royal flush\"\nhand True False
+    True  _      = \"Straight flush\"\nhand _    _     _    (4:_)   = \"Four of a
+    kind\"\nhand _    _     _    (3:2:_) = \"Full house\"\nhand True _     _     _
+    \     = \"Flush\"\nhand _    _     True  _      = \"Straight\"\nhand _    True
+    \ _     _      = \"Straight\"\nhand _    _     _    (3:_)   = \"Three of a kind\"\nhand
+    _    _     _    (2:2:_) = \"Two Pair\"\nhand _    _     _    (2:_)   = \"One Pair\"\nhand
+    _    _     _    _       = \"No Pair\"\n\nmain = do args &lt;- getArgs\n          putStrLn
+    $ cardAnalysis $ card $ head args\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8269'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/8269
+  :user_name: 割と普通
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/581/
+  :language: C
+  :time: 2009/01/01 01:52 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">LINQを多用して実現してみました。\r\nこれ以上短くできるのかなぁ・・・。</pre>\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    namespace Doukaku
+    {
+        class PorkerJudge
+        {
+            protected static char[] Suits = new char[] { 'S', 'D', 'H', 'C' };
+            protected static char[] Cards = new char[] { '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'J', 'K', 'Q', 'T' };
+            public static bool IsStraight( IEnumerable&lt;char&gt; numbers)
+            {
+                return ("A" + new string(Cards)).IndexOf(new string(numbers.OrderBy(n =&gt; n).ToArray())) != -1;
+            }
+
+            public static int CardRank(List&lt;char&gt; numbers)
+            {
+                int value = 1;
+                foreach (char n in numbers.Distinct())
+                {
+                    value *= numbers.Count(nn =&gt; nn == n);
+                }
+                return value;
+            }
+
+            public static string Run(string cards)
+            {
+                char[] cAry = cards.ToCharArray();
+                bool isFlush = cAry.Where(c =&gt; Suits.Contains(c)).Distinct().Count() == 1;
+                bool isStraight = IsStraight(cAry.Where(c =&gt; Cards.Contains(c)));
+                List&lt;char&gt; numbers = cAry.Where(c =&gt; Cards.Contains(c)).ToList();
+                bool isRoyal = ! numbers.Intersect( Cards.Take(8) ).Any();
+                int rank = CardRank(numbers);
+                if (isStraight &amp;&amp; isFlush &amp;&amp; isRoyal)
+                    return "Royal flush";
+                else if (isStraight &amp;&amp; isFlush)
+                    return "Straight flush";
+                if ((from n in numbers select numbers.Count(nn =&gt; n == nn)).Contains(4))
+                    return "Four of a kind";
+                else if (rank == 6)
+                    return "Full house";
+                else if (isFlush)
+                    return "Flush";
+                else if (isStraight)
+                    return "Straight";
+                else if (rank == 3)
+                    return "Three of a kind";
+                else if (rank == 4)
+                    return "Two pair";
+                else if (rank == 2)
+                    return "One pair";
+                return "No pair";
+            }
+        }
+    }
+  :tags:
+  - LINQ
+  :references:
+    :url: 
+    :title: 
+- :id: '8285'
+  :parent_id: '121'
+  :url: http://ja.doukaku.org/comment/8285
+  :user_name: manzo
+  :user_url: /web/20091225095945/http://ja.doukaku.org/user/980/
+  :language: Ruby
+  :time: 2009/01/05 16:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">合っているかいるかどうかわからないので全組合せを喰わせてみました。\r\nかなり汚いできではありますが、うまくいっているようです。\r\n皆様のコードを参考にさせていただきました。\r\n\r\n\r\n結果は\r\n
+    Royal flush           4   1/649740 \r\n Straight flush       36 1/72193.33 \r\n
+    Four of a kind      624     1/4165 \r\n Full house         3744   1/694.17 \r\n
+    Flush              5108    1/508.8 \r\n Straight          10200    1/254.8 \r\n
+    Three of a kind   54912    1/47.33 \r\n Two pair         123552    1/21.04 \r\n
+    One pair        1098240     1/2.37 \r\n No pair         1302540        1/2 \r\n
+    total           2598960            \r\nでした。\r\n\r\n全組合せは以下で作りました。\r\n\r\n\r\nsuits
+    = [\"S\",\"D\",\"H\",\"C\"]\r\nrank = ([\"A\"] + (\"2\"..\"9\").to_a + [\"T\",\"J\",\"Q\",\"K\"])\r\n\r\ncard
+    = []\r\n\r\nfor i in suits.product(rank)\r\n  card &lt;&lt; i.join\r\nend\r\n\r\nfor
+    i in card.combination(5).to_a\r\n  puts i.shuffle.join #一応、シャッフル。\r\nend\r\n\r\n\r\n</pre>\n\t"
+  :code: "def porker(hand)\n  narabi =([\"0\",\"A\"] + (\"2\"..\"9\").to_a + [\"T\",\"J\",\"Q\",\"K\"])\n
+    \ \n  def num(a)\n    ([\"0\",\"A\"] + (\"2\"..\"9\").to_a + [\"T\",\"J\",\"Q\",\"K\"]).index(a)\n
+    \ end\n  \n  tmp = hand.scan(/[SDHCTJQKA2-9]{2}/).map(&amp;:chars).map(&amp;:to_a)\n
+    \ \n  card = Hash.new{|h,k|h[k]=[]}\n  for i in tmp\n    i[0]\n    card[i[0]]
+    &lt;&lt; i[1]\n  end\n  \n  suuji = Hash.new(0)\n  for i in card.values.flatten\n
+    \   suuji[i] += 1\n  end\n  \n  case\n  when  card.keys.size == 1 &amp;&amp; card.values.flatten.sort_by{|a|num(a)}.join(\"
+    \") == \"A T J Q K\"\n    \"Royal flush\"\n  when card.keys.size == 1 &amp;&amp;
+    %r(#{suuji.keys.sort_by{|a|num(a)}.join(\" \")}) =~ narabi.join(\" \")\n    \"Straight
+    flush\"\n  when suuji.select{|k,v|v == 4}.size == 1\n    \"Four of a kind\"\n
+    \ when suuji.keys.size == 2\n    \"Full house\"\n  when card.keys.size == 1\n
+    \   \"Flush\"\n  when suuji.keys.size == 5 &amp;&amp; (%r(#{suuji.keys.sort_by{|a|num(a)}.join(\"
+    \")}) =~ narabi.join(\" \") ||\n    suuji.keys.sort_by{|a|num(a)}.join(\" \")
+    == \"A T J Q K\")\n    \"Straight\"\n  when suuji.select{|k,v|v == 3}.size ==
+    1\n    \"Three of a kind\"\n  when suuji.select{|k,v|v == 2}.size == 2\n    \"Two
+    pair\"\n  when suuji.select{|k,v|v == 2}.size == 1\n    \"One pair\"\n  else\n
+    \   \"No pair\"\n  end\nend\n\n#ruby porker.rb file|SQSJSASKST|なしの場合は__END__以下\nif
+    ARGV.size == 1\n  if File.exist?(ARGV[0])\n    f = open(ARGV[0])\n    while f.gets\n
+    \     hand = $_.chomp\n      puts [hand,porker(hand)].join(\" \")\n    end\n  else\n
+    \   puts [ARGV[0],porker(ARGV[0])].join(\" \")\n  end\nelse\n  while DATA.gets\n
+    \     hand = $_.chomp\n      puts [hand,porker(hand)].join(\" \")\n  end\nend\n__END__\nSQSJSASKST\nD9D7D6D5D8\nC2D2S2H3H2\nC2D3S2H3H2\nS9S4S8STSJ\nC4H7D5S6H3\nS6H6C5DQC6\nS6HQC5DQC6\nS6H4C5DQC6\nSJSQSKSAC2\n"
+  :tags:
+  - Ruby1.8.7
+  :references:
+    :url: 
+    :title: 

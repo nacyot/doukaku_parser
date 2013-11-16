@@ -1,0 +1,662 @@
+---
+:id: '225'
+:title: エレベータの制御(基本編)
+:comments:
+- :id: '8289'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8289
+  :user_name: raynstard
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2009/01/06 09:14 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\r\n\t  <pre class=\"compact\">エレベータを制御して、5階建てのビルの各階にいる人たちを、\r\n「効率よく」1階のエントランスまで運んでください。\r\n\r\n作成時の条件は次の通りです。\r\n
+    \ 1. 各階において、人が残っていることはわかるが、\r\n     あと何人残っているかまではわからないものとする。\r\n     # 人が残っているところは常に呼び出しのボタンが押された状態を\r\n
+    \    # 仮定して問題ありません。\r\n  2. 稼働しているエレベータは1機のみとする\r\n  3. 降車するたびに、変化がわかるような出力をしてください。\r\n
+    \ 4. すべての人を運搬終わったら、最後に次の情報を出力してください。\r\n     - 運搬を始めてからの経過時間(ラウンド数)\r\n     -
+    一番長く放置されていた階の待ち時間(ラウンド数)\r\n     - エレベータの移動距離合計数\r\n\r\nエレベータの機能は次の通りです。\r\n  -
+    搭載人数は最大3人までとする。\r\n  - 移動には、1つの階につき「2」ラウンドかかる。\r\n  - 人の乗降には、1回につき「5」ラウンドかかる。\r\n\r\n※
+    「ラウンド」は包括された時間だと思ってください。\r\n   単純に「秒」と読み替えてもよいです\r\n\r\n\r\n各階の人数は次の通りです。\r\n5階
+    \ 7人\r\n4階 11人\r\n3階  3人\r\n2階  7人\r\n1階  0人\r\n\r\n冒頭では、「効率よく」なんて曖昧な表現をしようしましたが、\r\n何について効率よくしたのか、設計についての見解を\r\nコメントしていただけるとうれしいです。\r\n\r\nたとえば、\r\n下記のサンプル出力では、各階の待ち時間を最小とすることで\r\n効率よいとしました。(利用者の視点)\r\nぱっと思いつくところでは、ほかにも2-3種類あるとおもいます。\r\n\r\nさて、あなたならどう書く？(笑\r\n//
+    自分で作ったやつは250L位になってしまいましたorz\r\n\r\nINIT --------------------\r\n [5]th Floor:
+    [ 7] / last_round:[   0]\r\n [4]th Floor: [11] / last_round:[   0]\r\n [3]th Floor:
+    [ 3] / last_round:[   0]\r\n [2]th Floor: [ 7] / last_round:[   0]\r\n [1]th Floor:
+    [ 0] / last_round:[   0] \r\n\r\nIN(5) [7] → [4] OUT\r\nIN(4) [11] → [8] OUT\r\nIN(3)
+    [3] → [0] OUT\r\nIN(2) [7] → [4] OUT\r\nIN(5) [4] → [1] OUT\r\nIN(4) [8] → [5]
+    OUT\r\nIN(2) [4] → [1] OUT\r\nIN(5) [1] → [0] IN(4) [5] → [3] OUT\r\nIN(2) [1]
+    → [0] OUT\r\nIN(4) [3] → [0] OUT\r\n\r\nEND --------------------\r\n [5]th Floor:
+    [ 0] / last_round:[ 174]\r\n [4]th Floor: [ 0] / last_round:[ 229]\r\n [3]th Floor:
+    [ 0] / last_round:[  58]\r\n [2]th Floor: [ 0] / last_round:[ 213]\r\n [1]th Floor:
+    [ 0] / last_round:[   0] \r\n       経過時間:[257]\r\n   最大待ち時間:[100]\r\n 移動距離合計数:[52]\r\n</pre>\r\n\t"
+  :code: ''
+  :tags:
+  - 制御系
+  :references:
+    :url: 
+    :title: 
+- :id: '8320'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8320
+  :user_name: raynstard
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/127/
+  :language: Other
+  :time: 2009/01/13 05:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">長いからとサンプルコードはしょってしまったのでいろいろと不都合がでてしまいました。\r\n\r\nlast_round
+    は僕のデバックの都合上のものなので出力に関しては気にしないでください。\r\nごめんなさい。\r\nお題を間違えてCのまま投稿してしまったので\r\n言語設定せずに投稿します。\r\n\r\ngcc
+    -Wall -std=c99 doukaku225.c\r\n\r\n# ところで、これ投稿したの一昨日くらいなのですが、\r\n  公開のカウントって下書きした段階ではじまってる？</pre>\r\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdbool.h&gt;\n#include &lt;assert.h&gt;\n\n#define
+    CARRYING_LIMIT      (3)\n#define CARRYING_MOVE_COST  (5)\n#define ELEVATOR_MOVE_COST
+    \ (2)\n\ntypedef struct tagFloor\n{\n    bool called;            /*  */\n    int
+    \ floor_Nth;         /*  */\n    int  carry_remain;      /*  */\n    long last_round;
+    \       /*  */\n    struct tagFloor *down;  /*  */\n    struct tagFloor *up;    /*
+    \ */\n} FLOOR;\n\ntypedef struct tagElevatorBox\n{\n    int     carrying;       /*
+    \ */\n    int     cool_time;      /*  */\n    FLOOR * now_floor;      /*  */\n
+    \   FLOOR * target_floor;   /*  */\n} ELEVATOR;\n\nstatic long round          =
+    0;\nstatic long round_wait_max = 0;\nstatic long move_total     = 0;\n\n/* エレベータ内が搭載可能人数を返す
+    */\nint elevator_getCarryAvailed( const ELEVATOR *elevator )\n{\n    return (CARRYING_LIMIT
+    - elevator-&gt;carrying);\n}\n\n/* 目的の階に到着していれば真 */\nbool elevator_isTargetFloor(
+    const ELEVATOR *elevator)\n{\n    if( elevator-&gt;now_floor == elevator-&gt;target_floor
+    )\n    {\n        return true;\n    }\n    return false;\n}\n\n/* エレベータに乗車させる
+    */\nint elevator_carrying_in( ELEVATOR *elevator )\n{\n    int avail = 0;\n    const
+    int oldremain = elevator-&gt;now_floor-&gt;carry_remain;\n    avail = elevator_getCarryAvailed(elevator);\n
+    \   if(  avail &gt; 0 )\n    {\n        if( elevator-&gt;now_floor-&gt;carry_remain
+    &gt; avail )\n        {\n            elevator-&gt;now_floor-&gt;carry_remain -=
+    avail;\n            elevator-&gt;carrying += avail;\n        }\n        else\n
+    \       {\n            elevator-&gt;carrying += elevator-&gt;now_floor-&gt;carry_remain;\n
+    \           elevator-&gt;now_floor-&gt;called = false;\n            elevator-&gt;now_floor-&gt;carry_remain
+    = 0;\n        }\n        elevator-&gt;cool_time = CARRYING_MOVE_COST;\n        printf(\"IN(%d)
+    [%d] → [%d] \"\n                ,elevator-&gt;now_floor-&gt;floor_Nth,oldremain,
+    elevator-&gt;now_floor-&gt;carry_remain);\n    }\n    return 0;\n}\n\n/* エレベータから降車させる
+    */\nint elevator_carrying_out( ELEVATOR *elevator )\n{\n    if( elevator-&gt;carrying
+    &gt; 0 )\n    {\n        elevator-&gt;carrying = 0;\n        elevator-&gt;cool_time
+    = CARRYING_MOVE_COST;\n        printf(\"OUT \");\n    }\n    return 0;\n}\n\n/*
+    エレベータを移動する */\nint elevator_update(ELEVATOR *elevator)\n{\n    if( elevator-&gt;cool_time
+    &gt; 0 )\n    {\n        elevator-&gt;cool_time --;\n        return 1;\n    }\n
+    \   if( elevator_isTargetFloor(elevator) == true )\n    {\n        return 0;\n
+    \   }\n    else\n    {\n        /* エレベータの移動 */\n        move_total ++;\n        assert(
+    elevator-&gt;now_floor-&gt;floor_Nth != elevator-&gt;target_floor-&gt;floor_Nth
+    );\n        if( elevator-&gt;now_floor-&gt;floor_Nth &lt; elevator-&gt;target_floor-&gt;floor_Nth
+    )\n        {\n            elevator-&gt;now_floor = elevator-&gt;now_floor-&gt;up;\n
+    \        }\n        else\n        {\n            elevator-&gt;now_floor = elevator-&gt;now_floor-&gt;down;\n
+    \       }\n        elevator-&gt;cool_time = ELEVATOR_MOVE_COST;\n    }\n    return
+    0;\n}\n\n/* 次に停止するべき階を選択する */\nint floor_select( FLOOR **next, const FLOOR *floor,
+    const long round )\n{\n    long wait_max;\n    FLOOR *cursor;\n\n    *next = NULL;
+    /* 最上階 */\n    wait_max = -1;\n    cursor = (FLOOR *)floor;\n    while( true )\n
+    \   {\n        if( cursor-&gt;called == true &amp;&amp; (round - cursor-&gt;last_round)
+    &gt; wait_max )\n        {\n            *next = cursor;\n            wait_max
+    = (round - cursor-&gt;last_round);\n            if( (round - cursor-&gt;last_round)
+    &gt; round_wait_max )\n            {\n                round_wait_max = (round
+    - cursor-&gt;last_round);\n            }\n        }\n        if( cursor == cursor-&gt;down
+    )\n        {\n            break;\n        }\n        cursor = cursor-&gt;down;\n
+    \   }\n\n    if( *next == NULL )\n    {\n        /* 1階ならばすべて運び終わっている */\n        *next
+    = cursor;\n        return 1;\n    }\n    (*next)-&gt;last_round = round;\n    return
+    0;\n}\n\n/*  */\nint floor_print(const ELEVATOR* elevator, const FLOOR *floor)\n{\n
+    \   printf(\"--------------------\\n\");\n    while( true )\n    {\n        printf(\"
+    [%d]th Floor: [%2d] / last_round:[%4ld] %c %c\\n\"\n            , floor-&gt;floor_Nth,
+    floor-&gt;carry_remain,floor-&gt;last_round\n            , (floor==elevator-&gt;target_floor)?'=':'
+    '\n            , (floor==elevator-&gt;now_floor)?'*':' ');\n        if( floor
+    == floor-&gt;down )\n        {\n            break;\n        }\n        floor =
+    floor-&gt;down;\n    }\n    return 0;\n}\n\n/*  */\nint main(int argc, char *argv[])\n{\n
+    \   static FLOOR floor[] = \n            {\n                {false, 1,  0, 0,
+    &amp;floor[0], &amp;floor[1]}\n                ,{true, 2,  7, 0, &amp;floor[0],
+    &amp;floor[2]}\n                ,{true, 3,  3, 0, &amp;floor[1], &amp;floor[3]}\n
+    \               ,{true, 4, 11, 0, &amp;floor[2], &amp;floor[4]}\n                ,{true,
+    5,  7, 0, &amp;floor[3], &amp;floor[4]}\n            };\n    static FLOOR *top_floor
+    = &amp;floor[4];\n    static ELEVATOR schindler = { 0, 0, &amp;floor[0], &amp;floor[0]
+    };\n\n    FLOOR *next = NULL;\n\n    /* 初期状態の出力*/\n    printf(\"INIT \");\n    floor_print(&amp;schindler,
+    top_floor);\n\n    /* 運搬開始 */\n    round = 0;\n    round_wait_max = 0;\n    move_total
+    = 0;\n    while( true )\n    {\n        round ++;\n        elevator_update(&amp;schindler);\n
+    \       if( schindler.cool_time &gt; 0 )\n        {\n            continue;\n        }\n
+    \       if( elevator_isTargetFloor(&amp;schindler) == true )\n        {\n            /*
+    目的の階に到着 */\n            if( schindler.now_floor-&gt;floor_Nth == 1 )\n            {\n
+    \               elevator_carrying_out(&amp;schindler);\n                /* 次の停止回を最上階から検索する
+    */\n                floor_select( &amp;next, top_floor, round );\n                if(
+    next-&gt;floor_Nth == 1 )\n                {\n                    /* もうない */\n
+    \                   break;\n                }\n                //floor_print(&amp;schindler,
+    top_floor);\n                printf(\"\\n\");\n             }\n            else\n
+    \           {\n                elevator_carrying_in(&amp;schindler);\n                if(
+    elevator_getCarryAvailed( &amp;schindler ) &gt; 0 )\n                {\n                    /*
+    まだ搭載できるので移動のついでに追加搭載する */\n                    floor_select( &amp;next, schindler.now_floor,
+    round );\n                }\n                else\n                {\n                    /*
+    もう限界なので1階を目的地にする */\n                    next = &amp;floor[0];\n                }\n
+    \               //floor_print(&amp;schindler, top_floor);\n            } /* end
+    of if(1階か) */\n            /* 次の停止階を設定する */\n            schindler.target_floor
+    = next;\n        } /* end of if(到着しているか) */\n    } /* end of while( 残っているか )  */\n\n
+    \   printf(\"\\n\\nEND \");\n    floor_print(&amp;schindler, top_floor);\n    printf(\"%15s:[%ld]\\n\",
+    \"経過時間\", round);\n    printf(\"%15s:[%ld]\\n\", \"最大待ち時間\", round_wait_max);\n
+    \   printf(\"%15s:[%ld]\\n\", \"移動距離合計数\", move_total);\n\n    return 0;\n}\n/*
+    EOF */\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8313'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8313
+  :user_name: 匿名
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/01/12 11:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  エレベータの初期位置は１Ｆと仮定するのでしょうか？\r\nあるいはランダムな位置なのでしょうか？\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8314'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8314
+  :user_name: 匿名
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2009/01/12 14:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">どっかで似た問題を見たなぁと思ってちょっと記憶をたどって探してみたら、一応見つかった。\r\n東大の創造情報学の2008年2月の入試問題がよく似ている。\r\nhttp://www.i.u-tokyo.ac.jp/edu/course/ci/admission.shtml\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8317'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8317
+  :user_name: oz3
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/948/
+  :language: 
+  :time: 2009/01/13 01:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>質問です。\nEND時のlast_roundの数値は何を表示していますか？\n最大待ち時間 = 100 ということなので、各階の待ち時間ではないですよね。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8318'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8318
+  :user_name: sawat
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/322/
+  :language: 
+  :time: 2009/01/13 02:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  「下記のサンプル出力」の経過時間が手計算と合わなのですが、間違っていませんか?\r<br><br>[4]th Floor: [ 0] / last_round:[ 229]\r<br>を「4Fに最後に訪れたラウンドが229」と解釈すると、そのあとは、乗せる(5)、3F下降(6)、下ろす(5)だけのはずなのに総経過時間(257)まであと28もかかっています。\r<br><br>1Fからスタートして、4Fにいる3人を1Fに下ろすラウンド数は\r<br>2*(4-1) + 5 + 2*(4-1) + 5 = 22\r<br>であっていますか?\r<br>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8319'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8319
+  :user_name: sumim
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/01/13 04:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n<p>あまりよい方法を思いつかなかったので、よくあるエレベータのオーソドックスな動きのシミュレートだけしてみました。</p>\n<p>待っている人がいる階では常に「↓」ボタンが押されていると仮定します。つまり、さらに上の階に呼ばれてそちらに向かっているエレベータを止めることはできません。</p>\n<p>したがって、１階で人を降ろして空になった（あるいは初期状態で１階待機の）ボックスは、呼んでいる階のうち最上階に直行します。</p>\n<p>停止階で人を乗せたボックスは１階に向かう途中、余裕があれば次の呼ばれている階に停まります。最大搭載人数に達した場合は途中で停止せず、１階に直行します。</p>\n<p>老婆心ながら、このオーソドックスな動きだけをまずは基本編として出題されたほうが良かったのではないかな⋯と思いました。</p>\n\n\t"
+  :code: "| 各階待ち人数 階数 最大搭乗人数 ボックス内人数 ボックス停止階 \n  ラウンド数 移動数 完了ラウンド数 放置ラウンド数 ボックス移動
+    状態出力 |\n\n各階待ち人数 := #(0 7 3 11 7).\n階数 := 各階待ち人数 size.\n最大搭乗人数 := 3.\nボックス内人数
+    := 0.\nボックス停止階 := 1.\nラウンド数 := 0.\n移動数 := 0.\n完了ラウンド数 := Array new: 階数 withAll:
+    0.\n放置ラウンド数 := Array new: 階数 withAll: 0.\n放置ラウンド数 at: 1 put: -1.\nWorld findATranscript:
+    nil.\n\nボックス移動 := [:行き先階 |\n    ラウンド数 := ラウンド数 + ((行き先階 - ボックス停止階) abs * 2) +
+    5.\n    移動数 := 移動数 + (行き先階 - ボックス停止階) abs.\n    (放置ラウンド数 at: 行き先階) = 0\n        ifTrue:
+    [放置ラウンド数 at: 行き先階 put: ラウンド数].\n    行き先階 = 1 ifTrue: [ボックス停止階 := 1. ボックス内人数 :=
+    0] ifFalse: [\n        | 待ち人数 搭乗者数 残り人数 |\n        待ち人数 := 各階待ち人数 at: 行き先階.\n
+    \       搭乗者数 := 待ち人数 min: 最大搭乗人数 - ボックス内人数.\n        残り人数 := 待ち人数 - 搭乗者数.\n        ボックス停止階
+    = 1 ifTrue: [Transcript cr].\n        ボックス停止階 := 行き先階.\n        Transcript\n            show:
+    ボックス停止階; show: '階: '; show: 待ち人数; show: ' -&gt; ';\n            show: (各階待ち人数
+    at: ボックス停止階 put: 残り人数); show: '. '.\n        \"Transcript\n            show: '
+    (ラウンド: ', ラウンド数 printString, ', 移動数: ', 移動数 printString, ')'.\"\n        ボックス内人数
+    := ボックス内人数 + 搭乗者数.\n        残り人数 = 0 ifTrue: [完了ラウンド数 at: ボックス停止階 put: ラウンド数]]].\n\n状態出力
+    := [\n    Transcript cr.\n    5 to: 1 by: -1 do: [:ｎ |\n        Transcript cr;
+    show: ｎ; show: '階; ';\n            show: (各階待ち人数 at: ｎ);\n            show: '
+    人 / 完了ラウンド: ';\n            show: (完了ラウンド数 at: ｎ)].\n    Transcript cr].\n\n状態出力
+    value.\n\n[   ボックス内人数 = 最大搭乗人数 ifTrue: [ボックス移動 value: 1] ifFalse: [\n        |
+    呼び出し階 |\n        呼び出し階 := 各階待ち人数 findLast: [:各階 | 各階 &gt; 0].\n        呼び出し階 =
+    0\n            ifTrue: [ボックス移動 value: 1]\n            ifFalse: [ボックス移動 value:
+    呼び出し階]].\n    ボックス停止階 &gt; 1 or: [各階待ち人数 anySatisfy: [:各階 | 各階 &gt; 0]]\n] whileTrue.\n\n状態出力
+    value.\n\nTranscript cr; show: '経過時間: '; show: ラウンド数.\n\"Transcript cr; show:
+    '階別の放置時間一覧: '; show: 放置ラウンド数.\"\nTranscript cr; show: '階別の最大放置時間: '; show: 放置ラウンド数
+    max.\nTranscript cr; show: 'のべ移動階数: '; show: 移動数\n\n\"出力 =&gt; \n5階; 7 人 / 完了ラウンド:
+    0\n4階; 11 人 / 完了ラウンド: 0\n3階; 3 人 / 完了ラウンド: 0\n2階; 7 人 / 完了ラウンド: 0\n1階; 0 人 / 完了ラウンド:
+    0\n\n5階: 7 -&gt; 4. \n5階: 4 -&gt; 1. \n5階: 1 -&gt; 0. 4階: 11 -&gt; 9. \n4階: 9
+    -&gt; 6. \n4階: 6 -&gt; 3. \n4階: 3 -&gt; 0. \n3階: 3 -&gt; 0. \n2階: 7 -&gt; 4. \n2階:
+    4 -&gt; 1. \n2階: 1 -&gt; 0. \n\n5階; 0 人 / 完了ラウンド: 65\n4階; 0 人 / 完了ラウンド: 138\n3階;
+    0 人 / 完了ラウンド: 158\n2階; 0 人 / 完了ラウンド: 202\n1階; 0 人 / 完了ラウンド: 0\n\n経過時間: 209\n階別の最大放置時間:
+    174\nのべ移動階数: 52 \"\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '8320'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8320
+  :user_name: raynstard
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/127/
+  :language: Other
+  :time: 2009/01/13 05:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">長いからとサンプルコードはしょってしまったのでいろいろと不都合がでてしまいました。\r\n\r\nlast_round
+    は僕のデバックの都合上のものなので出力に関しては気にしないでください。\r\nごめんなさい。\r\nお題を間違えてCのまま投稿してしまったので\r\n言語設定せずに投稿します。\r\n\r\ngcc
+    -Wall -std=c99 doukaku225.c\r\n\r\n# ところで、これ投稿したの一昨日くらいなのですが、\r\n  公開のカウントって下書きした段階ではじまってる？</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdbool.h&gt;\n#include &lt;assert.h&gt;\n\n#define
+    CARRYING_LIMIT      (3)\n#define CARRYING_MOVE_COST  (5)\n#define ELEVATOR_MOVE_COST
+    \ (2)\n\ntypedef struct tagFloor\n{\n    bool called;            /*  */\n    int
+    \ floor_Nth;         /*  */\n    int  carry_remain;      /*  */\n    long last_round;
+    \       /*  */\n    struct tagFloor *down;  /*  */\n    struct tagFloor *up;    /*
+    \ */\n} FLOOR;\n\ntypedef struct tagElevatorBox\n{\n    int     carrying;       /*
+    \ */\n    int     cool_time;      /*  */\n    FLOOR * now_floor;      /*  */\n
+    \   FLOOR * target_floor;   /*  */\n} ELEVATOR;\n\nstatic long round          =
+    0;\nstatic long round_wait_max = 0;\nstatic long move_total     = 0;\n\n/* エレベータ内が搭載可能人数を返す
+    */\nint elevator_getCarryAvailed( const ELEVATOR *elevator )\n{\n    return (CARRYING_LIMIT
+    - elevator-&gt;carrying);\n}\n\n/* 目的の階に到着していれば真 */\nbool elevator_isTargetFloor(
+    const ELEVATOR *elevator)\n{\n    if( elevator-&gt;now_floor == elevator-&gt;target_floor
+    )\n    {\n        return true;\n    }\n    return false;\n}\n\n/* エレベータに乗車させる
+    */\nint elevator_carrying_in( ELEVATOR *elevator )\n{\n    int avail = 0;\n    const
+    int oldremain = elevator-&gt;now_floor-&gt;carry_remain;\n    avail = elevator_getCarryAvailed(elevator);\n
+    \   if(  avail &gt; 0 )\n    {\n        if( elevator-&gt;now_floor-&gt;carry_remain
+    &gt; avail )\n        {\n            elevator-&gt;now_floor-&gt;carry_remain -=
+    avail;\n            elevator-&gt;carrying += avail;\n        }\n        else\n
+    \       {\n            elevator-&gt;carrying += elevator-&gt;now_floor-&gt;carry_remain;\n
+    \           elevator-&gt;now_floor-&gt;called = false;\n            elevator-&gt;now_floor-&gt;carry_remain
+    = 0;\n        }\n        elevator-&gt;cool_time = CARRYING_MOVE_COST;\n        printf(\"IN(%d)
+    [%d] → [%d] \"\n                ,elevator-&gt;now_floor-&gt;floor_Nth,oldremain,
+    elevator-&gt;now_floor-&gt;carry_remain);\n    }\n    return 0;\n}\n\n/* エレベータから降車させる
+    */\nint elevator_carrying_out( ELEVATOR *elevator )\n{\n    if( elevator-&gt;carrying
+    &gt; 0 )\n    {\n        elevator-&gt;carrying = 0;\n        elevator-&gt;cool_time
+    = CARRYING_MOVE_COST;\n        printf(\"OUT \");\n    }\n    return 0;\n}\n\n/*
+    エレベータを移動する */\nint elevator_update(ELEVATOR *elevator)\n{\n    if( elevator-&gt;cool_time
+    &gt; 0 )\n    {\n        elevator-&gt;cool_time --;\n        return 1;\n    }\n
+    \   if( elevator_isTargetFloor(elevator) == true )\n    {\n        return 0;\n
+    \   }\n    else\n    {\n        /* エレベータの移動 */\n        move_total ++;\n        assert(
+    elevator-&gt;now_floor-&gt;floor_Nth != elevator-&gt;target_floor-&gt;floor_Nth
+    );\n        if( elevator-&gt;now_floor-&gt;floor_Nth &lt; elevator-&gt;target_floor-&gt;floor_Nth
+    )\n        {\n            elevator-&gt;now_floor = elevator-&gt;now_floor-&gt;up;\n
+    \        }\n        else\n        {\n            elevator-&gt;now_floor = elevator-&gt;now_floor-&gt;down;\n
+    \       }\n        elevator-&gt;cool_time = ELEVATOR_MOVE_COST;\n    }\n    return
+    0;\n}\n\n/* 次に停止するべき階を選択する */\nint floor_select( FLOOR **next, const FLOOR *floor,
+    const long round )\n{\n    long wait_max;\n    FLOOR *cursor;\n\n    *next = NULL;
+    /* 最上階 */\n    wait_max = -1;\n    cursor = (FLOOR *)floor;\n    while( true )\n
+    \   {\n        if( cursor-&gt;called == true &amp;&amp; (round - cursor-&gt;last_round)
+    &gt; wait_max )\n        {\n            *next = cursor;\n            wait_max
+    = (round - cursor-&gt;last_round);\n            if( (round - cursor-&gt;last_round)
+    &gt; round_wait_max )\n            {\n                round_wait_max = (round
+    - cursor-&gt;last_round);\n            }\n        }\n        if( cursor == cursor-&gt;down
+    )\n        {\n            break;\n        }\n        cursor = cursor-&gt;down;\n
+    \   }\n\n    if( *next == NULL )\n    {\n        /* 1階ならばすべて運び終わっている */\n        *next
+    = cursor;\n        return 1;\n    }\n    (*next)-&gt;last_round = round;\n    return
+    0;\n}\n\n/*  */\nint floor_print(const ELEVATOR* elevator, const FLOOR *floor)\n{\n
+    \   printf(\"--------------------\\n\");\n    while( true )\n    {\n        printf(\"
+    [%d]th Floor: [%2d] / last_round:[%4ld] %c %c\\n\"\n            , floor-&gt;floor_Nth,
+    floor-&gt;carry_remain,floor-&gt;last_round\n            , (floor==elevator-&gt;target_floor)?'=':'
+    '\n            , (floor==elevator-&gt;now_floor)?'*':' ');\n        if( floor
+    == floor-&gt;down )\n        {\n            break;\n        }\n        floor =
+    floor-&gt;down;\n    }\n    return 0;\n}\n\n/*  */\nint main(int argc, char *argv[])\n{\n
+    \   static FLOOR floor[] = \n            {\n                {false, 1,  0, 0,
+    &amp;floor[0], &amp;floor[1]}\n                ,{true, 2,  7, 0, &amp;floor[0],
+    &amp;floor[2]}\n                ,{true, 3,  3, 0, &amp;floor[1], &amp;floor[3]}\n
+    \               ,{true, 4, 11, 0, &amp;floor[2], &amp;floor[4]}\n                ,{true,
+    5,  7, 0, &amp;floor[3], &amp;floor[4]}\n            };\n    static FLOOR *top_floor
+    = &amp;floor[4];\n    static ELEVATOR schindler = { 0, 0, &amp;floor[0], &amp;floor[0]
+    };\n\n    FLOOR *next = NULL;\n\n    /* 初期状態の出力*/\n    printf(\"INIT \");\n    floor_print(&amp;schindler,
+    top_floor);\n\n    /* 運搬開始 */\n    round = 0;\n    round_wait_max = 0;\n    move_total
+    = 0;\n    while( true )\n    {\n        round ++;\n        elevator_update(&amp;schindler);\n
+    \       if( schindler.cool_time &gt; 0 )\n        {\n            continue;\n        }\n
+    \       if( elevator_isTargetFloor(&amp;schindler) == true )\n        {\n            /*
+    目的の階に到着 */\n            if( schindler.now_floor-&gt;floor_Nth == 1 )\n            {\n
+    \               elevator_carrying_out(&amp;schindler);\n                /* 次の停止回を最上階から検索する
+    */\n                floor_select( &amp;next, top_floor, round );\n                if(
+    next-&gt;floor_Nth == 1 )\n                {\n                    /* もうない */\n
+    \                   break;\n                }\n                //floor_print(&amp;schindler,
+    top_floor);\n                printf(\"\\n\");\n             }\n            else\n
+    \           {\n                elevator_carrying_in(&amp;schindler);\n                if(
+    elevator_getCarryAvailed( &amp;schindler ) &gt; 0 )\n                {\n                    /*
+    まだ搭載できるので移動のついでに追加搭載する */\n                    floor_select( &amp;next, schindler.now_floor,
+    round );\n                }\n                else\n                {\n                    /*
+    もう限界なので1階を目的地にする */\n                    next = &amp;floor[0];\n                }\n
+    \               //floor_print(&amp;schindler, top_floor);\n            } /* end
+    of if(1階か) */\n            /* 次の停止階を設定する */\n            schindler.target_floor
+    = next;\n        } /* end of if(到着しているか) */\n    } /* end of while( 残っているか )  */\n\n
+    \   printf(\"\\n\\nEND \");\n    floor_print(&amp;schindler, top_floor);\n    printf(\"%15s:[%ld]\\n\",
+    \"経過時間\", round);\n    printf(\"%15s:[%ld]\\n\", \"最大待ち時間\", round_wait_max);\n
+    \   printf(\"%15s:[%ld]\\n\", \"移動距離合計数\", move_total);\n\n    return 0;\n}\n/*
+    EOF */\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8321'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8321
+  :user_name: raynstard
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2009/01/13 05:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>今回、エレベータの移動距離を出力するので\n1Fスタートにしていただければと思います。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8322'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8322
+  :user_name: raynstard
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2009/01/13 05:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">まさか東大の入試問題になっているとは思いませんでしたが、\r\nプログラムの勉強をする上でわりとポピュラーなものです。\r\n\r\nほかにポピュラーなものとして\r\n自動販売機の釣り銭勘定(基本ロジックの勉強によい)、\r\n電卓(スタック操作の勉強にいい)等があるのですが、\r\nエレベータの制御が抜けているのに気がついたので投稿しました。\r\nちなみに、これは本来並列処理や計算量の見積もり訓練の勉強にしようします。\r\nGUIで作ると結構楽しいんですけどね^^;;</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8323'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8323
+  :user_name: raynstard
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2009/01/13 05:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ごめんなさい。これは僕のデバッグ用出力です。\r\n\r\n最後に更新(乗車)したときのroundです。\r\n\r\nあまり気にしないでください。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8324'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8324
+  :user_name: raynstard
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2009/01/13 05:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">はい、バグってました。\r\n# しかもそのまま投稿しちゃってる^^;\r\n\r\n予定では、目的地についたとき、時間を更新するつもりだったのですが\r\nロジック的に、降車した段階で次の目的となる階を決定した段階でlast_roundを設定していました。\r\n\r\nつまり、1Fから4Fまでの移動時間(6ラウンド)が空白になります。\r\n\r\n論理的なもの、僕が想定しているものはsawat氏の考えているとおりです。\r\n失礼しました。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8325'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8325
+  :user_name: raynstard
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2009/01/13 05:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">やっぱ、上から下へ運ぶだけのお題にしてしまえばよかったんですかねぇ。\r\n移動距離だけ計算して。。。\r\n\r\nこのお題を投稿する時点でもなやんだのですよ。\r\n実はこの基本すら飛ばして応用だけにしてしまうかとか。\r\n\r\n今にして思えば、このお題の前後をお題にすればちょうどよかった気がしてきましたorz</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8326'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8326
+  :user_name: fumokmm
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/856/
+  :language: Groovy
+  :time: 2009/01/13 09:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Groovyで。\r\n\r\n待ってる人の待ち時間を少なくなるよう勤めました。\r\n（経過時間と移動距離合計数は無駄に増えます）\r\n乗降を開始した時点で各階の待ち時間をリセットしています。\r\n\r\n動きとしては以下のような感じです。\r\n(1)
+    待っている人がいる最上階に移動\r\n(2) 1人乗せる\r\n(3) 1階降りて止まる\r\n(4) 1人降ろす\r\n(5) 1階にたどり着くまで、(2)～(4)を繰り返す\r\n(6)
+    1階に到着したら、1人降ろす\r\n\r\n\r\n出力結果\r\nINIT --------------------\r\n[5]th Floor: [
+    7] / last_round:[0]\r\n[4]th Floor: [11] / last_round:[0]\r\n[3]th Floor: [ 3]
+    / last_round:[0]\r\n[2]th Floor: [ 7] / last_round:[0]\r\n[1]th Floor: [ 0] /
+    last_round:[0]\r\n-------------------------\r\nElevator move from [1 → 5]\r\nPerson
+    get on at [5]th Floor / Floor's member [7 → 6]\r\nElevator move from [5 → 4]\r\nPerson
+    get off at [4]th Floor / Floor's member [11 → 12]\r\nPerson get on at [4]th Floor
+    / Floor's member [12 → 11]\r\nElevator move from [4 → 3]\r\n　　・\r\n　　・(途中省略)\r\n　　・\r\nElevator
+    move from [2 → 1]\r\nPerson get off at [1]th Floor / Floor's member [26 → 27]\r\nElevator
+    move from [1 → 2]\r\nPerson get on at [2]th Floor / Floor's member [1 → 0]\r\nElevator
+    move from [2 → 1]\r\nPerson get off at [1]th Floor / Floor's member [27 → 28]\r\nEND
+    --------------------\r\n[5]th Floor: [ 0] / last_round:[51]\r\n[4]th Floor: [
+    0] / last_round:[46]\r\n[3]th Floor: [ 0] / last_round:[46]\r\n[2]th Floor: [
+    0] / last_round:[46]\r\n[1]th Floor: [28] / last_round:[0]\r\n      経過時間:[1036]\r\n
+    \ 最大待ち時間:[51]\r\n移動距離合計数:[148]\r\n</pre>\n\t"
+  :code: "/** エレベータ */\nclass Elevator {\n  static final int MOVE_COST       = 2 //
+    移動コスト\n  static final int GETTING_ON_COST = 5 // 乗降コスト\n  static final int MAX_PERSONS
+    \    = 3 // 最大人数\n  def floors                           // フロア\n  int currentFloor
+    \                    // 現在のフロア\n  int persons                          // 乗っている人数\n
+    \ int elapsedRound = 0                 // 経過ラウンド\n  int moved        = 0                 //
+    総移動距離\n\n  /** 階を移動する */\n  def moveTo(toFloor) {\n    int movin = Math.abs(toFloor
+    - currentFloor)\n    println(\"Elevator move from [${currentFloor + 1} → ${toFloor
+    + 1}]\")\n    moved += movin\n    currentFloor = toFloor\n    elapseByMove(movin
+    * MOVE_COST)\n  }\n\n  /** フロアからエレベータへ一人乗せる */\n  def getOn() {\n    if (persons
+    &lt; MAX_PERSONS &amp;&amp; floors[currentFloor].persons) {\n      persons++\n
+    \     int before = floors[currentFloor].persons--\n      elapseByGettingOn(GETTING_ON_COST)\n
+    \     println(\"Person get on at [${currentFloor + 1}]th Floor / \"\n      + \"Floor's
+    member [${before} → ${floors[currentFloor].persons}]\")\n    }\n  }\n\n  /** エレベータからフロアへ一人降ろす
+    */\n  def getOff() {\n    if (persons) {\n      persons--\n      int before =
+    floors[currentFloor].persons++\n      elapseByGettingOn(GETTING_ON_COST)\n      println(\"Person
+    get off at [${currentFloor + 1}]th Floor / \"\n      + \"Floor's member [${before}
+    → ${floors[currentFloor].persons}]\")\n    }\n  }\n\n  /** 移動によるラウンドの経過 */\n  def
+    elapseByMove(round) {\n    floors.each{ it.elapse(round) }\n    elapsedRound +=
+    round\n  }\n  \n  /** 乗降によるラウンドの経過 */\n  def elapseByGettingOn(round) {\n    floors.eachWithIndex{
+    f, idx -&gt;\n      if (currentFloor == idx) {\n        f.resetRound()\n      }
+    else {\n        f.elapse(round)\n      }\n    }\n    elapsedRound += round\n  }\n
+    \ \n  /** フロア情報を出力 */\n  def dispFloorsInfo(){\n    (1..floors.size()).reverseEach{\n
+    \     println(\"[${it}]th Floor: \"\n      + \"[${(floors[it-1].persons as String).padLeft(2)}]
+    /\"\n      + \" last_round:[${floors[it-1].maxWaitRound}]\")\n    }\n  }\n  \n
+    \ /** ラウンド情報を出力 */\n  def dispRoundInfo() {\n    println \"\"\"\\\n      経過時間:[${elapsedRound}]\n
+    \ 最大待ち時間:[${floors*.maxWaitRound.max()}]\n移動距離合計数:[${moved}]\"\"\"\n  }\n\n}\n\n/**
+    フロア */\nclass Floor {\n  int persons          // 待っている人数\n  int waitRound    =
+    0 // 待っているラウンド\n  int maxWaitRound = 0 // 最大待ちラウンド\n  boolean noRound      //
+    ラウンド経過なし\n\n  /** ラウンド経過 */\n  def elapse(round) {\n    if (persons &amp;&amp;
+    !noRound) {\n      waitRound += round\n      maxWaitRound = [maxWaitRound, waitRound].max()\n
+    \   }\n  }\n  \n  /** ラウンドリセット */\n  def resetRound() {\n    waitRound = 0\n  }\n}\n\n\ndef
+    elev = new Elevator(\n  floors:[\n    new Floor(persons: 0, noRound:true), //
+    1階 (ラウンド経過なし)\n    new Floor(persons: 7              ), // 2階\n    new Floor(persons:
+    3              ), // 3階\n    new Floor(persons:11              ), // 4階\n    new
+    Floor(persons: 7              )  // 5階\n  ],\n  currentFloor: 0,\n  persons     :
+    0\n)\n\n// メイン処理\nprintln 'INIT --------------------'\nelev.dispFloorsInfo()\nprintln
+    '-------------------------'\n\n// 1階以外で待っている人がいる間繰り返す\nwhile(elev.floors.tail()*.persons.sum())
+    {\n  // 待っている人がいる最上階を探す\n  def nextList = []\n  elev.floors.tail()*.persons.eachWithIndex{
+    item, idx -&gt;\n    nextList &lt;&lt; [idx+1, item]\n  }\n  def topFloor = nextList.findAll{
+    it[1] != 0 }.last()[0]\n\n  // 上から順に一人ずつスライドさせてくる\n  for (i in topFloor..0) {\n
+    \   elev.moveTo(i)\n    switch (i) {\n      case topFloor:                elev.getOn();
+    \ break\n      case        0: elev.getOff();                break\n      default
+    \     : elev.getOff(); elev.getOn();  break\n    }\n  }\n}\n\nprintln 'END --------------------'\nelev.dispFloorsInfo()\nelev.dispRoundInfo()\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8328'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8328
+  :user_name: sawat
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/322/
+  :language: JavaScript
+  :time: 2009/01/13 19:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  #8319と同じアプローチで。\r<br>主にプログラム作成の容易さについて効率化しました(笑)\r<br>総移動距離は最短になります。\r<br><br>階数表記は英国式(0Fが地階)です。\r<br>----実行結果----\r<br>4F[7-&gt;4] -&gt; 0F. (Round: 26)\r<br>4F[4-&gt;1] -&gt; 0F. (Round: 52)\r<br>4F[1-&gt;0] -&gt; 3F[11-&gt;9] -&gt; 0F. (Round: 83)\r<br>3F[9-&gt;6] -&gt; 0F. (Round: 105)\r<br>3F[6-&gt;3] -&gt; 0F. (Round: 127)\r<br>3F[3-&gt;0] -&gt; 0F. (Round: 149)\r<br>2F[3-&gt;0] -&gt; 0F. (Round: 167)\r<br>1F[7-&gt;4] -&gt; 0F. (Round: 181)\r<br>1F[4-&gt;1] -&gt; 0F. (Round: 195)\r<br>1F[1-&gt;0] -&gt; 0F. (Round: 209)\r<br>Finish.\r<br>        Total time: 209\r<br>        Total move: 52\r<br>        Max wait:   174\n\t"
+  :code: "function log(str, lineContinue) {\n    // for Rhino\n    java.lang.System.out.print(str);\n
+    \   if (!lineContinue) java.lang.System.out.println();\n}\n\nfunction Elevator(capacity,
+    t1, t2) {\n    this.capacity = capacity;\n    this.t1 = t1;\n    this.t2 = t2;\n
+    \   this.init([]);\n}\n\nElevator.prototype = {\n    simulate: function (data)
+    {\n        this.init(data);\n        var c;\n        while (c = this.callingFrom())
+    {\n            this.upTo(c);\n            while (this.floor != 0) this.down();\n
+    \       }\n        this.printResult();\n    },\n    printResult: function () {\n
+    \       log(\"Finish.\");\n        log(\"\\tTotal time: \" + this.round);\n        log(\"\\tTotal
+    move: \" + this.move);\n        log(\"\\tMax wait:   \" + Math.max.apply(null,
+    this.waitTime));\n    }, \n    init: function (data) {\n        this.floor = 0;
+    // 英国式\n        this.count = 0;\n        this.round = 0;\n        this.move =
+    0;\n        this.waitTime = [];\n        for(var i=0,n=data.length+1;i&lt;n;i++)
+    this.waitTime[i]=0;\n        this.data = [0].concat(data);\n    },\n    upTo:
+    function (f) {\n        this.round += this.t1 * (f - this.floor);\n        this.move
+    += (f - this.floor);\n        this.aliveAt(f);\n    },\n    down: function ()
+    {\n        this.round += this.t1;\n        this.move++;\n        this.aliveAt(this.floor-1);\n
+    \   },\n    aliveAt: function (f) {\n        this.floor = f;\n        if (this.floor
+    == 0) {\n            this.round += this.t2;\n            this.count = 0;\n            log(\"0F.
+    (Round: \" + this.round + \")\");\n        } else {\n            var n = Math.min(this.capacity
+    - this.count, this.data[f]);\n            if (n != 0) {\n                this.round
+    += this.t2;\n                this.data[f] -= n;\n                this.count +=
+    n;\n                if(this.waitTime[f]==0) this.waitTime[f] = this.round;\n                log(f
+    + \"F[\" + (this.data[f] + n) + \"-&gt;\" + this.data[f] + \"] -&gt; \", true);\n
+    \           }\n        }\n    },\n    callingFrom: function () {\n        for
+    (var f = this.data.length - 1; f &gt; 0; f--)\n            if (this.data[f] &gt;
+    0) return f;\n        return 0;\n    }\n}\n\nif (arguments.length &gt; 0) {\n
+    \   new Elevator(arguments.shift()*1, arguments.shift()*1, arguments.shift()*1).simulate(arguments);\n}
+    else {\n    new Elevator(3, 2, 5).simulate([7, 3, 11, 7]);\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8342'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8342
+  :user_name: raynstard
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2009/01/16 07:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ども、raynstardです。\nコメントにもありますが、ロジックを単純にするとエレベータの移動距離が最小限になります。</p>\n<p>いってみれば、消費エネルギーの効率をよくしたということです。\nつまり、エコですよ！(笑</p>\n<p>そして、また、テストデータがあまかったorz\n予定では、単純なロジックにすると移動距離がへるはずだったんだけどなぁ^^；；</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8380'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8380
+  :user_name: Nemo
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/685/
+  :language: PostScript
+  :time: 2009/01/21 15:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>とりあえず、サンプル通りのやつと、自分なりに最適化したのを1本づつ。\n方針としては、トータルの待ち時間の最小化です。\n各人が1階まで降りる時間*人数の合計が最小になるように、という方針です。</p>\n<p>実際のところは、下の階層から優先的に運び出してしまって、上の階層は後回し、ということです。定員まで余裕があれば、更に上の階層へ寄り道、という手順になります。</p>\n<p>サンプルプログラム(FindNext2)の手順だと、\nScore
+    =3464\nTime  =209\nRun   =52\nですが、この手順(FindNext1)ですと、\nScore =2931\nTime  =222\nRun
+    \  =56\nとなり、若干エレベータの移動量(Run)及び所要時間(Time)が増えるものの、大幅に合計待ち時間(Score)が短縮されます。</p>\n\n\t"
+  :code: "%!PS\n\n% [[待ち人] 現在位置 乗員 定員 時刻 評価]   Check1  [...]\n/Check1 {\n    dup 0
+    get true exch { 0 eq and } forall % 待ち無し\n    1 index 1 get 0 eq and                  %
+    地上階    \n} bind def\n\n% [[待ち人] 現在位置....] FindNext1 num\n/FindNext1 {\n    0 2
+    getinterval aload\n    0 get length 1 sub 1 exch {\n        2 copy get 0 gt {\n
+    \           exch pop true exit\n        } if\n        pop\n    } for\n    true
+    ne {\n        0\n    } if\n} bind def\n\n/FindNext2 {\n    (==) = ppstack (==)=\n
+    \   0 get\n    dup length 1 sub -1 1\n    {\n        2 copy get 0 gt {\n            exch
+    pop true exit\n        } if\n        pop\n    } for\n    true ne {\n        0\n
+    \   } if\n} bind def\n\n/AddVal { % [] pos tt  AddVal  []\n    2 index 2 index
+    get add 2 index 3 1 roll put\n} bind def\n\n% [[待ち人] 現在位置 乗員 定員 時刻 評価]  /Next
+    \ Move1  [...]\n/Move1 {\n    exch\n    (Move: ) print dup 1 get 1 add 3 string
+    cvs print ( ==&gt; ) print\n\n    (==) = ppstack\n    dup 2 2 getinterval aload
+    pop lt {\n        dup 3 -1 roll cvx exec\n        1 index 1 get\n        2 index
+    2 index 1 exch put\n        sub abs\n        2 copy 6 exch AddVal pop\n        MoveTime
+    mul 4 exch AddVal\n    } {\n        exch pop\n        dup 1 get\n        2 copy
+    6 exch AddVal pop\n        MoveTime mul 4 exch AddVal\n        dup 1 0 put\n    }
+    ifelse\n    dup 1 get 1 add 3 string cvs =\n    dup ===\n} bind def\n/RideOn {\n
+    \   % [[] ... ] n RideOn [[] ...]\n    1 index 0 get 2 index 1 get 2 index neg\n
+    \   AddVal pop\n    2 exch AddVal\n} bind def\n/IO1 {\n    dup 1 get 0 eq {\n
+    \       (Floor 1 =[Out]= ) print dup 2 get =\n        dup 2 get 0 gt {\n            4
+    IOTime AddVal\n            dup 2 get exch dup 4 get 3 -1 roll mul\n            5
+    exch AddVal\n            dup 2 0 put\n        }if\n        dup ===\n    } {\n
+    \       (Floor ) print dup 1 get 1 add 3 string cvs print ( =[In]= ) print\n        dup
+    1 get exch dup 0 get 3 -1 roll get\n        exch dup 2 get exch dup 3 get 3 -1
+    roll sub\n        3 copy 3 -1 roll lt {\n            pop 3 -1 roll pop\n        }
+    {\n            pop pop exch\n        } ifelse\n        dup 0 gt {\n            dup
+    =\n            RideOn\n            4 IOTime AddVal\n        } {\n            (noop)
+    =\n        } ifelse\n    } ifelse\n} bind def\n\n\n/Run {\n    exch\n    {\n        Check1
+    { exit } if\n        1 index Move1\n    IO1\n    } loop\n    (Score =) print dup
+    5 get =\n    (Time  =) print dup 4 get =\n    (Run   =) print dup 6 get =\n    pop
+    pop\n} bind def\n\n% ===== Test Code =====\n/MoveTime 2 def\n/IOTime 5 def\n[[0
+    7 3 11 7] 0 0 3 0 0 0] /FindNext2 Run\n[[0 7 3 11 7] 0 0 3 0 0 0] /FindNext1 Run\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8409'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8409
+  :user_name: Otter
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/497/
+  :language: Other
+  :time: 2009/01/29 07:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>Haskellでやってみました。\r</p>\n<p>\r</p>\n<p>全ての可能性を試して最小稼働時間で全員を１階に運ぶようにしています。一番単純なので…あと、一番長く放置されていた階の待ち時間まで手が回ってません。\r</p>\n<p>出力はかなりいい加減です：\r</p>\n<p>\r</p>\n<p>(209,\"
+    +1 *3 -1 / +1 *3 -1 / +2 *3 -2 / +3 *3 -3 / +3 *3 -3 / +3 *3 -3 / +3 *2 +\r</p>\n<p>1
+    *1 -4 / +4 *3 -4 / +4 *3 -4 / +1 *1 -1 /\")\r</p>\n<p>\r</p>\n<p>最初の数字はラウンド数、次の文字列はエレベーターのシークエンスで、＋、－はそれぞれ相対移動階数、＊はその階で乗った人の人数、/は１階で全員降りたしるしです…つまり、\"+1
+    *3 -1 /\"は（１階から）一つ上に上がって、３人乗って、ひとつ下に降りて、（一階で）全員おろしたということになります…\r</p>\n<p>\r</p>\n<p>モナドコンビネータはパーサーだけじゃなくてこうゆう問題をやるのにも使えますね…\r</p>\n</div>\n\t"
+  :code: "module Main where\n\nimport Data.Array.Unboxed (UArray, listArray, assocs,
+    (//), (!))\nimport Control.Monad.State\nimport Data.Function (on)\nimport Data.List
+    (minimumBy)\nimport Data.Ord (compare)\n\n-- Data Types --\ndata Elevator = E
+    {\n    cPassenger :: Int,\n    iFloor :: Int\n    } deriving Show\n\ndata Wait
+    = W {\n    unW :: (UArray Int Int)\n    } deriving Show\n\ntype Cost = (Int, String)\n\ntype
+    ElevState = (Cost, (Elevator, Wait))\n\ntype ElevM = State (Elevator, Wait) Cost\n\n--
+    Data --\ninitialWait = W $ listArray (1, 5) [0, 7, 3, 11, 7]\ninitialElev = E
+    0 1\n\ninitial = ((0, \"\"), (initialElev, initialWait))\n\n-- Primitives --\nisFull
+    :: Elevator -&gt; Bool\nisFull (E p fl) = p == 3\n\ncomb :: Cost -&gt; Cost -&gt;
+    Cost\ncomb (c1, st1) (c2, st2) = (c1 + c2, st1 ++ \" \" ++ st2)\n\nwaitingFloor
+    :: Wait -&gt; [Int]\nwaitingFloor = map (fst) . filter ((/=0).snd) . assocs .
+    unW\n\n-- (Quasi) Monadic Combinators --\ncombM :: Cost -&gt; ElevM -&gt; ElevM\ncombM
+    c m = m &gt;&gt;= \\c' -&gt; return $ c `comb` c'\n\n(&lt;*&gt;) :: ElevM -&gt;
+    ElevM -&gt; ElevM\na1 &lt;*&gt; a2 = a1 &gt;&gt;= \\c1 -&gt; combM c1 a2\n\nifFull
+    :: ElevM -&gt; Cost -&gt; ElevM\nifFull ifM c = State $ \\i@(e, w) -&gt; case
+    (isFull e) of\n    False     -&gt; (c, i)\n    otherwise -&gt; runState (combM
+    c ifM) i\n\nifFullM :: ElevM -&gt; ElevM -&gt; ElevM\nifFullM pM tM = pM &gt;&gt;=
+    \\c -&gt; ifFull tM c\n\n-- Monadic Primitive Elevator Operations --\npickupM
+    :: ElevM\npickupM = State $ _pickup\n\n_pickup (E p fl, W ar) = ((5, str), (E
+    p' fl, W ar'))\n    where\n        ar' = ar//[(fl, cWaiting - cPickup)]\n        p'
+    = p + cPickup\n        cWaiting = ar!fl\n        cPickup = min cWaiting (3 - p)\n
+    \       str = '*' : (show cPickup)\n        \ndropM :: ElevM\ndropM = State $
+    \\(E p fl, w) -&gt; case (p) of\n    0         -&gt; ((0, \"\"),  (E 0 fl, w))\n
+    \   otherwise -&gt; ((5, \"/\"), (E 0 fl, w))\n\nmoveByM :: Int -&gt; ElevM\nmoveByM
+    d =  State $ \\((E p fl), w) -&gt; (c, (E p $ fl + d,  w))\n    where\n        c
+    = (abs $ d * 2, cat d)\n        cat  d\n            | d == 0 = \"\"\n            |
+    d &lt; 0 = show d\n            | otherwise = '+' : (show d)\n\n-- Composit Monadic
+    Operations --\ntakeHomeM :: ElevM\ntakeHomeM = State $ \\i@((E _ fl), _) -&gt;
+    (runState $ (moveByM $ 1 - fl) &lt;*&gt; dropM) i\n\ngoM :: Int -&gt; ElevM\ngoM
+    flTo = State $ \\i@((E _ fl), _) -&gt; (runState $ moveByM $ flTo - fl) i\n\nturnM
+    :: Int -&gt; ElevM\nturnM flTo = ((goM flTo) &lt;*&gt; pickupM) `ifFullM` takeHomeM\n\n--
+    Permutation Traversers --\ntryAll :: ElevState -&gt; [ElevState]\ntryAll (c, i@(_,
+    w)) \n    | fls == [] = [runState (combM c takeHomeM) i]\n    | otherwise = map
+    (\\fl -&gt; runState (combM c $ turnM fl) i) fls &gt;&gt;= tryAll\n    where\n
+    \       fls = waitingFloor w\n\n-- Main --\nmain = (print.fst . minimumBy (byCost)
+    . tryAll) initial\n    where\n        byCost :: ElevState -&gt; ElevState -&gt;
+    Ordering\n        byCost = compare `on` (fst . fst)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8410'
+  :parent_id: '225'
+  :url: http://ja.doukaku.org/comment/8410
+  :user_name: Otter
+  :user_url: /web/20090512165515/http://ja.doukaku.org/user/497/
+  :language: Haskell
+  :time: 2009/01/29 07:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Haskellでやったんですよー言語タグをつけるの忘れました…</p>\n\n\t"
+  :code: |
+    module Main where
+
+    main = putStrLn "see my previous post"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

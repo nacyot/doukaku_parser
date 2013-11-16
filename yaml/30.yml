@@ -1,0 +1,1818 @@
+---
+:id: '30'
+:title: マップの通り抜け
+:comments:
+- :id: '3386'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/3386
+  :user_name: にしお
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/24 06:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  ここにピリオド(.)とプラス(+)と改行で構成された入力ファイルがあります。\r\n<p>\r\nピリオドは通れないマス、プラスは通れるマスを表現しています。\r\n上から下へたどり着く道があるかどうかを判定するコードを書いてください。\r\n</p>\n<p>\r\n通り抜けられる例\r\n</p>\n<pre>\r\n.+.....\r\n.+.+++.\r\n.+.+.+.\r\n.+++.+.\r\n.....+.\r\n</pre>\r\n通り抜けられない例\r\n<pre>\r\n..+...+\r\n++.+++.\r\n.+...++\r\n++++.+.\r\n.+..+.+\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1384'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1384
+  :user_name: shiro
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/07/24 07:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  経路を保存しとかないでいいので、通常の迷路探索よりも楽。\n\t"
+  :code: |
+    (use srfi-1)
+    (use srfi-42)
+    (use file.util)
+    (use gauche.sequence)
+    (use gauche.array)
+
+    (define (read-map file)
+      (let1 rows (file-&gt;string-list file)
+        (apply array (shape 0 (size-of rows) 0 (size-of (car rows)))
+               (concatenate (map string-&gt;list rows)))))
+
+    (define (map-width m)  (array-length m 1))
+    (define (map-height m) (array-length m 0))
+
+    (define (search m x y)
+      (define (try x y)
+        (and (&lt; -1 x (map-width m))
+             (&lt; -1 y (map-height m))
+             (eqv? (array-ref m y x) #\+)
+             (or (= y (- (map-height m) 1))
+                 (search m x y))))
+      (array-set! m y x #\*)
+      (or (try (- x 1) y) (try (+ x 1) y) (try x (+ y 1)) (try x (- y 1))))
+
+    (define (connected? m)
+      (any?-ec (: x 0 (map-width m))
+               (and (eqv? (array-ref m 0 x) #\+) (search m x 0))))
+
+    (define (main args)
+      (print (connected? (read-map (cadr args)))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '1385'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1385
+  :user_name: morchin
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/78/
+  :language: Python
+  :time: 2007/07/24 07:35 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">33行目のコメントを外せばパスを表示する。\r\nk.inabaさんのコードを参考にした。\r\n参考:
+    http://www.kmonos.net/wlog/75.html#_0049070707\r\n自分のオリジナルな解法も後で考えるつもり。\r\n</pre>\n\t"
+  :code: "def search_path(start, is_goal, next):\n\tagenda = [start]\n\tpath_to =
+    {start: [start]}\n\twhile agenda:\n\t\ts = agenda.pop(0)\n\t\tif is_goal(s):\n\t\t\treturn
+    path_to[s]\n\t\tfor p in next(s):\n\t\t\tif p not in path_to:\n\t\t\t\tpath_to[p]
+    = path_to[s] + [p]\n\t\t\t\tagenda.append(p)\n\treturn []\n\ndef solve(maze):\n\tstart_poss
+    = []\n\tfor i, s in enumerate(maze[0]):\n\t\tif s == '+':\n\t\t\tstart_poss +=
+    [(0, i)]\n\n\tdef is_goal(yx):\n\t\treturn yx[0] == len(maze)-1\n\n\tdef next(yx):\n\t\tfor
+    i,j in ((0, -1), (-1, 0), (0, 1), (1, 0)):\n\t\t\ty, x = yx[0]+i, yx[1]+j\n\t\t\tif
+    0 &lt;= y &lt; len(maze) and 0 &lt;= x &lt; len(maze[0]):\n\t\t\t\tif maze[y][x]
+    == '+':\n\t\t\t\t\tyield (y, x)\n\t\n\tfor start in start_poss:\n\t\tp = search_path(start,
+    is_goal, next)\n\t\tif p:\n\t\t\t# print p\n\t\t\treturn True\n\telse:\n\t\treturn
+    False\n\nif __name__ == '__main__':\n\timport sys\n\tmaze0 = sys.stdin.read()\n\tmaze
+    = [l for l in maze0.split('\\n') if l != '']\n\tprint solve(maze)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1387'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1387
+  :user_name: にしお
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/24 07:51 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">「通り抜けられない例」に\r\n下のデータを追加した方がよかったかも。\r\n「あんまりナイーブな実装では迷路が大きくなったときに\r\n計算量が大変なことになる」という意味で。\r\n\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n................\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1390'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1390
+  :user_name: kawauchi
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/14/
+  :language: Ruby
+  :time: 2007/07/24 08:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  引数でファイルを指定します。\n\t"
+  :code: |
+    def fill(map, x ,y)
+      return unless y &gt;= 0 &amp;&amp; map[y] &amp;&amp; x &gt;= 0 &amp;&amp; map[y][x] == "+"
+      map[y][x] = "#"
+      fill(map, x, y - 1)
+      fill(map, x, y + 1)
+      fill(map, x - 1, y)
+      fill(map, x + 1, y)
+    end
+
+    map = []
+    while ARGF.gets
+      map &lt;&lt; $_.chop.split("")
+    end
+    map[0].each_with_index{|cell, x|
+      fill(map, x, 0)
+    }
+    map.each{|l|
+      puts l.join
+    }
+    if map[-1].include?("#")
+      puts "through."
+    else
+      puts "No through."
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1392'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1392
+  :user_name: morchin
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/78/
+  :language: Python
+  :time: 2007/07/24 08:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">以下の m_print 関数の定義を追加して、print p を m_print(maze,
+    p) で置き換えれば経路を可視化できる。\r\n</pre>\n\t"
+  :code: "def m_print(maze, paths):\n\tfor p in paths:\n\t\tL = list(maze[p[0]])\n\t\tL[p[1]]
+    = 'o'\n\t\tmaze[p[0]] = ''.join(L)\n\tprint '\\n'.join(maze)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1393'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1393
+  :user_name: morchin
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/78/
+  :language: Python
+  :time: 2007/07/24 08:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">破壊的だったので、以下のように m_print() 側で安全対策を採るべきだった。orz\r\n呼び出し側で
+    m_print(maze[:], p) としても良いが、もちろん設計としては良くない。\r\n</pre>\n\t"
+  :code: |
+    def m_print(maze, paths):
+        maze = maze[:]
+        for p in paths:
+            L = list(maze[p[0]])
+            L[p[1]] = 'o'
+            maze[p[0]] = ''.join(L)
+        print '\n'.join(maze)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1394'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1394
+  :user_name: ところてん
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/166/
+  :language: C
+  :time: 2007/07/24 08:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ファイルから読み込んでいない上に、ちょっとずるしてますが。\n\t"
+  :code: "#include &lt;stdio.h&gt;\n\nchar problem1[] = {\n\t\".+.....\"\n\t\".+.+++.\"\n\t\".+.+.+.\"\n\t\".+++.+.\"\n\t\".....+.\"\n};\n\nchar
+    problem2[] ={\n\t\"..+...+\"\n\t\"++.+++.\"\n\t\".+...++\"\n\t\"++++.+.\"\n\t\".+..+.+\"\n};\n\nchar
+    problem3[] ={\n\t\"++++++++++++++++\"\n\t\"++++++++++++++++\"\n\t\"++++++++++++++++\"\n\t\"++++++++++++++++\"\n\t\"++++++++++++++++\"\n\t\"++++++++++++++++\"\n\t\"++++++++++++++++\"\n\t\"++++++++++++++++\"\n\t\"................\"\n};\n\n\nint
+    solve(char *data, int w, int h)\n{\n\t//一行目を置換\n\tfor(int x = 0; x &lt; w; x++)
+    {\n\t\tif(data[x] == '+') {\n\t\t\tdata[x] = '-';\n\t\t}\n\t}\n\n\n\t//+が置換できなくなるまでループをまわす\n\tbool
+    loopFlag = false;\n\tdo{\n\t\tloopFlag = false;\n\t\tfor(int x = 0; x &lt; w;
+    x++) {\n\t\t\tfor(int y = 0; y &lt; h; y++) {\n\t\t\t\tchar* d = data + w * y
+    + x;\n\t\t\t\tif (*d != '+'){\n\t\t\t\t\tcontinue;\n\t\t\t\t}\n\n\t\t\t\tchar*
+    ud = data + w * (y-1) + x;\n\t\t\t\tchar* dd = data + w * (y+1) + x;\n\t\t\t\tchar*
+    rd = data + w * y + x + 1;\n\t\t\t\tchar* ld = data + w * y + x - 1;\n\t\t\t\n\t\t\t\t//上を調べる\n\t\t\t\tif(y){\n\t\t\t\t\tif(*ud
+    == '-'){\n\t\t\t\t\t\t*d = '-';\n\t\t\t\t\t\tloopFlag = true;\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t\t//下を調べる\n\t\t\t\tif(y
+    &lt;  h -1){\n\t\t\t\t\tif(*dd == '-'){\n\t\t\t\t\t\t*d = '-';\n\t\t\t\t\t\tloopFlag
+    = true;\n\t\t\t\t\t}\t\t\t\t\n\t\t\t\t}\n\n\t\t\t\t//右\n\t\t\t\tif(x &lt;  w -1){\n\t\t\t\t\tif(*rd
+    == '-'){\n\t\t\t\t\t\t*d = '-';\n\t\t\t\t\t\tloopFlag = true;\n\t\t\t\t\t}\t\t\t\t\n\t\t\t\t}\n\n\t\t\t\t//左\n\t\t\t\tif(x){\n\t\t\t\t\tif(*ld
+    == '-'){\n\t\t\t\t\t\t*d = '-';\n\t\t\t\t\t\tloopFlag = true;\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\t\n\t}while(loopFlag);\t//塗りつぶせなくなったらループ終了\n\n\t//一番したの行を舐める\n\tfor(int
+    x = 0; x &lt; w; x++) {\n\t\tchar* d = data + w * (h - 1) + x;\n\t\tif(*d == '-')
+    {\n\t\t\treturn 1;\n\t\t}\n\t}\n\n\treturn 0;\n}\n\n\nint main()\n{\t\n\tint r1
+    = solve(problem1, 7 ,5);\n\tint r2 = solve(problem2, 7 ,5);\n\tint r3 = solve(problem3,
+    16 ,9);\n\n\tprintf(\"%d %d %d\",r1,r2,r3);\n\n\treturn 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1395'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1395
+  :user_name: shiro
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/41/
+  :language: Haskell
+  :time: 2007/07/24 08:42 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Haskell練習中。\r\n\r\n最初は探索経路と同型のvisitedリストを持ってたんだけど、\r\n#1387のようなケースで計算量が爆発。終わらない。\r\n仕方ないので継続渡し形式にしてvisitedリストを失敗継続に渡して行くようにした。\r\nこれで一度通った場所は二度と通らないはず。\r\n\r\n…のだけれど、searchのところ、もっと綺麗に書けるはずだよなあ。\r\nStateモナドかContinuationモナドを使うんだろうけど…識者の良解答を待つ。\r\n\r\nあと、readMapのところももっと簡単なイディオムがある気がする。\r\nというか、hCloseのタイミングってここで良かったんだっけ?
+    readLinesの\r\n計算がlazyだと、全部読む前に閉じられちゃう可能性がある?\r\n\r\n</pre>\n\t"
+  :code: "import System\nimport IO\n\nsearch m x y fail visited = if check\n                            then
+    (y == (length m) - 1\n                                  || search m (x+1) y\n
+    \                                             (search m (x-1) y\n                                                      (search
+    m x (y-1)\n                                                              (search
+    m x (y+1) fail)))\n                                              visited')\n                            else
+    fail visited'\n  where check = x &gt;= 0 &amp;&amp; x &lt; length (m!!0)\n                &amp;&amp;
+    y &gt;= 0 &amp;&amp; y &lt; length m\n                &amp;&amp; (not $ elem (x,y)
+    visited)\n                &amp;&amp; m!!y!!x == '+'\n        visited' = (x,y):visited\n\nisConnected
+    m = let startLine = take (length (m!!0)) $ repeat '+'\n                in search
+    (startLine:m) 0 0 (\\_ -&gt; False) []\n\nreadMap file = do h &lt;- openFile file
+    ReadMode\n                  m &lt;- readLines h\n                  hClose h\n
+    \                 return m\n  where readLines h = catch (do l &lt;- hGetLine h\n
+    \                               ls &lt;- readLines h\n                                return
+    (l:ls))\n                            (\\e -&gt; if isEOFError e then return []
+    else ioError e)\n          \nmain = do (f:_) &lt;- getArgs\n          m     &lt;-
+    readMap f\n          print $ isConnected m\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1396'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1396
+  :user_name: こう。
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2007/07/24 08:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  余り綺麗ではないですが、とりあえず。\r\n256x256以下限定。\n\t"
+  :code: "#include&lt;stdio.h&gt;\n\nint hight;\nint width;\n\nchar map[256][256];\n\nint
+    walk(int x,int y){\n\tif(y==hight)\n\t\treturn 1;\t\t\t\t\t\t//下側に出たらゴール\n\tif(map[y][x]!='+')
+    return 0;\t\t\t//道じゃないならアウト\n\tif(x&lt;0||y&lt;0||x&gt;width||y&gt;hight) return
+    0;\t//外壁にめり込んだらアウト\n\tmap[y][x]='x';\t\t\t\t\t\t//探索済みマーク\n\treturn walk(x+1,y)|walk(x,y+1)|walk(x-1,y)|walk(x,y-1);\n}\n\nint
+    main(){\n\tFILE *fp;\n\tchar *buf;\n\tint i;\n\t\n\tfp=fopen(\"map.map\",\"r\");\n\tif
+    (fp==NULL){\n\t\tprintf(\"マップが開けません\\n\");\n\t\treturn -1;\n\t}\n\t\n\ti=0;\n\tdo{\n\t\tbuf=map[i];\n\t\tif(fgets(buf,256,fp)==NULL)
+    break;\n\t\tif(buf[0]!='.'&amp;&amp;buf[0]!='+') continue;\n\t\ti++;\n\t}while(i&lt;256);\n\thight=i;\n\t\n\twidth=0;\n\twhile(map[0][width]=='+'||map[0][width]=='.')
+    width++;\n\t\n\tfor(i=0;i&lt;width;i++){\n\t\tif(walk(i,0)){\n\t\t\tprintf(\"到達可能\\n\");\n\t\t\treturn
+    0;\n\t\t}\n\t}\n\tprintf(\"到達不能\\n\");\n\treturn 1;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1397'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1397
+  :user_name: ocean
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/07/24 08:54 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  番兵を使い、二次元マップを一次元配列で表現。オーソドックスに幅優先探索で。\n\t"
+  :code: |
+    import sys
+    import collections
+
+    def solve(matrix):
+        col_count = max(len(a) for a in matrix) + 1 # +1 for banpei
+        map = []
+        for a in matrix:
+            map.extend(a + [False] * (col_count - len(a)))
+        map.extend([False] * col_count) # banpei
+
+        goal = (len(matrix) - 1) * col_count # if index &gt;= goal, reached goal!
+        queue = collections.deque([])
+        def append_to_queue(i):
+            queue.appendleft(i)
+            map[i] = False
+        for i in xrange(col_count): # start
+            if map[i]:
+                append_to_queue(i)
+        while queue:
+            i = queue.pop()
+            for diff in (-1, +1, -col_count, +col_count):
+                next_i = i + diff
+                if map[next_i]:
+                    if next_i &gt;= goal:
+                        return True
+                    append_to_queue(next_i)
+        return False
+
+    def main():
+        if len(sys.argv) != 2:
+            sys.stderr.write("specity text file path.\n")
+            return
+        matrix = []
+        for line in open(sys.argv[1]):
+            matrix.append([{'+': True, '.': False}[c] for c in line.rstrip()])
+        print solve(matrix)
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1398'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1398
+  :user_name: katsu
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/117/
+  :language: Prolog
+  :time: 2007/07/24 09:08 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">選んだルートを#でなぞります。\r\n通れないと図と&lt;&lt;fail&gt;&gt;を表示します。\r\nこの調子で、nethack-borgを作れそうな気がしてきました。\r\n実行例。\r\n
+    $ gprolog --entry-goal '[map],maze(map1),maze(map2),maze(map3),halt'\r\n.#.....\r\n.#.###.\r\n.#.#.#.\r\n.###.#.\r\n.....#.\r\n&lt;&lt;success&gt;&gt;\r\n\r\n..+...+\r\n++.+++.\r\n.+...++\r\n++++.+.\r\n.+..+.+\r\n&lt;&lt;fail&gt;&gt;\r\n\r\n.#....+..\r\n.###..+..\r\n.+.####..\r\n.+....#..\r\n.+++++#++\r\n...+..#..\r\n......#..\r\n&lt;&lt;success&gt;&gt;\r\n\r\n
+    $\r\n</pre>\n\t"
+  :code: |
+    maze(F):-open(F,read,S),phrase(char_file(S),M),mapsize(M,W,H),start(M,W,C0),
+                    (mouse(C0,M,W,H,[C0],Hist),
+                     mark(M,Hist,M1),print_map(M1),write('&lt;&lt;success&gt;&gt;'),nl,nl
+                    ;print_map(M),write('&lt;&lt;fail&gt;&gt;'),nl,nl).
+
+    print_map([]).
+    print_map([M|Ms]):-atom_chars(L,M),write(L),nl,print_map(Ms).
+
+    mark(Map,Hist,Map1):-mark(1,Map,Hist,Map1).
+
+    mark(_,[],_,[]).
+    mark(Y,[M|Ms],Hist,[M1|Ms1]):-Y1 is Y + 1,mark_line(Y,1,M,Hist,M1),mark(Y1, Ms, Hist, Ms1).
+
+    mark_line(_,_,[],_,[]).
+    mark_line(Y,X,[I|Is],Hist,[I1|Is1]):-(member((X,Y),Hist) -&gt; I1='#';I1=I),
+                                         X1 is X + 1,
+                                         mark_line(Y,X1,Is,Hist,Is1).
+
+    mapsize(Map,W,H):-length(Map,H),Map=[Line|_],length(Line,W).
+
+    start([Map1|_],W,(I,1)):-for(I,1,W),nth(I,Map1,+).
+
+    next((X0,Y0),(X,Y)):-pm(Xs,Ys),X is X0 + Xs,Y is Y0 + Ys.
+
+    stay(W,H,(X,Y)):-for(X,1,W),for(Y,1,H).
+
+    road(Map,(X,Y)):-nth(Y,Map,L),nth(X,L,+).
+
+    goal(H,(_,H)):-!.
+
+    pm(1,0).  pm(-1,0).  pm(0,1).  pm(0,-1).
+
+    not(P):-P,!,fail.
+    not(_):-!.
+
+    mouse(C0,_,_,H,Hist,Hist):-goal(H,C0).
+    mouse(C0,Map,W,H,Hist,Hr):-next(C0,C1),stay(W,H,C1),road(Map,C1),not(member(C1,Hist)),mouse(C1,Map,W,H,[C1|Hist],Hr).
+
+    char_file(S)--&gt;{peek_char(S,end_of_file)},!,[].
+    char_file(S)--&gt;{phrase(char_line(S),L)},[L],char_file(S).
+
+    char_line(S)--&gt;{peek_char(S,end_of_file);char_code(NL,10),peek_char(S,NL),get_char(S,_)},[],!.
+    char_line(S)--&gt;{get_char(S,C)},[C],char_line(S).
+  :tags:
+  - GNU-Prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '1399'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1399
+  :user_name: sumim
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/07/24 09:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk で。\n\t"
+  :code: |
+    | map width height mapString connecteds newOneFound mapFilename |
+    mapFilename := 'map.txt'.
+    mapString := (FileStream fileNamed: mapFilename) contents.
+    width := (mapString indexOf: Character cr) - 1.
+    height := mapString size + 1 // (width + 1).
+    map := Matrix rows: height columns: width contents: (mapString copyWithout: Character cr).
+    connecteds := OrderedCollection new.
+    1 to: width do: [:cIdx |
+       (map at: 1 at: cIdx) = $+ ifTrue: [map at: 1 at: cIdx put: $*. connecteds add: 1@cIdx]].
+    [  newOneFound := false.
+       map indicesDo: [:rIdx :cIdx |
+          ((map at: rIdx at: cIdx) = $+ and: [
+                (connecteds includes: rIdx@cIdx) not and: [
+                   {-1@0. 0@-1. 1@0. 0@1} anySatisfy: [:delta |
+                      connecteds includes: rIdx@cIdx + delta]]]) ifTrue: [
+             connecteds add: rIdx@cIdx.
+             newOneFound := true]].
+       newOneFound] whileTrue.
+    ^connecteds anySatisfy: [:pt | pt x = height]
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '1401'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1401
+  :user_name: katsu
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/117/
+  :language: 
+  :time: 2007/07/24 09:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">なるほど、「通り抜けられない」ことの判定が実用的な時間で終わる方が大事ですね。\r\n#1398の実装ではちっとも計算が終わりません。\r\nこういう例では、自分の足跡で輪を作ったら、\r\n中に入らないようにするとか考えないと、厳しいなぁ。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1402'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1402
+  :user_name: にしお
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/24 09:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">いままでPrologをあなどりすぎていたということが\r\nだんだんわかってきました。\r\nPrologすごい…</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1404'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1404
+  :user_name: katsu
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/117/
+  :language: Prolog
+  :time: 2007/07/24 09:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">お褒めいただいて、prolog共々大変光栄に存じ奉りますが、一行目の(の付け所を間違えたので、通れるのに、&lt;&lt;fail&gt;&gt;と言い張ることがあります。\r\n\r\nmaze/1は以下のように訂正します。\r\n（テストが甘かった…）</pre>\n\t"
+  :code: |
+    maze(F):-open(F,read,S),phrase(char_file(S),M),mapsize(M,W,H),
+                    (start(M,W,C0),
+                     mouse(C0,M,W,H,[C0],Hist),
+                     mark(M,Hist,M1),print_map(M1),write('&lt;&lt;success&gt;&gt;'),nl,nl
+                    ;print_map(M),write('&lt;&lt;fail&gt;&gt;'),nl,nl).
+  :tags:
+  - GNU-Prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '1407'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1407
+  :user_name: sumim
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/07/24 10:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#1399 で、\r\n\r\nmap at: 1 at: cIdx put: $*.\r\n\r\nは、不要でした(^_^;)。\r\n\r\n改めまして、$*
+    でなぞる版も。</pre>\n\t"
+  :code: |
+    | map width height mapString mapFilename queue |
+    mapFilename := 'map.txt'.
+    mapString := (FileStream fileNamed: mapFilename) contents.
+    width := (mapString indexOf: Character cr) - 1.
+    height := mapString size + 1 // (width + 1).
+    map := Matrix rows: height columns: width contents: (mapString copyWithout: Character cr).
+    queue := OrderedCollection new.
+    1 to: width do: [:y | (map at: 1 at: y) = $+ ifTrue: [queue add: 1@y]].
+    [queue notEmpty] whileTrue: [
+       | position |
+       position := queue removeFirst.
+       map at: position x at: position y put: $*.
+       {-1@0. 0@-1. 1@0. 0@1} do: [:delta |
+          | next |
+          next := position + delta.
+          (map at: next x at: next y ifInvalid: [nil]) = $+ ifTrue: [
+             map at: next x at: next y put: $*.
+             queue add: next]]].
+    ^(map atRow: height) includes: $*
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '1408'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1408
+  :user_name: nori
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/59/
+  :language: Python
+  :time: 2007/07/24 10:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  番兵の枠をくっつけて、「色」を塗ります。\r\n探索のような高級なことはまったくしていません。\n\t"
+  :code: |
+    f = file('nukemichi_test1.txt')
+    map = [list(line[:-1]) for line in f.readlines()]
+    f.close()
+
+
+    size_v = len(map)
+    size_h = len(map[0])
+    sentinel_t = ['O'] * (size_h)
+    sentinel_b = ['+'] * (size_h)
+    sentinel_x = ['.'] * (size_h)
+    sentinel_y = ['.'] * (size_h)
+
+    map.insert(0, sentinel_t)
+    map.insert(0, sentinel_x)
+    map.append(sentinel_b)
+    map.append(sentinel_y)
+
+    for row in map:
+      row.insert(0, ".")
+      row.append(".")
+
+    for row in map:
+      print row
+
+
+    checked = {}
+    workset = [(i, 1) for i in range(1, size_h+1)]
+
+    print workset
+
+    def check(x, y, map, workset, checked):
+      if map[y][x] == '+':
+        workset.append((x, y))
+        map[y][x] = 'O'
+
+    while workset:
+      w = workset.pop()
+      print w
+      check(w[0]+1, w[1], map, workset, checked)
+      check(w[0]-1, w[1], map, workset, checked)
+      check(w[0], w[1]+1, map, workset, checked)
+      check(w[0], w[1]-1, map, workset, checked)
+      checked.update({w:None})
+
+    for row in map:
+      print row
+
+    if map[size_h][size_v] == 'O':
+      print 'There is'
+    else:
+      print 'No way'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1409'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1409
+  :user_name: nori
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/59/
+  :language: 
+  :time: 2007/07/24 10:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  そういえば、迷路をGIMPやPhotoshopの「投げ縄ツール」で解く方法がありますねぇ。\r\nhttp://www.google.co.jp/search?hl=ja&amp;q=%E8%BF%B7%E8%B7%AF%E3%80%80photoshop&amp;btnG=%E6%A4%9C%E7%B4%A2&amp;lr=\r\n\r\nこれは「バケツツール」による解法の存在検証ですね（道順はわからない！）。\r\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1410'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1410
+  :user_name: cats
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/07/24 10:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    using System;
+    class Program
+    {
+      static void Main()
+      {
+        string data1 = @".+.....
+    .+.+++.
+    .+.+.+.
+    .+++.+.
+    .....+.";
+        string data2 = @"..+..+.
+    ++.+++.
+    .+...++
+    ++++.+.
+    .+..+.+";
+        string data3 = @"++++++++++++++++
+    ++++++++++++++++
+    ++++++++++++++++
+    ++++++++++++++++
+    ++++++++++++++++
+    ++++++++++++++++
+    ++++++++++++++++
+    ++++++++++++++++
+    ++++++++++++++++
+    ++++++++++++++++
+    ................";
+        foreach (string data in new string[] { data1, data2, data3 })
+          Console.WriteLine("{0}\n{1}", data, CanGo(data));
+      }
+      private static bool CanGo(string data)
+      {
+        string[] lines = data.Replace("\r","").Split();
+        int n = lines.Length, m = lines[0].Length;
+        int[,] map = new int[n, m];
+        for (int i = 0; i &lt; n; ++i) for (int j = 0; j &lt; m; ++j) map[i, j] = lines[i][j] == '.' ? 0 : 1;
+        for (int i = 0; i &lt; m; ++i) if (map[0, i] == 1 &amp;&amp; CanGo(map, n, m, 0, i)) return true;
+        return false;
+      }
+      private static bool CanGo(int[,] map, int n, int m, int i, int j)
+      {
+        if (i &lt; 0 || i &gt;= n || j &lt; 0 || j &gt;= m || map[i, j] != 1) return false;
+        if (i == n - 1) return true;
+        map[i, j] = 2;
+        for (int k = 0; k &lt; 4; ++k) if (CanGo(map, n, m, i + (k * k - 2) % 2, j + (k * k - 3) % 2)) return true;
+        return false;
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1411'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1411
+  :user_name: ところてん
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/07/24 11:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">一応オーダーはn^3に近いので、あまりにでかいデータを食わせると帰ってこないかもしれません。\r\n蛇のように曲がりくねったデータだとn^3に、あんまり曲がってないとn^2に近くなります。\r\n\r\n巨大なデータに対しては再帰でフラグ持ちながらやったほうが多分幸せ。\r\n\r\nどうでもいいけど、C++な部分って、変数宣言のタイミングだけだなぁ。\r\nあとはCで書ける。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1415'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1415
+  :user_name: rucker
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/07/24 11:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">FillPaintのアルゴリズムで最上段から塗り始めて\r\n最下段に塗られたマスがあれば経路あり。\r\n最下段に到達した時点で終わってもいいけど\r\nとりあえず全部塗ってみた。</pre>\n\t"
+  :code: "&lt;?php\n$map=array();\n$w=0;\n$h=0;\n\nif(($file=fopen($argv[1],\"r\"))===false)\n\texit();\n\nfor($x=$y=0;($c=fgetc($file))!==false;)\n{\tswitch($c)\n\t{\n\tcase
+    \"\\r\":\n\tcase \"\\n\":\n\t\tif($x&gt;0)\n\t\t{\t++$y;\n\t\t\t$w=max($w,$x);\n\t\t\t$x=0;\n\t\t}\n\t\tbreak;\n\tdefault:\n\t\t$map[$y][$x++]=$c;\n\t}\n}\n$h=$y;\nfclose($file);\n\n$fifo=array();
+    // 座標FIFO\n\n$fd=false;\nfor($x=0;$x&lt;$w;++$x)\n{\tif($map[0][$x]=='+')\n\t{\tif(!$fd)\n\t\t{\t$fifo[]=array($x,0);
+    // FIFOに最上段の'+'の位置をセット\n\t\t\t$fd=true;\n\t\t}\n\t}\n\telse\n\t\t$fd=false;\n}\n\nwhile(list($x,$y)=array_shift($fifo))\n{\t$fu=$fd=false;\n\twhile($x&gt;0
+    &amp;&amp; $map[$y][$x-1]=='+')\n\t\t--$x;\n\tfor(;$map[$y][$x]=='+';++$x)\n\t{\tif($y&gt;0)\n\t\t{\tif($map[$y-1][$x]=='+')\n\t\t\t{\tif(!$fu)\n\t\t\t\t{\t$fifo[]=array($x,$y-1);
+    // 上に繋がってる\n\t\t\t\t\t$fu=true;\n\t\t\t\t}\n\t\t\t}\n\t\t\telse\n\t\t\t\t$fu=false;\n\t\t}\n\t\tif($y&lt;$h-1)\n\t\t{\tif($map[$y+1][$x]=='+')\n\t\t\t{\tif(!$fd)\n\t\t\t\t{\t$fifo[]=array($x,$y+1);
+    // 下に繋がってる\n\t\t\t\t\t$fd=true;\n\t\t\t\t}\n\t\t\t}\n\t\t\telse\n\t\t\t\t$fd=false;\n\t\t}\n\t\t$map[$y][$x]='*';\n\t}\n}\n\nreset($map);\nwhile(list(,$v)=each($map))\n\techo
+    implode(\"\",$v),\"\\n\";\n\nfor($x=0;$x&lt;$w;++$x)\n\tif($map[$h-1][$x]=='*')
+    // 最下段に'*'があったら経路あり\n\t{\techo \"path(s) exists.\\n\";\n\t\tbreak;\n\t}\n\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1417'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1417
+  :user_name: rucker
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/07/24 12:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">同じコードが3回も出て来てかっこ悪かったので修正。\r\nここまでやってから出せよと…。</pre>\n\t"
+  :code: "&lt;?php\n$map=array();\n$w=0;\n$h=0;\n\nif(($file=fopen($argv[1],\"r\"))===false)\n\texit();\n\nfor($x=$y=0;($c=fgetc($file))!==false;)\n{\tswitch($c)\n\t{\n\tcase
+    \"\\r\":\n\tcase \"\\n\":\n\t\tif($x&gt;0)\n\t\t{\t++$y;\n\t\t\t$w=max($w,$x);\n\t\t\t$x=0;\n\t\t}\n\t\tbreak;\n\tdefault:\n\t\t$map[$y][$x++]=$c;\n\t}\n}\n$h=$y;\nfclose($file);\n\nfunction
+    checkneighbor($x,$y,$f)\n{\tglobal $map,$fifo;\n\tif($map[$y][$x]=='+')\n\t{\tif(!$f)\n\t\t{\t$fifo[]=array($x,$y);\n\t\t\t$f=true;\n\t\t}\n\t}\n\telse\n\t\t$f=false;\n\treturn
+    $f;\n}\n\n$fifo=array(); // 座標FIFO\n\n$fd=false;\nfor($x=0;$x&lt;$w;++$x)\n\t$fd=checkneighbor($x,0,$fd);\n\nwhile(list($x,$y)=array_shift($fifo))\n{\t$fu=$fd=false;\n\twhile($x&gt;0
+    &amp;&amp; $map[$y][$x-1]=='+')\n\t\t--$x;\n\tfor(;$map[$y][$x]=='+';++$x)\n\t{\tif($y&gt;0)\n\t\t\t$fu=checkneighbor($x,$y-1,$fu);\n\t\tif($y&lt;$h-1)\n\t\t\t$fd=checkneighbor($x,$y+1,$fd);\n\t\t$map[$y][$x]='*';\n\t}\n}\n\nreset($map);\nwhile(list(,$v)=each($map))\n\techo
+    implode(\"\",$v),\"\\n\";\n\nfor($x=0;$x&lt;$w;++$x)\n\tif($map[$h-1][$x]=='*')
+    // 最下段に'*'があったら経路あり\n\t{\techo \"path(s) exists.\\n\";\n\t\tbreak;\n\t}\n\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1418'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1418
+  :user_name: rubikitch
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/105/
+  :language: Common
+  :time: 2007/07/24 13:19 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  roguelikeだと逆でピリオドが通れるマス、プラスが通れないマスなんだけど。\n\t"
+  :code: "(require :iterate)\n(in-package :iter)\n\n(defun can-go-p (mazestrs)\n  (let
+    ((depth (length mazestrs))\n        (width (length (elt mazestrs 0))))\n    (%can-go-p
+    (%mazestrs-&gt;nums mazestrs) depth width)))\n\n(defun %can-go-p (mazenums depth
+    width)\n  (let (went)\n    (labels ((wentp (x y) (member (cons x y) went :test
+    #'equal))\n             (goto (x y)\n               (unless (wentp x y)\n                 (if
+    (= y depth)\n                     (return-from %can-go-p t)\n                     (and
+    (&lt;= 0 x (1- width))\n                          (&lt;= 0 y (1- depth))\n                          (member
+    x (elt mazenums y))\n                          (push (cons x y) went)\n                          (srch
+    x y)))))\n             (srch (x y)\n               (goto x (1+ y))\n               (goto
+    (1+ x) y)\n               (goto (1- x) y)\n               (goto x (1- y))\n               nil))\n
+    \     (iter (for x in (elt mazenums 0)) (srch x 0)) nil)))\n\n(defun %mazestrs-&gt;nums
+    (mazestrs)\n  (iter (for str in-vector mazestrs)\n        (collect \n            (iter
+    (for x in-string str)\n                  (for i from 0)\n                  (when
+    (eql x #\\+)\n                    (collect i)))\n          result-type vector)))\n\n(defun
+    can-go-p-from-file (filename)\n  (with-open-file (f filename)\n    (can-go-p (iter
+    (for line in-stream f using #'read-line)\n                    (collect line result-type
+    vector)))))\n\n(defparameter *ok1* #(\".+.....\" \".+.+++.\" \".+.+.+.\" \".+++.+.\"
+    \".....+.\"))\n(%mazestrs-&gt;nums *ok1*)    ; =&gt; #((1) (1 3 4 5) (1 3 5) (1
+    2 3 5) (5))\n(can-go-p *ok1*)                                                ;
+    =&gt; T\n(can-go-p #(\"..+...+\" \"++.+++.\" \".+...++\" \"++++.+.\" \".+..+.+\"))
+    ; =&gt; NIL\n(can-go-p #(\"++++++++++++++\" \"++++++++++++++\" \"++++++++++++++\"
+    \"++++++++++++++\" \"++++++++++++++\" \"++++++++++++++\" \"++++++++++++++\" \"..............\"))
+    ; =&gt; NIL\n(can-go-p #(\".+....+..\" \".+++..+..\" \".+.++++..\" \".+....+..\"
+    \".++++++++\" \"...+..+..\" \"......+..\" )) ; =&gt; T\n(can-go-p-from-file \"30.ok.dat\")
+    \                               ; =&gt; T\n(can-go-p-from-file \"30.ng.dat\")
+    \       ; =&gt; NIL\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1419'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1419
+  :user_name: yuin
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/07/24 13:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">とりあえず。\r\ncase e:Solvedのあとに\r\n\r\nmaze.map(x=&gt;x.mkString(\"\")).foreach(println)\r\n\r\nを入れると経路が表示できます。</pre>\n\t"
+  :code: "def can_run_through(map:String):boolean = {\n  val lines @ (head::tail)
+    = map.trim().split(\"\\n\").toList\n  val maze = lines.map(x =&gt; x.map(y=&gt;y).toArray).toArray\n\n
+    \ class Solved extends Throwable{}\n  def get(x:int, y:int) = try {maze(y)(x)}catch{case
+    e:Throwable =&gt; '.'}\n  def walk(x:int, y:int):unit = {\n      maze(y)(x) =
+    '#'\n      if(y == maze.length - 1){ throw new Solved }\n      if(get(x, y+1)=='+'){walk(x,y+1)}\n
+    \     if(get(x+1, y)=='+'){walk(x+1,y)}\n      if(get(x-1, y)=='+'){walk(x-1,y)}\n
+    \     if(get(x, y-1)=='+'){walk(x,y-1)}\n  }\n  \n  try{\n    (0 to head.length-1).foreach(x
+    =&gt; if(head(x)=='+') walk(x,0))\n    false\n  }catch{ \n    case e:Solved =&gt;
+    true\n  }\n} \nval map = \"\"\"\n.+.....\n.+.+++.\n.+.+.+.\n.+++.+.\n.....+.\n\"\"\"\n\nval
+    map2 = \"\"\"\n..+...+\n++.+++.\n.+...++\n++++.+.\n.+..+.+\n\"\"\"\n\nval map3
+    = \"\"\"\n++++++++++++++++\n++++++++++++++++\n++++++++++++++++\n++++++++++++++++\n++++++++++++++++\n++++++++++++++++\n++++++++++++++++\n++++++++++++++++\n++++++++++++++++\n++++++++++++++++\n................\n\"\"\"\n\nprintln(can_run_through(map))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1422'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1422
+  :user_name: 匿名
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/07/24 14:53 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  マップの大きさを 78 x 78 以内と仮定しています。再起的にひたすら経路をたどっていく戦略です。\n\t"
+  :code: |
+    import java.io.BufferedReader;
+    import java.io.FileReader;
+    import java.io.IOException;
+
+    public class Sample {
+        static final int MAPSIZE = 80;
+        static final byte WAY = 1;
+        static final byte WALL = 0;
+        static final byte ARRIVAL = 2;
+
+        static byte[][] map = new byte[MAPSIZE][MAPSIZE];
+
+        public static void main(String[] args) throws IOException {
+            BufferedReader r = new BufferedReader(new FileReader(args[0]));
+            String line;
+            int n = 0;
+            while ((line = r.readLine()) != null) {
+                n++;
+                for (int i = 0; i &lt; line.length(); i++) {
+                    map[n][i + 1] = (line.charAt(i) == '+')? WAY : WALL;
+                }
+            }
+            for (int i = 0; i &lt; map.length; i++) {
+                walk(1, i);
+            }
+            for (int i = 0; i &lt; map.length; i++) {
+                if (map[n][i] == (WAY | ARRIVAL)) {
+                    System.out.println("Passed");
+                    System.exit(0);
+                }
+            }
+            System.out.println("Dead end");
+            System.exit(1);
+        }
+
+        public static void walk(int x, int y) {
+            if (map[x][y] == WAY) {
+                map[x][y] |= ARRIVAL;
+                walk(x - 1, y);
+                walk(x, y - 1);
+                walk(x + 1, y);
+                walk(x, y + 1);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1430'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1430
+  :user_name: kkobayashi
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2007/07/24 15:31 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\n\t  <pre class=\"compact\">R的にはグラフ理論かな、ということでigraphというライブラリーを使ってみました。\r\n隣接する+をエッジで接続して、先頭行のノードから最終行のノードまでのパスが存在するか\r\nどうかで判別しています。\r\n\r\n&gt;
+    is.solved(\"maze.txt\")\r\n[1] TRUE\r\n</pre>\n\t"
+  :code: |
+    require("igraph")
+    is.solved &lt;- function(file){
+       m     &lt;- readLines(file)
+       map   &lt;- matrix(unlist(sapply(m, function(a){strsplit(a, "")})), length(m), byrow=TRUE) == "+"
+       map   &lt;- rbind(FALSE, cbind(FALSE, map, FALSE), FALSE)
+       nodes &lt;- ncol(map) - 3 # nodes number of start/end line
+       g     &lt;- graph.empty((nrow(map)-2)*(ncol(map)-2))
+       p     &lt;- point(map)
+       for(i in 2:(nrow(map)-1)){
+           for(j in 2:(ncol(map)-1)){
+               if(!map[i, j]) next
+               if(map[i, j-1]) g &lt;- add.edges(g, c(p(i, j), p(i, j-1))) # left
+               if(map[i, j+1]) g &lt;- add.edges(g, c(p(i, j), p(i, j+1))) # right
+               if(map[i-1, j]) g &lt;- add.edges(g, c(p(i, j), p(i-1, j))) # down
+               if(map[i+1, j]) g &lt;- add.edges(g, c(p(i, j), p(i+1, j))) # up
+           }
+       }
+       return(any(shortest.paths(g, v=0:nodes)[,(vcount(g)-nodes):vcount(g)] != vcount(g)))
+    }
+
+    point &lt;- function(map){
+       return(function(i, j){return(j-2 + (i-2)*(ncol(map)-2))})
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1441'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1441
+  :user_name: shiro
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/41/
+  :language: Haskell
+  :time: 2007/07/24 18:22 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">linesというのを発見。readMapはこれでいいのかな。\r\nhCloseをどこで呼べばいいのかまだわからない。</pre>\n\t"
+  :code: |
+    readMap file = openFile file ReadMode &gt;&gt;= hGetContents &gt;&gt;= return . lines
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1442'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1442
+  :user_name: rihi
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/256/
+  :language: 
+  :time: 2007/07/24 22:38 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">IO動作は原則として書いた順(doなら上から下、&gt;&gt;なら左から右)に実行されます。\r\n#1395では、hCloseが実行される時点でreadLinesの\r\n実行は完了しているので、タイミングの問題はありません。\r\n\r\n一方、hGetContentsはこの原則に反して遅延読みを行うので、\r\nhCloseを呼ぶとその時点で読み込みが打ち切られます。\r\nこの問題のため、hGetContentsを呼び出すとハンドルは即座にセミクローズ状態になり、\r\n自分でhCloseする必要はない、ということになっています。\r\n\r\nなお、readFileというもっと楽な関数もあります。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1443'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1443
+  :user_name: shiro
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/07/24 23:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  おお、ありがとうございます。よくわかりました。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1446'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1446
+  :user_name: nkmrtks
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/155/
+  :language: Common
+  :time: 2007/07/25 02:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  エラー処理は見逃して＞＜\n\t"
+  :code: |
+    (defun mazep (path)
+      (let (maze)
+        (with-open-file (fp path)
+          (do ((c (read-char fp nil) (read-char fp nil))
+               (m nil))
+              ((not c))
+            (case c
+              (#\. (setf m (cons nil m)))
+              (#\+ (setf m (cons t m)))
+              (#\newline (and m (push m maze)) (setf m nil))
+              (t (quit)))))
+        (let ((xmax (1- (length (car maze))))
+              (ymax (1- (length maze))))
+          (labels
+              ((movep (x y)
+                 (and (prog1 (nth x (nth y maze))
+                        (setf (nth x (nth y maze)) nil))
+                      (if (= ymax y)
+                          t
+                        (or (and (&gt; xmax x)
+                                 (movep (1+ x) y))
+                            (and (&gt; x 0)
+                                 (movep (1- x) y))
+                            (and (&gt; ymax y)
+                                 (movep x (1+ y)))
+                            (and (&gt; y 0)
+                                 (movep x (1- y))))))))
+            (do ((x 0 (1+ x))
+                 (p nil))
+                ((or p (&gt; x xmax)) p)
+              (setf p (movep x 0)))))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1447'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1447
+  :user_name: 匿名
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/4/
+  :language: JavaScript
+  :time: 2007/07/25 03:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">2次元配列が扱いにくかったです。\r\n判定のみで、通り抜けの道順表示機能は省きました。</pre>\n\t"
+  :code: "var isConnected = function(data){\n    var lines = data.split('\\n');\n
+    \   var len=lines.length;\n    var config = [];\n    for(var y=0; y&lt;len; y++){\n
+    \       var line = lines[y];\n        if(!/^\\.*\\+[\\.\\+]*$/.test(line)) return
+    false;\n        for(var x=0, col=line.length; x&lt;col; x++){\n            if(!config[x])
+    config[x] = [];\n            config[x][y] = line.substr(x,1);\n        }\n    }\n
+    \   var search = function(x,y,path){\n        for(var i=0,l=path.length;i&lt;l;i++){\n
+    \           var xy = path[i].split(':');\n            if(x == xy[0] &amp;&amp;
+    y == xy[1]) return false;\n        }\n        if(typeof(config[x])    == 'undefined'
+    \n        || typeof(config[x][y]) == 'undefined'\n        || config[x][y]         !=
+    '+')\n            return false;\n        path.push(x + ':' + y);\n        if(y
+    == (len-1)) return true;\n        return arguments.callee(x, y+1, path)\n            ||
+    arguments.callee(x+1, y, path)\n            || arguments.callee(x-1, y, path)\n
+    \           || arguments.callee(x, y-1, path);\n    };\n    var x = 0;\n    var
+    result;\n    while(typeof(config[x]) != 'undefined'){\n        if(config[x][0]
+    == '+'){\n            result = search(x,0,[]);\n            if(result) return
+    true;\n        }\n        x++;\n    }\n    return false;\n}\n\nvar test1 = '.+.....\\n'\n
+    \         + '.+.+++.\\n'\n          + '.+.+.+.\\n'\n          + '.+++.+.\\n'\n
+    \         + '.....+.';\n\nvar test2 = '..+...+\\n'\n          + '++.+++.\\n'\n
+    \         + '.+...++\\n'\n          + '++++.+.\\n'\n          + '.+..+.+';\n\nvar
+    test3 = '++++++++++++++++\\n'\n          + '++++++++++++++++\\n'\n          +
+    '++++++++++++++++\\n'\n          + '++++++++++++++++\\n'\n          + '++++++++++++++++\\n'\n
+    \         + '++++++++++++++++\\n'\n          + '++++++++++++++++\\n'\n          +
+    '++++++++++++++++\\n'\n          + '++++++++++++++++\\n'\n          + '++++++++++++++++\\n'\n
+    \         + '................';\n\n\nalert('test1 is connected : ' + isConnected(test1));
+    // true\nalert('test2 is connected : ' + isConnected(test2)); // false\nalert('test3
+    is connected : ' + isConnected(test3)); // false\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1449'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1449
+  :user_name: katsu
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/117/
+  :language: Prolog
+  :time: 2007/07/25 09:33 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">リベンジに、Prolog改良版行きます。今度はちゃんと計算終わります。\r\nアルゴリズムとしては、\r\n「迷路の壁を右手で触りながら移動」\r\n→「スタートに戻ったら失敗」\r\nor
+    「最終行に届いたら成功」です。\r\n副作用無しで美しい！とか思っていたら、\r\n失敗時のジャンプにcatch/throwを使っちゃったのが残念至極。\r\n始めの迷路読み込みには、DCGを使っています。\r\n%余談ですが、GNU-prologだとL=[1|L]みたいな循環リストを処理させると、止まったりします。残念。実行例…\r\n
+    $ cat map1\r\n.+.....\r\n.+.+++.\r\n.+.+.+.\r\n.+++.+.\r\n.....+.\r\n $ cat map2\r\n..+...+\r\n++.+++.\r\n.+...++\r\n++++.+.\r\n.+..+.+\r\n
+    $ cat map3\r\n.+....+..\r\n.+++..+..\r\n.+.++++..\r\n.+....+..\r\n.++++++++\r\n...+..+..\r\n......+..\r\n
+    $ cat map4\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n++++++++++++++++\r\n................\r\n
+    $ cat map5\r\n.+...........+..\r\n.++.++++++++++..\r\n.+...........+..\r\n.+.+++++++++++..\r\n.+.+.........+..\r\n.+.+++++++++++..\r\n++.+.+.......+..\r\n+..+++++++++++..\r\n++++............\r\n++++++++++++++++\r\n................\r\n
+    $ pl -sq map2.pl\r\nmap1-&gt;success\r\nmap2-&gt;fail\r\nmap3-&gt;success\r\nmap4-&gt;fail\r\nmap5-&gt;fail\r\n
+    $</pre>\n\t"
+  :code: |
+    maze(F):-
+            load_map(F,Map,W,H),
+            (start(Map,W,Start),
+             catch(mouse(Map,Start,(0,1),W,H,Start), returning, fail),
+             R=success
+            ;R=fail),
+            writeln(F-&gt;R).
+
+    load_map(F,M,W,H):-open(F,read,S),phrase(char_file(S),M),mapsize(M,W,H).
+
+    map_symbol(M,(X,Y),C):-nth1(Y,M,L),nth1(X,L,C).
+
+    start([Map1|_],W,(I,1)):-between(1,W,I),nth1(I,Map1,+).
+
+    dirlist(L):-L=[(0,1),(1,0),(0,-1),(-1,0)|L].
+
+    dir_try(CDir,L):-dirlist(Ls),dir_try(CDir,Ls,L).
+
+    dir_try(CDir,L,L):-L=[_,CDir|_],!.
+    dir_try(CDir,[_|Ls],L):-dir_try(CDir,Ls,L).
+
+    lim_member(0,_,_):-!,fail.
+    lim_member(_,X,[X|_]).
+    lim_member(L,X,[X0|Xs]):-(var(X);X\=X0),L1 is L - 1,lim_member(L1,X,Xs).
+
+    mouse(_,(_,H),_,_,H,_).
+    mouse(Map,Pos,Dir,W,H,Orig):-
+            dir_try(Dir,DirL),
+            lim_member(4,Dir1,DirL),
+            move(Pos,Dir1,Pos1),
+            (Orig = Pos1 -&gt; throw(returning);true),
+            stay(W,H,Pos1),
+            map_symbol(Map,Pos1,+),
+            mouse(Map,Pos1,Dir1,W,H,Orig).
+
+    move((X,Y),(Xs,Ys),(X1,Y1)):-X1 is X + Xs, Y1 is Y + Ys.
+
+    stay(W,H,(X,Y)):-between(1,W,X),between(1,H,Y).
+
+    mapsize(Map,W,H):-length(Map,H),Map=[L|_],length(L,W).
+
+    char_file(S)--&gt;{peek_char(S,end_of_file)},!,[].
+    char_file(S)--&gt;{phrase(char_line(S),L)},[L],char_file(S).
+
+    char_line(S)--&gt;{peek_char(S,end_of_file);char_code(NL,10),peek_char(S,NL),get_char(S,_)},[],!.
+    char_line(S)--&gt;{get_char(S,C)},[C],char_line(S).
+
+    :-maplist(maze,[map1,map2,map3,map4,map5]),halt.
+  :tags:
+  - SWI-prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '1450'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1450
+  :user_name: rihi
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/256/
+  :language: Haskell
+  :time: 2007/07/25 11:27 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">失敗したらバックトラックする計算はMaybeモナド、\r\n状態を書き換える計算はStateモナドで表現できるので、\r\nこの二つを合成したMaybeT
+    Stateというモナドを使って、書き直してみました。\r\n実際にはMaybeTは用意されていないので、ErrorT ()で代用しています。</pre>\n\t"
+  :code: "import System\nimport IO\nimport Control.Monad\nimport Control.Monad.State\nimport
+    Control.Monad.Error\n\ninstance Error () where\n  noMsg = ()\n\ntype Point = (Int,
+    Int)\ntype Proc a = ErrorT () (State [Point]) a\ntype Map = [[Char]]\n\nrunProc
+    :: Proc () -&gt; Bool\nrunProc proc = result == Right ()\n  where\n    result
+    = evalState (runErrorT proc) []\n\nhasVisited :: Point -&gt; Proc Bool\nhasVisited
+    pt = liftM (elem pt) get\n\nmarkVisited :: Point -&gt; Proc ()\nmarkVisited pt
+    = modify (pt:)\n\nsearch :: Map -&gt; Int -&gt; Int -&gt; Proc ()\nsearch m x
+    y = do\n  guard $ x &gt;= 0 &amp;&amp; x &lt; length (m!!0)\n  guard $ y &gt;=
+    0 &amp;&amp; y &lt; length m\n  guard $ m !! y !! x == '+'\n  guard . not =&lt;&lt;
+    hasVisited (x, y)\n  if y == length m - 1\n    then return ()\n    else do\n      markVisited
+    (x, y)\n      msum [search m (x+1) y, search m (x-1) y, search m x (y-1), search
+    m x (y+1)]\n\nisConnected :: Map -&gt; Bool\nisConnected m = runProc $ search
+    (startLine:m) 0 0\n  where\n    startLine = replicate (length (m!!0)) '+'\n\nreadMap
+    :: FilePath -&gt; IO Map\nreadMap file = liftM lines $ readFile file\n          \nmain
+    = do (f:_) &lt;- getArgs\n          m     &lt;- readMap f\n          print $ isConnected
+    m\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1454'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1454
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2007/07/25 14:51 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">番兵とゴールラインの配置と一次元化と Stateモナドを使ってみました。</pre>\n\t"
+  :code: |
+    import Control.Monad.State
+
+    isConnected m = (`evalState` []) $ search (xlen'+1) where
+      xlen = length $ head m
+      xlen' = xlen + 1
+      [sentinelLine, startLine, goalLine] = map (replicate xlen) ".+G"
+      m' = concatMap ("."++) $ [sentinelLine] ++ [startLine] ++ m ++ [goalLine]
+      search p = do
+        let c = m'!!p
+        if (c == 'G') then return True
+         else do
+          visited &lt;- get; put $ p:visited
+          if (c == '.' || elem p visited) then return False
+            else liftM or $ mapM search $ map (p+) [1, -1, -xlen', xlen']
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1455'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1455
+  :user_name: shiro
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/41/
+  :language: 
+  :time: 2007/07/25 19:51 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  なるほど。Stateモナドでvisitedを持ち回りながらどうorを実現するかでわからなくなってたんですが、こういう時にliftMを使うのですね。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1456'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1456
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2007/07/26 04:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">map が続くのが気になってたので。</pre>\n\t"
+  :code: |
+    -- else liftM or $ mapM search $ map (p+) [1, -1, -xlen', xlen']
+    -- じゃなくて
+       else liftM or $ mapM (search . (p+)) [1, -1, -xlen', xlen']
+    -- でよかったんだ
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1475'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1475
+  :user_name: smeghead
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/31/
+  :language: Common
+  :time: 2007/07/26 14:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">標準入力から地図を読むようにしました。\r\n総当りです。\r\n\r\n$ cat
+    | clisp maze.cl\r\n.+.....\r\n.+.+++.\r\n.+.+.+.\r\n.+++.+.\r\n.....+.\r\n&lt;C-D&gt;\r\n通り抜けられる\r\n$
+    cat | clisp maze.cl\r\n..+...+\r\n++.+++.\r\n.+...++\r\n++++.+.\r\n.+..+.+\r\n&lt;C-D&gt;\r\n通り抜けられない\r\n</pre>\n\t"
+  :code: "(defun K (x) x)\n(defun start-points (map)\n  (loop for i from 0 to (1-
+    (array-dimension map 1))\n        when (eql (aref map 0 i) #\\+)\n        collect
+    (cons 0 i)))\n\n(defun movablep (map path &amp;key (x-fn #'K) (y-fn #'K))\n  (destructuring-bind
+    (x . y) (car path)\n    (let ((next-x (funcall x-fn x))\n          (next-y (funcall
+    y-fn y)))\n      (and (&lt; -1 next-x (array-dimension map 0))\n           (&lt;
+    -1 next-y (array-dimension map 1))\n           (eql (aref map next-x next-y) #\\+)\n
+    \          (not (member (cons next-x next-y) path :test #'equal))\n           (cons
+    next-x next-y)))))\n\n(defun next-points (map path)\n  (remove-if-not\n    #'K\n
+    \   (mapcar #'(lambda (key fn)\n                (movablep map path key fn))\n
+    \           (list :x-fn :y-fn :y-fn :x-fn )\n            (list #'1+ #'1+ #'1-
+    #'1-))))\n\n(defun throughp (map)\n  (labels ((rec (map path)\n                (if
+    (eql (1- (array-dimension map 0)) (car (first path)))\n                  t\n                  (loop
+    for point in (next-points map path)\n                        do (let ((ret (rec
+    map (cons point path))))\n                             (if ret (return ret)))))))\n
+    \   (loop for p in (start-points map)\n          do (let ((ret (rec map (list
+    p))))\n               (if ret (return ret))))))\n\n(defun main ()\n  (if (throughp
+    \n           (loop as in = (read-line *standard-input* nil nil)\n                 while
+    in \n                 collect in into data\n                 finally (return \n
+    \                          (make-array (list (list-length data) (length (car data)))\n
+    \                                      :initial-contents data))))\n    (princ
+    \"通り抜けられる\")\n    (princ \"通り抜けられない\")))\n(main)\n"
+  :tags:
+  - clisp
+  :references:
+    :url: 
+    :title: 
+- :id: '1569'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1569
+  :user_name: ether
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/96/
+  :language: OCaml
+  :time: 2007/07/29 14:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  OCaml まだのようなので一応。「壁を右手で触りながら」戦略をそのままコードに書き下したつもりです。\n\t"
+  :code: |
+    type direction = Left | Down | Right | Up
+
+    let move (x, y) = function
+    | Left  -&gt; (x - 1), y
+    | Down  -&gt; x, (y + 1)
+    | Right -&gt; (x + 1), y
+    | Up    -&gt; x, (y - 1)
+
+    let turn_left = function
+    | Left  -&gt; Down
+    | Down  -&gt; Right
+    | Right -&gt; Up
+    | Up    -&gt; Left
+
+    let turn_right = function
+    | Left  -&gt; Up
+    | Down  -&gt; Left
+    | Right -&gt; Down
+    | Up    -&gt; Right
+
+    let map = Array.of_list (Std.input_list stdin);;
+
+    let reachable (x, y) =
+      try
+        map.(y).[x] = '+'
+      with _ -&gt;
+        y = -1 &amp;&amp; 0 &lt;= x &amp;&amp; x &lt; String.length map.(0)
+
+    let rec next_pos pos dir =
+      let next = move pos dir in
+      if reachable next then
+        next, dir
+      else
+        next_pos pos (turn_left dir)
+
+    let start start_pos =
+      let goal_p (_, y) = succ y == Array.length map in
+      let loop_p pos = pos = start_pos in
+      let rec move_on pos dir =
+        if goal_p pos then
+          print_endline "OK"
+        else
+          let (next, dir) = next_pos pos (turn_right dir) in
+          if loop_p next then
+            print_endline "NG"
+          else
+            move_on next dir
+      in
+      move_on start_pos Left
+    ;;
+
+    start (0, -1)
+  :tags:
+  - ExtLib
+  :references:
+    :url: 
+    :title: 
+- :id: '1570'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1570
+  :user_name: rucker
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/07/29 21:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">最短経路(のうちの一つ)を探索するバージョン。\r\n探索ポイントをFIFOで扱うと最初に見つかった経路が最短になるというだけ…</pre>\n\t"
+  :code: "&lt;?php\n$map=array();\n$w=0;\n$h=0;\n\nif(($file=fopen($argv[1],\"r\"))===false)\n\texit();\n\nfor($x=$y=0;;)\n{\tif(($c=fgetc($file))===false
+    &amp;&amp; !$x)\n\t\tbreak;\n\tswitch($c)\n\t{\n\tcase \"\\r\":\n\tcase \"\\n\":\n\tcase
+    false:\n\t\tif($x&gt;0)\n\t\t{\t++$y;\n\t\t\t$w=max($w,$x);\n\t\t\t$x=0;\n\t\t}\n\t\tbreak;\n\tdefault:\n\t\t$map[$y][$x++]=$c;\n\t}\n}\n$h=$y;\nfclose($file);\n\nfunction
+    checkneighbor($x,$y,&amp;$prev)\n{\tglobal $map,$fifo;\n\tif($map[$y][$x]!='+')\n\t\treturn
+    false;\n\t$fifo[]=array($x,$y,&amp;$prev);\n\t$map[$y][$x]='*';\n\treturn true;\n}\n\n$fifo=array();
+    // 経路探索FIFO\n$term=false;\n\nfor($x=0;$x&lt;$w;++$x)\n\tcheckneighbor($x,0,$term);\n\nwhile(list($x,$y)=$curr=array_shift($fifo))\n{\tif(checkneighbor($x,$y+1,$curr))\n\t\tif($y+1==$h-1)\n\t\t{\t//
+    Goal\n\t\t\t$p=array_pop($fifo);\n\t\t\tdo{\n\t\t\t\t$map[$p[1]][$p[0]]='#';\n\t\t\t}while($p=&amp;$p[2]);\n\t\t\tbreak;\n\t\t}\n\tcheckneighbor($x-1,$y,$curr);\n\tcheckneighbor($x+1,$y,$curr);\n\tcheckneighbor($x,$y-1,$curr);\n\t//
+    FIFOに参照で保存された値を上書きしないようにunset\n\t// 袋小路に入った経路情報はここで捨てられる\n\tunset($curr);\n}\n\nreset($map);\nwhile(list(,$v)=each($map))\n\techo
+    implode(\"\",$v),\"\\n\";\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1692'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1692
+  :user_name: sawat
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/322/
+  :language: Ruby
+  :time: 2007/08/02 09:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ダイクストラ法で。\n\t"
+  :code: "Node = Struct.new(\"Node\", :x, :y, :depth)\n\ndef dijkstra(map, node, depth)\n
+    \ if node == nil || node.depth &lt;= depth\n    return\n  end\n  node.depth =
+    depth\n  dijkstra(map, map[node.y][node.x-1], depth+1)\n  dijkstra(map, map[node.y][node.x+1],
+    depth+1)\n  dijkstra(map, map[node.y-1][node.x], depth+1)\n  dijkstra(map, map[node.y+1][node.x],
+    depth+1)\nend\n\n\ndef solve(data)\n  return if(data.size == 1)\n\n  map = []\n
+    \ min = max = data.size * data[0].size\n  \n  data.each_with_index do |line, y|\n
+    \   x = -1\n    map &lt;&lt; line.map do |char|\n      x += 1\n      if char ==
+    '.'\n        nil\n      else\n        Node.new(x, y, max)\n      end\n    end\n
+    \ end\n  \n  map[0].each do |start_node|\n    dijkstra(map, start_node, 1) if
+    start_node\n  end\n  \n  \n  map[-2].each do |goal_node|\n    if(goal_node &amp;&amp;
+    goal_node.depth &lt; min)\n      min = goal_node.depth\n    end\n  end\n  \n  if(min
+    == max)\n    puts \"No through.\"\n  else\n    puts \"through.(#{min})\" \n  end\nend\n\ndata
+    = []\nwhile(ARGF.gets)\n  $_.chomp!\n  puts $_\n  if $_.empty?\n    data &lt;&lt;
+    []\n    solve(data)\n    data = []\n  else\n    data &lt;&lt; ($_ + '.').split(//)\n
+    \ end\nend\n\ndata &lt;&lt; []\nsolve(data)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1722'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1722
+  :user_name: tomatsu
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/323/
+  :language: Pnuts
+  :time: 2007/08/02 12:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">使用例：\r\n\r\nprintln(solve(stringReader(\r\n\".+....\r\n.+.+++\r\n.+.+.+\r\n.+++.+\r\n+....+\")))\r\n</pre>\n\t"
+  :code: |
+    function solve(f){
+      m = list()
+      for (line : scanLines(f))  m.add(list(project(line, {c-&gt;c=='+' ? 1 : 0})))
+      rows = size(m)
+      columns = size(m[0])
+      active = list()
+      for (j:0..columns - 1) if (m[0][j] == 1) { m[0][j] = 2 ; active.add([0,j]) }
+
+      function step(i, j, activeList){
+        if (i + 1 == rows - 1 &amp;&amp; m[i+1][j] == 1) return true
+        for (x,y : {[i,j+1], [i,j-1], [i-1,j],[i+1,j]}){
+           if (x &gt;= 0 &amp;&amp; y &gt;= 0 &amp;&amp; y &lt;= columns-1 &amp;&amp; m[x][y] == 1) {m[x][y]++;  activeList.add([x,y])}
+        }
+        m[i][j] = 3  // no longer active
+        false
+      }
+      for (k: 0..(rows - 2) * columns + 1){
+         newActiveList = list()
+         for (i,j : active){
+           if (step(i, j, newActiveList)) return true
+         }
+         if (size(newActiveList) &lt; 1) return false
+         active = newActiveList
+      }
+      false
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1805'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1805
+  :user_name: tell
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/228/
+  :language: Ruby
+  :time: 2007/08/04 04:25 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">鬼のように効率の悪い方法，珍解答を狙って投稿．\r\n個人的にTrueClassとFalseClassを弄ってみようと思いついたので，ついでに弄ってみた．\r\nダブルバッファ+比較をすると繰り返し回数の上限はいらないだろうなぁ…</pre>\n\t"
+  :code: "require \"pp\"\n\n## 代数\n\nclass PassedClass\n  def inspect\n    \"*\"\n
+    \ end\n  \n  def +( obj )\n    self\n  end\n  \n  def *( obj )\n    if obj then
+    self\n    else false end\n  end\nend\n\nclass TrueClass\n  def inspect\n    \"+\"\n
+    \ end\n  \n  def +( obj )\n    if obj.kind_of?( PassedClass ) then obj\n    else
+    true end\n  end\n  \n  def *( obj )\n    if obj.kind_of?( PassedClass ) then obj\n
+    \   else self and obj end\n  end\nend\n\nclass FalseClass\n  def inspect\n    \".\"\n
+    \ end\n  \n  def +( obj )\n    if obj.kind_of?( PassedClass ) then obj\n    else
+    obj end\n  end\n  \n  def *( obj )\n    self;\n  end\nend\n\n## パーサ\n\ndef parse_maze\n
+    \ maze = []\n  \n  $stdin.each {| str_line |\n    maze_line = []\n    str_line.chomp.each_byte
+    {| ch |\n      maze_line.push( ( ch.chr == \"+\" ? true : false ) )\n    }\n    maze.push(
+    maze_line )\n  }\n  \n  maze\nend\n\n## 更新\n\ndef update( maze, i, j)\n  [-1,
+    0, 1].each {| v |\n    t = [[i + v, 0].max, maze.length - 1].min\n    maze[t][j]
+    *= PassedClass.new\n  }\n  [-1, 0, 1].each {| h |\n    t = [[j + h,0].max, maze[0].length
+    - 1].min\n    maze[i][t] *= PassedClass.new\n  }\n  # pp maze ## 更新されていく様子を見る\nend\n\n##
+    判定\n\ndef be_eble_to_pass?( maze )\n  max_iter = maze.length * maze[0].length\n
+    \ \n  maze[0].each_index {| j |\n    update( maze, 0, j ) if maze[0][j]\n  }\n
+    \ \n  max_iter.times {| iter |\n    maze.each_index {| i |\n      maze[i].each_index
+    {| j |\n        if maze[i][j].kind_of?( PassedClass )\n          update( maze,
+    i, j )\n        end\n      }\n    }\n    \n    eble_to_pass = maze[-1].inject(
+    false ) {| e, t |\n      e + t\n    }\n    return eble_to_pass if eble_to_pass.kind_of?(
+    PassedClass )\n  }\n  \n  false\nend\n\npp maze = parse_maze()\npp be_eble_to_pass?(
+    maze )\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1806'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1806
+  :user_name: tell
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/228/
+  :language: 
+  :time: 2007/08/04 04:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">わざわざtrueやfalseを書き換えることのありがたさは，演算子が使えるぐらいか…\r\n\r\n我ながらネタにしか見えない．\r\n\r\nスタック使ってバックトラック(って言うんだたっけ？)した方が普通によかったな．</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1807'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1807
+  :user_name: kzk
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/43/
+  :language: C
+  :time: 2007/08/04 06:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">左右番兵 + BFS。上下は面倒だったんで、ny &gt;= 0で判定。invalidな入力がきた場合は知りません。C++だと再帰で書くと迷路サイズがでかい時にstack
+    overflowするのでこんな感じになっております。\r\n\r\n探索系は言語の特色が出て楽しいです。</pre>\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    #include &lt;vector&gt;
+    #include &lt;deque&gt;
+
+    using namespace std;
+
+    typedef pair&lt;int, int&gt; P;
+
+    int dirs[4][2] = { {1, 0}, {-1, 0}, {0, 1}, {0, -1} };
+
+    int
+    main(void)
+    {
+      string line;
+      vector&lt;string&gt; field;
+      while (getline(cin, line))
+        field.push_back('+' + line + '+');
+
+      int h = field.size();
+      int w = field[0].size();
+      vector&lt;vector&lt;bool&gt; &gt; visited(h, vector&lt;bool&gt;(w, false));
+
+      deque&lt;P&gt; q;
+      for (int x = 0; x &lt; w; x++) {
+        if (field[0][x] != '+') {
+          q.push_back(P(x, 0));
+          visited[0][x] = true;
+        }
+      }
+      bool ret = false;
+      while (!q.empty()) {
+        P cur = q.front();
+        q.pop_front();
+        int cur_x = cur.first;
+        int cur_y = cur.second;
+        if (cur_y == (h - 1)) {
+          ret = true;
+          break;
+        }
+        for (int iDir = 0; iDir &lt; 4; iDir++) {
+          int nx = cur_x + dirs[iDir][0];
+          int ny = cur_y + dirs[iDir][1];
+          if (ny &gt;= 0 &amp;&amp; field[ny][nx] != '+' &amp;&amp; !visited[ny][nx]) {
+            q.push_back(P(nx, ny));
+            visited[ny][nx] = true;
+          }
+        }
+      }
+
+      cout &lt;&lt; (ret ? "pass" : "cannot pass") &lt;&lt; endl;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1810'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1810
+  :user_name: tell
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/228/
+  :language: 
+  :time: 2007/08/04 08:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  しかも代数のところ，よくわからないコードになっているところがある．true and objとかわけわかめになってる…まぁいいか…\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1863'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/1863
+  :user_name: lufia
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/242/
+  :language: awk
+  :time: 2007/08/05 07:05 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">迷路の読み込みは楽でいいね。\r\nawk -f map.awk map1</pre>\n\t"
+  :code: "BEGIN {\n\tFS = \"\"\n\tOK = \"+\"\n\tERR = \".\"\n}\n{\tfor(i = 1; i &lt;=
+    NF; i++)\n\t\tmap[NR,i] = $i\n}\nEND {\n\tfor(i = 1; map[1,i] &amp;&amp; !canwalk(1,
+    i); i++)\n\t\t;\n\tdump()\n\tif(map[1,i])\n\t\tprint \"route \" i\n\telse\n\t\tprint
+    \"fail\"\n}\nfunction canwalk(row, col) {\n\tif(map[row,col] == ERR || walked[row,col])\n\t\treturn
+    0\n\twalked[row,col] = 1\n\n\tif(!map[row+1,col])\n\t\treturn 1\n\n\treturn map[row+1,col]
+    &amp;&amp; canwalk(row+1, col) ||\n\t\tmap[row,col+1] &amp;&amp; canwalk(row,
+    col+1) ||\n\t\tmap[row,col-1] &amp;&amp; canwalk(row, col-1) ||\n\t\tmap[row-1,col]
+    &amp;&amp; canwalk(row-1, col)\n}\nfunction dump(\ti,j) {\n\tfor(i = 1; map[i,1];
+    i++){\n\t\tfor(j = 1; map[i,j]; j++)\n\t\t\tif(walked[i,j])\n\t\t\t\tprintf \"#\"\n\t\t\telse\n\t\t\t\tprintf
+    map[i,j]\n\t\tprintf \"\\n\"\n\t}\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3830'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/3830
+  :user_name: dankogai
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/11 00:54 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  \n<p>究極の怠慢。<code>a2p</code>で<a href=\"/web/20100116062352/http://ja.doukaku.org/comment/1863/\">#1863</a>を変換。26行目のreturnだけ返り値を()でくくる必要があったけど、それ以外は何も手を加えていない。なによりPerl
+    scriptそのものは<code>a2p</code>の吐いたものに一切手を加えていない。\n</p>\n<p>Dan the Indirect awk user\n</p>\n\n\n\n\t"
+  :code: "#!/usr/local/bin/perl\neval 'exec /usr/local/bin/perl -S $0 ${1+\"$@\"}'\n
+    \   if $running_under_some_shell;\n                        # this emulates #!
+    processing on NIH machines.\n                        # (remove #! line above if
+    indigestible)\n\neval '$'.$1.'$2;' while $ARGV[0] =~ /^([A-Za-z_0-9]+=)(.*)/ &amp;&amp;
+    shift;\n                        # process any FOO=bar switches\n\n$[ = 1;                 #
+    set array base to 1\n$FS = ' ';              # set field separator\n$, = ' ';
+    \              # set output field separator\n$\\ = \"\\n\";              # set
+    output record separator\n\n$FS = '';\n$OK = '+';\n$ERR = '.';\n\nwhile (&lt;&gt;)
+    {\n    chomp;      # strip record separator\n    @Fld = split($FS, $_, -1);\n
+    \   for ($i = 1; $i &lt;= $#Fld; $i++) {\n        $map{$., $i} = $Fld[$i];\n    }\n}\n\nfor
+    ($i = 1; $map{1, $i} &amp;&amp; !&amp;canwalk(1, $i); $i++) {\n    ;\n}\n&amp;dump();\nif
+    ($map{1, $i}) {\n    print 'route ' . $i;\n}\nelse {\n    print 'fail';\n}\n\nsub
+    canwalk {\n    local($row, $col) = @_;\n    if ($map{$row, $col} eq $ERR || $walked{$row,
+    $col}) {      #???\n        return 0;\n    }\n    $walked{$row, $col} = 1;\n\n
+    \   if (!$map{$row + 1, $col}) {\n        return 1;\n    }\n    ($map{$row + 1,
+    $col} &amp;&amp; &amp;canwalk($row + 1, $col) || \n    $map{$row, $col + 1} &amp;&amp;
+    &amp;canwalk($row, $col + 1) || \n    $map{$row, $col - 1} &amp;&amp; &amp;canwalk($row,
+    $col - 1) || \n    $map{$row - 1, $col} &amp;&amp; &amp;canwalk($row - 1, $col));\n}\n\nsub
+    dump {\n    local($i, $j) = @_;\n    for ($i = 1; $map{$i, 1}; $i++) {\n        for
+    ($j = 1; $map{$i, $j}; $j++) {\n            if ($walked{$i, $j}) {\n                printf
+    '#';\n            }\n            else {\n                printf $map{$i, $j};\n
+    \           }\n        }\n        printf \"\\n\";\n    }\n}\n"
+  :tags:
+  - a2p
+  :references:
+    :url: 
+    :title: 
+- :id: '4550'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/4550
+  :user_name: 匿名
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/12/02 07:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>画像を作って色を流し込んで判定しているあたりかなり反則ですが、普通にするとなでしこでは現実的な速度が出せません・・・</p>\n\n\t"
+  :code: |
+    地図="txt"の""でファイル選択,_を開く
+    地図イメージとはイメージ
+    これについて
+        H=行数(地図)+2
+        W=文字数(地図[0])
+        // 可視はオフ
+    i1で0から(行数(地図)-1)まで繰り返す
+        i2で0から(文字数(地図[0])-1)まで繰り返す
+            (MID(地図[i1],i2+1,1)=".")ならば
+                地図イメージのi2,i1+1へ緑色を点描画
+    地図イメージの0,0を青色で塗る
+    地図イメージの0,((地図イメージのH)-1)を画像色取得
+    もし(それ=青色)なら
+        「OK!」を言う
+    違えば
+        「NG.」を言う
+    // 地図イメージをデスクトップ&amp;"test.bmp"に画像保存
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6893'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/6893
+  :user_name: crane
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/458/
+  :language: Other
+  :time: 2008/07/31 11:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Processing で。\nお題「ランダムウォーク」で思いついたのですが、適当な数の粒子をばらまきます。粒子はランダムに移動します。充分な時間が経って一つでも通り抜けられればゴールです（運が良ければ、ですが・・）。</p>\n<p>乱択アルゴリズムの一種と言っていいのでしょうか。</p>\n\n\t"
+  :code: "int hsb = 16;\nint d = 5;\nMaze maze;\n\nvoid setup() {\n  colorMode(HSB,
+    hsb);\n  int [][] data = { { 1, 1, 1, 1, 1, 1, 1, 1 },\n                    {
+    0, 1, 0, 0, 0, 0, 0, 0 },\n                    { 0, 1, 0, 1, 1, 1, 0, 0 },\n                    {
+    0, 1, 0, 1, 0, 1, 0, 0 },\n                    { 0, 1, 1, 1, 0, 1, 1, 1 },\n                    {
+    0, 0, 0, 0, 0, 1, 0, 1 },\n                    { 0, 0, 0, 0, 1, 1, 0, 1 },\n                    {
+    0, 1, 1, 1, 1, 0, 0, 1 },\n                    { 0, 0, 0, 1, 0, 0, 0, 0 },\n                    {
+    0, 0, 1, 1, 0, 1, 0, 0 },\n                    { 0, 0, 1, 0, 0, 1, 0, 0 },\n                    {
+    0, 0, 1, 1, 1, 1, 0, 0 },\n                    { 0, 0, 1, 0, 0, 0, 0, 0 },\n                    {
+    0, 1, 1, 1, 1, 1, 0, 0 },\n                    { 0, 0, 0, 0, 0, 1, 1, 1 },\n                    {
+    0, 1, 1, 0, 0, 0, 0, 1 },\n                    { 1, 1, 1, 1, 1, 1, 1, 1 }\n              };\n
+    \ size(data[0].length * d, data.length * d);\n  maze = new Maze(data, d, 20);\n
+    \ maze.render();\n}\n\nvoid draw() {\n  if (!maze.solved) {\n    maze.render();\n\n
+    \   rectMode(CORNER);\n    fill(hsb, hsb * 0.25);\n    rect(0, 0, width, height);\n
+    \ }\n}\n\nclass Maze {\n  int [][] data;\n  int block_size;\n  int nparticles;\n
+    \ Particle[] particles;\n  boolean solved = false;\n  \n  Maze(int[][] data_,
+    int block_size_, int nparticles_) {\n    data = data_;\n    block_size = block_size_;\n
+    \   nparticles = nparticles_;\n    particles = new Particle[nparticles];\n    for
+    (int i=0; i &lt; nparticles; i++) {\n      particles[i] = new Particle(0, 0, block_size,
+    this);\n    }\n  }\n  \n  void render() {\n    rectMode(CORNER);\n    fill(0);\n
+    \   for (int i=0; i &lt; data.length; i++) {\n      for (int j=0; j &lt; data[i].length;
+    j++) {\n        if (data[i][j] != 1) {\n          rect(j * block_size, i * block_size,
+    block_size, block_size);\n        }\n      }\n    }\n    \n    for (int i=0; i
+    &lt; nparticles; i++) {\n      Particle p = particles[i];\n      p.move();\n      p.render();\n
+    \     if (isGoal(p)) {\n        solved = true;\n        break;\n      }\n    }\n
+    \ }\n  \n  boolean isBlock(int x, int y) {\n    int xx = x / block_size;\n    int
+    yy = y / block_size;\n    \n    if (xx &gt;= data[0].length || yy &gt;= data.length)
+    {\n      return true;\n    }\n\n    return (data[yy][xx] != 1);\n  }\n\n  boolean
+    isGoal(Particle p) {\n    return p.y + block_size &gt;= height;\n  }\n}\n\nclass
+    Particle {\n  int x;\n  int y;\n  int d;\n  Maze m;\n\n  Particle(int x_, int
+    y_, int d_, Maze m_) {\n    x = x_;\n    y = y_;\n    d = d_;\n    m = m_;\n  }\n
+    \ \n  void move() {\n    \n    float r = random(1);\n    int x0 = x;\n    int
+    y0 = y;\n    \n    if (r &lt; 0.25) {\n       x += d;\n       if (x &gt; width)
+    {\n         x = width;\n       }\n    } else if (r &lt; 0.5) {\n      x -= d;\n
+    \     if (x &lt; 0) {\n        x = 0;\n      }\n    } else if (r &lt; 0.75) {\n
+    \     y += d;\n      if (y &gt; height) {\n        y = height;\n      }\n    }
+    else {\n      y -= d;\n      if (y &lt; 0) {\n        y = 0;\n      }\n    }\n
+    \n    if (m.isBlock(x,y)) {\n      x = x0;\n      y = y0;\n    }    \n  }\n  \n
+    \ void render() {\n    rectMode(CORNER);\n    rect(x, y, d, d);    \n  }\n}\n"
+  :tags:
+  - Processing
+  :references:
+    :url: /web/20100116062352/http://www.processing.org/
+    :title: ''
+- :id: '9023'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/9023
+  :user_name: 匿名
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/4/
+  :language: Ruby
+  :time: 2009/05/30 15:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    class Seeker
+      Pos = Struct.new(:x, :y)
+
+      def initialize(text)
+        @routes = []
+        @map = []
+
+        lines = text.split("\n")
+        @map = lines.map{|line| line.split("")}
+      end
+
+      def display_routes
+        @map.first.each_with_index do |c, x|
+          seek([], Pos.new(x,0))
+        end
+
+        if @routes.empty? then
+          puts "no routes"
+        else
+          puts "#{@routes.size} routes found."
+          @routes.each_with_index do |route, index|
+            puts
+            puts "route : #{index+1}"
+            _map = @map.map{|l| l.clone}
+            route.each{|r| _map[r.y][r.x] = "#"}
+            puts _map.map{|l| l.join}.join("\n")
+          end
+        end
+      end
+
+      private
+
+      def seek(trail, pos)
+        return if (@map[pos.y][pos.x] == ".")
+        return if trail.include?(pos)
+
+        trail &lt;&lt; pos
+        if @map.size - 1 == pos.y then # exited
+          @routes &lt;&lt; trail
+          return
+        end
+
+        seek(trail.clone, Pos.new(pos.x - 1, pos.y)) if pos.x &gt; 0
+        seek(trail.clone, Pos.new(pos.x + 1, pos.y)) if pos.x &lt; @map.first.size - 1
+        seek(trail.clone, Pos.new(pos.x, pos.y - 1)) if pos.y &gt; 0
+        seek(trail.clone, Pos.new(pos.x, pos.y + 1)) if pos.y &lt; @map.size - 1
+      end
+    end
+
+    if __FILE__ == $0 then
+      text = IO.read(ARGV[0])
+      mize = Seeker.new(text)
+      mize.display_routes
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9592'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/9592
+  :user_name: nobeans
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/608/
+  :language: Groovy
+  :time: 2009/09/20 12:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>全ルートを歩かせてみた。</p>\n\n\t"
+  :code: "class Walker {\n\n    String[][] map\n    int x, y\n\n    Walker(params)
+    {\n        this.map = params.map\n        assert map.length &gt; 0\n        this.x
+    = params.x\n        this.y = params.y\n        map[y][x] = \"*\" // footprint
+    at current position\n    }\n\n    def maxX = { map[0].length -1 }\n    def maxY
+    = { map.length -1 }\n\n    def canUp =    { y &gt; 0      &amp;&amp; map[y-1][x]
+    == \"+\" }\n    def canDown =  { y &lt; maxY() &amp;&amp; map[y+1][x] == \"+\"
+    }\n    def canRight = { x &lt; maxX() &amp;&amp; map[y][x+1] == \"+\" }\n    def
+    canLeft =  { x &gt; 0      &amp;&amp; map[y][x-1] == \"+\" }\n\n    def goUp =
+    \   { return new Walker(map:map, x:x,   y:y-1) }\n    def goDown =  { return new
+    Walker(map:map, x:x,   y:y+1) }\n    def goRight = { return new Walker(map:map,
+    x:x+1, y:y) }\n    def goLeft =  { return new Walker(map:map, x:x-1, y:y) }\n\n
+    \   def canGoThrough = { walk().flatten().any{it} }\n    def walk = {\n        if
+    (isGoal()) return true\n\n        def directions = [\"Down\", \"Right\", \"Left\",
+    \"Up\"].grep { \"can$it\"() }\n        if (!directions) return false // 行き止まり\n\n
+    \       return directions.collect {\n            def nextMap = \"go$it\"()\n            println
+    \"$it: \\n$nextMap\" // for DEBUG\n            nextMap.walk()\n        }\n    }\n
+    \   def isGoal = { y &gt;= maxY() }\n    public String toString() { map.collect{
+    it.join() }.join(\"\\n\") }\n}\n\ndef fileName = args[0]\ndef lines = new File(fileName).readLines()\nlines.add(0,
+    \"+\" * lines[0].length()) // 便宜的なスタート行を追加する  \ndef walker = new Walker(map:lines
+    as String[][], x:0, y:0)\nprintln walker.canGoThrough() ? \"you can go through\"
+    : \"you cannot go through\"\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9744'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/9744
+  :user_name: Lost_dog
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/1129/
+  :language: Haskell
+  :time: 2009/12/27 17:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Lost_dogです。</p>\n<p>アイディアは、Data.Graphのpath関数を使うことです。島のカウント問題(#9742)のコードを少し改変して再利用しました。(#9742)のcalEdge関数をbiconnectに変更したくらいです。</p>\n<p><strong>Sample
+    Input 1</strong></p>\n<hr class=\"docutils\">\n<pre class=\"literal-block\">\n20
+    6\n..++................\n...+...+++++........\n...+++++...++++++...\n........+++.....+...\n.++++++++.+++++++...\n.+..................\n</pre>\n<hr
+    class=\"docutils\">\n<p><strong>Sample Output 1</strong></p>\n<hr class=\"docutils\">\n<pre
+    class=\"literal-block\">\nTrue\n</pre>\n<hr class=\"docutils\">\n<p><strong>Sample
+    Input 2</strong></p>\n<hr class=\"docutils\">\n<pre class=\"literal-block\">\n20
+    6\n..++....+.......+...\n...+...+++++....+...\n...+++++...++++++...\n++++....+++.........\n.+..++++..++++++....\n...+........++++++..\n</pre>\n<hr
+    class=\"docutils\">\n<p><strong>Sample Output 2</strong></p>\n<hr class=\"docutils\">\n<pre
+    class=\"literal-block\">\nFalse\n</pre>\n<hr class=\"docutils\">\n<p>.</p>\n\n\t"
+  :code: |
+    module Main where
+
+    import Data.Graph
+    import Data.Maybe
+    import Data.List
+    import Control.Monad
+
+    main = do [w,h] &lt;- fmap (map read.words) getLine
+              xss   &lt;- fmap (numbering w.sandwich ([1..w]&gt;&gt;"+")) $ replicateM h getLine
+              print $ (\g -&gt; path g 0 (w*(h+2)-1)) $ buildG (0,w*(h+2)-1) $ calEdge w xss
+
+    sandwich k xs = [k] ++ xs ++ [k]
+
+    numbering w xss = snd $ mapAccumL f 0 xss
+                      where f i xs = (i+w, zip [i..] xs)
+
+    calEdge w xss = (concatMap f xss) ++ (concatMap f $ transpose xss)
+                    where f (x:xs) = catMaybes $ concat $ snd $ mapAccumL g x xs
+                          g (i,'+') r@(j,'+') = (r,[Just(i,j),Just(j,i)])
+                          g _ r               = (r,[Nothing])
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9745'
+  :parent_id: '30'
+  :url: http://ja.doukaku.org/comment/9745
+  :user_name: Lost_dog
+  :user_url: /web/20100116062352/http://ja.doukaku.org/user/1129/
+  :language: Haskell
+  :time: 2009/12/27 17:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>下のほうがよかった。。</p>\n\n\t"
+  :code: |
+    where f (x:xs) = concat $ catMaybes $ snd $ mapAccumL g x xs
+                          g (i,'+') r@(j,'+') = (r,Just [(i,j),(i,j)])
+                          g _ r               = (r,Nothing)
+  :tags: []
+  :references:
+    :url: 
+    :title: 

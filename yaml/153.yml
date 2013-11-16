@@ -1,0 +1,250 @@
+---
+:id: '153'
+:title: 情報オリンピック2007年度世界大会「洪水」
+:comments:
+- :id: '5754'
+  :parent_id: '153'
+  :url: http://ja.doukaku.org/comment/5754
+  :user_name: yukoba
+  :user_url: /web/20081122160726/http://ja.doukaku.org/user/689/
+  :language: 
+  :time: 2008/02/15 04:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>中高生向けの情報オリンピックの世界大会2007年度の第1日目「洪水」です。コンテストは2日間にて行われます。クロアチアにて開催されました。</p>\n<ul
+    class=\"simple\">\n<li>問題文： <a class=\"reference\" href=\"/web/20081122160726/http://www.ioi-jp.org/ioi/2007/problem/day1/flood-prob-j.pdf\">http://www.ioi-jp.org/ioi/2007/problem/day1/flood-prob-j.pdf</a>\n</li>\n<li>テストデータ：
+    <a class=\"reference\" href=\"/web/20081122160726/http://www.hsin.hr/ioi2007/index.php?page=tasks\">http://www.hsin.hr/ioi2007/index.php?page=tasks</a>\n</li>\n<li>問題一覧：
+    <a class=\"reference\" href=\"/web/20081122160726/http://www.ioi-jp.org/ioi/2007/problem/index.html\">http://www.ioi-jp.org/ioi/2007/problem/index.html</a>\n</li>\n<li>コンテスト概要：
+    <a class=\"reference\" href=\"/web/20081122160726/http://www.ioi-jp.org/ioi/2007/index.html\">http://www.ioi-jp.org/ioi/2007/index.html</a>\n</li>\n</ul>\n<p>「問題ごとに、プログラムの実行時間（や使用メモリ量）に制限が設定されています。」にご注意ください。本問では、制限時間2秒、メモリ制限32MBとなっています。</p>\n<p>入出力は標準入出力にて行います。</p>\n<p>採点は、テストデータにおいて正しい結果が返ってくるかで採点されます。出題時はテストデータの一部のみが公開されており、全てのデータは出題時には公開されていません。</p>\n\r\n\t"
+  :code: ''
+  :tags:
+  - 情報オリンピック
+  :references:
+    :url: 
+    :title: 
+- :id: '5763'
+  :parent_id: '153'
+  :url: http://ja.doukaku.org/comment/5763
+  :user_name: yukoba
+  :user_url: /web/20081122160726/http://ja.doukaku.org/user/689/
+  :language: Scala
+  :time: 2008/02/16 02:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  プログラムの制限時間もクリアしているバージョン。\r<br>以下が擬似コードです。\r<br><br>-------------------------------------\r<br><br>{まだたどっていない壁}がある\r<br>  [全ての壁|座標でソート済み]in{まだたどっていない壁}から最初の壁をとる。次はこの配列番号から。\r<br>  左手に水:int＝頂点から右方向に壁 なら 1 下方向なら -1\r<br>  最初の壁に戻ってくるまで、壁をたどる (do-while)\r<br>    {たどった壁}に入っている =&gt; {たどった壁}から{両方水の壁}へ移動\r<br>      else {まだたどっていない壁}から{たどった壁}へ移動\r<br>    次の壁の始点＝前の壁の終点\r<br>    {次の壁の始点 -&gt; つながっている壁|not in 両方水の壁 &amp;&amp; 崩壊壁}から「角度」の小さい順にたどる\r<br>      角度＝外積（前の壁、次の壁）×左手に水（正負）-&gt; ９０～３６０\r<br>  {たどった壁} =&gt; {崩壊壁}\r<br>{両方水の壁}を表示\r<br><br>-------------------------------------\r<br>"
+  :code: "package jp.yukoba.ioi2007;\n\nimport scala.collection.mutable._\n\nobject
+    Flood4 extends Application {\n  class Base\n  case class Point(x:int, y:int) extends
+    Base {\n    def &lt; (that:Point) = (y &lt; that.y || (y == that.y &amp;&amp;
+    x &lt; that.x))\n  }\n  case class Wall(no:int, from:Point, to:Point) extends
+    Base {\n    def &lt; (that:Wall) = (from &lt; that.from)\n  }\n  \n  // 点番号 -&gt;
+    Point\n  val N = readInt\n  val dotMap = Map(List.tabulate(N, i =&gt; {\n    val
+    line = readLine.split(\" \").map(Integer.parseInt(_))\n    (i+1, Point(line(0),
+    line(1)))\n  }):_*)\n  // 壁番号 -&gt; Wall\n  val W = readInt\n  val wallMap = Map(List.tabulate(W,
+    i =&gt; {\n    val ary = readLine.split(\" \").map(Integer.parseInt(_))\n    //
+    左上に近いのを from に設定\n    val p1 = dotMap(ary(0))\n    val p2 = dotMap(ary(1))\n    if(p1
+    &lt; p2)\n      (i+1, Wall(i+1, p1, p2))\n    else\n      (i+1, Wall(i+1, p2,
+    p1))\n  }):_*)\n  // 訪れていない壁番号のセット\n  val unvisited:Set[int] = Set(wallMap.keys.toList:_*)\n
+    \ // ソート済みの壁の壁番号の配列\n  val sortAry = wallMap.keySet.toList.sort((n1, n2) =&gt;
+    \n      wallMap(n1) &lt; wallMap(n2)).toArray\n  // 上のたどっていくポインタ\n  var sortAryPos
+    = 0\n  // {たどった壁} {両方水の壁}\n  val visited = Set[int]()\n  val bothWater = Set[int]()\n
+    \ val brokenWall = Set[int]()\n  // Point -&gt; Wallの配列\n  val point2wallAry =
+    Map[Point, Array[(Wall,int)]]()\n  for(pointNo &lt;- dotMap.keys) {\n    // 頂点から出る壁は１～４つ\n
+    \   val point = dotMap(pointNo)\n    point2wallAry(point) = new Array[(Wall,int)](4)\n
+    \ }\n  for(wallNo &lt;- unvisited) {\n    def put(p:Point, wallDir:(Wall,int))
+    {\n      val ary = point2wallAry(p)\n      for(i &lt;- 0 until (ary.length)) {\n
+    \       if(ary(i) == null) {\n          ary(i) = wallDir\n          return\n        }\n
+    \     }\n      error(\"ここにはこない\")\n    }\n    val wall = wallMap(wallNo)\n    put(wall.from,
+    (wall, 1))\n    put(wall.to, (wall, -1))\n  }\n  \n  while(unvisited.size &gt;
+    0) {\n    //println(unvisited)\n    // [全ての壁|座標でソート済み]in{まだたどっていない壁}から最初の壁をとる。次はこの配列番号から。\n
+    \   def getFromSortAry():int = {\n        while(true) {\n          val wallNo
+    = sortAry(sortAryPos)\n        if(unvisited.contains(wallNo)) return wallNo\n
+    \       sortAryPos += 1\n        }\n      error(\"ここにはこない\")\n    }\n    var wallNo
+    = getFromSortAry\n    var wall = wallMap(wallNo) \n    // 左手に水:int＝頂点から右方向に壁 なら
+    1 下方向なら -1\n    val isLeftWater = if(wall.from.y == wall.to.y) 1 else -1\n    //println(\"isLeftWater
+    = \" + isLeftWater)\n    // 壁のたどる方向、1 = from -&gt; to、-1 = to -&gt; from\n    var
+    wallDir = 1\n    // 最初の壁に戻ってくるまで、壁をたどる (do-while)\n    val firstWallNo = wallNo\n
+    \   val firstWallDir = wallDir\n    def loop() {\n      while(true) {\n        //println(\"wall
+    = \" + wall + \", wallDir = \" + wallDir)\n        //{たどった壁}に入っている =&gt; {たどった壁}から{両方水の壁}へ移動\n
+    \       //  else {まだたどっていない壁}から{たどった壁}へ移動\n        if(visited.contains(wallNo))
+    {\n          visited -= wallNo\n          bothWater += wallNo\n        } else
+    {\n          unvisited -= wallNo\n          visited += wallNo\n        }\n        //
+    次の壁の始点＝前の壁の終点\n        val nextStart = (if(wallDir == 1) wall.to else wall.from)\n
+    \       // {次の壁の始点 -&gt; つながっている壁|not in 両方水の壁 &amp;&amp; 崩壊壁}から「角度」の小さい順にたどる\n
+    \       //println(nextStart)\n        val wallAry = point2wallAry(nextStart)\n
+    \       var minArg = Integer.MAX_VALUE\n        var minWallDir:(Wall,int) = null\n
+    \       for(i &lt;- 0 until (wallAry.length)) {\n          val nextWallDir = wallAry(i)\n
+    \         //println(\"nextWallDir = \" + nextWallDir)\n          if(nextWallDir
+    != null &amp;&amp; !bothWater.contains(nextWallDir._1.no) &amp;&amp; \n            !brokenWall.contains(nextWallDir._1.no))
+    {\n            // 角度＝外積（前の壁、次の壁）×左手に水（正負）-&gt; ９０～３６０\n            def getArg(wall1:Wall,
+    wallDir1:int, wall2:Wall, wallDir2:int, isLeftWater:int):int = {\n              def
+    toSign(p:Point):Point = Point(toSignI(p.x), toSignI(p.y))\n              def toSignI(i:int)
+    = if(i&lt;0) -1 else if(i==0) 0 else 1\n              def toVec(wall:Wall, wallDir:int)
+    =\n                if(wallDir == 1) Point(wall.to.x - wall.from.x, wall.to.y -
+    wall.from.y)\n                else Point(wall.from.x - wall.to.x, wall.from.y
+    - wall.to.y)\n              val vec1 = toSign(toVec(wall1, wallDir1))\n              val
+    vec2 = toSign(toVec(wall2, wallDir2))\n              if(vec1 == vec2) return 180\n
+    \             else if(vec1.x == -vec2.x &amp;&amp; vec1.y == -vec2.y) return 360\n
+    \             val gaiseki = (vec1.x * vec2.y - vec1.y * vec2.x) * isLeftWater\n
+    \             if(gaiseki &lt; 0) return 90\n              else return 270\n            }\n
+    \           val arg = getArg(wall, wallDir, nextWallDir._1, nextWallDir._2, isLeftWater)\n
+    \           //println(\"arg = \" + arg)\n            if(arg &lt; minArg) {\n              minArg
+    = arg\n              minWallDir = nextWallDir\n            }\n          }\n        }\n
+    \       //assert(minWallDir != null)\n        if(minWallDir == null) return\n
+    \       // 最初の壁に戻って来たら終了\n        val nextWall = minWallDir._1\n        val nextWallDir
+    = minWallDir._2\n        if(nextWall.no == firstWallNo &amp;&amp; nextWallDir
+    == firstWallDir) return\n        wall = nextWall\n        wallDir = nextWallDir\n
+    \       wallNo = wall.no\n      }\n      \n    }\n    loop()\n    brokenWall ++=
+    visited\n    visited.clear\n  }  \n  println(bothWater.size)\n  for(wallNo &lt;-
+    bothWater)\n    println(wallMap(wallNo).no)\n  //println(brokenWall.size)\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5762'
+  :parent_id: '153'
+  :url: http://ja.doukaku.org/comment/5762
+  :user_name: yukoba
+  :user_url: /web/20081122160726/http://ja.doukaku.org/user/689/
+  :language: Scala
+  :time: 2008/02/15 14:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>一応、正しい答えを出しますが、制限時間内に終えるには、ハッシュデーブルやソートを使わないとたぶんダメです。</p>\n\n\t"
+  :code: "object Flood2 extends Application {\n  val N = readInt\n  val dots = Map(List.tabulate(N,
+    i =&gt; {\n    val line = readLine.split(\" \").map(Integer.parseInt(_)).toList\n
+    \   (i+1, (line(0), line(1)))\n  }):_*)\n  val W = readInt\n  val initWalls =
+    List.tabulate(W, i =&gt; (i+1) :: readLine.split(\" \").map(Integer.parseInt(_)).toList)\n
+    \ \n  def step(walls:WallList, prevHasWater:WaterMap) {\n    val hasWater = searchWater(walls,
+    prevHasWater)\n    val leftWall = getLeftWall(walls, hasWater)\n    if(isDone(leftWall,
+    hasWater)) {\n      printResult(leftWall)\n      exit\n    }\n    step(leftWall,
+    hasWater)      \n  }\n  step(initWalls, initHasWater)\n\n  def initHasWater()
+    = {\n    Map(initWalls.map(wall =&gt; {\n      (wall(0), (false, false))\n    }):_*)\n
+    \ }\n  \n  // 0 = 壁番号,　1 = from, 2 = to\n  type Wall = List[int]\n  type WallList
+    = List[Wall]\n  type WaterMap = Map[int, (boolean, boolean)]\n  type Point = int\n
+    \ // 壁番号, from, to\n  type WallDir = (int,Point,Point)\n  \n  def searchWater(walls:WallList,
+    hasWater:WaterMap) : WaterMap = {\n    val haveToVisit = getHaveToVisit(walls,
+    hasWater)\n    val startWall = getStartWall(walls, haveToVisit)\n    def step(checkWall:WallDir,
+    startWall:WallDir, hasWater:WaterMap, haveToVisit:Set[Point], isLeftWater:Boolean):WaterMap
+    = {\n      if(checkWall == null) return hasWater\n      // nextWall探す\n      val
+    wallList = getWalls(walls, checkWall._3)\n      val nextWallList = wallList.sort((w1,
+    w2) =&gt; getArg(checkWall, w1, isLeftWater) &lt; getArg(checkWall, w2, isLeftWater))\n
+    \     var nextWall = nextWallList(0)\n      // hasWater を更新\n      val checkWallNo
+    = checkWall._1\n      val water = hasWater(checkWallNo)\n      val wall = getWall(walls,
+    checkWallNo)\n      val nextHasWater = (hasWater(checkWallNo) = \n        if(wall(1)
+    == checkWall._2) (true, water._2) else (water._1, true))\n      // haveToVisit
+    から減らす\n      val nextHaveToVisit = (haveToVisit - checkWall._1 - checkWall._2)\n
+    \     if(nextWall == startWall)\n        return nextHasWater\n      return step(nextWall,
+    startWall, nextHasWater, nextHaveToVisit, isLeftWater)\n    }\n    step(startWall,
+    startWall, hasWater, haveToVisit, calcIsLeftWater(startWall))\n  }\n  \n  def
+    calcIsLeftWater(wall:WallDir) = dots(wall._2)._1 != dots(wall._3)._1 \n  \n  def
+    getArg(baseWall:WallDir, checkWall:WallDir, isLeftWater:boolean):int = {\n    assert(baseWall._3
+    == checkWall._2)\n    // baseWall を逆向きにして 90~360度の時計周りの角度を求める\n    val baseVec
+    = toVec(minus(dots(baseWall._2), dots(baseWall._3)))\n    val checkVec = toVec(minus(dots(checkWall._3),
+    dots(checkWall._2)))\n    if(baseVec == checkVec) return 360\n    val naiseki
+    = (baseVec._1 * checkVec._2 - baseVec._2 * checkVec._1)\n    if(naiseki == 0)
+    return 180\n    else if(naiseki &gt; 0 ^ !isLeftWater) return 90\n    else return
+    270\n  }\n  \n  def minus(p1:(int,int), p2:(int,int)) = (p1._1 - p2._1, p1._2
+    - p2._2)\n  def toVec(xy:(int,int)) = (toDir(xy._1), toDir(xy._2))\n  def toDir(v:int)
+    = { if(v == 0) 0 else v / Math.abs(v) }\n  \n  def getWalls(walls:WallList, startPoint:Point):List[WallDir]
+    = {\n    walls.filter(wall =&gt; {\n      wall(1) == startPoint || wall(2) ==
+    startPoint      \n    }).map(wall =&gt; {\n      if(wall(1) == startPoint)\n        (wall(0),
+    wall(1), wall(2))\n      else\n        (wall(0), wall(2), wall(1))\n    })\n  }\n
+    \ \n  def getWall(walls:WallList, no:int):Wall = {\n    walls.find(wall =&gt;
+    wall(0) == no).get\n  }\n  \n  def getHaveToVisit(walls:WallList, hasWater:WaterMap)
+    : Set[Point] = {\n    // 水のついてない壁のリスト\n    val nonWaterList = walls.filter(wall
+    =&gt; {\n      hasWater(wall(0)) != (true, true)\n    })\n    // 点のリストに変換\n    Set(List.flatten(nonWaterList.map(wall
+    =&gt; List(wall(1), wall(2)))):_*)\n  }\n  \n  def getStartWall(walls:WallList,
+    haveToVisit:Set[Point]) : WallDir = {\n    if(haveToVisit.size == 0) return null\n
+    \   // 左上の点を探す\n    val p = haveToVisit.toList.sort((p1, p2) =&gt; {\n      val
+    xy1 = dots(p1)\n      val xy2 = dots(p2)\n      xy1._2 &lt; xy2._2 || (xy1._2
+    == xy2._2 &amp;&amp; xy1._1 &lt; xy2._1) \n    }).head\n    // その点を含む壁を探す\n    val
+    wall = walls.find(wall =&gt; {\n      wall(1) == p || wall(2) == p \n    }).get\n
+    \   if(wall(1) == p) (wall(0), wall(1), wall(2))\n    else (wall(0), wall(2),
+    wall(1))\n  }\n  \n  def getLeftWall(walls:WallList, hasWater:WaterMap) = {\n
+    \   walls.filter(wall =&gt; {\n      val water = hasWater(wall(0))\n      water._1
+    == water._2\n    })\n  }\n  \n  def isDone(walls:WallList, hasWater:WaterMap):boolean
+    = {\n    walls.foreach(wall =&gt; {\n      val water = hasWater(wall(0))\n      if(!water._1
+    || !water._2) return false \n    })\n    true\n  }\n  \n  def printResult(walls:WallList)
+    {\n    println(walls.length)\n    walls.foreach(w =&gt; println(w(0)))\n  }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5763'
+  :parent_id: '153'
+  :url: http://ja.doukaku.org/comment/5763
+  :user_name: yukoba
+  :user_url: /web/20081122160726/http://ja.doukaku.org/user/689/
+  :language: Scala
+  :time: 2008/02/16 02:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  プログラムの制限時間もクリアしているバージョン。\r<br>以下が擬似コードです。\r<br><br>-------------------------------------\r<br><br>{まだたどっていない壁}がある\r<br>  [全ての壁|座標でソート済み]in{まだたどっていない壁}から最初の壁をとる。次はこの配列番号から。\r<br>  左手に水:int＝頂点から右方向に壁 なら 1 下方向なら -1\r<br>  最初の壁に戻ってくるまで、壁をたどる (do-while)\r<br>    {たどった壁}に入っている =&gt; {たどった壁}から{両方水の壁}へ移動\r<br>      else {まだたどっていない壁}から{たどった壁}へ移動\r<br>    次の壁の始点＝前の壁の終点\r<br>    {次の壁の始点 -&gt; つながっている壁|not in 両方水の壁 &amp;&amp; 崩壊壁}から「角度」の小さい順にたどる\r<br>      角度＝外積（前の壁、次の壁）×左手に水（正負）-&gt; ９０～３６０\r<br>  {たどった壁} =&gt; {崩壊壁}\r<br>{両方水の壁}を表示\r<br><br>-------------------------------------\r<br>"
+  :code: "package jp.yukoba.ioi2007;\n\nimport scala.collection.mutable._\n\nobject
+    Flood4 extends Application {\n  class Base\n  case class Point(x:int, y:int) extends
+    Base {\n    def &lt; (that:Point) = (y &lt; that.y || (y == that.y &amp;&amp;
+    x &lt; that.x))\n  }\n  case class Wall(no:int, from:Point, to:Point) extends
+    Base {\n    def &lt; (that:Wall) = (from &lt; that.from)\n  }\n  \n  // 点番号 -&gt;
+    Point\n  val N = readInt\n  val dotMap = Map(List.tabulate(N, i =&gt; {\n    val
+    line = readLine.split(\" \").map(Integer.parseInt(_))\n    (i+1, Point(line(0),
+    line(1)))\n  }):_*)\n  // 壁番号 -&gt; Wall\n  val W = readInt\n  val wallMap = Map(List.tabulate(W,
+    i =&gt; {\n    val ary = readLine.split(\" \").map(Integer.parseInt(_))\n    //
+    左上に近いのを from に設定\n    val p1 = dotMap(ary(0))\n    val p2 = dotMap(ary(1))\n    if(p1
+    &lt; p2)\n      (i+1, Wall(i+1, p1, p2))\n    else\n      (i+1, Wall(i+1, p2,
+    p1))\n  }):_*)\n  // 訪れていない壁番号のセット\n  val unvisited:Set[int] = Set(wallMap.keys.toList:_*)\n
+    \ // ソート済みの壁の壁番号の配列\n  val sortAry = wallMap.keySet.toList.sort((n1, n2) =&gt;
+    \n      wallMap(n1) &lt; wallMap(n2)).toArray\n  // 上のたどっていくポインタ\n  var sortAryPos
+    = 0\n  // {たどった壁} {両方水の壁}\n  val visited = Set[int]()\n  val bothWater = Set[int]()\n
+    \ val brokenWall = Set[int]()\n  // Point -&gt; Wallの配列\n  val point2wallAry =
+    Map[Point, Array[(Wall,int)]]()\n  for(pointNo &lt;- dotMap.keys) {\n    // 頂点から出る壁は１～４つ\n
+    \   val point = dotMap(pointNo)\n    point2wallAry(point) = new Array[(Wall,int)](4)\n
+    \ }\n  for(wallNo &lt;- unvisited) {\n    def put(p:Point, wallDir:(Wall,int))
+    {\n      val ary = point2wallAry(p)\n      for(i &lt;- 0 until (ary.length)) {\n
+    \       if(ary(i) == null) {\n          ary(i) = wallDir\n          return\n        }\n
+    \     }\n      error(\"ここにはこない\")\n    }\n    val wall = wallMap(wallNo)\n    put(wall.from,
+    (wall, 1))\n    put(wall.to, (wall, -1))\n  }\n  \n  while(unvisited.size &gt;
+    0) {\n    //println(unvisited)\n    // [全ての壁|座標でソート済み]in{まだたどっていない壁}から最初の壁をとる。次はこの配列番号から。\n
+    \   def getFromSortAry():int = {\n        while(true) {\n          val wallNo
+    = sortAry(sortAryPos)\n        if(unvisited.contains(wallNo)) return wallNo\n
+    \       sortAryPos += 1\n        }\n      error(\"ここにはこない\")\n    }\n    var wallNo
+    = getFromSortAry\n    var wall = wallMap(wallNo) \n    // 左手に水:int＝頂点から右方向に壁 なら
+    1 下方向なら -1\n    val isLeftWater = if(wall.from.y == wall.to.y) 1 else -1\n    //println(\"isLeftWater
+    = \" + isLeftWater)\n    // 壁のたどる方向、1 = from -&gt; to、-1 = to -&gt; from\n    var
+    wallDir = 1\n    // 最初の壁に戻ってくるまで、壁をたどる (do-while)\n    val firstWallNo = wallNo\n
+    \   val firstWallDir = wallDir\n    def loop() {\n      while(true) {\n        //println(\"wall
+    = \" + wall + \", wallDir = \" + wallDir)\n        //{たどった壁}に入っている =&gt; {たどった壁}から{両方水の壁}へ移動\n
+    \       //  else {まだたどっていない壁}から{たどった壁}へ移動\n        if(visited.contains(wallNo))
+    {\n          visited -= wallNo\n          bothWater += wallNo\n        } else
+    {\n          unvisited -= wallNo\n          visited += wallNo\n        }\n        //
+    次の壁の始点＝前の壁の終点\n        val nextStart = (if(wallDir == 1) wall.to else wall.from)\n
+    \       // {次の壁の始点 -&gt; つながっている壁|not in 両方水の壁 &amp;&amp; 崩壊壁}から「角度」の小さい順にたどる\n
+    \       //println(nextStart)\n        val wallAry = point2wallAry(nextStart)\n
+    \       var minArg = Integer.MAX_VALUE\n        var minWallDir:(Wall,int) = null\n
+    \       for(i &lt;- 0 until (wallAry.length)) {\n          val nextWallDir = wallAry(i)\n
+    \         //println(\"nextWallDir = \" + nextWallDir)\n          if(nextWallDir
+    != null &amp;&amp; !bothWater.contains(nextWallDir._1.no) &amp;&amp; \n            !brokenWall.contains(nextWallDir._1.no))
+    {\n            // 角度＝外積（前の壁、次の壁）×左手に水（正負）-&gt; ９０～３６０\n            def getArg(wall1:Wall,
+    wallDir1:int, wall2:Wall, wallDir2:int, isLeftWater:int):int = {\n              def
+    toSign(p:Point):Point = Point(toSignI(p.x), toSignI(p.y))\n              def toSignI(i:int)
+    = if(i&lt;0) -1 else if(i==0) 0 else 1\n              def toVec(wall:Wall, wallDir:int)
+    =\n                if(wallDir == 1) Point(wall.to.x - wall.from.x, wall.to.y -
+    wall.from.y)\n                else Point(wall.from.x - wall.to.x, wall.from.y
+    - wall.to.y)\n              val vec1 = toSign(toVec(wall1, wallDir1))\n              val
+    vec2 = toSign(toVec(wall2, wallDir2))\n              if(vec1 == vec2) return 180\n
+    \             else if(vec1.x == -vec2.x &amp;&amp; vec1.y == -vec2.y) return 360\n
+    \             val gaiseki = (vec1.x * vec2.y - vec1.y * vec2.x) * isLeftWater\n
+    \             if(gaiseki &lt; 0) return 90\n              else return 270\n            }\n
+    \           val arg = getArg(wall, wallDir, nextWallDir._1, nextWallDir._2, isLeftWater)\n
+    \           //println(\"arg = \" + arg)\n            if(arg &lt; minArg) {\n              minArg
+    = arg\n              minWallDir = nextWallDir\n            }\n          }\n        }\n
+    \       //assert(minWallDir != null)\n        if(minWallDir == null) return\n
+    \       // 最初の壁に戻って来たら終了\n        val nextWall = minWallDir._1\n        val nextWallDir
+    = minWallDir._2\n        if(nextWall.no == firstWallNo &amp;&amp; nextWallDir
+    == firstWallDir) return\n        wall = nextWall\n        wallDir = nextWallDir\n
+    \       wallNo = wall.no\n      }\n      \n    }\n    loop()\n    brokenWall ++=
+    visited\n    visited.clear\n  }  \n  println(bothWater.size)\n  for(wallNo &lt;-
+    bothWater)\n    println(wallMap(wallNo).no)\n  //println(brokenWall.size)\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

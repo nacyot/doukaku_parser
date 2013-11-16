@@ -1,0 +1,888 @@
+---
+:id: '173'
+:title: マルバツゲーム
+:comments:
+- :id: '6190'
+  :parent_id: '173'
+  :url: http://ja.doukaku.org/comment/6190
+  :user_name: syat
+  :user_url: /web/20080908103508/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2008/04/20 23:40 GMT
+  :vote_count: '4'
+  :vote_score: '4'
+  :body: "\r\n\t  <p>マルバツゲームは３×３の格子に交互に○と×を書き込み、先に縦・横・斜めに記号をそろえたほうが勝ちというおなじみのゲームです。</p>\n<p>「毎ターン乱数を使って手を決めるランダムプレイヤー同士を対戦させる」というのが今回のお題です。\n１万回対戦させ、勝ち・負け・引き分けの数を表示してください。\nそして先手が有利であることを確かめてください。</p>\n<p>良い手を思考するプレイヤーについては別のお題にしようと思っています。\nプレイヤーを簡単に差し換えることができる設計を目指してください。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6191'
+  :parent_id: '173'
+  :url: http://ja.doukaku.org/comment/6191
+  :user_name: yuin
+  :user_url: /web/20080908103508/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/04/22 03:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>お昼休みにさくっとやってみました。\n</p>\n<p>Playerクラスを継承したクラスをつくることでPlayerを差し替えることができます。\n</p>\n<p>10000回を3回ほどやってみて\n</p>\n<pre><code>player1
+    won:    5190\nplayer2 won:    2410\ndraw :  2400\n\nplayer1 won:    5190\nplayer2
+    won:    2411\ndraw :  2399\n\nplayer1 won:    5152\nplayer2 won:    2383\ndraw
+    :  2465\n</code></pre>\n<p>というかんじでした。\n</p>\n\n\n\n\t"
+  :code: "import java.util.Random\n\nclass TicTacToe(val size:int, val players:List[Player])
+    {\n  protected val field = new Array[Array[char]](size,size)\n  val len = size*size\n
+    \ val lines = _stline((v,v2) =&gt; (v,v2))++_stline((v,v2) =&gt; (v2,v))++\n              List(((size-1).until(-1,-1)).map(v=&gt;(v,v)))
+    ++\n              List((0 until size).map(v=&gt;(v,v)))\n\n  def _stline(f:(int,int)
+    =&gt; Pair[int,int]) = \n    (0 until size).map(v =&gt; (0 until size).map(v2
+    =&gt; f(v,v2)))\n\n  override def toString = {\n    val sep = List.make(size*4+1,
+    \"-\").mkString(\"\\n\", \"\", \"\\n\")\n    field.map{_.mkString(\"| \", \" |
+    \", \" |\")}.mkString(sep,sep,sep)\n  }\n\n  def start:Option[Player] = {\n    for(val
+    i&lt;-(0 until size); val j&lt;-(0 until size)) { field(i)(j) = ' '}\n    Stream.const(players).flatMap(v=&gt;v).take(len).find
+    {player =&gt; \n      val p = player.put(this)\n      if(!available_?(p)) error(\"Oops!\")\n
+    \     field(p._1)(p._2) = player.mark\n      judge\n    }\n  }\n\n  def judge
+    = lines.exists(l =&gt; l.forall(!available_?(_)) &amp;&amp; \n                    l.forall(v
+    =&gt; field(l(0)._1)(l(0)._2) == field(v._1)(v._2)))\n\n  def available_?(pos:Pair[int,int])
+    = field(pos._1)(pos._2) equals ' '\n}\n\nabstract class Player{\n  val mark:char\n
+    \ val name:String\n  def put(ttt:TicTacToe):Pair[int,int]\n}\n\nclass RandomPlayer(override
+    val mark:char, override val name:String) extends Player{\n  val rnd = new Random\n
+    \ override def put(ttt:TicTacToe) = {\n    def _n = (rnd.nextInt(ttt.size), rnd.nextInt(ttt.size))\n
+    \   def next(v:Pair[int,int]):Stream[Pair[int,int]] = Stream.cons(v, next(_n))\n
+    \   next(_n).find(ttt.available_?).get\n  }\n}\n\nobject Main extends Application{\n
+    \ val ttt = new TicTacToe(3, List(new RandomPlayer('○', \"1\"), new RandomPlayer('×',
+    \"2\")))\n  val result = Array.make(3,0)\n  (1 to 10000) foreach { i =&gt; \n
+    \   ttt.start match {\n      case Some(p) if p.name equals \"1\" =&gt; result(0)
+    += 1\n      case Some(p) if p.name equals \"2\" =&gt; result(1) += 1\n      case
+    _ =&gt; result(2) += 1\n    }\n  }\n  println(\"player1 won:\\t\"+result(0)+\"\\n\"+\"player2
+    won:\\t\"+result(1)+\"\\n\"+\"draw :\\t\"+result(2))\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6192'
+  :parent_id: '173'
+  :url: http://ja.doukaku.org/comment/6192
+  :user_name: あにす
+  :user_url: /web/20080908103508/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/04/22 04:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  IPlayerBaseインターフェースを実装していればプレーヤーになれます。\r<br>勝敗判定の部分をもっとエレガントに書きたいですね。\r<br><br>結果\r<br>○ WIN : 5837\r<br>× WIN : 2846\r<br>  DRAW : 1317\r<br><br>○ WIN : 5863\r<br>× WIN : 2924\r<br>  DRAW : 1213\r<br><br>○ WIN : 5811\r<br>× WIN : 2895\r<br>  DRAW : 1294\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    namespace どう書く_org_マルバツゲーム {
+        class Program {
+            static void Main(string[] args) {
+                int maruWin = 0;
+                int batuWin = 0;
+                int draw = 0;
+                IPlayerBase maru = new Player() { Name = "○" };
+                IPlayerBase batu = new Player() { Name = "×" };
+
+                for(int i = 0; i &lt; 10000; i++) {
+                    Game game = new Game(maru, batu);
+                    switch(game.Start()) {
+                    case "○":
+                        maruWin++;
+                        break;
+                    case "×":
+                        batuWin++;
+                        break;
+                    case "draw":
+                        draw++;
+                        break;
+                    }
+                }
+
+                Console.WriteLine("○ WIN : " + maruWin.ToString());
+                Console.WriteLine("× WIN : " + batuWin.ToString());
+                Console.WriteLine("  DRAW : " + draw.ToString());
+
+                Console.ReadLine();
+            }
+        }
+
+        class Game {
+            private IPlayerBase _maru;
+            private IPlayerBase _batu;
+
+            public string[] Board = new string[] {
+                "□□□",
+                "□□□",
+                "□□□" };
+
+            public Game(IPlayerBase maru, IPlayerBase batu) {
+                _maru = maru;
+                _maru.Game = this;
+                _batu = batu;
+                _batu.Game = this;
+            }
+
+            public string Start() {
+                string jadge = "";
+                while(true) {
+                    _maru.Play();
+                    jadge = Judge(_maru.Name);
+                    if(jadge != "") {
+                        break;
+                    }
+                    _batu.Play();
+                    jadge = Judge(_batu.Name);
+                    if(jadge != "") {
+                        break;
+                    }
+                }
+
+                return jadge;
+            }
+
+            //勝者を判定
+            private string Judge(string name) {
+                string name3 = name + name + name;
+                //横
+                foreach(string str in Board) {
+                    if(str == name3) {
+                        return name;
+                    }
+                }
+
+                //縦
+                for(int x = 0; x &lt; 3; x++) {
+                    string str = "";
+                    for(int y = 0; y &lt; 3; y++) {
+                        str += Board[y][x];
+                    }
+                    if(str == name3) {
+                        return name;
+                    }
+                }
+
+                //斜め
+                string tmp = Board[0][0].ToString() + Board[1][1].ToString() + Board[2][2].ToString();
+                if(tmp == name3) {
+                    return name;
+                }
+                tmp = Board[0][2].ToString() + Board[1][1].ToString() + Board[2][0].ToString();
+                if(tmp == name3) {
+                    return name;
+                }
+
+                //引き分け
+                if(!(Board[0] + Board[1] + Board[2]).Contains('□')) {
+                    return "draw";
+                }
+                return "";
+            }
+        }
+
+        class Player :IPlayerBase {
+            #region IPlayerBase メンバ
+
+            public Game Game { get; set; } //参加しているゲーム
+
+            public string Name { get; set; } //○か×か
+
+            private Random Rnd = new Random();
+            //一手打つ
+            public void Play() {
+                List&lt;Location&gt; cells = new List&lt;Location&gt;(); //置けるマス
+
+                //置けるマスを列挙
+                for(int y = 0; y &lt; 3; y++) {
+                    for(int x = 0; x &lt; 3; x++) {
+                        if(Game.Board[y][x] == '□') {
+                            Location location = new Location();
+                            location.x = x;
+                            location.y = y;
+
+                            cells.Add(location);
+                        }
+                    }
+                }
+
+                //置けるマスが無ければ何もしない
+                if(cells.Count == 0) return;
+
+                //乱数で置くマスを決定
+                int index = Rnd.Next(cells.Count);
+                Location cell = cells[index];
+
+                //石を置く
+                Game.Board[cell.y] = Game.Board[cell.y].Remove(cell.x, 1).Insert(cell.x, Name);
+            }
+            #endregion
+        }
+
+        //マスの位置
+        struct Location {
+            public int x;
+            public int y;
+        }
+
+        //プレーヤーが実装するインターフェース
+        //これを実装したプレーヤーに差し替え可
+        interface IPlayerBase {
+            Game Game { set; get; }
+            string Name { set; get; }
+            void Play();
+        }
+    }
+  :tags:
+  - C#3.0
+  :references:
+    :url: 
+    :title: 
+- :id: '6193'
+  :parent_id: '173'
+  :url: http://ja.doukaku.org/comment/6193
+  :user_name: horiuchi
+  :user_url: /web/20080908103508/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/04/22 04:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Playerを実装すれば、実装を置き換えられます。\r\nしかし、Scalaと比べてだいぶ長くなっちゃいました。\r\nとりあえず、3回実行してみた結果です。\r\n\r\nResult:\r\nPlayer1
+    won: 5214\r\nPlayer2 won: 2355\r\ndraw game  : 2431\r\n\r\nResult:\r\nPlayer1
+    won: 5211\r\nPlayer2 won: 2444\r\ndraw game  : 2345\r\n\r\nResult:\r\nPlayer1
+    won: 5174\r\nPlayer2 won: 2404\r\ndraw game  : 2422\r\n</pre>\n\t"
+  :code: |
+    import java.util.Random;
+
+    public class TicTacToe {
+        public static final int SIZE = 3;
+
+        private final Mark[][] fields_ = new Mark[SIZE][SIZE];
+        private final Pair[][] lines_ = new Pair[][] {
+                {new Pair(0,0), new Pair(0,1), new Pair(0,2)},
+                {new Pair(1,0), new Pair(1,1), new Pair(1,2)},
+                {new Pair(2,0), new Pair(2,1), new Pair(2,2)},
+                {new Pair(0,0), new Pair(1,0), new Pair(2,0)},
+                {new Pair(0,1), new Pair(1,1), new Pair(2,1)},
+                {new Pair(0,2), new Pair(1,2), new Pair(2,2)},
+                {new Pair(0,0), new Pair(1,1), new Pair(2,2)},
+                {new Pair(2,2), new Pair(1,1), new Pair(0,0)},
+        };
+
+
+        public TicTacToe() {
+            for (int x = 0; x &lt; SIZE; x++) {
+                for (int y = 0; y &lt; SIZE; y++) {
+                    fields_[x][y] = Mark.E;
+                }
+            }
+        }
+
+        public Mark getMark(Pair pair) {
+            return fields_[pair.x][pair.y];
+        }
+        public void setMark(Pair pair, Mark mark) {
+            fields_[pair.x][pair.y] = mark;
+        }
+
+        public boolean nextStep(Pair pair, Mark mark) {
+            if (getMark(pair) != Mark.E) return false;
+            setMark(pair, mark);
+            return true;
+        }
+
+        public Mark isEndGame() {
+            for (Pair[] row: lines_) {
+                Mark m = null;
+                boolean isSame = true;
+                for (Pair cell: row) {
+                    Mark mark = fields_[cell.x][cell.y];
+                    if (m == null) {
+                        m = mark;
+                        continue;
+                    }
+                    if (m != mark) {
+                        isSame = false;
+                        break;
+                    }
+                }
+                if (isSame) return m;
+            }
+            return Mark.E;
+        }
+
+
+        public static void main(String[] args) {
+            Player player1 = new RandomPlayer(Mark.O, "Player1");
+            Player player2 = new RandomPlayer(Mark.X, "Player2");
+
+            int maxTurn = TicTacToe.SIZE * TicTacToe.SIZE;
+            int[] result = new int[3];
+            for (int round = 0; round &lt; 10000; round++) {
+                TicTacToe game = new TicTacToe();
+                for (int turn = 0; turn &lt;= maxTurn; turn++) {
+                    if (turn == maxTurn) {
+                        result[2]++;
+                        break;
+                    } else if (turn % 2 == 0) {
+                        player1.put(game);
+                    } else {
+                        player2.put(game);
+                    }
+                    Mark mark = game.isEndGame();
+                    if (mark == Mark.O) {
+                        result[0]++;
+                        break;
+                    } else if (mark == Mark.X) {
+                        result[1]++;
+                        break;
+                    }
+                }
+            }
+
+            System.out.println("Result:");
+            System.out.printf("%s won: %d%n", player1.name, result[0]);
+            System.out.printf("%s won: %d%n", player2.name, result[1]);
+            System.out.printf("draw game  : %d%n", result[2]);
+        }
+    }
+
+    enum Mark {
+        E { @Override public Mark getOpponent() { return E; } },
+        O { @Override public Mark getOpponent() { return X; } },
+        X { @Override public Mark getOpponent() { return O; } };
+
+        public abstract Mark getOpponent();
+    }
+    class Pair {
+        public final int x;
+        public final int y;
+
+        public Pair(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+
+    abstract class Player {
+        public final Mark mark;
+        public final String name;
+
+        public Player(Mark mark, String name) {
+            this.mark = mark;
+            this.name = name;
+        }
+
+        public abstract void put(TicTacToe game);
+    }
+
+    class RandomPlayer extends Player {
+        private final Random random_ = new Random();
+
+        public RandomPlayer(Mark mark, String name) {
+            super(mark, name);
+        }
+
+        @Override
+        public void put(TicTacToe game) {
+            for (;;) {
+                Pair pair = getNextPair();
+                boolean res = game.nextStep(pair, mark);
+                if (res) break;
+            }
+        }
+        private Pair getNextPair() {
+            return new Pair(random_.nextInt(TicTacToe.SIZE), random_.nextInt(TicTacToe.SIZE));
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '6194'
+  :parent_id: '173'
+  :url: http://ja.doukaku.org/comment/6194
+  :user_name: sumim
+  :user_url: /web/20080908103508/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/04/22 05:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    | マス目群 勝敗カウンタ 勝ち判定 |
+    マス目群 := OrderedCollection new.
+    (1 to: 3) asDigitsToPower: 2 do: [:座標 | マス目群 add: 座標 copy].
+
+    勝敗カウンタ := Bag new.
+
+    1e4 timesRepeat: [
+        | 残りのマス目群 先手 後手 打ち手順 手番 結果 |
+        残りのマス目群 := マス目群 copy shuffled.
+        先手 := OrderedCollection new. 後手 := 先手 copy.
+        打ち手順 := {先手. 後手}.
+        手番 := 0.
+        結果 := nil.
+        勝ち判定 := [:取得済み |
+            (#(first second) anySatisfy: [:セレクタ |
+                (取得済み
+                    groupBy: [:各々 | 各々 perform: セレクタ]
+                    having: [:括り | 括り size = 3]) notEmpty]) or: [
+            {[:各々 | 各々 first = 各々 second]. [:各々 | 各々 sum = 4]}
+                anySatisfy: [:条件 | (取得済み count: 条件) = 3]]].
+
+        [残りのマス目群
+            ifEmpty: [結果 := #引き分け]
+            ifNotEmpty: [
+                | 取得マス目群 |
+                (取得マス目群 := 打ち手順 atWrap: (手番 := 手番 + 1))
+                    add: 残りのマス目群 removeFirst.
+                (勝ち判定 value: 取得マス目群) ifTrue: [
+                    結果 := 手番 odd
+                        ifTrue: [#先手勝ち]
+                        ifFalse: [#後手勝ち]]].
+        結果 isNil] whileTrue.
+
+        勝敗カウンタ add: 結果].
+
+    ^勝敗カウンタ sortedCounts asArray
+
+    "=&gt; {5895-&gt;#先手勝ち. 2796-&gt;#後手勝ち. 1309-&gt;#引き分け} "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '6195'
+  :parent_id: '173'
+  :url: http://ja.doukaku.org/comment/6195
+  :user_name: sumim
+  :user_url: /web/20080908103508/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/04/22 07:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>勝敗判定が分かりづらかったので変えてみました。</p>\n\n\t"
+  :code: |
+    | マス目群 ライン群 勝敗カウンタ |
+    マス目群 := OrderedCollection new.
+    (1 to: 3) asDigitsToPower: 2 do: [:座標 | マス目群 add: 座標 copy].
+
+    ライン群 := OrderedCollection new.
+    (1 to: 3) do: [:座標１ |
+        ライン群 add: ((1 to: 3) collect: [:座標２ | {座標１. 座標２}]).
+        ライン群 add: ((1 to: 3) collect: [:座標２ | {座標２. 座標１}])].
+    ライン群 add: #((1 1) (2 2) (3 3)); add: #((1 3) (2 2) (3 1)).
+
+    勝敗カウンタ := Bag new.
+
+    1e4 timesRepeat: [
+        | 残りのマス目群 先手 後手 打ち手順 手番 結果 |
+        残りのマス目群 := マス目群 copy shuffled.
+        先手 := OrderedCollection new. 後手 := 先手 copy.
+        打ち手順 := {先手. 後手}.
+        手番 := 0.
+        結果 := nil.
+
+        [残りのマス目群
+            ifEmpty: [結果 := #引き分け]
+            ifNotEmpty: [
+                | 取得マス目群 |
+                (取得マス目群 := 打ち手順 atWrap: (手番 := 手番 + 1))
+                    add: 残りのマス目群 removeFirst.
+                (ライン群 anySatisfy: [:必須マス群 |
+                        取得マス目群 includesAllOf: 必須マス群])
+                    ifTrue: [結果 := 手番 odd
+                        ifTrue: [#先手勝ち] ifFalse: [#後手勝ち]]].
+        結果 isNil] whileTrue.
+
+        勝敗カウンタ add: 結果].
+
+    ^勝敗カウンタ sortedCounts asArray
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '6196'
+  :parent_id: '173'
+  :url: http://ja.doukaku.org/comment/6196
+  :user_name: nel
+  :user_url: /web/20080908103508/http://ja.doukaku.org/user/790/
+  :language: Other
+  :time: 2008/04/22 07:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ちょっと力業でしょうか。</p>\n\n\t"
+  :code: |
+    (use srfi-1)
+    (use srfi-27)
+    (use util.list)
+
+    (random-source-randomize! default-random-source)
+
+    ;; board: (0 1 0 0 0 0 0 0 0)
+    ;; board -&gt; board
+    (define (player-random board self)
+      (define (okeru)
+        (length (filter zero? board)))
+
+      (let loop ((board board)
+             (next  (random-integer (okeru))))
+        (if (null? board)
+        ()
+        (cons (if (= next 0)
+              self
+              (car board))
+              (loop (cdr board)
+                (if (= (car board) 0)
+                (- next 1)
+                next
+                ))))))
+
+    (define (play p1 p2)
+      (define (finish? board)
+        (or (&gt; (judge board) 0)
+        (not (find zero? board))))
+
+      (let loop ((board (make-list 9 0))
+             (phase 1))
+        (if (finish? board)
+        board
+        (if (= phase 1)
+            (loop (p1 board 1) 2)
+            (loop (p2 board 2) 1)))))
+
+    (define (judge board)
+      (define line-points-list
+        '((0 1 2)
+          (3 4 5)
+          (6 7 8)
+          (0 3 6)
+          (1 4 7)
+          (2 5 8)
+          (0 4 8)
+          (2 4 6)))
+
+      (define (judge-4-player n)
+        (find (lambda (line-points)
+            (every (lambda (j)
+                 (= (ref board j) n))
+               line-points))
+          line-points-list))
+
+      (cond ((judge-4-player 1) 1)
+        ((judge-4-player 2) 2)
+        (else 0)))
+
+    (define (marubatsu p1 p2)
+      (define (one-play)
+        (judge (play p1 p2)))
+
+      (define hash (make-hash-table))
+      (dotimes (counter 10000)
+        (hash-table-update! hash (one-play) (cut + 1 &lt;&gt;) 0))
+
+      (write (hash-table-&gt;alist hash)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6197'
+  :parent_id: '173'
+  :url: http://ja.doukaku.org/comment/6197
+  :user_name: nel
+  :user_url: /web/20080908103508/http://ja.doukaku.org/user/790/
+  :language: Scheme
+  :time: 2008/04/22 07:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ちょっと力業でしょうか。</p>\n\n\t"
+  :code: |
+    (use srfi-1)
+    (use srfi-27)
+    (use util.list)
+
+    (random-source-randomize! default-random-source)
+
+    ;; board: (0 1 0 0 0 0 0 0 0)
+    ;; board -&gt; board
+    (define (player-random board self)
+      (define (okeru)
+        (length (filter zero? board)))
+
+      (let loop ((board board)
+             (next  (random-integer (okeru))))
+        (if (null? board)
+        ()
+        (cons (if (= next 0)
+              self
+              (car board))
+              (loop (cdr board)
+                (if (= (car board) 0)
+                (- next 1)
+                next
+                ))))))
+
+    (define (play p1 p2)
+      (define (finish? board)
+        (or (&gt; (judge board) 0)
+        (not (find zero? board))))
+
+      (let loop ((board (make-list 9 0))
+             (phase 1))
+        (if (finish? board)
+        board
+        (if (= phase 1)
+            (loop (p1 board 1) 2)
+            (loop (p2 board 2) 1)))))
+
+    (define (judge board)
+      (define line-points-list
+        '((0 1 2)
+          (3 4 5)
+          (6 7 8)
+          (0 3 6)
+          (1 4 7)
+          (2 5 8)
+          (0 4 8)
+          (2 4 6)))
+
+      (define (judge-4-player n)
+        (find (lambda (line-points)
+            (every (lambda (j)
+                 (= (ref board j) n))
+               line-points))
+          line-points-list))
+
+      (cond ((judge-4-player 1) 1)
+        ((judge-4-player 2) 2)
+        (else 0)))
+
+    (define (marubatsu p1 p2)
+      (define (one-play)
+        (judge (play p1 p2)))
+
+      (define hash (make-hash-table))
+      (dotimes (counter 10000)
+        (hash-table-update! hash (one-play) (cut + 1 &lt;&gt;) 0))
+
+      (write (hash-table-&gt;alist hash)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6199'
+  :parent_id: '173'
+  :url: http://ja.doukaku.org/comment/6199
+  :user_name: yuin
+  :user_url: /web/20080908103508/http://ja.doukaku.org/user/82/
+  :language: diff
+  :time: 2008/04/22 08:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>1行ミスってました。コピペはいけませんね･･･。あらためて\n</p>\n<pre><code>player1 won:
+    \   5826\nplayer2 won:    2857\ndraw :  1317\n</code></pre>\n<p>という感じです。\n</p>\n\n\n\n\t"
+  :code: |
+    @@ -4,7 +4,7 @@
+       protected val field = new Array[Array[char]](size,size)
+       val len = size*size
+       val lines = _stline((v,v2) =&gt; (v,v2))++_stline((v,v2) =&gt; (v2,v))++
+    -              List(((size-1).until(-1,-1)).map(v=&gt;(v,v))) ++
+    +              List(((size-1).until(-1,-1)).map(v=&gt; (v,(size-1-v)))) ++
+                   List((0 until size).map(v=&gt;(v,v)))
+
+       def _stline(f:(int,int) =&gt; Pair[int,int]) =
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6201'
+  :parent_id: '173'
+  :url: http://ja.doukaku.org/comment/6201
+  :user_name: syat
+  :user_url: /web/20080908103508/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2008/04/22 15:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>出題者です。統計的には試行回数が多いほど誤差が小さくなるので、試しに１００万×５回ほどやってみました。</p>\n<p>その結果、</p>\n<p>先攻勝ち：先攻負け：引き分け　≒
+    58.5：28.8：12.7</p>\n<p>と出ました。\nそこらへんの数字の人は正解と思われます。</p>\n<p>乱数は素直につかえば問題ないのですが、変なロジックをとおした結果、かたよりが出たりすると怖いです。\n処理系によって乱数の癖が見れたりしたら面白かったかも？？</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6202'
+  :parent_id: '173'
+  :url: http://ja.doukaku.org/comment/6202
+  :user_name: horiuchi
+  :user_url: /web/20080908103508/http://ja.doukaku.org/user/570/
+  :language: diff
+  :time: 2008/04/23 04:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">終了判定にバグ発見してしまいました。\r\nここを直して、100万回実行した結果以下のようになりました。\r\nこれでほぼ合っていそうです。\r\n\r\nResult:\r\nPlayer1
+    won: 582337\r\nPlayer2 won: 290884\r\ndraw game  : 126779\r\n</pre>\n\t"
+  :code: |
+    15c15
+    &lt;                       {new Pair(2,2), new Pair(1,1), new Pair(0,0)},
+    ---
+    &gt;                       {new Pair(0,2), new Pair(1,1), new Pair(2,0)},
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6203'
+  :parent_id: '173'
+  :url: http://ja.doukaku.org/comment/6203
+  :user_name: 匿名
+  :user_url: /web/20080908103508/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2008/04/23 07:53 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>プレイヤーを単純な関数として実装しました。</p>\n\n\t"
+  :code: |
+    from random import choice
+
+    def p(d, x):
+      return choice([i for i, j in enumerate(d) if j == 0])
+
+    def w(d, i):
+      f = lambda l: [i] * 3 == l
+      return (f(d[:3]) or f(d[3:6]) or f(d[6:]) or
+              f(d[::3]) or f(d[1::3]) or f(d[2::3]) or
+              f(d[::4]) or f(d[2:7:2]))
+
+    def m(*p):
+      d = [0] * 9
+      for i in range(9):
+        x = i % 2 + 1
+        d[p[i%2](d, x)] = x
+        if i &gt; 3 and w(d, x):
+          return x
+      return 0
+
+    r = [0] * 3
+    for i in range(10000):
+      r[m(p, p)] += 1
+    print 'draw: %d\n1st:  %d\n2nd:  %d' % tuple(r)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6204'
+  :parent_id: '173'
+  :url: http://ja.doukaku.org/comment/6204
+  :user_name: turugina
+  :user_url: /web/20080908103508/http://ja.doukaku.org/user/760/
+  :language: C
+  :time: 2008/04/23 12:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">○×ゲームなのに視覚的なものはほとんど考慮してないので恐縮ですが...\r\n\r\nちなみに、100万回勝負させたら\r\n\r\nplayer
+    1 won : 3595448(0.359545)\r\nplayer 2 won : 2882753(0.288275)\r\ndraw : 3521799(0.35218)\r\n\r\nだそうです。</pre>\n\t"
+  :code: "#include &lt;algorithm&gt;\n#include &lt;iostream&gt;\n#include &lt;map&gt;\n#include
+    &lt;ctime&gt;\n\nclass board\n{\n  int cell[3*3];\n\n  public:\n  board() { reset();
+    }\n  void reset() { std::fill_n(cell, 3*3, 0); }\n\n  int&amp; operator()(int
+    x, int y)\n  { return cell[x+3*y]; }\n  const int&amp; operator()(int x, int y)
+    const\n  { return cell[x+3*y]; }\n};\nstd::ostream&amp; operator&lt;&lt;(std::ostream&amp;
+    os, const board&amp; b)\n{\n  for ( int y = 0; y &lt; 3; ++y ) {\n    y != 0 &amp;&amp;
+    os &lt;&lt; \"-+-+-\\n\";\n    os &lt;&lt; b(0,y) &lt;&lt; \"|\" &lt;&lt; b(1,y)
+    &lt;&lt; \"|\" &lt;&lt; b(2,y) &lt;&lt; \"\\n\";\n  }\n  return os;\n}\n\n\nclass
+    player\n{\n  static int player_id_;\n  int id_;\n\n  protected:\n  player() :
+    id_(++player_id_) {}\n  virtual ~player();\n\n  public:\n  int id()const { return
+    id_; }\n\n  void operator()(board&amp; b) const\n  { next(b); }\n\n\n  private:\n
+    \ virtual void\n    next(board&amp; b)\n  const = 0;\n};\nint player::player_id_
+    = 0;\nplayer::~player() {}\n\nclass rand_player\n: public player\n{\n  void next(board&amp;
+    b) const;\n};\nvoid\nrand_player::next(board&amp; b)\n  const\n{\n  while (1)
+    {\n    int x = std::rand() % 3;\n    int y = std::rand() % 3;\n    if ( b(x,y)
+    == 0 ) {\n      b(x,y) = id();\n      break;\n    }\n  }\n}\n\nstruct board_checker\n{\n
+    \ int operator()(board&amp; b) const;\n};\n\nint\nboard_checker::operator()(board&amp;
+    b)\n  const\n{\n  bool draw=true;\n  for (int x = 0; draw &amp;&amp; x &lt; 3;
+    ++x )\n    for (int y = 0; draw &amp;&amp; y &lt; 3; ++y )\n      draw = b(x,y)
+    != 0;\n  if ( draw )\n    return -1;\n  \n  if ( int id = b(1,1) )\n    if ((b(0,0)
+    == id &amp;&amp; b(2,2) == id ) ||\n        (b(0,2) == id &amp;&amp; b(2,0) ==
+    id) ||\n        (b(0,1) == id &amp;&amp; b(2,1) == id) ||\n        (b(1,0) ==
+    id &amp;&amp; b(1,2) == id) )\n      return id;\n  if ( int id = b(0,0) )\n    if
+    ((b(0,1) == id &amp;&amp; b(0,2) == id) ||\n        (b(1,0) == id &amp;&amp; b(2,0)
+    == id) )\n      return id;\n  if ( int id = b(2,2) )\n    if ((b(1,2) == id &amp;&amp;
+    b(0,2) == id) ||\n        (b(2,1) == id &amp;&amp; b(2,0) == id) )\n      return
+    id;\n\n  // not finish\n  return 0;\n}\n\nint main()\n{\n  std::srand(std::time(0));\n
+    \ rand_player p1, p2;\n  player *p[] = { &amp;p1, &amp;p2 };\n  board b;\n  board_checker
+    bc;\n  std::map&lt;int, unsigned int&gt; st;\n  const std::size_t max = 10000\n
+    \ for ( std::size_t i = 0; i &lt; max; ++i ) {\n    b.reset();\n    int count
+    = 0;\n    while ( 1 ) {\n      (*p[count++ % 2])(b);\n//      std::cout &lt;&lt;
+    \" i = \" &lt;&lt; i &lt;&lt; \" step = \" &lt;&lt; count &lt;&lt; \"\\n\" &lt;&lt;
+    b;\n      if ( count &gt;= 4 )\n        if ( int result = bc(b) ) {\n          st[result]++;\n
+    \         break;\n        }\n    }\n  }\n\n  std::cout &lt;&lt; \"player \" &lt;&lt;
+    p1.id() &lt;&lt; \" won : \" &lt;&lt; st[p1.id()]\n    &lt;&lt; \"(\" &lt;&lt;
+    st[p1.id()]/static_cast&lt;double&gt;(max) &lt;&lt; \")\\n\";\n  std::cout &lt;&lt;
+    \"player \" &lt;&lt; p2.id() &lt;&lt; \" won : \" &lt;&lt; st[p2.id()]\n    &lt;&lt;
+    \"(\" &lt;&lt; st[p2.id()]/static_cast&lt;double&gt;(max) &lt;&lt; \")\\n\";\n
+    \ std::cout &lt;&lt; \"draw : \" &lt;&lt; st[-1]\n    &lt;&lt; \"(\" &lt;&lt;
+    st[-1]/static_cast&lt;double&gt;(max) &lt;&lt; \")\\n\";\n\n\n  return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6205'
+  :parent_id: '173'
+  :url: http://ja.doukaku.org/comment/6205
+  :user_name: 匿名
+  :user_url: /web/20080908103508/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/04/23 12:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>こんにちは。\nお手軽実装のはずが、コンパイラにおこられて、ソース分割する羽目になりました。\n無駄に拡張性を重視したもので、長くなり、冗長になりました。orz\nでもその代わりに、長さ3以外もいけます。\nあぁ、バグ取りはしましたけど、保障はしません。</p>\n<p>result:\nPlayer1[5853]
+    Player2[2865] Draw[1282]</p>\n\n\t"
+  :code: |-
+    //////////////////////Main.cpp////////////////////////////
+    #include &lt;stdlib.h&gt;
+    #include &lt;time.h&gt;
+    #include &lt;stdio.h&gt;
+
+    #include "MBGame.h"
+    #include "Player.h"
+
+    void ShowVisual(MBGame&amp; in){
+        Mark V;
+            for(unsigned int i=0;i&lt;in.Length();i++){
+                for(unsigned int j=0;j&lt;in.Length();j++){
+                    V=in.At(j,i);
+                    if(V == None) printf("+");
+                    if(V == Maru) printf("O");
+                    if(V == Batu) printf("X");
+                }
+                printf("\n");
+            }
+    }
+
+    int main(){
+        unsigned int Len = 3;
+        MBGame mbg(Len);
+        Player A,B;
+        Mark F;
+        int P1=0,P2=0,D=0;
+        //srand(time(NULL));
+        mbg.SetPlayer(A,B);
+        for(int c=0;c&lt;100;c++){
+            mbg.Init(Len);
+            F = mbg.Play();
+            if(F == None) {printf("[%d] Draw!!\n",c);D++;}
+            if(F == Maru) {printf("[%d] O Win!\n",c);P1++;}
+            if(F == Batu) {printf("[%d] X Win!\n",c);P2++;}
+            ShowVisual<spa><!--
+         FILE ARCHIVED ON 10:35:08 Sep 8, 2008 AND RETRIEVED FROM THE
+         INTERNET ARCHIVE ON 13:08:02 Nov 16, 2013.
+         JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+         ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+         SECTION 108(a)(3)).
+    --></spa>
+  :tags: []
+  :references:
+    :url: 
+    :title: 

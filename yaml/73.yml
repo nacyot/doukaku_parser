@@ -1,0 +1,890 @@
+---
+:id: '73'
+:title: 水の移し替えパズル
+:comments:
+- :id: '3547'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3547
+  :user_name: にしお
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/10/29 07:51 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>A, B, Cの容器があり，それぞれ水が4L, 2L, 10L入っている．\nここで次の操作を繰り返す．</p>\n<p>(*)「A,
+    B, Cのどれか二つの容器から水を1Lずつくみ上げ，残りの容器に移す．」</p>\n<p>たとえばA, Bから1Lずつくみ上げて移せばA=3L, B=1L,
+    C=12Lとなる．\nくみ上げる前の容器には必ず水が入っているとする．</p>\n<p>(*)を繰り返してどれか一つの容器にのみ水がはいっている状態にする最小手数を求めよ．</p>\n<p>可能ならA=827392L，B=65536L，C=122880Lのときも求めよ．</p>\n<hr
+    class=\"docutils\">\n<p>このお題は光成さんの投稿を元に作成しました。ご協力ありがとうございます。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3550'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3550
+  :user_name: ところてん
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2007/10/29 08:43 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">あってるか自信なし。\r\n愚直な方法でやっています。\r\n\r\nどこのカップに水を入れるかで、無限ループするケースがあるので、\r\n並列にまわして、一番初めに答えを出したやつを帰すというクソ仕様。\r\n\r\nちなみに、[3,1,12]は12回\r\n[827392,65536,122880]は、827392回\r\nが最小(?)手数でした。</pre>\n\t"
+  :code: "import copy\nimport threading\nimport time\n\nclass calcThread(threading.Thread):\n
+    \   def __init__(self, cups, result):\n        self.cups = cups\n        self.result
+    = result\n        threading.Thread.__init__(self)\n    def run(self):\n        count
+    = 0\n        cups = self.cups\n        while(cups[1]!=0 or cups[2] !=0):\n            count+=1\n\n
+    \           if cups[1] and cups[2] :\n                cups[0] += 2\n                cups[1]
+    -= 1\n                cups[2] -= 1\n                continue\n\n            if
+    cups[1] == 0:\n                cups[1] += 2\n                cups[0] -= 1\n                cups[2]
+    -= 1\n                continue\n\n            if cups[2] == 0:\n                cups[2]
+    += 2\n                cups[0] -= 1\n                cups[1] -= 1\n                continue\n
+    \       self.result[0] = count\n\ndef water_move(cups):\n    count = [[0],[0],[0]]\n
+    \   threadholder = []\n    for x in xrange(3):\n        c = copy.copy(cups)\n
+    \       c[0], c[x] = c[x], c[0]\n        threadholder.append(calcThread(c, count[x]))\n
+    \       threadholder[-1].setDaemon(True)\n        threadholder[-1].start()\n\n
+    \   while (1):\n        for x in range(3):\n            if not threadholder[x].isAlive():\n
+    \               return count[x][0]\n        \n\n#print water_move([3,1,12])\nprint
+    water_move([827392,65536,122880])\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3556'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3556
+  :user_name: raynstard
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/127/
+  :language: C
+  :time: 2007/10/29 13:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">水の量を均一にすればよいのだから最小公倍数とか使えそうなんだけど\r\nバカにはよくわからないので一つ一つでカウントしていった。\r\n一番多いところ-二番目に多いところの差を\r\n半分ずつわければもうちょっと計算減らせそうだけど。。。\r\n\r\n4L,2L,10L
+    ではBがのこって 10回？</pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdint.h&gt;
+
+    #define BAKET_SWAP(a,b) { uint32_t *work = *(a); *(a) = *(b); *(b) = work; }
+
+    void baket_sort( uint32_t **baket[] )
+    {
+      int is_changed = 1;
+      while( is_changed == 1 )
+      {
+        is_changed = 0;
+        if( (*(baket[0])) &lt; (*(baket[2])) ){ BAKET_SWAP(baket[0], baket[2]); is_changed = 1;}
+        if( (*(baket[0])) &lt; (*(baket[1])) ){ BAKET_SWAP(baket[0], baket[1]); is_changed = 1;}
+        if( (*(baket[1])) &lt; (*(baket[2])) ){ BAKET_SWAP(baket[1], baket[2]); is_changed = 1;}
+      }
+    }
+
+    uint64_t play_game(uint32_t A, uint32_t B, uint32_t C)
+    {
+      uint32_t *baket[] = {&amp;A, &amp;B, &amp;C};
+      uint64_t count = 0;
+
+      while( 1 )
+      {
+        /* 水の量が均一になれば終わり */
+        if( A == B )
+        {
+          printf("のこるのは C\n");
+          count += A;
+          break;
+        }
+        if( A == C )
+        {
+          printf("のこるのは B\n");
+          count += A;
+          break;
+        }
+        if( B == C )
+        {
+          printf("のこるのは B\n");
+          count += B;
+          break;
+        }
+        /* 昇順にバブルソート */
+        baket_sort( &amp;baket );
+        (*(baket[0])) --; (*(baket[1])) --;
+        (*(baket[2])) += 2;
+        count ++;
+      }
+      return count;
+    }
+
+    int main(int argc, char *argv[])
+    {
+      printf("ans = %lld\n", play_game(4,2,10));
+      printf("ans = %lld\n", play_game(3,1,12));
+      return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3557'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3557
+  :user_name: kozima
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/10/29 13:33 GMT
+  :vote_count: '6'
+  :vote_score: '6'
+  :body: "\n\t  <pre class=\"compact\">あれこれ考えていたらこれで解が出るような気がしました。\r\n探索を書かせるのが趣旨だったらごめんなさい。</pre>\n\t"
+  :code: |
+    (defun water-puzzle (a b c)
+      (loop for (x y) in `((,a ,b) (,b ,c) (,c ,a))
+        if (zerop (mod (- x y) 3)) minimize (max x y)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3558'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3558
+  :user_name: にしお
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/10/29 13:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  差が全部3の倍数であるときの挙動が(僕がCommonLispを読めないため)よくわかりませんでした。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3560'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3560
+  :user_name: ところてん
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/10/29 13:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ちなみに、[3,1,12]は12回\r\n↑答えのペアはあってるんですが要求されてる答えとは違いますね。\r\n[4,2,10]はｂに水を集めて、10回でした。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3562'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3562
+  :user_name: kozima
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/164/
+  :language: 
+  :time: 2007/10/29 14:09 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">その場合\r\n(min (max a b) (max b c) (max c a))\r\nと同じになりますから、a,
+    b, c のうち二番目に大きいものが返るはずです。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3563'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3563
+  :user_name: kozima
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/164/
+  :language: 
+  :time: 2007/10/29 14:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">water_move([1,1,4]) で 4 が返ってきません？</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3565'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3565
+  :user_name: matyr
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/10/29 15:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t   愚直に数えてみたら時間がかかりすぎたり無限ループしたりとロクなことが無かったので，kozimaさんの(#3557)を丸写し。\n\t"
+  :code: |
+    function doukaku73_bad(a, b, c){
+      var f = function(x, y){ return x - y }, v = [a, b, c].sort(f), i = 0, d;
+      for(; v[0] &lt; v[1] &amp;&amp; v[1] &lt; v[2]; i++){
+        v[0] += 2, v[1]--, v[2]--;
+        if(v[0] &gt; v[1]) v.sort(f);
+      }
+      return i + v[1];
+    }
+    /// ↓ ///
+
+    function doukaku73(a, b, c){
+      for(var v = arguments, r = [], i = 3, j; i--;)
+        r[i] = (v[i] - v[j = (i + 1) % 3]) % 3 ? Infinity : Math.max(v[i], v[j]);
+      return Math.min.apply(null, r);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3566'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3566
+  :user_name: sumim
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/10/29 15:33 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk で。kozima さんの #3557、そのまんまです。幅優先探索のも書きましたが、こちらのほうがずっとシンプルでいいですね。\n\t"
+  :code: |
+    | start result |
+    start := #(827392 65536 122880).
+    result := start max.
+    start combinations: 2 atATimeDo: [:pair |
+        (pair first - pair second isDivisibleBy: 3) ifTrue: [result := result min: pair max]].
+    ^result
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '3567'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3567
+  :user_name: 匿名
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/10/29 15:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">愚直に一リットルずつ動かして全可能性を網羅しています（ただし、往復の移動は避けています）。\r\n\r\n4L,
+    2L, 10L の時は10でした。\r\n827392L，65536L，122880Lのときはスタックが溢れて求められません。</pre>\n\t"
+  :code: |
+    public class Sample {
+        private static int[] volume = {4, 2, 10};
+        private static boolean[] dFlag = new boolean[3];
+        private static int minStep = Integer.MAX_VALUE;
+        public static void move(int dest, int step) {
+            boolean so = dFlag[dest];
+            try {
+                volume[dest] += 2;
+                volume[(dest + 1) % 3]--;
+                volume[(dest + 2) % 3]--;
+                dFlag[dest] = true;
+                int emptyCount = 0;
+                int destCount = 0;
+                for (int i = 0; i &lt; 3; i++) {
+                    if (volume[i] &lt; 0) {
+                        return;
+                    } else if (volume[i] == 0) {
+                        emptyCount++;
+                    }
+                    if (dFlag[i]) destCount++;
+                }
+                if (destCount == 3) return;
+                if (emptyCount == 2) {
+                    if (minStep &gt; step + 1)
+                        minStep = step + 1;
+                } else {
+                    move(0, step + 1);
+                    move(1, step + 1);
+                    move(2, step + 1);
+                }
+            } finally {
+                dFlag[dest] = so;
+                volume[dest] -= 2;
+                volume[(dest + 1) % 3]++;
+                volume[(dest + 2) % 3]++;
+            }
+
+        }
+        public static void main(String[] args) {
+            move(0, 0);
+            move(1, 0);
+            move(2, 0);
+            System.out.println(minStep);
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3568'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3568
+  :user_name: ところてん
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2007/10/29 15:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">スレッドを三つ同時に走らせて、一番速く帰ってきた奴を採用しているんですが、\r\n処理時間が短すぎて、スレッドの終了チェック前にすべてのスレッドが終了しているようです。\r\nそのため、一番目のスレッド（カップaに水を集める）の答えが採用されてしまっているようです。\r\n\r\n45行目から下のコードにすることで、1がちゃんと帰ってきます。\r\n\r\n一番乗り目指して愚直にやったのが、仇になったなぁ。</pre>\n\t"
+  :code: |2
+        time.sleep(0.1)
+        result = []
+        while (1):
+            for x in range(3):
+                if not threadholder[x].isAlive():
+                    result.append(count[x][0])
+            if len(result) :
+                break
+        return min(result)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3569'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3569
+  :user_name: katsu
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/117/
+  :language: Scheme
+  :time: 2007/10/29 16:11 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">うーん、最小であることの証明が出来ていないのですが、この手数で出来ることは間違い有りません。\r\n\r\n結果：\r\n
+    $ gosh 73.scm\r\n10\r\n827392\r\n $ fg\r\n</pre>\n\t"
+  :code: |
+    (define (wp n . l)
+      (let1 sl (sort l)
+        (cond ((= (caddr sl) (cadr sl)) (+ n (cadr sl)))
+              (else (wp (+ 1 n) (+ (car sl) 2) (- (cadr sl) 1) (- (caddr sl) 1))))))
+
+    (print (wp 0 4 2 10))
+    (print (wp 0 827392 65536 122880))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '3570'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3570
+  :user_name: katsu
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/117/
+  :language: Scheme
+  :time: 2007/10/29 16:35 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">自己フォロー\r\n1 2 3\r\nみたいな数列だと、先ほどのコードだと停止しません。\r\n答えがないので仕方ないとも言えますが、悔しいので、過程の再出現の時点で「n/a」と返すコードを書いてみました。\r\n全ての変遷の履歴を持ち、チェックする為、2番目の例だとなかなか計算が終わりません。\r\n\r\n実行結果：\r\n
+    $ gosh 73.scm\r\n(4 2 10) -&gt; 10\r\n(1 2 3) -&gt; n/a\r\n $\r\n</pre>\n\t"
+  :code: |
+    (define (wpz . l)
+      (display #`",l -&gt; ,(apply wp () l)\n"))
+
+    (define (wp n . l)
+      (let1 sl (sort l)
+        (cond ((= (caddr sl) (cadr sl)) (+ (length n) (cadr sl)))
+              ((member sl n) "n/a")
+              (else (wp (cons sl n) (+ (car sl) 2) (- (cadr sl) 1) (- (caddr sl) 1))))))
+
+    (define (main args)
+      (wpz 4 2 10)
+      (wpz 1 2 3))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '3571'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3571
+  :user_name: tsuwabuki
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/479/
+  :language: Haskell
+  :time: 2007/10/29 16:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">幅優先探索です。</pre>\n\t"
+  :code: |
+    module Main(main) where
+
+    import List(any, findIndex)
+
+    type Youki = (Int, Int, Int)
+
+    main :: IO ()
+    main = print $ shallowestLeafDepth (4, 2, 10)
+
+    shallowestLeafDepth :: Youki -&gt; Int
+    shallowestLeafDepth y = maybe 0 id $ findIndex (any isLeaf) $ bfs branch [y]
+
+    isLeaf :: Youki  -&gt; Bool
+    isLeaf (_, 0, 0) = True
+    isLeaf (0, _, 0) = True
+    isLeaf (0, 0, _) = True
+    isLeaf _ = False
+
+    branch :: Youki -&gt; [Youki]
+    branch (w1, 0, 0) = []
+    branch (0, w2, 0) = []
+    branch (0, 0, w3) = []
+    branch (0, w2, w3) = [(2, w2-1, w3-1)]
+    branch (w1, 0, w3) = [(w1-1, 2, w3-1)]
+    branch (w1, w2, 0) = [(w1-1, w2-1, 2)]
+    branch (w1, w2, w3) = [(w1+2, w2-1, w3-1), (w1-1, w2+2, w3-1), (w1-1, w2-1, w3+2)]
+
+    bfs :: (a -&gt; [a]) -&gt; [a] -&gt; [[a]]
+    bfs f [] = []
+    bfs f xs = xs : bfs f (concatMap f xs)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3574'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3574
+  :user_name: 匿名
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/4/
+  :language: Perl
+  :time: 2007/10/29 21:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  とりあえず愚直に。まだだれもperlで投稿してないのでテスト。\r\n\r\n3つの要素を比較して\r\n\r\n１番小さな要素を足していきます。\r\n\r\n１問目は\r\n\r\n$VAR1
+    = {\r\n          '1' =&gt; 3,\r\n          '3' =&gt; 9,\r\n          '2' =&gt;
+    4\r\n        };\r\n$VAR1 = {\r\n          '1' =&gt; 5,\r\n          '3' =&gt;
+    8,\r\n          '2' =&gt; 3\r\n        };\r\n$VAR1 = {\r\n          '1' =&gt;
+    4,\r\n          '3' =&gt; 7,\r\n          '2' =&gt; 5\r\n        };\r\n$VAR1 =
+    {\r\n          '1' =&gt; 6,\r\n          '3' =&gt; 6,\r\n          '2' =&gt; 4\r\n
+    \       };\r\n\r\n\r\n1と3のバケツが6と6になったので　 以下略。で　10手\r\n\r\n２問目は大きすぎるのではしょって\r\n\r\n\r\n...一番最後\r\n$VAR1
+    = {\r\n          '1' =&gt; 338603,\r\n          '3' =&gt; 338602,\r\n          '2'
+    =&gt; 338603\r\n        };\r\n827392手みたいです。\r\n\n\t"
+  :code: |
+    use Data::Dumper;
+
+    my %hash = (
+        1 =&gt; 827392,
+        2 =&gt; 65536,
+        3 =&gt; 122880,
+    );
+
+    my $calc_cnt = 0;
+
+    until ( any_eqv( \%hash ) ) {
+
+        ++$calc_cnt;
+
+        my $mini_key = get_mini_key( \%hash );
+        $hash{$mini_key} += 2;
+
+        @other_key = get_other_key($mini_key);
+        for (@other_key) {
+            $hash{$_} -= 1;
+        }
+    }
+
+    print Dumper( \%hash );
+
+    $nokori = get_same_val( \%hash );
+    print "The answer is " . ( $calc_cnt + $nokori );
+
+    sub any_eqv {
+        my $hash_ref = shift;
+        my %hash     = %{$hash_ref};
+
+        if (   $hash{1} == $hash{2}
+            or $hash{2} == $hash{3}
+            or $hash{3} == $hash{1} )
+        {
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    }
+
+    sub get_mini_key {
+        my $hash_ref = shift;
+        my %hash     = %{$hash_ref};
+        my $mini     = $hash{1};
+        my $mini_key;
+        for ( 1 .. 3 ) {
+            $mini = $hash{$_} xor $mini_key = $_
+                if ( $mini &gt;= $hash{$_} );
+
+        }
+        return $mini_key;
+    }
+
+    sub get_other_key {
+
+        my $target = shift;
+        my $list   = '123';
+        $list =~ s/$target//;
+        return split( //, $list );
+    }
+
+    sub get_same_val {
+
+        my $hash_ref = shift;
+        my %hash     = %{$hash_ref};
+
+        if ( $hash{1} == $hash{2} ) {
+            return $hash{1};
+        }
+        elsif ( $hash{2} == $hash{3} ) {
+            return $hash{2};
+        }
+        elsif ( $hash{3} == $hash{1} ) {
+            return $hash{3};
+        }
+    }
+  :tags: []
+  :references:
+    :url: /web/20081202133813/http://ameblo.jp/niladmirari/entry-10053166122.html
+    :title: みんな神すぐる件
+- :id: '3575'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3575
+  :user_name: こう。
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2007/10/30 01:30 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">一箇所に水が集まるということは、その前の段階では残り二箇所は同じ数字になっている。\r\nならば、どうやって同じ数字にするか、と考えると2箇所から1を引いて残り一箇所に2を足すと考えると、3ずつしか差分は動かない。\r\nよって差が３の倍数である組に注目する。\r\n手順としてはその組の大きい数字を0にする作業となるので差が3の倍数である組の最大値が回答になる。\r\n差が3の倍数の組が二つある場合は小さいほうの組でよい。\r\n\r\nってことで、こうなりました。</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n\nlong water_move(long
+    a,long b,long c){\n    long ret=-1;\n    \n    if((a-b)%3==0)\n        ret=max(a,b);\n
+    \   if((a-c)%3==0)\n        if(ret==-1) ret=max(a,c);\n        else ret=min(ret,max(a,c));\n
+    \   if((b-c)%3==0)\n        if(ret==-1) ret=max(b,c);\n        else ret=min(ret,max(b,c));\n
+    \   \n    return ret;\n}\n\nvoid put_water_move(long a,long b, long c){\n    int
+    ret;\n    \n    ret=water_move(a,b,c);\n    printf(\"A=%ld B=%ld C=%ld : \");\n
+    \   if (ret==-1)\n        printf(\"出来ません\\n\");\n    else\n        printf(\"%ld\\n\",ret);\n}\n\nint
+    main(){\n    put_water_move(4,2,10);\n    put_water_move(827392,65536,122880);\n
+    \   put_water_move(4,2,6);\n    put_water_move(4,1,10);\n    \n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3577'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3577
+  :user_name: mamamoto
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/437/
+  :language: 
+  :time: 2007/10/30 03:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">gccだとmax、minが未定義って怒られました。\r\nあとA、B、C、をprintfしてる所の引数が足りなくないですか？</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3578'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3578
+  :user_name: こう。
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/134/
+  :language: 
+  :time: 2007/10/30 04:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">max、minマクロってstdlibで定義されてるもんじゃなかったんでしたっけ？\r\n\r\n引数は・・・書き忘れてます^^;;
+    \r\n自分とこではたまたま、スタック上に残ってて動いたようですｗ\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3579'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3579
+  :user_name: nil
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/483/
+  :language: Perl
+  :time: 2007/10/30 04:23 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">IDをはじめて取得してみました。\r\n\r\nかなり変態的に。\r\n解が無いもの\r\n\r\n”要素の合計が３で割り切れ\r\n且つ　要素が互いに異なるもの”\r\n\r\nに対しては　むりぽ　と叫んでdieします。\r\n\r\n一問目は　10\r\n二問目は　827392\r\n\r\n
+    (m,n,l)の配列で\r\n\r\nm != n !=  l\r\nの時の最短の手法は　一番大きな要素になります。\r\n\r\n＊　一番大きな要素を１ずつ削っていくため。\r\n\r\nm
+    と　n または\r\nn と l　または\r\nm　と l  が同じ値の時、\r\n同じ値の数値が最短の手法になります。\r\n\r\n＊　同じ容器から１ずつ削っていくため。　\r\n\r\nm
+    と n　と　l　が同じ値の時\r\nは m = n= l　回が最短の手法です。\r\n\r\n＊　任意の２つの容器から１ずつ削っていくため。</pre>\n\t"
+  :code: |
+    @list = sort { $b &lt;=&gt; $a } qw(827392 65536 122880);
+    die "むりぽ"
+        if (!( map { $sum += $_; $sum } @list ) % 3
+        and !grep { $_ ne $x xor( $x = $_ ) } @list );
+
+    @list = sort { $a &lt;=&gt; $b } @list
+        if ( grep { $_ ne $x xor( $x = $_ ) } @list );
+    print my ($min) = @list;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3580'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3580
+  :user_name: mamamoto
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/437/
+  :language: 
+  :time: 2007/10/30 04:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">vc++のclだとコンパイルできました。\r\n\r\nmax,minは少なくともANSI
+    Cにはないと思います。\r\nvcの独自拡張かMS-DOS近辺の文化かどっちかなのかなあ。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3581'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3581
+  :user_name: nil
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/483/
+  :language: 
+  :time: 2007/10/30 04:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">間違ってます。(本人</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3582'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3582
+  :user_name: katsu
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/117/
+  :language: 
+  :time: 2007/10/30 04:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#3557 見ちゃうと、この解じゃ駄目な感じ。最小手数の証明も出来てないし。\r\n自分でマイナス評価です。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3584'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3584
+  :user_name: 匿名
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/4/
+  :language: diff
+  :time: 2007/10/30 05:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">math.h にもないかな？\r\n#gcc だとwin32api/windef.h
+    にあるらしい\r\n\r\nまぁなければ作ればよいという事で差分。。。\r\n</pre>\n\t"
+  :code: "--- b.c.org    2007-10-30 13:52:04.546875000 +0900\n+++ b.c    2007-10-30
+    13:52:41.421875000 +0900\n@@ -1,5 +1,7 @@\n #include &lt;stdio.h&gt;\n-#include
+    &lt;stdlib.h&gt;\n+\n+#define max(a,b) ((a)&gt;(b)?(a):(b))\n+#define min(a,b)
+    ((a)&lt;(b)?(a):(b))\n \n long water_move(long a,long b,long c){\n     long ret=-1;\n@@
+    -20,7 +22,7 @@\n     int ret;\n     \n     ret=water_move(a,b,c);\n-    printf(\"A=%ld
+    B=%ld C=%ld : \");\n+    printf(\"A=%ld B=%ld C=%ld : \", a,b,c);\n     if (ret==-1)\n
+    \        printf(\"出来ません\\n\");\n     else\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3591'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3591
+  :user_name: nil
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/483/
+  :language: Perl
+  :time: 2007/10/30 07:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">こっちが正解でつ</pre>\n\t"
+  :code: "@list = sort { $b &lt;=&gt; $a } qw(3 2 1);\nmy ($s) = grep { $x ne $_ xor
+    $x = $_ } @list;\nprint $s if ($s);\ndie \"だめぽ\"\n    if ( ( $list[0] - $list[1]
+    )  \n    * ( $list[1] - $list[2] ) \n    * ( $list[0] - $list[2] ) % 3 );\nprint
+    $list[0] if ( !$s );\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3600'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3600
+  :user_name: raynstard
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/127/
+  :language: diff
+  :time: 2007/10/30 11:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ちょこちょことバグかあるので修正\r\nそれにしても、よくcoreをはかず動いていたものです^；；</pre>\n\t"
+  :code: "--- doukaku73.c.org    2007-10-29 22:26:48.875000000 +0900\n+++ doukaku73_2.c
+    \   2007-10-30 20:51:49.375000000 +0900\n@@ -9,9 +9,9 @@\n   while( is_changed
+    == 1 )\n   {\n     is_changed = 0;\n-    if( (*(baket[0])) &lt; (*(baket[2]))
+    ){ BAKET_SWAP(baket[0], baket[2]); is_changed = 1;}\n-    if( (*(baket[0])) &lt;
+    (*(baket[1])) ){ BAKET_SWAP(baket[0], baket[1]); is_changed = 1;}\n-    if( (*(baket[1]))
+    &lt; (*(baket[2])) ){ BAKET_SWAP(baket[1], baket[2]); is_changed = 1;}\n+    if(
+    *(*(baket[0])) &lt; *(*(baket[2])) ){ BAKET_SWAP(*(baket[0]), *(baket[2])); is_changed
+    = 1;}\n+    if( *(*(baket[0])) &lt; *(*(baket[1])) ){ BAKET_SWAP(*(baket[0]),
+    *(baket[1])); is_changed = 1;}\n+    if( *(*(baket[1])) &lt; *(*(baket[2])) ){
+    BAKET_SWAP(*(baket[1]), *(baket[2])); is_changed = 1;}\n   }\n }\n \n@@ -37,7
+    +37,7 @@\n     }\n     if( B == C )\n     {\n-      printf(\"のこるのは B\\n\");\n+
+    \     printf(\"のこるのは A\\n\");\n       count += B;\n       break;\n     }\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3616'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3616
+  :user_name: kozima
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/164/
+  :language: Emacs
+  :time: 2007/10/31 04:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">解くプロセスを Emacs で表示してみました。\r\nもっときれいに書けるかも……</pre>\n\t"
+  :code: |
+    (eval-when-compile (require 'cl))
+
+    (defun water-puzzle (a b c)
+      (let ((cups (list a b c)))
+        (destructuring-bind ((i p) (j q) (k r))
+            (sort `((0 ,a) (1 ,b) (2 ,c))
+                  (lambda (x y) (&lt; (cadr x) (cadr y))))
+          (cond ((zerop (mod (- p q) 3)) (show-strategy cups i j k))
+                ((zerop (mod (- p r) 3)) (show-strategy cups i k j))
+                ((zerop (mod (- q r) 3)) (show-strategy cups j k i))
+                (t (message "Cannot solve!"))))))
+
+    (defun show-strategy (cups i j k)
+      (let ((buf (get-buffer-create "*water puzzle*"))
+            (mover (lambda (di dj dk)
+                     (incf (nth i cups) di) (redraw-cup i di)
+                     (incf (nth j cups) dj) (redraw-cup j dj)
+                     (incf (nth k cups) dk) (redraw-cup k dk)))
+            (counter 0))
+        (switch-to-buffer buf)
+        (show-init-state cups)
+        (while (&gt; (nth j cups) 0)
+          (sit-for 1)
+          (apply mover (if (zerop (nth i cups)) '(2 -1 -1) '(-1 -1 2)))
+          (incf counter))
+        (message "Solved in %d step%s."
+                 counter (if (= counter 1) "" "s"))))
+
+    (defun show-init-state (cups)
+      (delete-region (point-min) (point-max))
+      (redraw-cup 0 (car cups))   (insert ?\n)
+      (redraw-cup 1 (cadr cups))  (insert ?\n)
+      (redraw-cup 2 (caddr cups)) (insert ?\n))
+
+    (defun redraw-cup (i d)
+      (goto-line (1+ i))
+      (if (plusp d) (dotimes (x d) (insert ?|)) (delete-char (- d))))
+
+    ;;; test
+    (water-puzzle 4 2 10)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3617'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3617
+  :user_name: yattom
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/335/
+  :language: awk
+  :time: 2007/10/31 05:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">A&lt;=B&lt;=Cとしたとき、\r\n\r\n・AとBから、Aが空になるまで汲み続け、\r\n・BとCからAに汲み、AとBからCに汲む、を繰り返す\r\n\r\nと、できると思ったんですが、最短なのかどうかよくわかりません。\r\n正解はどこかにあります？</pre>\n\t"
+  :code: |
+    {
+        # A, B, C を cups[0], cups[1], cups[2] とする
+        cups[0] = $1
+        cups[1] = $2
+        cups[2] = $3
+
+        # A &lt;= B &lt;= C にそろえる
+        sort(cups)
+
+        total = 0
+        # A と B からとり、C に移す。A が空になるまで
+        count = cups[0]
+        cups[0] = 0
+        cups[1] -= count
+        cups[2] += count * 2
+        total += count
+
+        # B が空になるまで、以下を繰り返す。
+        # B と C から取って A に移し、A と B からとって C に移す。
+        count = cups[1]
+        cups[0] = count % 2
+        cups[1] -= count
+        cups[2] += count * 2
+        total += count
+
+        if(cups[0] != 0) {
+            print "N/A"
+        } else {
+            print "Total :", total
+        }
+    }
+
+
+    # 3要素に限定したソート
+    function sort(cups) {
+        if(cups[0] &gt; cups[1]) {
+            swap(cups, 0, 1)
+        }
+        if(cups[0] &gt; cups[2]) {
+            swap(cups, 0, 2)
+        }
+        if(cups[1] &gt; cups[2]) {
+            swap(cups, 1, 2)
+        }
+    }
+
+    function swap(a, i, j,   tmp) {
+        tmp = a[i]
+        a[i] = a[j]
+        a[j] = tmp
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3618'
+  :parent_id: '73'
+  :url: http://ja.doukaku.org/comment/3618
+  :user_name: tell
+  :user_url: /web/20081202133813/http://ja.doukaku.org/user/228/
+  :language: Ruby
+  :time: 2007/10/31 05:14 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">* 補題 1\r\n\r\na, b, cについて，b &gt;= 3の時，\r\n(a,
+    b, c)から(a, b - 3, c + 3)\r\nを得るような手順があり，それは最小3手でできる．\r\n\r\n* 補題 2\r\n\r\n補題1は，条件のa,
+    b, cを任意に入れ替えても成り立つ．\r\n\r\n* 補題 3\r\n\r\n補題1は，a = 0であっても成り立ち，かつ題意に反しない．\r\n\r\n*
+    定理 4 ( 解の存在 )\r\n\r\na, b, cについて，a - b, b - c, c - aの3つのうち，\r\n少なくとも1つが3の倍数ならば，\r\nこのa,
+    b, cに対して題意を満たすような解が存在する．\r\n\r\n* 定理 5 ( 探索の上限 )\r\n\r\na, b, cに対し，cに全ての水を入れるとした時，\r\na
+    - bが3の倍数ならば，題意を満たすような手数が存在し，\r\nそれはmax{a, b}.\r\n\r\n* 定理 6 ( 手数の最小 )\r\n\r\na,
+    b, cに対して，題意を満たす最小の手数は，\r\n定理4より得られる手数のうちの最小．\r\n\r\n証明は皆さんの宿題です:-)\r\nとか書いてみたりして．\r\n\r\n短い証明を考えていて，時間を無駄に使ってしまったのはココだけの秘密です:-)\r\n\r\nということで，実際に探索する必要は無く，入力に対する算術演算だけで最小手数を求めることができるようですね．\r\n大きな入力であっても効率的に解けそうです．\r\n\r\nそれと，一般化できそう…</pre>\n\t"
+  :code: |-
+    def water_puzzle_solver(a, b, c)
+      [[a,b],[b,c],[c,a]].select{|x,y|(x-y)%3==0}.ma
+
+
+
+
+    <!--
+         FILE ARCHIVED ON 13:38:13 Dec 2, 2008 AND RETRIEVED FROM THE
+         INTERNET ARCHIVE ON 13:37:53 Nov 16, 2013.
+         JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+         ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+         SECTION 108(a)(3)).
+    -->
+  :tags: []
+  :references:
+    :url: 
+    :title: 

@@ -1,0 +1,355 @@
+---
+:id: '107'
+:title: 文字コードの変換
+:comments:
+- :id: '4620'
+  :parent_id: '107'
+  :url: http://ja.doukaku.org/comment/4620
+  :user_name: ところてん
+  :user_url: /web/20090422063807/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/12/05 11:40 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">1.shift-jisで書かれた文字列をeuc-jpの文字列に変換して返す関数を作ってください。\r\n\r\n2.shift-jisで書かれたファイルをeuc-jpに変換してファイル出力するしてください。ただし1で作成した関数を利用せずに。\r\n\r\n何気にどう書く？orgに文字コード系の話が出てなかったような気がしたので投稿してみる。\r\n\r\n2は言語仕様レベルでさくっといける場合(perlのencodingとか)でお願いします。\r\n読み込みや書き込みのレベルで、文字コードを考えないでスパッといけるのが望ましい。</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4626'
+  :parent_id: '107'
+  :url: http://ja.doukaku.org/comment/4626
+  :user_name: sumim
+  :user_url: /web/20090422063807/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/12/05 12:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk で。\r<br><br>Squeak3.8 以降に組み込みの多言語化機構では、TextConverter のサブクラスに定義された各種文字コード向けコンバータクラスのインスタンスを介して相互に変換できます。\r<br><br>ファイル入出力については、読み書きに用いるファイルストリームの converter 属性にあらかじめ適切な文字コード向けのコンバータを指定しておきます。\n\t"
+  :code: |
+    | sjisToEucStr result |
+    sjisToEucStr := [:sjisStr |
+        | str |
+        str := sjisStr convertFromEncoding: #sjis.
+        str convertToEncoding: #eucjp].
+
+    result := sjisToEucStr value: ('あいう' convertToEncoding: #sjis).
+    ^result asByteArray   "=&gt; a ByteArray(164 162 164 164 164 166) "
+
+
+    | sjisToEucFileNamed result line |
+    sjisToEucFileNamed := [:in :out |
+        in := FileStream oldFileNamed: 'in.sjis'.
+        in converter: (TextConverter newForEncoding: #sjis).
+        out := FileStream newFileNamed: 'out.euc'.
+        out converter: (TextConverter newForEncoding: #eucjp).
+        [(line := in nextLine) notNil] whileTrue: [out nextPutAll: line; cr].
+        in close.  out close].
+
+    sjisToEucFileNamed value: 'in.sjis' value: 'out.euc'.
+    result := FileStream oldFileNamed: 'out.euc'.
+    result binary.
+    ^result contentsOfEntireFile   "=&gt; a ByteArray(164 162 164 164 164 166 13) "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '4627'
+  :parent_id: '107'
+  :url: http://ja.doukaku.org/comment/4627
+  :user_name: yohei
+  :user_url: /web/20090422063807/http://ja.doukaku.org/user/415/
+  :language: C
+  :time: 2007/12/05 13:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>C# というか、 .NET 2.0 で。エラー処理は省きました。</p>\n\n\t"
+  :code: "using System;\nusing System.IO;\nusing System.Text;\n\nclass Program {\n
+    \   static byte[] SjisToEuc(byte[] bytes) {\n        return Encoding.Convert(Encoding.GetEncoding(\"shift-jis\"),
+    Encoding.GetEncoding(\"euc-jp\"), bytes);\n    }\n    static void ConvertFile(string
+    path_in, string path_out) {\n        using (StreamReader sr = new StreamReader(path_in,
+    Encoding.GetEncoding(\"shift-jis\")))\n        using (StreamWriter sw = new StreamWriter(path_out,
+    false, Encoding.GetEncoding(\"euc-jp\"))) {\n            while (!sr.EndOfStream)
+    sw.Write((char)sr.Read());            \n        }\n    }\n    static void Main(string[]
+    args) {\n        // buffは、Shift-JISで \"日本語文字列\"\n        byte[] buff = new byte[]
+    { 0x93, 0xFA, 0x96, 0x7B, 0x8C, 0xEA, 0x95, 0xB6, 0x8E, 0x9A, 0x97, 0xF1 };\n
+    \       byte[] result = SjisToEuc(buff);\n\n        Console.WriteLine(BitConverter.ToString(result));\n
+    \       // output : C6-FC-CB-DC-B8-EC-CA-B8-BB-FA-CE-F3\n        \n        ConvertFile(@\"D:\\sjis.txt\",
+    @\"D:\\euc.txt\");\n    }\n}\n"
+  :tags:
+  - .NET2.0
+  :references:
+    :url: 
+    :title: 
+- :id: '4628'
+  :parent_id: '107'
+  :url: http://ja.doukaku.org/comment/4628
+  :user_name: shiro
+  :user_url: /web/20090422063807/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/12/05 13:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Gaucheでは、「shift jisで書かれた文字列」とか「eucjpで書かれた文字列」という言い方はちょっと微妙です。エンコーディングは原則として処理系の「外部」にあるもので、言語レベルでの文字列は内部エンコーディングで統一されているので(入出力時や外部ライブラリ呼び出し時に変換)。ただ、文字列を無理やりバイト列として解釈させることが(今は)できるので、それを使うと一応「shift jisで書かれた文字列」みたいなものを扱うことはできます。#*\"...\" というのが「生の」文字列の表記です。\r<br><br>gosh&gt; (ces-convert \"いろは\" 'utf-8 'sjis)\r<br>#*\"\\x82\\xa2\\x82\\xeb\\x82\\xcd\"\r<br>gosh&gt; (sjis2eucjp #*\"\\x82\\xa2\\x82\\xeb\\x82\\xcd\")\r<br>#*\"\\xa4\\xa4\\xa4\\xed\\xa4\\xcf\"\r<br>gosh&gt; (ces-convert #*\"\\xa4\\xa4\\xa4\\xed\\xa4\\xcf\" 'eucjp 'utf-8)\r<br>\"いろは\"\r<br><br>ただ、こういう扱いは意味的にすっきりしないので、将来はバイトベクタとして扱ってもらうようにするかもしれません。\r<br>"
+  :code: |
+    (use gauche.charconv)
+
+    ;; 1
+    (define (sjis2eucjp str)
+      (ces-convert str 'sjis 'eucjp))
+
+    ;; 2
+    (define (sjis2eucjp-file infile outfile)
+      (call-with-input-file infile
+        (lambda (in)
+          (call-with-output-file outfile
+            (lambda (out) (copy-port in out))
+            :encoding 'eucjp))
+        :encoding 'sjis))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '4631'
+  :parent_id: '107'
+  :url: http://ja.doukaku.org/comment/4631
+  :user_name: kozima
+  :user_url: /web/20090422063807/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/12/05 15:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>よく知らなかったので調べながら……</p>\n<p>文字列の変換は shiro さんの #4628 と同様にバイト列の変換にしています。ファイル入出力の際は
+    :external-format を指定することで文字コード指定ができます。</p>\n<p>いずれも処理系依存です。CLISP 2.38 で動作確認しました。</p>\n\n\t"
+  :code: |
+    ;;; 1
+    (defun sjis-to-euc-jp (bytes)
+      (convert-string-to-bytes
+       (convert-string-from-bytes bytes charset:shift-jis)
+       charset:euc-jp))
+
+    ;;; 2
+    (defun sjis-to-euc-jp-file (from to)
+      (with-open-file (in from :direction :input
+                         :external-format charset:shift-jis)
+        (with-open-file (out to :direction :output
+                             :external-format charset:euc-jp)
+          (do () ((null (listen in)))
+            (write-line (read-line in) out)))))
+  :tags:
+  - CLISP
+  :references:
+    :url: 
+    :title: 
+- :id: '4632'
+  :parent_id: '107'
+  :url: http://ja.doukaku.org/comment/4632
+  :user_name: Y
+  :user_url: /web/20090422063807/http://ja.doukaku.org/user/428/
+  :language: Java
+  :time: 2007/12/05 15:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Javaの文字列にはエンコーディングの概念がありません（内部的にはすべてUnicode）。</p>\n<p>そこで、「Shift_JISのバイト列をEUC-JPのバイト列に変換する」と解釈しました。</p>\n<p>せっかくなので、処理系による違いを知りたいです。</p>\n<p>私が試したJava
+    1.6では、Shift_JISの円記号(0x5C)は内部的にバックスラッシュ(U+005C)になるようですが、これは規格通りではありません。</p>\n\n\t"
+  :code: "import java.io.*;\n\npublic class Chars {\n    public static void main(String[]
+    args) {\n        try {\n            String s=\"こんにちは\\\\\";\n            for(byte
+    b:sjis2eucjp(s.getBytes(\"SJIS\"))) System.out.printf(\"%x \",b);\n            \n
+    \           file(new File(\"d:\\\\sjis.txt\"),new File(\"d:\\\\eucjp.txt\"));\n
+    \       } catch (Exception e) {e.printStackTrace();}\n    }\n    \n    //Shift_JISのバイト列をEUC-JPのバイト列に変換して返す関数\n
+    \   static public byte[] sjis2eucjp(byte[] sjis) throws Exception{\n        return
+    (new String(sjis,\"SJIS\")).getBytes(\"EUC-JP\");\n    }\n    \n    //Shift_JISで書かれたファイルをEUC-JPに変換してファイル出力\n
+    \   static public void file(File sjis,File eucjp) throws Exception{\n        //効率を上げたい場合はBufferedReader等でラップする\n
+    \       Reader in=new InputStreamReader(new FileInputStream(sjis),\"SJIS\");\n
+    \       Writer out=new OutputStreamWriter(new FileOutputStream(eucjp),\"EUC-JP\");\n
+    \       \n        int c;\n        while((c=in.read())!=-1) out.write(c);\n        \n
+    \       out.close();\n        in.close();\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4637'
+  :parent_id: '107'
+  :url: http://ja.doukaku.org/comment/4637
+  :user_name: nobsun
+  :user_url: /web/20090422063807/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/12/06 02:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Haskellの文字や文字列にはエンコーディングの概念はありませんので，解釈するとすれば，SHIFT-JISバイト列からEUC-JPバイト列への変換ということになるかなぁ．</p>\n<p>バイト列を扱うには，Data.ByteString.Lazy
+    モジュールを使います．またバイト列でのエンコーディング変換には，iconv というパッケージにある．Codec.Text.Iconv モジュールを使います．</p>\n\n\t"
+  :code: |
+    import Data.ByteString.Lazy as B
+    import Codec.Text.IConv
+
+    sjis2eucjp :: ByteString -&gt; ByteString
+    sjis2eucjp = convert "SHIFT-JIS" "EUC-JP"  -- エンコード変換関数
+
+    main :: IO ()
+    main = B.interact sjis2eucjp -- 標準入力からのバイト列をエンコード変換して
+                                 -- 標準出力へ書き出す
+  :tags:
+  - Data.ByteString
+  :references:
+    :url: 
+    :title: 
+- :id: '4642'
+  :parent_id: '107'
+  :url: http://ja.doukaku.org/comment/4642
+  :user_name: 匿名
+  :user_url: /web/20090422063807/http://ja.doukaku.org/user/4/
+  :language: PHP
+  :time: 2007/12/06 08:24 GMT
+  :vote_count: '2'
+  :vote_score: '-2'
+  :body: "\n\t  <p>PHPで書いてみます。</p>\n\n\t"
+  :code: |
+    &lt;?php
+    //Model
+    function encSjistoEuc($str)
+    {
+        if ($str == "") {
+            return $str;
+        }
+        $str = mb_convert_encoding($str, "EUC-JP", "SJIS");
+        return $str;
+    }
+
+    function createFile($file, $data)
+    {
+        //ファイル保存
+        $fp = @fopen($file, "w+");
+        if (!$fp) {
+            return false;
+        } else {
+            $ret = @fwrite($fp, $data);
+            if (!$ret) {
+                return false;
+            }
+            fclose($fp);
+        }
+        return true;
+    }
+
+    //Control
+    //回答1
+    $text = "文字コード変換に挑戦";
+    $new_text = encSjistoEuc($text);
+
+    //回答2
+    //既存ファイルの読込
+    $text = file_get_contents("/usr/local/sample_data_sjis.txt");
+    //中身のエンコード
+    $new_text = encSjistoEuc($text);
+    //EUCファイル出力
+    $res = createFile("/usr/local/sample_data_euc.txt", $text);
+    ?&gt;
+  :tags:
+  - PHP
+  :references:
+    :url: 
+    :title: 
+- :id: '4643'
+  :parent_id: '107'
+  :url: http://ja.doukaku.org/comment/4643
+  :user_name: ap
+  :user_url: /web/20090422063807/http://ja.doukaku.org/user/604/
+  :language: PHP
+  :time: 2007/12/06 08:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>すいません。\n匿名で書いたのですが、\n変更したかったので、\nついでにIDを作成してみました。</p>\n\n\t"
+  :code: |
+    //Model
+    function encSjistoEuc($str)
+    {
+        if ($str != "") {
+            $str = mb_convert_encoding($str, "EUC-JP", "SJIS");
+        }
+        return $str;
+    }
+
+    //この方がすっきりですね。
+  :tags:
+  - PHP
+  :references:
+    :url: 
+    :title: 
+- :id: '4646'
+  :parent_id: '107'
+  :url: http://ja.doukaku.org/comment/4646
+  :user_name: kkobayashi
+  :user_url: /web/20090422063807/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2007/12/06 13:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">シンプルに。</pre>\n\t"
+  :code: |
+    #1. convert encoding of string from sjis to eucjp
+    sjis2euc.character &lt;- function(str){
+        iconv(str, "sjis", "eucjp")
+    }
+
+    #2. convert encoding of file from sjis to eucjp
+    sjis2euc.file &lt;- function(infile="sample.sjis", outfile="sample.eucjp"){
+        fr &lt;- file(infile, "r", encoding="sjis")
+        fw &lt;- file(outfile, "w", encoding="eucjp")
+        cat(readLines(fr), sep="\n", file=fw)
+        close(fr)
+        close(fw)
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4712'
+  :parent_id: '107'
+  :url: http://ja.doukaku.org/comment/4712
+  :user_name: 99yen
+  :user_url: /web/20090422063807/http://ja.doukaku.org/user/591/
+  :language: 
+  :time: 2007/12/10 04:35 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">1はNKFが標準でついているのでそれで。\r\n2は日本語っぽく。</pre>\n\t"
+  :code: |
+    ●SJIS2EUC(Sを)
+        Sを"--ic=Shift_JIS --oc=EUC-JP"でNKF変換
+        //SをEUC変換
+    #-----------------------------------------------
+    "sjis.txt"を開いてEUC変換して"euc.txt"に保存
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4770'
+  :parent_id: '107'
+  :url: http://ja.doukaku.org/comment/4770
+  :user_name: にしお
+  :user_url: /web/20090422063807/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2007/12/12 03:00 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>１：Pythonの場合、バイト列を「かってに変換せずに生のまま」扱うこともでき、それを「ユニコード文字列」に変換することもできます。</p>\n<p>２：codecs.openでファイルを開けば指定したコーデックで読み書きをします。</p>\n\n\t"
+  :code: |
+    &gt;&gt;&gt; "こんにちは"
+    '\x82\xb1\x82\xf1\x82\xc9\x82\xbf\x82\xcd'
+    &gt;&gt;&gt; _.decode("sjis")
+    u'\u3053\u3093\u306b\u3061\u306f'
+    &gt;&gt;&gt; _.encode("euc-jp")
+    '\xa4\xb3\xa4\xf3\xa4\xcb\xa4\xc1\xa4\xcf'
+
+    &gt;&gt;&gt; import codecs
+    &gt;&gt;&gt; codecs.open(r"c:\tmp.txt", encoding="sjis").read()
+    u'\u3053\u3093\u306b\u3061\u306f'
+    &gt;&gt;&gt; codecs.open(r"c:\tmp_euc.txt", "w", encoding="euc-jp").write(_)
+  :tags: []
+  :references:
+    :url: 
+    :title: 

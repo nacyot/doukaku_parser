@@ -1,0 +1,1228 @@
+---
+:id: '222'
+:title: テキスト行の正規化
+:comments:
+- :id: '8204'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8204
+  :user_name: nobsun
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2008/12/18 19:49 GMT
+  :vote_count: '3'
+  :vote_score: '1'
+  :body: "\r\n\t  <pre class=\"compact\">改行文字を複数個含むテキストデータを格納する文字列を\r\n最大長の行を除く各行末に指定したパディング文字を適切な数だけ追加して、\r\nすべての行が最大長の行と同じ長さに揃う文字列に変換する\r\n手続あるいは関数を書いてください。\r\n\r\n元の文字列の最後は改行です。\r\n行の長さはその行に含まれる（行末の改行を除く）文字の数です。\r\n\r\n変換前の文字列例\r\n\"○○○○\\n○○○○○○○\\n\\n○○○○○\\n\"\r\n\r\n上の文字列例をパディング文字'☆'を指定して変換した文字列\r\n\"○○○○☆☆☆\\n○○○○○○○\\n☆☆☆☆☆☆☆\\n○○○○○☆☆\\n\"\r\n\r\n必須ではありませんが、\r\nテキストデータをトラバースする回数を減らす工夫をすると面白いかもしれません。\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8210'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8210
+  :user_name: manzo
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/980/
+  :language: Ruby
+  :time: 2008/12/19 22:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>例題の文字ではうまくいきました。</p>\n\n\t"
+  :code: |
+    #変換前の文字列例
+    a = "○○○○\n○○○○○○○\n\n○○○○○\n"
+
+    #上の文字列例をパディング文字'☆'を指定して変換した文字列
+    ans = "○○○○☆☆☆\n○○○○○○○\n☆☆☆☆☆☆☆\n○○○○○☆☆\n"
+
+    #最大長の行の長さを測る。
+    size = a.lines.max_by{|x|x.size}.size
+
+    #各行にパディング文字を入れて表示。
+    p b = a.lines.map{|i|i.chomp}.map{|j|[j,("☆" * ((size - j.size) / 2)),"\n"].join}.join
+
+    #結果のチェック
+    p ans == b
+  :tags:
+  - Ruby1.8.7
+  :references:
+    :url: 
+    :title: 
+- :id: '8211'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8211
+  :user_name: mc
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2008/12/19 23:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  なんのひねりも無いのですが、とりあえず…\r<br>(pad \"○○○○\r<br>○○○○○○○\r<br><br>○○○○○\r<br>\" #\\☆)\r<br>;=&gt; \"○○○○☆☆☆\r<br>○○○○○○○\r<br>☆☆☆☆☆☆☆\r<br>○○○○○☆☆\r<br>\"\n\t"
+  :code: "(defun pad (string &amp;optional (padchar #\\Space))\n  (with-output-to-string
+    (out)\n    (with-input-from-string (in string)\n      (loop :for line := (read-line
+    in nil) :while line\n            :maximize (length line) :into maxlen\n            :collect
+    line :into lines\n            :finally (dolist (line lines)\n                       (let
+    ((base (make-string maxlen \n                                                :initial-element
+    padchar)))\n                         (format out \"~A~%\" (replace base line))))))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8212'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8212
+  :user_name: ところてん
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/166/
+  :language: Python
+  :time: 2008/12/19 23:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">max関数って、keyを指定できたんだ。\r\nこれは便利。\r\n\r\n出力結果\r\n12345****\r\n123******\r\n123456789\r\n12345****\r\n12*******\r\n</pre>\n\t"
+  :code: |
+    #coding: utf-8
+
+    def padding(inputStr, paddingChar = " "):
+        maxNum = len(max(inputStr.split("\n"), key=(lambda(x):len(x))))
+        outputStr = ""
+        for linedata in inputStr.split("\n"):
+            outputStr += linedata + paddingChar * (maxNum - len(linedata)) + "\n"
+        return outputStr
+
+    if __name__ == '__main__':
+        s = '''12345
+    123
+    123456789
+    12345
+    12'''
+
+        print padding(s, "*")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8213'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8213
+  :user_name: 匿名
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/12/20 00:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"doctest-block\">\n&gt;&gt;&gt; &gt;&gt;&gt; print padding(u\"○○○○\\n○○○○○○○\\n\\n○○○○○\\n\",
+    u'☆')\n○○○○☆☆☆\n○○○○○○○\n☆☆☆☆☆☆☆\n○○○○○☆☆\n☆☆☆☆☆☆☆\n</pre>\n<p>出題通りの答えになっていないようですよ。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8214'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8214
+  :user_name: ところてん
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/166/
+  :language: diff
+  :time: 2008/12/20 08:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">&gt;元の文字列の最後は改行です。\r\nこれを忘れてた。</pre>\n\t"
+  :code: |
+    #coding: utf-8
+
+    def padding(inputStr, paddingChar = " "):
+        maxNum = len(max(inputStr.split("\n"), key=(lambda(x):len(x))))
+        outputStr = ""
+    -   for linedata in inputStr.split("\n"):
+    +   for linedata in inputStr.split("\n")[:-1]:
+            outputStr += linedata + paddingChar * (maxNum - len(linedata)) + "\n"
+        return outputStr
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8215'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8215
+  :user_name: 匿名
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/4/
+  :language: Scheme
+  :time: 2008/12/20 09:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>schemeの勉強で書いてみました</p>\n\n\t"
+  :code: |
+    (define (padlines s ch)
+      (let iter ((ls (string-split s "\n"))
+                 (maxlen 0)
+                 (acc 0))
+        (if (null? ls)
+            (string-join (map (lambda (f) (f maxlen))
+                              (reverse (cdr acc))) "")
+            (let ((len (string-length (car ls))))
+              (iter (cdr ls)
+                    (if (&gt; len maxlen) len maxlen)
+                    (cons (lambda (n)
+                            (format "~A~A\n"
+                                    (car ls)
+                                    (make-string (- n len) ch)))
+                          acc))))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '8216'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8216
+  :user_name: 匿名
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/4/
+  :language: diff
+  :time: 2008/12/20 03:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  すみません。\r\n↓のようなつもりでした。\r\n\n\t"
+  :code: |
+    (define (pad lines ch)
+      (let iter ((ls (string-split lines "\n"))
+                 (maxlen 0)
+    -            (acc 0))
+    +            (acc '()))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8217'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8217
+  :user_name: mattsan
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/833/
+  :language: C
+  :time: 2008/12/20 04:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>大げさなわりに、スマートじゃない気がしてます。</p>\n<p>記号は'o'と'*'を使わせてもらいました。</p>\n\n\t"
+  :code: |
+    #include &lt;string&gt;
+    #include &lt;vector&gt;
+    #include &lt;iostream&gt;
+    #include &lt;sstream&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;iterator&gt;
+    #include &lt;functional&gt;
+
+    struct Padding : public std::unary_function&lt;std::string, std::string&gt;
+    {
+        const int  length;
+        const char c;
+
+        Padding(int length, int c) : length(length), c(c)
+        {
+        }
+
+        std::string operator () (const std::string&amp; s)
+        {
+            if(s.size() &lt; length)
+            {
+                return s + std::string(length - s.size(), c);
+            }
+            else
+            {
+                return s;
+            }
+        }
+    };
+
+    // 改行を含む文字列を受けて、パディングされた文字列をベクタに格納する関数
+    void padAllLines(const std::string&amp; src, std::vector&lt;std::string&gt;&amp; strings)
+    {
+        strings.clear();
+
+        std::stringstream ss(src);
+        std::string       s;
+        int               maxLength = 0;
+
+        while(std::getline(ss, s).good())
+        {
+            maxLength = maxLength &lt; s.size() ? s.size() : maxLength;
+            strings.push_back(s);
+        }
+
+        std::transform(strings.begin(), strings.end(), strings.begin(), Padding(maxLength, '*'));
+    }
+
+    int main(int, char* [])
+    {
+        std::string              src("oooo¥nooooooo¥n¥nooooo¥n");
+        std::vector&lt;std::string&gt; strings;
+
+        padAllLines(src, strings);
+
+        std::copy(strings.begin(), strings.end(), std::ostream_iterator&lt;std::string&gt;(std::cout, "¥n"));
+
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8218'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8218
+  :user_name: kozima
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/164/
+  :language: Haskell
+  :time: 2008/12/20 10:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>こういうトラバーサルを減らす方法、見覚えがある。ということで見よう見まねで single traversal に。</p>\n\n\t"
+  :code: |
+    pad ss = ss' where (ss', m) = pad' ss m
+
+    pad' [] n = ([], 0)
+    pad' (s:ss) n = ((take n $ s ++ repeat '*'):ss', max m $ length s)
+     where (ss', m) = pad' ss n
+
+    main = mapM putStrLn . pad . lines =&lt;&lt; getContents
+  :tags: []
+  :references:
+    :url: /web/20090103091741/http://wiki.di.uminho.pt/twiki/pub/Personal/Joao/--TwikiJoaoPublications/FernandesSaraivaPEPM07.pdf
+    :title: ' Tools and libraries to model and manipulate circular programs'
+- :id: '8219'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8219
+  :user_name: syat
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/766/
+  :language: C
+  :time: 2008/12/20 10:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Cで。とくに面白いことはやってない。\n全角・半角混じりでも動くように、という条件がついたら死地。</p>\n\n\t"
+  :code: "#include&lt;stdio.h&gt;\n\nchar *padStr(char *str, char padChar)\n{\n    int
+    len;\n    char *ret;\n    int line = 0;\n    int maxlen = 0;\n    char *p = str;\n
+    \   char *q;\n\n    while (*p) {\n        for (len = 0; *p &amp;&amp; *p != '\\n';
+    p++, len++) { }\n        if (maxlen &lt; len) maxlen = len;\n        if (*p ==
+    '\\n') p++;\n        line++;\n    }\n\n    ret = (char*)calloc(line * (maxlen
+    + 1) + 1);\n\n    p = str;\n    q = ret;\n    while (*p){\n        for (len =
+    0; *p &amp;&amp; *p != '\\n'; len++) { *q++ = *p++; }\n        for (; len &lt;
+    maxlen; len++) { *q++ = padChar; }\n        if (*p == '\\n') { *q++ = *p++; }\n
+    \       if (q-ret &gt;= (line * (maxlen + 1) + 1)) puts(\"******overflow******\");\n
+    \   }\n\n    return ret;\n}\n\nint main()\n{\n    char *data = \"oooo\\noooooooo\\n\\nooooo\\no\\n\";\n\n
+    \   char *pad = padStr(data, 'x');\n    \n    printf(\"[%s]\\n\", pad);\n    free(pad);\n\n
+    \   return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8220'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8220
+  :user_name: mattsan
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/833/
+  :language: Haskell
+  :time: 2008/12/20 04:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>なんか手続き型っぽい。</p>\n\n\t"
+  :code: |
+    padding c ss = [x ++ (replicate (maxLength - (length x)) c) | x &lt;- ss]
+      where maxLength = maximum [length x | x &lt;- ss]
+
+    main = getContents &gt;&gt;= return.unlines.padding '*'.lines &gt;&gt;= putStrLn
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8221'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8221
+  :user_name: あにす
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/504/
+  :language: C
+  :time: 2008/12/20 05:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Split()メソッドが最後に空の文字列を返しちゃうので最後に削除しています。\n\t"
+  :code: |
+    using System;
+
+    class Program {
+        static void Main(string[] args) {
+            string r = paddingAllLine("○○○○\r\n○○○○○○○\r\n\r\n○○○○○\r\n", '☆');
+            Console.WriteLine(r);
+        }
+
+        static string paddingAllLine(string str, char chr) {
+            string r = "";
+            int maxLenghs = 0;
+
+            foreach(string line in str.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)) {
+                maxLenghs = Math.Max(maxLenghs, line.Length);
+            }
+
+            foreach(string line in str.Split(new string[] { Environment.NewLine }, StringSplitOptions.None)) {
+                r += line.PadRight(maxLenghs, chr) + Environment.NewLine;
+            }
+
+            r = r.Remove(r.LastIndexOf(Environment.NewLine, r.LastIndexOf(Environment.NewLine)));
+
+            return r + Environment.NewLine;
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8222'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8222
+  :user_name: 匿名
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/4/
+  :language: JavaScript
+  :time: 2008/12/20 06:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    if(!String.prototype.x){
+        String.prototype.x = function(n){
+            var result="";
+            for(var i=0;i&lt;n;i++){
+                result += this;
+            }
+            return result;
+        }
+    }
+
+    var str="○○○○\n○○○○○○○\n\n○○○○○\n";
+
+    var wk = [];
+    var re = /(.*)\n/g;
+    var max = 0;
+    var matchs;
+    var len;
+    var wk_l=0;
+    while((matchs=re.exec(str))!=null){
+    //    len=matchs[1].length;
+        len=re.lastIndex - matchs.index;
+        wk.push({string:matchs[1], length:len});
+        ++wk_l;
+        if(max&lt;len) max = len;
+    }
+    var result="";
+    for(var i=0;i&lt;wk_l;++i){
+        result += wk[i].string + "☆".x(max - wk[i].length) + "\n";
+    }
+    print(result);//WScript.Echo(result);
+  :tags:
+  - Rhino
+  :references:
+    :url: 
+    :title: 
+- :id: '8223'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8223
+  :user_name: 匿名
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/12/20 06:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">pad.c: In function ‘padStr’:\r\npad.c:19: warning:
+    implicit declaration of function ‘calloc’\r\npad.c:19: warning: incompatible implicit
+    declaration of built-in function ‘calloc’\r\npad.c:19: error: too few arguments
+    to function ‘calloc’\r\npad.c: In function ‘main’:\r\npad.c:40: warning: implicit
+    declaration of function ‘free’\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8224'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8224
+  :user_name: taninsw
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/973/
+  :language: Haskell
+  :time: 2008/12/20 12:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>とりあえずベタに。</p>\n\n\t"
+  :code: |
+    import Data.List
+
+    padding text ch = let allLines = lines text
+                      in  unlines $ map (\str-&gt;take (maximum$map length allLines) (str++repeat ch)) allLines
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8225'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8225
+  :user_name: ihag
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/560/
+  :language: C
+  :time: 2008/12/20 12:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Cはもう出ちゃったけど，せっかくなので投稿．</p>\n<p>マイナーな売りとしては，最後の行がnで終わっていなくても期待通りに動きます．</p>\n<p>マルチバイト文字は，やっぱり未対応．</p>\n\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n#include
+    &lt;assert.h&gt;\n\n#define ARRAY_UNIT_SIZE 16\n#define handle_error(str) do {
+    \\\n    perror(str); exit(EXIT_FAILURE); } while (0)\n\nstruct array_t {\n    char
+    **value;\n    size_t size;\n    size_t size_max;\n};\n\nstruct array_t *\narray_init(void)\n{\n
+    \   struct array_t *ret;\n    if ((ret = calloc(1, sizeof(*ret))) == NULL)\n        handle_error(\"calloc\");\n
+    \   return ret;\n}\n\nvoid\narray_free(struct array_t *ptr)\n{\n    free(ptr);\n}\n\nint\narray_push(struct
+    array_t *self, char *value)\n{\n    if (self-&gt;size &gt;= self-&gt;size_max)
+    {\n        self-&gt;size_max += ARRAY_UNIT_SIZE;\n        if ((self-&gt;value
+    = realloc(self-&gt;value,\n                                   self-&gt;size_max
+    * sizeof(self-&gt;value)))\n            == NULL)\n            handle_error(\"realloc\");\n
+    \   }\n    self-&gt;value[self-&gt;size++] = value;\n    return 0;\n}\n\nstatic
+    int\n_do_push(struct array_t *array, char *pos, size_t len)\n{\n    static int
+    max = 0;\n    if (len &gt; max) max = len;\n    array_push(array, pos);\n    return
+    max;\n}\n\nchar *\nstrpad(char *orig, char pad)\n{\n    char *cur, *head, *ret
+    = NULL;\n    struct array_t *array = array_init();\n    int len_max = 0;\n    int
+    i;\n\n    for (cur = head = orig; *cur != '\\0'; cur++) {\n        if (*cur !=
+    '\\n') continue;\n        len_max = _do_push(array, cur, cur - head);\n        head
+    = cur + 1;\n    }\n    if (cur &gt; head)  /* last line was not trailed by CR
+    */\n        len_max = _do_push(array, cur, cur - head);\n\n    if ((cur = ret
+    = calloc(1, array-&gt;size * (len_max + 1) + 1))\n        == NULL)\n        handle_error(\"calloc\");\n
+    \   head = orig;\n    for (i = 0; i &lt; array-&gt;size; i++) {\n        size_t
+    str_size = array-&gt;value[i] - head;\n        size_t remain_size = len_max -
+    str_size;\n        char trailer = *array-&gt;value[i];\n\n        memcpy(cur,
+    head, str_size); cur += str_size;\n        memset(cur, pad, remain_size); cur
+    += remain_size;\n        *cur++ = trailer;\n\n        head = array-&gt;value[i]
+    + 1;\n    }\n\n    array_free(array);\n    return ret;\n}\n\nint\nmain(int argc,
+    char **argv)\n{\n    char *str = \"foo\\nbar baz\\n\\nhoge\\n\";\n    char *result
+    = NULL;\n\n    result = strpad(str, '*');\n    assert(strcmp(result, \n                  \"foo****\\n\"\n
+    \                 \"bar baz\\n\"\n                  \"*******\\n\"\n                  \"hoge***\\n\")
+    == 0);\n    printf(\"Result #1: [%s]\\n\\n\", result);\n    free(result);\n\n
+    \   str = \"\\nhoge\\nfoo bar baz\";\n    result = strpad(str, '^');\n    assert(strcmp(result,
+    \n                  \"^^^^^^^^^^^\\n\"\n                  \"hoge^^^^^^^\\n\"\n
+    \                 \"foo bar baz\") == 0);\n    printf(\"Result #2: [%s]\\n\",
+    result);\n    free(result);\n\n    exit(EXIT_SUCCESS);\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8226'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8226
+  :user_name: nobsun
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2008/12/20 13:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <ul class=\"simple\">\n<li>lines で1回</li>\n<li>length で1回</li>\n<li>take
+    で1回</li>\n</ul>\n<div class=\"system-message\">\n<p class=\"system-message-title\">System
+    Message: WARNING/2 (<tt class=\"docutils\">&lt;string&gt;</tt>, line 4)</p>\nBullet
+    list ends without a blank line; unexpected unindent.</div>\n<p>の3回はトラバースしているように見えます</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8227'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8227
+  :user_name: horiuchi
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/12/20 09:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>とりあえず、普通に。</p>\n\n\t"
+  :code: |
+    public class Sample222 {
+        public static String paddingRight(String input, char padding) {
+            String[] splited = input.split("\n", 0);
+            int maxLen = 0;
+            for (String s: splited) {
+                maxLen = Math.max(maxLen, s.length());
+            }
+            StringBuilder builder = new StringBuilder();
+            for (String s: splited) {
+                builder.append(s);
+                for (int index = 0, len = maxLen - s.length(); index &lt; len; index++) {
+                    builder.append(padding);
+                }
+                builder.append("\n");
+            }
+            return builder.toString();
+        }
+
+        public static void main(String[] args) {
+            System.out.println(paddingRight("○○○○\n○○○○○○○\n\n○○○○○\n", '☆'));
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8228'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8228
+  :user_name: kozima
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/164/
+  :language: 
+  :time: 2008/12/20 09:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>確かに、そう言われれば。</p>\n<p>lines と length を展開すれば本当に一回に見えるのかな。考えてみます。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8229'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8229
+  :user_name: emasaka
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/12/20 09:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>GNU coreutilsのwc前提です。</p>\n<p>マルチバイト文字の場合はUTF-8ロケール前提です。</p>\n\n\t"
+  :code: |
+    #!/bin/bash
+
+    function q222() {
+        local padchar=$1
+        local text=$2
+
+        local maxlen=$(echo -n "$text" | wc -L)
+        local padstr=$(yes "$padchar" | head -n $maxlen | tr -d '\n')
+
+        echo -n "$text" | sed -e "s/\$/$padstr/;s/^\(.\{$maxlen\}\).*/\1/"
+    }
+
+    q222 '☆' $'○○○○\n○○○○○○○\n\n○○○○○\n'
+  :tags:
+  - head
+  - sed
+  - tr
+  - wc
+  - 'yes'
+  :references:
+    :url: 
+    :title: 
+- :id: '8232'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8232
+  :user_name: taninsw
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/973/
+  :language: Haskell
+  :time: 2008/12/20 16:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>トラバースを2回にしてみました。</p>\n\n\t"
+  :code: |
+    test = "hoge\nPOPOPOPOPO\n\nPINGPONG\n"
+
+    lineLens []         n=[]
+    lineLens ('\n':xs)  n= n:lineLens xs 0
+    lineLens (x:xs)     n= lineLens xs (n+1)
+
+    padding' []        n ch mlen= []
+    padding' ('\n':xs) n ch mlen= replicate (mlen-n) ch ++ '\n':padding' xs 0 ch mlen
+    padding' (x:xs)    n ch mlen= x:padding' xs (n+1) ch mlen
+
+    padding text ch = let maxLen = maximum $ lineLens text 0
+                      in  padding' test 0 '*' maxLen
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8233'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8233
+  :user_name: taninsw
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/973/
+  :language: Haskell
+  :time: 2008/12/20 17:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Readerモナドを使ってみかけの変数を減らしてみました。</p>\n\n\t"
+  :code: "import Control.Monad.Reader\ntest = \"hoge\\nPOPOPOPOPO\\n\\nPINGPONG\\n\"\ndata
+    Readable = Readable {pChar::Char,mLength::Int}\n\nmaxLineLen []         n= n\nmaxLineLen
+    ('\\n':xs)  n= max n (maxLineLen xs 0)\nmaxLineLen (x:xs)     n= maxLineLen xs
+    (n+1)\n\npadding' :: [Char] -&gt; Int -&gt; Reader Readable String\npadding' []
+    \       n = return []\npadding' ('\\n':xs) n = paddingStr n &gt;&gt;= \\padStr-&gt;padding'
+    xs 0 &gt;&gt;=return.(padStr ++) \npadding' (x:xs)    n = padding' xs (n+1) &gt;&gt;=
+    return.(x:) \n\npaddingStr :: Int -&gt; Reader Readable String\npaddingStr n =
+    do mlen &lt;- asks mLength \n                  ch   &lt;- asks pChar\n                  return
+    (replicate (mlen-n) ch ++ \"\\n\") \n\npadding text ch = let maxLen = maxLineLen
+    text 0\n                  in  runReader (padding' test 0) (Readable ch maxLen)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8234'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8234
+  :user_name: taninsw
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/973/
+  :language: Haskell
+  :time: 2008/12/20 12:08 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>これでトラバースは1回になってるんじゃないでしょうか。\n書いてて混乱してきたので、検証していただけると幸いです。</p>\n\n\t"
+  :code: |
+    test = "hoge\nPOPOPOPOPO\n\nPINGPONG\n"
+
+    padding' []         i  m ch= (0,[])
+    padding' ('\n':xs)  i  m ch= let (cMax,cStr) = padding' xs 0 (max i m) ch
+                                 in  (max m cMax,replicate ((max cMax m)-i) ch++'\n':cStr)
+    padding' (x:xs)     i  m ch= let (cMax,cStr) = padding' xs (i+1) (max i m) ch
+                                 in  (max m cMax,x:cStr)
+
+    padding text ch = snd $ padding' text 0 0 ch
+
+    {-
+    *Main&gt; padding test '-'
+    "hoge------\nPOPOPOPOPO\n----------\nPINGPONG--\n"
+    -}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8235'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8235
+  :user_name: matyr
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/343/
+  :language: Groovy
+  :time: 2008/12/20 15:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    def padRightAll(String s, String p, n = '\n'){
+      s.split(n).with{ it*.padRight(it*.size().max(), p[0]).join(n) + n }
+    }
+
+    print r = padRightAll('○○○○\n○○○○○○○\n\n○○○○○\n', '☆')
+    assert r == '○○○○☆☆☆\n○○○○○○○\n☆☆☆☆☆☆☆\n○○○○○☆☆\n'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8237'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8237
+  :user_name: syat
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/766/
+  :language: C
+  :time: 2008/12/20 20:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  失礼。callocの引数の数ちがってんじゃん。\r<br>VCEE2008でノーエラーで通ったから油断してた。\r<br>ヘッダファイルは大事ですね。\n\t"
+  :code: |
+    1a2
+    &gt; #include&lt;stdlib.h&gt;
+    19c20
+    &lt;       ret = (char*)calloc(line * (maxlen + 1) + 1);
+    ---
+    &gt;       ret = (char*)calloc(line * (maxlen + 1) + 1, 1);
+  :tags:
+  - diff
+  :references:
+    :url: 
+    :title: 
+- :id: '8238'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8238
+  :user_name: emasaka
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/12/20 21:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>マルチバイト処理に間違い。wc -Lは文字数ではなくカラム数を返すのに対し、\"○\"がEast Asian WidthでAmbiguousなだけでした。</p>\n<p>以下、修正版です。</p>\n\n\t"
+  :code: |
+    #!/bin/bash
+
+    function linemax() {
+        local line max len
+        while read -r line; do
+            len=${#line}
+            ((max = max &lt; len ? len : max))
+        done
+        echo $max
+    }
+
+    function q222() {
+        local padchar=$1
+        local text=$2
+
+        local maxlen=$(echo -n "$text" | linemax)
+        local padstr=$(yes "$padchar" | head -n $maxlen | tr -d '\n')
+
+        echo -n "$text" | sed -e "s/\$/$padstr/;s/^\(.\{$maxlen\}\).*/\1/"
+    }
+
+    q222 '☆' $'○○○○\n○○○○○○○\n\n○○○○○\n'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8240'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8240
+  :user_name: nobsun
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2008/12/21 01:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">トラバースは１回になっていますね。\r\nパディング文字列を replicate で作ってしまってから\r\n連結するのは、ちょっともったいないかもしれませんね。\r\n\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8241'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8241
+  :user_name: taninsw
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/973/
+  :language: Haskell
+  :time: 2008/12/21 04:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>確認ありがとうございます。\nとりあえず、replicateを使わないように書き直してみました。</p>\n<p>勉強がてらArrowやらApplicativeやらMonadやら使ってます。</p>\n\n\t"
+  :code: "import Control.Arrow\nimport Control.Monad.Reader\nimport Control.Applicative\ntest
+    = \"hoge\\nPOPOPOPOPO\\n\\nPINGPONG\\n\"\n\npadding' :: String-&gt;Int-&gt;Int-&gt;Reader
+    Char (Int,String)\npadding' []         i  m = return (0,[])\npadding' ('\\n':xs)
+    \ i  m = do (cMax,cStr) &lt;- padding' xs 0 (max i m) \n                              newStr
+    \     &lt;- padding'' ((max cMax m) -i) ('\\n':cStr)  \n                              return
+    (max m cMax,newStr)\npadding' (x:xs)     i  m = (arr(max m)*** arr(x:))  &lt;$&gt;
+    padding' xs (i+1) (max i m) \n\npadding'' :: Int-&gt;String-&gt;Reader Char String\npadding''
+    0 str = return str\npadding'' n str = ask&gt;&gt;= padding'' (n-1).(:str) \n\npadding
+    text ch = snd $ runReader (padding' text 0 0) ch\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8242'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8242
+  :user_name: sumim
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/12/21 10:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    | in out width |
+    in := '○○○○
+    ○○○○○○○
+
+    ○○○○○
+    '.
+
+    out := String new writeStream.
+    width := 0.
+    in linesDo: [:line | width := width max: line size].
+    in linesDo: [:line | out nextPutAll: (line forceTo: width paddingWith: $☆); cr].
+    out contents
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '8243'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8243
+  :user_name: nobsun
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/12/21 20:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Haskellのナイーブなコード</p>\n<ol class=\"arabic simple\">\n<li>lines で行に分解する</li>\n<li>maximum
+    . map length で各行の長さをカウントして最大長を求める</li>\n<li>map (++repeat c) で各行末にパディング文字の無限列を連結</li>\n<li>3.で作った各行の先頭から2.で求めた最大長分だけとる</li>\n<li>unlines
+    で１行にもどす</li>\n</ol>"
+  :code: |
+    normLines0 :: String -&gt; String
+    normLines0 = unlines . norm0 . lines
+
+    norm0 :: [String] -&gt; [String]
+    norm0 = map . take . maximum . map length &lt;*&gt; map (++repeat c)
+
+    (&lt;*&gt;) :: (a -&gt; b -&gt; c) -&gt; (a -&gt; b) -&gt; (a -&gt; c) -- S コンビネータ
+    (f &lt;*&gt; g) x = (f x) (g x)
+    infixl 4 &lt;*&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8244'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8244
+  :user_name: nobsun
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/12/21 20:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>パディング文字を定義しわすれました。\nパディング文字を引数で渡すバージョンを書きましたので、こちらをどうぞ。</p>\n\n\t"
+  :code: |
+    normLines0 :: Char -&gt; String -&gt; String
+    normLines0 c = unlines . norm0 c . lines
+
+    norm0 :: Char -&gt; [String] -&gt; [String]
+    norm0 c = map . take . maximum . map length &lt;*&gt; map (++repeat c)
+
+    (&lt;*&gt;) :: (a -&gt; b -&gt; c) -&gt; (a -&gt; b) -&gt; (a -&gt; c)
+    (f &lt;*&gt; g) x = f x (g x)
+
+    infixl 4 &lt;*&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8245'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8245
+  :user_name: nobsun
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/12/21 20:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ナイーブ版の unlines と lines の間の部分を１トラバースでやる\r\n(*+)
+    は２つの文字列を連結するが同時に前の文字列の長さもカウントする\r\n\r\n</pre>\n\t"
+  :code: |
+    norm1 :: Char -&gt; [String] -&gt; [String]
+    norm1 c xs = xs'
+      where (m,xs') = f xs
+            f []     = (0,[])
+            f (y:ys) = let
+                         (i,y')  = y *+ replicate (m-i) c
+                         (j,ys') = f ys
+                       in (max i j, y':ys')
+            xs *+ ys = foldr (\ z (p,zs) -&gt; (p+1,z:zs)) (0,ys) xs
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8246'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8246
+  :user_name: nobsun
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2008/12/21 20:45 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>unlines も lines もなしにして、全体を１トラバースでする方法\n#8241 と(たぶん)同じ方法</p>\n\n\t"
+  :code: |
+    normLines :: Char -&gt; String -&gt; String
+    normLines c xs = xs'
+      where (m,xs') = f 0 xs
+            f _ []     = (0,"")
+            f i (x:xs) | x == '\n' = let
+                                       (j,ys) = f 0 xs
+                                     in (max i j, g (m-i) ('\n':ys))
+                       | otherwise = let
+                                       (j,ys) = f (i+1) xs
+                                     in (j,x:ys)
+            g 0 xs = xs
+            g i xs = c:g (i-1) xs
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8247'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8247
+  :user_name: ihag
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/560/
+  :language: C
+  :time: 2008/12/22 08:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>マルチバイト文字に対応しました．</p>\n<p>Ambiguous widthな一部の記号('○'とか'☆')について，wcwidth(3)が1を返す問題に対処するため，Markus
+    Kuhn氏が作成されたwcwidthの実装を利用しています．</p>\n\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;string.h&gt;
+    #include &lt;unistd.h&gt;
+    #include &lt;wchar.h&gt;
+    #include &lt;locale.h&gt;
+
+    /* wcwidth.c functions */
+    int mk_wcwidth_cjk(wchar_t);
+    int mk_wcswidth_cjk(const wchar_t *, size_t);
+
+    #define ARRAY_UNIT_SIZE (sizeof(wchar_t) * 16)
+    #define handle_error(str) do { \
+        perror(str); exit(EXIT_FAILURE); } while (0)
+
+    #define DEF_ARRAY_NEW(prefix, type) \
+        type * prefix ## _new(void) { \
+            type *r; \
+            if ((r = calloc(1, sizeof(*r))) == NULL) \
+                handle_error("calloc"); \
+            return r; \
+        }
+    #define DEF_ARRAY_FREE(prefix, type) \
+        void _ ## prefix ## _free(type *p) { \
+            free(p); \
+        }
+    #define DEF_ARRAY_NPUSH(prefix, type) \
+        int prefix ## _npush(type *p, u_char *value, size_t size) { \
+            size_t c; \
+            for (c = 0; c &lt; size; c++) { \
+                if (p-&gt;size &gt;= p-&gt;size_max) { \
+                    p-&gt;size_max += ARRAY_UNIT_SIZE; \
+                    if ((p-&gt;value = realloc(p-&gt;value, p-&gt;size_max)) \
+                        == NULL) \
+                        handle_error("realloc"); \
+                } \
+                ((u_char *)(p-&gt;value))[p-&gt;size++] = value[c]; \
+            } \
+            return 0; \
+        }
+    #define DEF_ARRAY_FIT(prefix, type) \
+        type * prefix ## _fit(type *p) { \
+            if ((p-&gt;value = realloc(p-&gt;value, p-&gt;size)) == NULL) \
+                handle_error("realloc"); \
+            return p; \
+        }
+    #define DEF_ARRAY_COMMON(prefix, type) \
+        DEF_ARRAY_NEW(prefix, type) \
+        DEF_ARRAY_FREE(prefix, type) \
+        DEF_ARRAY_NPUSH(prefix, type) \
+        DEF_ARRAY_FIT(prefix, type)
+
+    struct wstr_t {
+        wchar_t *value;
+        size_t size;     /* in bytes */
+        size_t size_max; /* in bytes */
+    };
+    DEF_ARRAY_COMMON(wstr, struct wstr_t);
+
+    int
+    wstr_push(struct wstr_t *p, wchar_t value)
+    {
+        return(wstr_npush(p, (u_char *)&amp;value, sizeof(value)));
+    }
+
+    void
+    wstr_free(struct wstr_t *p)
+    {
+        if (p-&gt;value != NULL)
+            free(p-&gt;value);
+        _wstr_free(p);
+    }
+
+    wchar_t *
+    wstrpad(wchar_t *orig, wchar_t pad)
+    {
+        wchar_t *cur, *ret;
+        size_t wlen = 0, width = 0, width_max = 0;
+        struct wstr_t *wstr = wstr_new();
+        int i;
+
+        for (cur = orig; *cur != L'\0'; cur++) {
+            if (*cur == L'\n') {
+                width_max = (width &gt; width_max) ? width : width_max;
+                width = 0;
+            } else {
+                width += mk_wcwidth_cjk(*cur);
+            }
+        }
+        wlen = cur - orig;
+        if ((wlen &gt; 0) &amp;&amp; (cur[-1] != L'\n'))
+            width_max = (width &gt; width_max) ? width : width_max;
+
+        width = 0;
+        for (cur = orig; cur - orig &lt; (wlen + 1); cur++) {
+            if (*cur == L'\n' || (*cur == L'\0' &amp;&amp; width &gt; 0)) {
+                size_t remain_width = width_max - width;
+                size_t pad_width = mk_wcwidth_cjk(pad);
+                for (i = 0; i &lt; remain_width / pad_width; i++)
+                    wstr_push(wstr, pad);
+                width = 0;
+            } else {
+                int w = mk_wcwidth_cjk(*cur);
+                if (w &gt; 0) width += w;
+            }
+            wstr_push(wstr, *cur);
+        }
+        wstr_fit(wstr);
+
+        if ((ret = calloc(1, wstr-&gt;size)) == NULL)
+            handle_error("calloc");
+        wmemcpy(ret, wstr-&gt;value, wstr-&gt;size / sizeof(wchar_t));
+        wstr_free(wstr);
+
+        return ret;
+    }
+
+    void
+    test_wstrpad(char *test, wchar_t *src, wchar_t pad, wchar_t *compare)
+    {
+        wchar_t *padded = wstrpad(src, pad);
+        char *result = (wcscmp(padded, compare) == 0) ? "Succeeded" : "Failed";
+        printf("%s =&gt; %s.\n[%ls]\n\n", test, result, padded);
+        free(padded);
+    }
+
+    int
+    main(int argc, char **argv)
+    {
+        if (setlocale(LC_ALL, "") == NULL)
+            handle_error("setlocale");
+
+        test_wstrpad("Test case #1",
+                     L"foo\nbar baz\n\nhoge\n", L'*',
+                     L"foo****\n"
+                     L"bar baz\n"
+                     L"*******\n"
+                     L"hoge***\n");
+
+        test_wstrpad("Test case #2",
+                     L"\nhoge\nfoo bar baz", L'^',
+                     L"^^^^^^^^^^^\n"
+                     L"hoge^^^^^^^\n"
+                     L"foo bar baz");
+
+        test_wstrpad("Test case #3",
+                     L"○○○○\n○○○○○○○\n\n○○○○○\n", L'☆',
+                     L"○○○○☆☆☆\n"
+                     L"○○○○○○○\n"
+                     L"☆☆☆☆☆☆☆\n"
+                     L"○○○○○☆☆\n");
+
+        test_wstrpad("Test case #4",
+                     L"○○○○\n○○○○○○○\n\n○○○○○\n", L'*',
+                     L"○○○○******\n"
+                     L"○○○○○○○\n"
+                     L"**************\n"
+                     L"○○○○○****\n");
+
+        test_wstrpad("Test case #5",
+                     L"foo\nbar baz\n\nhoge", L'■',
+                     L"foo■■\n"
+                     L"bar baz\n"
+                     L"■■■\n"
+                     L"hoge■");
+
+        exit(EXIT_SUCCESS);
+    }
+  :tags: []
+  :references:
+    :url: /web/20090103091741/http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c
+    :title: wcwidth.c
+- :id: '8250'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8250
+  :user_name: nobusuke_neko
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/926/
+  :language: JavaScript
+  :time: 2008/12/22 20:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  C:\\temp&gt;cscript /nologo textJustify.js\r<br>○○○○☆☆☆\r<br>○○○○○○○\r<br>☆☆☆☆☆☆☆\r<br>○○○○○☆☆\n\t"
+  :code: |
+    Array.prototype.each = function(iterator){
+      for(var i=0, length=this.length; i&lt;length; i++) iterator(this[i],i);
+    }
+    String.prototype.width = function(){
+      var result = this.length;
+      for(var i=0; i&lt;this.length; i++) {
+        if(this.charCodeAt(i) &gt;= 128) result++;
+        if(this.charAt(i).match(/[｡-ﾟ]/)) result--;
+      }
+      return result;
+    }
+    String.prototype.times = function(count){
+      var result = '';
+      for(var i=0; i&lt;count; i++) result += this;
+      return result;
+    }
+    //----------------------------
+    function textJustify(text,padding){
+      var result = text.split("\n");
+      var last = result.length - 1;
+      var maxLength = 0;
+      result.each(function(v){
+        maxLength = v.width()&gt;maxLength? v.width(): maxLength;
+      });
+      result.each(function(v,i){
+        if((i!=last)||(v!="")){
+          var restLength = (maxLength - v.width()) / padding.width();
+          result[i] = v + padding.times(restLength|0);
+        }
+      });
+      return result.join("\n");
+    }
+    //----------------------------
+    //test
+    WScript.Echo(textJustify("○○○○\n○○○○○○○\n\n○○○○○\n","☆"));
+  :tags:
+  - WSH
+  :references:
+    :url: 
+    :title: 
+- :id: '8251'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8251
+  :user_name: 割と普通
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/581/
+  :language: C
+  :time: 2008/12/23 05:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">LINQを使って処理を行いました。\r\n変数の数を減らすことに留意しました。\r\nこれ以上変数を減らすとパフォーマンス落ちそうなので、この程度で。</pre>\n\t"
+  :code: |2
+        class MyMain
+        {
+            public static void Main(string[] args)
+            {
+                Console.WriteLine(TextRegex.action("○○○○\n○○○○○○○\n\n○○○○○\n", '☆'));
+                Console.ReadLine();
+            }
+        }
+
+        class TextRegex
+        {
+            static public string action(string str, char c)
+            {
+                List&lt;string&gt; lineList = str.Split(new string[] { Environment.NewLine, "\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                int maxLen = lineList.Max(s =&gt; s.Length);
+                return string.Join( Environment.NewLine,  lineList.Select(s =&gt; s.PadRight(maxLen, c)).ToArray() );
+            }
+        }
+  :tags:
+  - LINQ
+  :references:
+    :url: 
+    :title: 
+- :id: '8267'
+  :parent_id: '222'
+  :url: http://ja.doukaku.org/comment/8267
+  :user_name: leque
+  :user_url: /web/20090103091741/http://ja.doukaku.org/user/840/
+  :language: Scheme
+  :time: 2008/12/31 07:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    (use srfi-13)
+
+    (define (padlines s ch)
+      (let* ((ss (string-split s #\newline))
+             (n (apply max (map string-length ss))))
+        (string-join (map (cut string-pad-right &lt;&gt; n ch) ss) "\n")))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 

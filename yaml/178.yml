@@ -1,0 +1,430 @@
+---
+:id: '178'
+:title: 親子のペアからツリーを構築
+:comments:
+- :id: '6327'
+  :parent_id: '178'
+  :url: http://ja.doukaku.org/comment/6327
+  :user_name: hu2
+  :user_url: /web/20081203183026/http://ja.doukaku.org/user/803/
+  :language: Common
+  :time: 2008/05/24 03:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <pre class=\"compact\">親子ペア定義群からツリー構造をつくります\r\n\r\n・親子ペア定義\r\n※親-&gt;子\r\nA-&gt;B\r\nB-&gt;C\r\nC-&gt;D\r\nC-&gt;E\r\nA-&gt;F\r\nD-&gt;X\r\nY-&gt;Z\r\nZ-&gt;C\r\n\r\n・ツリー\r\nA\r\n-&gt;B\r\n
+    \ -&gt;C\r\n    -&gt;D\r\n      -&gt;X\r\n    -&gt;E\r\n-&gt;F\r\nY\r\n-&gt;Z\r\n
+    \ -&gt;C\r\n    -&gt;D\r\n      -&gt;X\r\n     -&gt;E</pre>\r\n\t"
+  :code: |
+    ; 親子ペア定義
+    (setf pair-lst '((a b)
+                     (b c)
+                     (c d)
+                     (c e)
+                     (a f)
+                     (d x)
+                     (y z)
+                     (z c)
+                     ))
+
+    ;; 同一の親を持つペアをマージする
+    ;; ex) ((p1 c1) (p1 c2) (p2 c3) (p2 c4)) -&gt; ((p1 c1 c2) (p2 c3 c4))
+    (defun gen-fmly-lst (plst)
+      (defun merge-lst (frst rst)
+        (if (null rst)
+          frst
+          (if (eq (car frst) (caar rst))
+            (merge-lst (append frst (cdar rst)) (cdr rst))
+            (merge-lst frst (cdr rst)))))
+      (labels ((rec (lst acc)
+                    (if (null lst)
+                      acc
+                      (if (member (caar lst) acc :key #'car)
+                        (rec (cdr lst) acc)
+                        (rec (cdr lst) (cons (merge-lst (car lst) (cdr lst)) acc))))))
+        (rec plst nil)))
+
+    ;; fmlyのリストからツリーを生成する
+    (defun gen-fmly-tr (fmly-lst)
+      (labels ((rec (flst acc)
+                    (if (null flst)
+                      acc
+                      ; hook前のfmlyをhook後のfmly(n次元リスト)に置き換えて処理をする
+                      (let* ((nD-fmly (car (member (caar flst) acc :key #'car)))
+                             (othr (other nD-fmly acc)))
+                        ; fmlyをhook処理し、一箇所もhookできなかったらfmlyをそのままaccに加える
+                        (if (equal othr (hook nD-fmly othr))
+                          (rec (cdr flst) (cons nD-fmly othr))
+                          (rec (cdr flst) (hook nD-fmly othr)))))))
+        (rec fmly-lst fmly-lst)))
+
+    ;; リストからobjを除いたリストを取得する
+    (defmacro other (obj lst)
+      `(remove-if #'(lambda (x) (equal ,obj x)) ,lst))
+
+    ;; リストのcarと一致するatomをツリーの中で見つけた場合、該当atomをリストで置き換える
+    ;; ex) (hook '(a x) '(a (b a) (c (d a)))) -&gt; ((a x) (b (a x)) (c (d (a x))))
+    (defun hook (lst tree)
+      (cond ((eq (car lst) tree) lst)
+            ((atom tree) tree)
+            (t (cons (hook lst (car tree))
+                     (hook lst (cdr tree))))))
+
+    (defun main ()
+      (gen-fmly-tr (gen-fmly-lst pair-lst)))
+    ; 実行すると、下記の構造が得られる
+    ; ((A (B (C (D X) E)) F) (Y (Z (C (D X) E))))
+    ; インデントすると
+    ;((A
+    ;   (B
+    ;     (C
+    ;       (D
+    ;         X)
+    ;       E))
+    ;   F)
+    ; (Y
+    ;   (Z
+    ;     (C
+    ;       (D
+    ;         X)
+    ;        E)))
+    ; )
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6328'
+  :parent_id: '178'
+  :url: http://ja.doukaku.org/comment/6328
+  :user_name: ocean
+  :user_url: /web/20081203183026/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/05/24 09:52 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <p>Pythonだとこんな感じでしょうか。</p>\n\n\t"
+  :code: |
+    class Node:
+        def __init__(self, name):
+            self.name = name
+            self.parent = None
+            self.children = []
+
+    def pairs_to_trees(pairs):
+        nodes = {}
+        for parent_name, child_name in pairs:
+            parent = nodes.setdefault(parent_name, Node(parent_name))
+            child  = nodes.setdefault(child_name,  Node(child_name))
+            child.parent = parent
+            parent.children.append(child)
+        return [node for node in nodes.itervalues() if node.parent is None]
+
+    def show(node, depth):
+        if depth == 0:
+            print node.name
+        else:
+            print "  " * (depth - 1) + "-&gt;" + node.name
+        for child in node.children:
+            show(child, depth + 1)
+
+    def main():
+        pairs = [
+            ('A', 'B'),
+            ('B', 'C'),
+            ('C', 'D'),
+            ('C', 'E'),
+            ('A', 'F'),
+            ('D', 'X'),
+            ('Y', 'Z'),
+            ('Z', 'C'),
+        ]
+
+        for tree in pairs_to_trees(pairs):
+            show(tree, 0)
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6329'
+  :parent_id: '178'
+  :url: http://ja.doukaku.org/comment/6329
+  :user_name: 匿名
+  :user_url: /web/20081203183026/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/05/24 11:08 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">ツリーにおいて、ノードの親は多くても一つです。\r\nですから、この例のB-&gt;CのCとZ-&gt;CのCは別のものなのでしょう。\r\nそうすると、なぜ、A-&gt;BのAとA-&gt;FのAは同じものだと考えるのでしょうか？</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6331'
+  :parent_id: '178'
+  :url: http://ja.doukaku.org/comment/6331
+  :user_name: 匿名
+  :user_url: /web/20081203183026/http://ja.doukaku.org/user/4/
+  :language: Common
+  :time: 2008/05/24 15:24 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">&gt;(setf env (gen-family-relation pair-lst
+    '()))\r\n((Z C)(Y Z)(D X)(C D E)(B C)(A B F))\r\n&gt;(query 'A env)\r\n(A (B (C
+    (D X) E)) F)\r\n&gt;(query 'Y env)\r\n(Y (Z (C (D X) E)))\r\n</pre>\n\t"
+  :code: |
+    (setf pair-lst '((a  b)
+                     (b  c)
+                     (c  d)
+                     (c  e)
+                     (a  f)
+                     (d  x)
+                     (y  z)
+                     (z  c) ))
+
+    (defun gen-family-relation (list env)
+      (let ( node result )
+        (dolist (x list result)
+            (setf node (assoc (car x) env))
+            (if node
+                (setf (cdr node) (append (cdr node) (cdr x)))
+                (push x env) )
+            (setf result env) )))
+
+    (defun query (s env)
+      (let ((node (assoc s env)))
+        (if node
+            (cons (car node)(mapcar #'(lambda (x)(query x env)) (cdr node)))
+            s)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6332'
+  :parent_id: '178'
+  :url: http://ja.doukaku.org/comment/6332
+  :user_name: hu2
+  :user_url: /web/20081203183026/http://ja.doukaku.org/user/803/
+  :language: 
+  :time: 2008/05/24 20:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ご指摘ありがとうございます。\r\n設定の説明が至らず申し訳ありません。\r\n\r\nこのコードは、RDBテーブル間の外部参照関係を整理するために書きました。\r\n\r\n従って、一つのノードは一つのテーブルを表しており、\r\n一つのテーブルは複数のテーブルを参照する（親に持つ）ことができます。\r\n\r\nご指摘いただいた\"C\"はそのケースで、ツリーの中で複数回現れますが、\r\n（意味的には）同一のテーブルを表し、\"C\"以下の親子関係の構造は一致している必要があります。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6333'
+  :parent_id: '178'
+  :url: http://ja.doukaku.org/comment/6333
+  :user_name: 匿名
+  :user_url: /web/20081203183026/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/05/24 23:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  「ツリーにおいてノードの親」というより、\r\n血脈としての親子関係だと私は理解しました。（そしてその血脈をツリーとして表す）\r\nなので、子供には、女親と男親の２つがあっても良いと思います。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6334'
+  :parent_id: '178'
+  :url: http://ja.doukaku.org/comment/6334
+  :user_name: 匿名
+  :user_url: /web/20081203183026/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/05/25 00:37 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">この場合、データ構造として、「グラフ」を使うのがふつうだと思うのですが、\r\nあえて、「木」を使うのには、何か特別な理由があるのでしょうか？\r\n（最初に実装したのがLispだから？）</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6335'
+  :parent_id: '178'
+  :url: http://ja.doukaku.org/comment/6335
+  :user_name: hu2
+  :user_url: /web/20081203183026/http://ja.doukaku.org/user/803/
+  :language: 
+  :time: 2008/05/25 01:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">コメントありがとうございます。\r\n\r\n以下のように、テーブルの参照関係をインデントを使ってプレーンテキストに出力するイメージでいた為です。\r\nしかしご指摘の通り出力前のデータとしては、グラフ構造であるべきという気がします。\r\n\r\n-------------------------------------------------------\r\nテーブルA\r\n　　テーブルB\r\n　　テーブルC\r\n　　　　テーブルD\r\nテーブルX\r\n　　テーブルC\r\n…</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6336'
+  :parent_id: '178'
+  :url: http://ja.doukaku.org/comment/6336
+  :user_name: hu2
+  :user_url: /web/20081203183026/http://ja.doukaku.org/user/803/
+  :language: 
+  :time: 2008/05/25 01:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">そうですね。\r\n「このテーブルの親は。。さらにその親は。。」と辿っていける構造を作りたかったので、\r\n血脈という言葉がしっくりきます。\r\n\r\nありがとうございました。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6344'
+  :parent_id: '178'
+  :url: http://ja.doukaku.org/comment/6344
+  :user_name: ytakenaka
+  :user_url: /web/20081203183026/http://ja.doukaku.org/user/35/
+  :language: Common
+  :time: 2008/05/26 09:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">とりあえず構造体とハッシュをつかって。treeのユーティリティは\r\nANSI Common
+    Lispにとりあげられていたよ。\r\n\r\nDOKAKU178&gt; (maphash #'(lambda(k v)\r\n\t\t\t(print-tree
+    k)) *population*)\r\nNIL =&gt; A =&gt; (F B) \r\n(A) =&gt; B =&gt; (C) \r\n(Z
+    B) =&gt; C =&gt; (E D) \r\n(C) =&gt; D =&gt; (X) \r\n(C) =&gt; E =&gt; NIL \r\n(A)
+    =&gt; F =&gt; NIL \r\n(D) =&gt; X =&gt; NIL \r\nNIL =&gt; Y =&gt; (Z) \r\n(Y)
+    =&gt; Z =&gt; (C) </pre>\n\t"
+  :code: "(defpackage :dokaku178\n  (:use :common-lisp))\n(in-package :dokaku178)\n\n(defvar
+    *population* (make-hash-table))\n(defstruct tree\n   id children parents)\n\n(defun
+    get-node (key)\n  (multiple-value-bind (hash-value flag) (gethash key *population*)\n
+    \   (if (null flag)\n    (setf (gethash key *population*) (make-tree :id key\n
+    \                         :parents nil\n                          :children nil))\n
+    \   hash-value)))\n\n(defun set-node (pair-list)\n  (let* ((parent (car pair-list))\n
+    \    (child (cdr pair-list))\n     (parent-node (get-node parent))\n     (child-node
+    (get-node child)))\n    (pushnew parent (tree-parents child-node))\n    (pushnew
+    child (tree-children parent-node))))\n\n(defun get-origins ()\n  (let ((origins
+    nil))\n    (maphash #'(lambda(k v)\n         (if (null (tree-parents v))\n             (pushnew
+    k origins))) *population*)\n    origins))\n\n(defun print-tree (id)\n  (let ((id
+    (gethash id *population*)))\n    (format t \"~a =&gt; ~a =&gt; ~a ~%\"  (tree-parents
+    id)\n                               (tree-id id)\n                   (tree-children
+    id))))\n\n(defun main()     \n  (let ((pair-lst\n     '((a . b)(b . c)(c . d)(c
+    . e)\n       (a . f)(d . x)(y . z)(z . c))))\n    (loop for n in pair-lst do\n
+    \    (set-node n))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6345'
+  :parent_id: '178'
+  :url: http://ja.doukaku.org/comment/6345
+  :user_name: nobsun
+  :user_url: /web/20081203183026/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2008/05/26 21:01 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <div class=\"section\">\n<p>ふと。\r</p>\n<p>\r</p>\n<p>有向辺のリストを与えて、グラフを作るというお題なんだと思うんだけど、何ができれば、グラフ構造ができたことになるんだろう?
+    あるいはどのようなものが表示されれば、グラフ構造ができてるなと確認できるのだろう?\r</p>\n<p>\r</p>\n<p>極端な言い分だと、親子関係のペアのリストがあればそれがグラフだとか木だと主張することもできるわけですよね。</p>\n</div>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6452'
+  :parent_id: '178'
+  :url: http://ja.doukaku.org/comment/6452
+  :user_name: 匿名
+  :user_url: /web/20081203183026/http://ja.doukaku.org/user/4/
+  :language: JavaScript
+  :time: 2008/06/09 06:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">JavaScript でプロパティでツリーを表現してみました。\r\n実行例：\r\nadd(\"A\",
+    \"B\");\r\nadd(\"B\", \"C\");\r\nadd(\"C\", \"D\");\r\nadd(\"C\", \"E\");\r\nadd(\"A\",
+    \"F\");\r\nadd(\"D\", \"X\");\r\nadd(\"Y\", \"Z\");\r\nadd(\"Z\", \"C\");\r\nprint(family_toString(family));\r\n/*
+    出力 */\r\nA\r\n-&gt;F\r\n-&gt;B\r\n  -&gt;C\r\n    -&gt;D\r\n      -&gt;X\r\n    -&gt;E\r\nY\r\n-&gt;Z\r\n
+    \ -&gt;C\r\n    -&gt;D\r\n      -&gt;X\r\n    -&gt;E</pre>\n\t"
+  :code: |
+    var cache = {};
+    var family = {};
+
+    function add(parent, child){
+        var p,c;
+        if(parent in cache){
+            p = cache[parent];
+        } else { //初めての名前
+            p = family[parent] = { name : parent };
+            cache[parent] = p;
+        }
+        if(child in cache){
+            p[child] = cache[child];
+        } else { //初めての名前
+            c = p[child] = { name : child };
+            cache[child] = c;
+        }
+    }
+
+    family_toString.tab = "  ";
+
+    function family_toString(f, tab){
+        var result = "";
+
+        if(tab == null) tab = -1;
+
+        var indent = arguments.callee.tab.x(tab);
+
+        for( x in f){
+            if(x == "name") continue;
+            else{
+                result += indent + (tab &lt; 0 ? "" : "-&gt;") + f[x].name + "\n";
+                result += family_toString(f[x], tab+1);
+            }
+        }
+        return result;
+    }
+
+    if(!String.prototype.x){
+        String.prototype.x = function(n){
+            var result="", i;
+            for(i=0;i&lt;n;i++){
+                result += this;
+            }
+            return result;
+        }
+    }
+  :tags:
+  - Rhino
+  :references:
+    :url: 
+    :title: 
+- :id: '6466'
+  :parent_id: '178'
+  :url: http://ja.doukaku.org/comment/6466
+  :user_name: 匿名
+  :user_url: /web/20081203183026/http://ja.doukaku.org/user/4/
+  :language: JavaScript
+  :time: 2008/06/11 16:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">既存の子を追加する時、\r\n親がいなかったノードが後から親を指定された時ルート参照を削除した方がよい\r\n</pre>\n\t"
+  :code: |
+    if(child in family){
+        delete family[child];
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6763'
+  :parent_id: '178'
+  :url: http://ja.doukaku.org/comment/6763
+  :user_name: 匿名
+  :user_url: /web/20081203183026/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/07/18 02:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>グラフの数学的な定義は、G=(V;E)ですから、頂点のリストと辺のリストがあれば、グラフを作ったことになるんじゃないですかね。\n問題については、有向辺のリストから頂点のリストを推定せよ、ってことじゃないかと。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 

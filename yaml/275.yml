@@ -1,0 +1,1593 @@
+---
+:id: '275'
+:title: バイナリクロック
+:comments:
+- :id: '9282'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9282
+  :user_name: lunlumo
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/813/
+  :language: Ruby
+  :time: 2009/07/03 20:17 GMT
+  :vote_count: '8'
+  :vote_score: '6'
+  :body: "\r\n\t  　時刻を二進数相当の表現で出力する時計アプリケーションを書いてください。\r<br>　20:18の場合，例えば以下の様な出力をするイメージです。\r<br><br>出力例:\r<br>　■□■□□\r<br>□■□□■□\r\n\t"
+  :code: |
+    #! c:\ruby\bin\ruby.exe -Ks
+
+    String.class_eval do |string|
+        def words
+            self.split(//)
+        end
+        def fix_width(width, padding)
+            (self.words.size &gt; width) ? self : (padding * (width - self.words.size) + self)
+        end
+    end
+
+    Fixnum.class_eval do |fixnum|
+        alias :to_s_orig :to_s
+        def to_s(base, width)
+            binary = self.to_s_orig(base).fix_width(width, "0")
+        end
+    end
+
+    class BinaryClock
+        attr_accessor :now
+        def initialize
+            self.now = Time.now
+        end
+        def print
+            output(self.now.hour.to_s(2, 5))
+            output(self.now.min.to_s(2, 6))
+        end
+    private
+        def output(binary)
+            puts binary.words.map { |f| f == "0" ? "□" : "■" }.join.fix_width(6, "　")
+        end
+    end
+
+    BinaryClock.new.print
+  :tags: []
+  :references:
+    :url: /web/20100707012437/http://www.android-app.info/2009/07/01/binary-clock-widget/
+    :title: Binary Clock Widget
+- :id: '9307'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9307
+  :user_name: turugina
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/760/
+  :language: Perl
+  :time: 2009/07/08 00:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>年月日時分秒 まで表示してみました。</p>\n\n\t"
+  :code: |
+    use strict;
+    use warnings;
+
+    # Binary clock
+
+    $\="\n";
+    $,="：";
+    clear_screen();
+    while ( 1 )
+    {
+      my ($sec,$min,$hour,$day,$month,$year)=localtime;
+      ++$month;
+      $year+=1900;
+      print bin_($year,'年', 12), sprintf('%4d',$year);
+      print bin_($month,'月', 5), sprintf('%4d',$month);
+      print bin_($day,'日', 6)  , sprintf('%4d',$day);
+      print bin_($hour,'時', 6) , sprintf('%4d',$hour);
+      print bin_($min,'分', 7)  , sprintf('%4d',$min);
+      print bin_($sec,'秒', 7)  , sprintf('%4d',$sec);
+      sleep 1;
+      clear_screen();
+    }
+
+    sub bin_
+    {
+      my ($n,$s,$m) = @_;
+
+      '＿'x(12-$m) . join '', map { ((1 &lt;&lt;($_-1)) &amp; $n) ? $s : '□' } reverse 1 .. $m;
+    }
+
+    sub clear_screen
+    {
+      if ( $^O =~ /Win32/ ) {
+        system('cls');
+      }
+      else {
+        if (system('clear') != 0) {
+          print "\x1b[2J";
+        }
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9308'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9308
+  :user_name: '186'
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/352/
+  :language: Scheme
+  :time: 2009/07/08 00:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>0-&gt;o, 1-&gt;Oです.</p>\n\n\t"
+  :code: |
+    (use srfi-19)
+    (define (binary-clock)
+      (define (integer-&gt;binary-string int)
+        (regexp-replace-all
+         #/1/
+         (regexp-replace-all #/0/ (number-&gt;string int 2) "o")
+         "O"))
+      (let1 cur (time-utc-&gt;date (current-time))
+            (format #t
+                    "\n ~2,'0d:~2,'0d\n~6,,,'o@a\n~6,,,'o@a"
+                    (date-hour cur)
+                    (date-minute cur)
+                    (integer-&gt;binary-string (date-hour cur))
+                    (integer-&gt;binary-string (date-minute cur)))))
+    (binary-clock)
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '9312'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9312
+  :user_name: athos
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/755/
+  :language: Scheme
+  :time: 2009/07/08 06:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    (use srfi-19)
+
+    (print (regexp-replace-all*
+            (let1 d (current-date)
+              (format "　~5,'0b~%~6,'0b" (ref d 'hour) (ref d 'minute)))
+            #/1/ "■"
+            #/0/ "□"))
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '9313'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9313
+  :user_name: aodag
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/1080/
+  :language: C
+  :time: 2009/07/08 06:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>結構素直な方法と思います。</p>\n\n\t"
+  :code: |2
+        class Program
+        {
+            static void Main(string[] args)
+            {
+                DateTime now = DateTime.Now;
+                byte hours = (byte)now.Hour;
+                byte minutes = (byte)now.Minute;
+                StringBuilder uh = new StringBuilder();
+                StringBuilder lh = new StringBuilder();
+                StringBuilder um = new StringBuilder();
+                StringBuilder lm = new StringBuilder();
+                for (byte i = 0; i &lt; 8; i++)
+                {
+                    byte mask = (byte)(1 &lt;&lt; (7 - i));
+                    if ((hours &amp; mask) != 0)
+                    {
+                        uh.Append("■");
+                        lh.Append("□");
+                    }
+                    else
+                    {
+                        uh.Append("□");
+                        lh.Append("■");
+                    }
+                    if ((minutes &amp; mask) != 0)
+                    {
+                        um.Append("■");
+                        lm.Append("□");
+                    }
+                    else
+                    {
+                        um.Append("□");
+                        lm.Append("■");
+                    }
+                }
+                Console.Write(uh);
+                Console.WriteLine(um);
+                Console.Write(lh);
+                Console.WriteLine(lm);
+                Console.WriteLine(now);
+            }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9314'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9314
+  :user_name: nobsun
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2009/07/08 06:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">6桁固定、24時、秒まで表示ですが。。。\r\n\r\n*Main&gt; :main
+    -- 15:50:14\r\n□□■■■■\r\n■■□□■□\r\n□□■■■□\r\n</pre>\n\t"
+  :code: "import Data.List\nimport Data.Time\nimport qualified System.IO.UTF8 as U\nimport
+    System.Locale\n\nmain = getCurrentTime\n     &gt;&gt;= utcToLocalZonedTime \n
+    \    &gt;&gt;= mapM_ (U.putStrLn . repBin . toBin 6) \n     . read . formatTime
+    defaultTimeLocale \"[%H,%M,%S]\"\n\nrepBin :: [Int] -&gt; String\nrepBin = map
+    f\n  where\n    f 1 = '■'\n    f 0 = '□'\n\ntoBin :: Int -&gt; Int -&gt; [Int]\ntoBin
+    n m = snd $ mapAccumR divMod m $ replicate n 2\n"
+  :tags:
+  - Data.Time
+  - System.IO.UTF8
+  :references:
+    :url: 
+    :title: 
+- :id: '9315'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9315
+  :user_name: nido
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/589/
+  :language: Ruby
+  :time: 2009/07/08 07:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ワンライナー。秒まで表示。0-&gt;\"o\",1-&gt;\".\"です。</p>\n\n\t"
+  :code: |
+    puts Time.now.to_a[0..2].map{|e| ("%06b"%e).tr("01",".o")}.reverse.join("\n")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9316'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9316
+  :user_name: nido
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/589/
+  :language: Ruby
+  :time: 2009/07/08 02:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>0-&gt;\".\",1-&gt;\"o\"の間違いでした。□■で表示なら以下のコード。</p>\n\n\t"
+  :code: |
+    require "jcode"
+    puts Time.now.to_a[0..2].map{|e| ("%06b"%e).tr("01","□■")}.reverse.join("\n")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9317'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9317
+  :user_name: kh
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2009/07/08 08:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "private import std.stdio, std.date, std.string;\n\nvoid main() {\n    void
+    output(uint n) {\n        writeln(format(\"%06b\", n).replace(\"0\", \"□\").replace(\"1\",
+    \"■\"));\n    }\n    \n    localTZA = 9 * ticksPerHour; // JST\n    auto t = UTCtoLocalTime(getUTCtime());\n
+    \   output(hourFromTime(t));\n    output(minFromTime(t));\n    output(secFromTime(t));\n}\n"
+  :tags:
+  - D2.031
+  :references:
+    :url: 
+    :title: 
+- :id: '9318'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9318
+  :user_name: sumim
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/07/08 08:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    {Time now print24. String streamContents: [:ss |
+        (Time now print24 subStrings: ':')
+            do: [:each | ss nextPutAll: (
+                ((each asInteger radix: 2) forceTo: 7 paddingStartWith: $0)
+                    translateWith: ({$0 asciiValue + 1 -&gt; $□. $1 asciiValue + 1 -&gt; $■} as: Dictionary))]
+            separatedBy: [ss space]]}
+
+    "=&gt; #('22:50:58' '□□■□■■□ □■■□□■□ □■■■□■□') "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '9319'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9319
+  :user_name: rennos
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/1024/
+  :language: HSP
+  :time: 2009/07/08 10:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "#uselib \"user32.dll\"\n#func   PostMessage   \"PostMessageA\"   int,int,int,sptr\n#cfunc
+    \ GetWindowLong \"GetWindowLongA\" int,int\n#func   SetWindowLong \"SetWindowLongA\"
+    int,int,int\n\n#undef  BITNUM\n#define global ctype BITNUM(%1) (1 &lt;&lt; (%1))\n\n#define
+    WIN_HEIGHT 30\n#define CELLSIZE 10\n#define CX_MARGIN 1\n#define CY_MARGIN 1\n\n
+    \   cx = 60 + CX_MARGIN * 2\n    cy = WIN_HEIGHT + CY_MARGIN * 2\n    bgscr IDW_MAIN,
+    cx, cy, 2\n    SetWindowLong hwnd, -20, ( GetWindowLong(hwnd, -20) | 0x80 )\n
+    \   \n    gsel IDW_MAIN, 2\n    onclick gosub *OnMove\n    onkey   gosub *OnKeyProc\n
+    \   \n    goto *mainlp\n    \n*mainlp\n    gosub *LCalcData\n    gosub *LRedraw\n
+    \   await 10\n    goto *mainlp\n    \n*LCalcData\n    nTime = gettime(4), gettime(5),
+    gettime(6)\n    return\n    \n*LRedraw\n    redraw 2\n    \n    color 192, 192,
+    192 : boxf\n    color\n    px1 = CX_MARGIN - 1\n    py1 = CY_MARGIN - 1\n    px2
+    = ginfo(12) - CX_MARGIN\n    py2 = ginfo(13) - CY_MARGIN\n    boxf px1, py1, px2,
+    py2\n    \n    foreach nTime\n        h = (192 / length(nTime)) * cnt\n        for
+    i, 0, 6\n            if ( nTime(cnt) &amp; BITNUM(5 - i) ) {\n                s
+    = 255 - ((255 / 10) * i)\n                v = 255 - ((255 / 10) * i)\n                hsvcolor
+    h, s, v\n            } else {\n                color 255, 255, 255\n            }\n
+    \           \n            px1 = CX_MARGIN + (  i * CELLSIZE)\n            py1
+    = CY_MARGIN + (cnt * CELLSIZE)\n            px2 = CX_MARGIN + ((  i + 1) * CELLSIZE)
+    - 2\n            py2 = CY_MARGIN + ((cnt + 1) * CELLSIZE) - 2\n            boxf
+    px1, py1, px2, py2\n        next\n    loop\n    \n    redraw 1\n    return\n    \n*OnMove\n
+    \   if ( wparam == 1 ) {\n        sendmsg hwnd, 0x00A1, 2, 0\n    }\n    return\n
+    \   \n*OnKeyProc\n    if ( iparam == 27 ) {        // [Esc]\n        gosub *LQuit\n
+    \   }\n    return\n    \n*LQuit\n    PostMessage hwnd, 0x0010, 0, 0\n    return\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9320'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9320
+  :user_name: mattsan
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/833/
+  :language: C
+  :time: 2009/07/08 19:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>本体より文字列変換のほうが長くなってしまいました。</p>\n\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    #include &lt;limits&gt;
+    #include &lt;cassert&gt;
+    #include &lt;ctime&gt;
+
+    template&lt;typename T&gt;
+    std::string tobits(T n, int d)
+    {
+        assert(n &gt; 0);
+        assert((0 &lt; d) &amp;&amp; (d &lt;= std::numeric_limits&lt;T&gt;::digits));
+
+        std::string result;
+        for(T i = static_cast&lt;T&gt;(1) &lt;&lt; (d - 1); i &gt; 0; i &gt;&gt;= 1)
+        {
+            result += ((n &amp; i) != 0) ? "■" : "□";
+        }
+        return result;
+    }
+
+    int main(int, char* [])
+    {
+        std::time_t raw;
+        std::time(&amp;raw);
+        std::tm* t = std::localtime(&amp;raw);
+
+        std::cout &lt;&lt; tobits(t-&gt;tm_hour, 6) &lt;&lt; "\n"
+                  &lt;&lt; tobits(t-&gt;tm_min,  6) &lt;&lt; "\n"
+                  &lt;&lt; tobits(t-&gt;tm_sec,  6) &lt;&lt; "\n";
+
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9321'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9321
+  :user_name: silverwire
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/646/
+  :language: Batchfile
+  :time: 2009/07/08 20:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">バッチで。\r\n\r\n時分秒を 6桁で表示します。\r\n\r\ncallを使用するとサブルーチンを呼び出す分だけ時間がかかり、正\r\n確に
+    1秒を刻めなくなってしまうので、処理をすべて展開しました。\r\n\r\n# なお、12行目は 2桁の数値の上位桁が 0である時、 8進数として\r\n#
+    解釈されないようにするための処理です。</pre>\n\t"
+  :code: "@echo off\nsetlocal enabledelayedexpansion\n  set m=0\n  set n=0\n  set
+    s=\n  set t=\n  \n  :_\n    for /f \"delims=.\" %%t in (\"%TIME%\") do set t=%%t\n
+    \   cls\n    for %%t in (%t::= %) do (\n      set /a n=1%%t-100\n      set s=\n
+    \     for /l %%i in (1,1,6) do (\n        set /a m=n%%2\n        if !m! equ 0
+    (set s=□!s!) else (set s=■!s!)\n        set /a n/=2\n      )\n      echo !s!\n
+    \   )\n    ping -n 2 127.0.0.1 &gt; NUL\n  goto _\nendlocal\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9322'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9322
+  :user_name: tkturbo
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/1056/
+  :language: JavaScript
+  :time: 2009/07/08 21:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>強引な1linerで</p>\n\n\t"
+  :code: |
+    javascript:{String.prototype.pad=function(l,c){var v=this; while(v.length&lt;l){v=c+v;}return v;};d=new Date();alert((d.getHours().toString(2).pad(6,'　')+"\n"+d.getMinutes().toString(2).pad(6,'0')+"\n"+d.getSeconds().toString(2).pad(6,'0')).replace(/0/g,'□').replace(/1/g,'■'))};
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9323'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9323
+  :user_name: tkturbo
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/1056/
+  :language: Bash
+  :time: 2009/07/08 22:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>しつこく強引な1liner</p>\n\n\t"
+  :code: |
+    function toBIN { \
+      v=$1; \
+      s=""; \
+      while [ $v -gt 0 ];do \
+        let "x = v&gt;&gt;1"; \
+        let "b = v ^ x&lt;&lt;1"; \
+        s=$b$s; \
+        v=$x; \
+      done; \
+      echo $s; \
+    }; \
+    d=`date '+%H %M %S'`; \
+    c="　"; \
+    for V in `echo ${d}`;do \
+      V=`toBIN $V`; \
+      while [ ${#V} -lt 6 ];do \
+        V=${c}${V}; \
+      done; \
+      echo ${V}|sed s/0/□/g|sed s/1/■/g; \
+      c="0"; \
+    done;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9324'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9324
+  :user_name: 匿名
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/4/
+  :language: Bash
+  :time: 2009/07/09 01:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">もう少し短くしてみました。\r\n\r\n Linuxのprintf(シェルビルトインのものと
+    /usr/bin/printf)では\r\nフラグ文字 0と変換指定子 sを組み合わせても意図した結果が得ら\r\nれなかったので、 dで代用しました。そのため、bcの返す値の最上\r\n位桁が
+    0にならないことに依存します。\r\n\r\n# AIX 4.3.3.0, HP-UX B.11.00, Linux 2.4.2, SunOS 5.5.1で動作\r\n#
+    を確認。</pre>\n\t"
+  :code: |
+    for t in `date '+%H %M %S'`; do printf '%06d\n' `echo "obase=2; $t" | bc` | tr '01' '.*'; done
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9325'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9325
+  :user_name: g000001
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2009/07/09 07:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  なんのひねりもありません…。\r<br><br>(binary-clock)\r<br>■■■■■□■■□□■\r<br>■■■\r<br>■□□■\r<br>■□□□□\r<br>■■□□□\r<br>■□■□■■\r<br>;=&gt; (2009 7 9 16 24 43)\n\t"
+  :code: |
+    (defun binary-clock (&amp;optional (utime (get-universal-time)))
+      (mapc (lambda (x)
+              (princ (map 'string (lambda (x) (if (char= #\0 x) #\□ #\■))
+                          (format nil "~B" x)))
+              (terpri))
+            (subseq (nreverse (multiple-value-list (decode-universal-time utime))) 3)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9326'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9326
+  :user_name: shg
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/383/
+  :language: Matlab
+  :time: 2009/07/09 03:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">figureとして表示します。\r\n4:5 を 4:6 にすれば秒も出ます。\r\nMATLABのグレイスケールでは白が1で黒が0ですが、出題の例に合わせて逆にしています。\r\n1を白にするには'0'を'1'にします。</pre>\n\t"
+  :code: |
+    function binaryclock
+    c = clock;
+    colormap(gray)
+    imagesc(dec2bin(c(4:5),6)=='0')
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9327'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9327
+  :user_name: 割と普通
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/581/
+  :language: C
+  :time: 2009/07/09 05:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  LINQを使ってワンライナー的な処理を書いてみました。「Select( binary =&gt;」の部分まで一行にしてしまうと、かえって読みにくくなると判断したのでこの程度で。\n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine(new DateTime(2009, 7, 8, 20, 18, 0));
+            Console.WriteLine(BinaryClock.Convert(new DateTime(2009, 7, 8, 20, 18, 0)));
+            Console.ReadLine();
+        }
+    }
+
+    public class BinaryClock
+    {
+        public static string Convert(DateTime dateTime)
+        {
+            return string.Join(Environment.NewLine, new int[] { dateTime.Hour, dateTime.Minute }
+                .Select(num =&gt; System.Convert.ToString(num, 2)).Select(binary =&gt;
+                {
+                    return new string(binary.ToCharArray().Select(c =&gt; c == '0' ? '□' : '■').ToArray()).PadLeft(6, '　');
+                }).ToArray());
+        }
+    }
+
+
+    //2009/07/08 20:18:00
+    //　■□■□□
+    //　■□□■□
+  :tags:
+  - LINQ
+  :references:
+    :url: 
+    :title: 
+- :id: '9328'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9328
+  :user_name: ivoryworks
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/647/
+  :language: PHP
+  :time: 2009/07/09 12:54 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">感嘆符はサービスです。\r\n\r\n　あたあたあ！\r\nあたたあたた！\r\n　　あたたた！\r\n21:36:08\r\n</pre>\n\t"
+  :code: |
+    $decs = explode(':', date('H:i:s', time()));
+    foreach ( $decs as $dec ) {
+        $search = array('1', '0', ' ');
+        $replace = array('あ','た', '　');
+        echo str_replace($search, $replace, sprintf('%6s', decbin($dec)))."！\n";
+    }
+    echo implode(':', $decs);
+  :tags: []
+  :references:
+    :url: /web/20100707012437/http://www.asahi-net.or.jp/~rc4t-ishr/kensiro.html
+    :title: ケンシロウ進数
+- :id: '9329'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9329
+  :user_name: sekia
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/588/
+  :language: Perl
+  :time: 2009/07/09 13:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>一行野郎。本体73bytes、全部で114bytes。\nマルチバイトでなければ-Mスイッチはなくていいです。</p>\n\n\t"
+  :code: |
+    perl -Mutf8 -Mopen=:utf8 -Mopen=:std -E'say for map { $_ = sprintf "%06b", $_; tr/01/□■/; $_ } (localtime)[2, 1];'
+  :tags:
+  - Perl5.10
+  :references:
+    :url: 
+    :title: 
+- :id: '9330'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9330
+  :user_name: eban
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/97/
+  :language: Bash
+  :time: 2009/07/09 09:08 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <pre class=\"compact\">6桁固定、時分秒。\r\n{0,1}を並べることで2進数の列が得られます。\r\n$
+    echo {0,1}{0,1}\r\n00 01 10 11\r\nあとは配列に入れれば10進→2進変換のできあがり。\r\n</pre>\n\t"
+  :code: |
+    bins=({□,■}{□,■}{□,■}{□,■}{□,■}{□,■})
+    time=(`date "+%H %M %S"`)
+    for i in 0 1 2; do
+      echo ${bins[time[i]]}
+    done
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9332'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9332
+  :user_name: ところてん
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/166/
+  :language: PHP
+  :time: 2009/07/09 22:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ブラウザで表示させると崩れるのが微妙なところ</p>\n\n\t"
+  :code: |
+    &lt;?php
+    $h = str_replace(array("0","1"),array("□","■"), sprintf("　%05b", date("H")));
+    $m = str_replace(array("0","1"),array("□","■"), sprintf("%06b", date("i")));
+    print "$h&lt;br&gt;$m";
+    ?&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9333'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9333
+  :user_name: mattsan
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/833/
+  :language: Haskell
+  :time: 2009/07/10 04:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>なるほど!\r</p>\n<p>Haskellで。\r</p>\n<p>もうちょっとスマートに書けたならなぁ。\r</p>\n<p>0-&gt;'.'
+    / 1-&gt;'o' です。</p>\n</div>\n\t"
+  :code: "import Data.Time\nimport System.Locale\n\ndigits = [a5:a4:a3:a2:a1:a0:[]
+    | a5&lt;-\".o\", a4&lt;-\".o\", a3&lt;-\".o\", a2&lt;-\".o\", a1&lt;-\".o\", a0&lt;-\".o\"]\n\nmain
+    = getCurrentTime\n  &gt;&gt;= utcToLocalZonedTime \n  &gt;&gt;= mapM_ (putStrLn.(digits!!)).read.formatTime
+    defaultTimeLocale \"[%H,%M,%S]\"\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9334'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9334
+  :user_name: nobsun
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2009/07/10 11:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>スマートかどうかは微妙だけど...</p>\n\n\t"
+  :code: "import Data.Time\nimport System.Locale\nimport qualified System.IO.UTF8
+    as U\n\nbits :: [Char]\nbits = \"□■\"\n\nbinReps :: Int -&gt; [[Char]]\nbinReps
+    0 = [[]]\nbinReps n = concatMap (flip map (binReps (n-1)) . (:)) bits\n\nmain
+    :: IO ()\nmain = mapM_ (U.putStrLn . (binReps 6 !!)) \n     . read . formatTime
+    defaultTimeLocale \"[%H,%M,%S]\" \n     =&lt;&lt; utcToLocalZonedTime =&lt;&lt;
+    getCurrentTime\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9335'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9335
+  :user_name: nobsun
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2009/07/10 11:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>binRepsの明示的再帰がちょっとスマートでない？\nそれなら、こちらをどうぞ。</p>\n\n\t"
+  :code: |
+    binReps = (binReps' !!)
+
+    binReps' :: [[[Char]]]
+    binReps' = scanl (concatMap . (.(:)) . flip map) [[]] (repeat bits)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9336'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9336
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2009/07/10 12:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ちょ、おま　(^_^;)</pre>\n\t"
+  :code: |
+    binReps n = sequence $ replicate n bits
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9337'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9337
+  :user_name: nobsun
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2009/07/10 12:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ああますますダサクしてしまった</p>\n<p>binReps = sequence . flip replicate bits</p>\n<p>でいいんだって。\nthanks
+    [1..100]&gt;&gt;=pen</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9338'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9338
+  :user_name: mattsan
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/833/
+  :language: 
+  :time: 2009/07/10 09:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>おぉ。勉強になります。ありがとうございます。&gt;[1..100]&gt;&gt;=penさん、nobsunさん。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9340'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9340
+  :user_name: ？せんたくいた
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/241/
+  :language: Bash
+  :time: 2009/07/10 22:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>xbmで出力すればHHMMSSを16進にして流し込むだけで済むはず、との発想から。</p>\n<p>xbmでは左から右に描くので、ビット左右反転をすべきなのですが\nImageMagickで横着しています。</p>\n\n\t"
+  :code: "#!/bin/bash \n\ndate=`date '+%H %M %S'`\n\necho -e \"#define b_width 6\\n\\\n#define
+    b_height 3\\n\\\nstatic char b_bits[] = {\\n\\\n\"`printf '0x%X,' $date`\"\\n\\\n};\"
+    \\\n|display -flop -sample 120x240 -\n"
+  :tags:
+  - ImageMagick
+  :references:
+    :url: 
+    :title: 
+- :id: '9342'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9342
+  :user_name: nattou_curry
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/913/
+  :language: Java
+  :time: 2009/07/11 09:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>ごくシンプルに。</p>\n\n\t"
+  :code: "import java.util.Calendar;\nimport java.util.GregorianCalendar;\n\npublic
+    class BinaryClock {\n    public static void main( String[] args ) {\n        //
+    現在時刻を取得する。\n        Calendar cal = new GregorianCalendar();\n\n        // 現在時刻から時・分を取得する。\n
+    \       int hour = cal.get( Calendar.HOUR_OF_DAY );\n        int min = cal.get(
+    Calendar.MINUTE );\n\n        // 時・分を二進数に変換する。\n        String binHour = Integer.toString(
+    hour, 2 );\n        String binMin = Integer.toString( min, 2 );\n\n        //
+    二進数を表示用文字列に変換する。\n        String dispStrHour = binToDispStr( binHour );\n        String
+    dispStrMin = binToDispStr( binMin );\n        \n        // 表示用文字列を出力する。\n        System.out.println(
+    dispStrHour );\n        System.out.println( dispStrMin );\n    }\n    \n    //
+    二進数を表示用文字列に変換する。\n    private static String binToDispStr( String bin ) {\n        String
+    bak = \"\";\n        for ( int i = 0; i &lt; bin.length(); ++i ) {\n            if
+    ( bin.charAt( i ) == '0' ) {\n                bak += \"□\";\n            } else
+    {\n                bak += \"■\";\n            }\n        }\n        return bak;\n
+    \   }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9343'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9343
+  :user_name: nattou_curry
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/913/
+  :language: Other
+  :time: 2009/07/11 10:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>VBAでもごくシンプルに。</p>\n<p>VBAの場合、数値を二進数に変換する関数を実装する必要があった。</p>\n\n\t"
+  :code: "Option Explicit\n\nPublic Sub BinaryClock()\n    Dim Hour As Integer         '時\n
+    \   Dim Min As Integer          '分\n    Dim BinHour As String       '二進数(時)\n
+    \   Dim BinMin As String        '二進数(分)\n    Dim DispStrHour As String   '表示用文字列(時)\n
+    \   Dim DispStrMin As String    '表示用文字列(分)\n\n    '// 現在時刻の時・分を取得する。\n    Hour
+    = DatePart(\"h\", Now)\n    Min = DatePart(\"n\", Now)\n    \n    '// 時・分を二進数に変換する。\n
+    \   BinHour = IntToBin(Hour)\n    BinMin = IntToBin(Min)\n    \n    '// 二進数を表示用文字列に変換する。\n
+    \   DispStrHour = BinToDispStr(BinHour)\n    DispStrMin = BinToDispStr(BinMin)\n
+    \   \n    '// 表示用文字列をメッセージボックスに出力する。\n    Call MsgBox(DispStrHour &amp; vbNewLine
+    &amp; DispStrMin, _\n        vbInformation, _\n        \"バイナリクロック\")\nEnd Sub\n\n'//
+    数値を二進数に変換する。\nPrivate Function IntToBin(ByVal N As Integer) As String\n    Dim
+    Bin As String   '二進数\n    \n    Bin = \"\"\n    Do While N &gt; 1\n        Bin
+    = N Mod 2 &amp; Bin\n        N = N \\ 2\n    Loop\n    Bin = N &amp; Bin\n    \n
+    \   IntToBin = Bin\nEnd Function\n\n'// 二進数を表示用文字列に変換する。\nPrivate Function BinToDispStr(ByVal
+    Bin As String) As String\n    Dim DispStr As String   '表示用文字列\n    Dim i As Integer
+    \       'インデックス\n    \n    DispStr = \"\"\n    For i = 1 To Len(Bin)\n        If
+    Mid(Bin, i, 1) = \"0\" Then\n            DispStr = DispStr &amp; \"□\"\n        Else\n
+    \           DispStr = DispStr &amp; \"■\"\n        End If\n    Next\n    \n    BinToDispStr
+    = DispStr\nEnd Function\n"
+  :tags:
+  - VBA
+  :references:
+    :url: 
+    :title: 
+- :id: '9344'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9344
+  :user_name: nattou_curry
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/913/
+  :language: Java
+  :time: 2009/07/11 10:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>先に投稿した#9342を一部変更。</p>\n<p>二進数を表示文字列に変換する処理(binToDispStrメソッド)を、文字列置換による実装に変更した。</p>\n\n\t"
+  :code: "import java.util.Calendar;\nimport java.util.GregorianCalendar;\n\npublic
+    class BinaryClock2 {\n    public static void main( String[] args ) {\n        //
+    現在時刻を取得する。\n        Calendar cal = new GregorianCalendar();\n\n        // 現在時刻から時・分を取得する。\n
+    \       int hour = cal.get( Calendar.HOUR_OF_DAY );\n        int min = cal.get(
+    Calendar.MINUTE );\n\n        // 時・分を二進数に変換する。\n        String binHour = Integer.toString(
+    hour, 2 );\n        String binMin = Integer.toString( min, 2 );\n\n        //
+    二進数を表示用文字列に変換する。\n        String dispStrHour = binToDispStr( binHour );\n        String
+    dispStrMin = binToDispStr( binMin );\n        \n        // 表示用文字列を出力する。\n        System.out.println(
+    dispStrHour );\n        System.out.println( dispStrMin );\n    }\n    \n    //
+    二進数を表示用文字列に変換する。\n    // ※文字列置換による実装\n    private static String binToDispStr(
+    String bin ) {\n        return bin.replaceAll( \"0\", \"□\" )\n                    .replaceAll(
+    \"1\", \"■\" );\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9345'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9345
+  :user_name: pooq
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/606/
+  :language: J
+  :time: 2009/07/11 18:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">表示は0と1そのまま。\r\n&gt;jconsole binary_clock.ijs\r\n0
+    0 0 1 1 1\r\n1 1 0 1 1 1\r\n</pre>\n\t"
+  :code: |
+    exit echo (6#2) #: 3 4 { 6!:0 ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9350'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9350
+  :user_name: creeper
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/994/
+  :language: Other
+  :time: 2009/07/13 12:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squirrelで。</p>\n\n\t"
+  :code: |
+    function tobits(n, bits)
+    {
+        local ret = "";
+        for(local m = 1&lt;&lt;(bits-1); m!=0; m=m&gt;&gt;1) ret += n&amp;m ? "■" : "□";
+        return ret;
+    }
+    function binclock(d)
+    {
+        print(format("　%s\n", tobits(d.hour, 5)));
+        print(format("%s\n", tobits(d.min, 6)));
+    }
+
+    binclock(date());
+  :tags:
+  - Squirrel
+  :references:
+    :url: 
+    :title: 
+- :id: '9364'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9364
+  :user_name: Songmu
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/763/
+  :language: JavaScript
+  :time: 2009/07/13 21:59 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: |
+    &lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"&gt;
+    &lt;html lang="ja"&gt;
+    &lt;head&gt;
+           &lt;meta http-equiv="content-type" content="text/html;charset=utf-8"&gt;
+           &lt;meta http-equiv="content-script-type" content="text/javascript"&gt;
+           &lt;meta http-equiv="content-style-type" content="text/css"&gt;
+           &lt;title&gt;Binary Clock&lt;/title&gt;
+    &lt;style type="text/css"&gt;
+    #clock span{
+        display: block;
+    }
+    &lt;/style&gt;
+    &lt;script type="text/javascript"&gt;
+    var $ = function(id){ return document.getElementById(id); };
+
+    var getBinary = function(num){
+        var bNum = '';
+        while(num &gt;= 2){
+            var mod = num % 2;
+            num = (num - mod) / 2;
+            bNum = mod + '' + bNum;
+        }
+        bNum = num + '' + bNum;
+        return bNum;
+    };
+
+    var getBinaryClockStr = function(num, length){
+        var result = '';
+        var bNum = getBinary(num);
+        while((bNum + '').length &lt; length){
+            bNum = '0' + bNum;
+        }
+        for(var i=0; i&lt;(bNum+'').length; i++){
+            result += bNum.substr(i,1) == '1' ? '■' : '□';
+        }
+        return result;
+    };
+
+    window.onload = function(){
+        var setTime = function(){
+            var d = new Date();
+            $('hour').innerHTML   = getBinaryClockStr(d.getHours(),5);
+            $('minute').innerHTML = getBinaryClockStr(d.getMinutes(),6);
+            $('second').innerHTML = getBinaryClockStr(d.getSeconds(),6);
+        }
+        setInterval(setTime, 1000);
+    };
+    &lt;/script&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+    &lt;p id="clock"&gt;&lt;span id="hour"&gt;&lt;/span&gt;&lt;span id="minute"&gt;&lt;/span&gt;&lt;span id="second"&gt;&lt;/span&gt;&lt;/p&gt;
+    &lt;/body&gt;
+    &lt;/html&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9367'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9367
+  :user_name: dankogai
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2009/07/14 16:35 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n<p>少し短くかつPerl 5.8.xでも動くようにしました。-CIOがポイント。\n</p>\n<p>Dan the Perl
+    Monger\n</p>\n\n\n\n\t"
+  :code: |
+    perl -CIO -Mutf8 -le 'print for map { $_ = sprintf "%06b", $_; tr/01/□■/; $_ } (localtime)[2,1];'
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9369'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9369
+  :user_name: greentea
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/573/
+  :language: Python
+  :time: 2009/07/15 05:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>pythonで素直に。timezoneの設定は、サマータイムがない国にとっては面倒なだけです。</p>\n\n\t"
+  :code: "#!/usr/bin/python\n#coding: utf-8\n\nimport datetime\n\n# 横の文字数\ncols =
+    6\n\n# datatimeでJSTを使用する\nclass tz_jst(datetime.tzinfo):\n  def utcoffset(self,
+    dt):\n    return datetime.timedelta(hours=9)\n  def dst(self, dt):\n    return
+    datetime.timedelta()\n  def tzname(self):\n    return 'JST'\n\n# n: 表示する数字, digits:
+    表示する桁数, cols: 横の文字数\n# one: 1のときに表示する文字, zero: 0のときに表示する文字, padding: paddingに使用する文字\ndef
+    print_bin(n, digits, cols, one='■', zero='□', padding='　'):\n  s = ''\n  if cols
+    &gt; digits: s += padding * (cols - digits)\n\n  powers = [2**i for i in range(digits)]\n
+    \ powers.reverse()\n  # オーバーフロー分を切り捨てる\n  n = n % 2**digits\n  for x in powers:\n
+    \   s += one if n / x else zero\n    n %= x\n  print s  \n\ndt = datetime.datetime.now(tz_jst())\nprint_bin(dt.hour,
+    5, cols)\nprint_bin(dt.minute, 6, cols)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9412'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9412
+  :user_name: 匿名
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2009/07/24 04:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">お題から少しずれますが、元ネタがウィジェットだそうなので、Java Swing です。\r\nフォントによってしまいますが、見た目が面白いものとして\"i/!\"にしました。\r\n\"Q/O\"でも分かりにくくて良いですね。</pre>\n\t"
+  :code: |
+    import java.awt.*;
+    import java.awt.event.*;
+    import java.util.*;
+    import javax.swing.*;
+
+    public class SeventeenBarsClock extends JFrame implements ActionListener {
+        private static final long serialVersionUID = 1L;
+        public static void main(String[] args) {
+            SwingUtilities.invokeLater(new Runnable(){
+                @Override
+                public void run() {
+                    SeventeenBarsClock clock = new SeventeenBarsClock();
+                    clock.pack();
+                    clock.setLocationRelativeTo(null);
+                    clock.setVisible(true);
+                    clock.start();
+                }
+            });
+        }
+        private BynaryLabel hourLabel, minuteLabel, secondLabel;
+        private javax.swing.Timer timer;
+        SeventeenBarsClock() {
+            super("17BarsClock");
+            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            hourLabel = new BynaryLabel(5);
+            minuteLabel = new BynaryLabel(6);
+            secondLabel = new BynaryLabel(6);
+            setLayout(new FlowLayout());
+            add(hourLabel);
+            add(minuteLabel);
+            add(secondLabel);
+            timer = new javax.swing.Timer(0, this);
+            timer.setDelay(1000);
+        }
+        public void start() { timer.start(); }
+        public void stop() { timer.stop(); }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Calendar cal = new GregorianCalendar();
+            hourLabel.setValue(cal.get(Calendar.HOUR_OF_DAY));
+            minuteLabel.setValue(cal.get(Calendar.MINUTE));
+            secondLabel.setValue(cal.get(Calendar.SECOND));
+        }
+        private static class BynaryLabel extends JLabel {
+            private static final long serialVersionUID = 1L;
+            BynaryLabel(int length) {
+                this.length = length;
+                setValue(0);
+            }
+            private int length;
+            void setValue(int value) {
+                StringBuilder sb = new StringBuilder(length);
+                for(int m=1&lt;&lt;(length-1); m&gt;0; m&gt;&gt;=1) sb.append((value &amp; m) != 0 ? "i" : "!");
+                setText(sb.toString());
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9421'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9421
+  :user_name: Songmu
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/763/
+  :language: JavaScript
+  :time: 2009/07/26 21:52 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>誤差が出ないように修正。</p>\n\n\t"
+  :code: "&lt;!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\"&gt;\n&lt;html
+    lang=\"ja\"&gt;\n&lt;head&gt;\n       &lt;meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\"&gt;\n
+    \      &lt;meta http-equiv=\"content-script-type\" content=\"text/javascript\"&gt;\n
+    \      &lt;meta http-equiv=\"content-style-type\" content=\"text/css\"&gt;\n       &lt;title&gt;Binary
+    Clock&lt;/title&gt;\n&lt;style type=\"text/css\"&gt;\n#clock span{\n    display:
+    block;\n}\n&lt;/style&gt;\n&lt;script type=\"text/javascript\"&gt;\nvar $ = function(id){
+    return document.getElementById(id); };\n\nvar getBinary = function(num){\n    var
+    bNum = '';\n    while(num &gt;= 2){\n        var mod = num % 2;\n        num =
+    (num - mod) / 2;\n        bNum = mod + '' + bNum;\n    }\n    bNum = num + ''
+    + bNum;\n    return bNum;\n};\n\nvar getBinaryClockStr = function(num, length){\n
+    \   var result = '';\n    var bNum = getBinary(num);\n    while((bNum + '').length
+    &lt; length){\n        bNum = '0' + bNum;\n    }\n    for(var i=0; i&lt;(bNum+'').length;
+    i++){\n        result += bNum.substr(i,1) == '1' ? '■' : '□';\n    }\n    return
+    result;\n};\n\nvar fixTime = function(miliSec){\n    return miliSec &lt; 501 ?
+    miliSec : -(1000-miliSec);\n};\n\nwindow.onload = function(){\n    var g = new
+    Date();\n    var setTime = function(){\n        var d = new Date();\n        g
+    = new Date(g.getTime()+1000);\n        $('hour').innerHTML   = getBinaryClockStr(g.getHours(),5);\n
+    \       $('minute').innerHTML = getBinaryClockStr(g.getMinutes(),6);\n        $('second').innerHTML
+    = getBinaryClockStr(g.getSeconds(),6);\n        \n        setTimeout(setTime,
+    1000-fixTime(d%1000));\n    }\n    setTime();\n};\n&lt;/script&gt;\n&lt;/head&gt;\n&lt;body&gt;\n&lt;p
+    id=\"clock\"&gt;&lt;span id=\"hour\"&gt;&lt;/span&gt;&lt;span id=\"minute\"&gt;&lt;/span&gt;&lt;span
+    id=\"second\"&gt;&lt;/span&gt;&lt;/p&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9432'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9432
+  :user_name: ivoryworks
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/647/
+  :language: 
+  :time: 2009/07/30 18:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">秀丸マクロです。\r\n0と1で表示するシンプルなバイナリクロックです。\r\n\r\n</pre>\n\t"
+  :code: |
+    $bin[0] = "";
+    $bin[1] = "";
+    $bin[2] = "";
+    insert "\n\n\n";
+
+    while (1) {
+        #i = 0;
+        while (#i &lt; 3) {
+            call GetBinTime #i;
+            if ($bin[#i] != $$return) {
+                $bin[#i] = $$return;
+                moveto 0,#i;
+                beginsel;
+                golineend;
+                endsel;
+                insert $bin[#i];
+                gofileend;
+            }
+            #i = #i+1;
+        }
+    }
+    endmacro;
+
+    GetBinTime:
+        refreshdatetime;
+        if (##1 == 0) {
+            call Dec2Bin val(hour);
+        } else if (##1 == 1) {
+            call Dec2Bin val(minute);
+        } else {
+            call Dec2Bin val(second);
+        }
+        while (strlen($$return) &lt; 6) {
+            $$return = " "+$$return;
+        }
+    return $$return;
+
+    Dec2Bin:
+        $$str = "";
+        if (##1!=0) {
+        while (##1!=1) {
+            $$str = str(##1%2)+$$str;
+            ##1 = ##1/2;
+        }
+        $$str = "1"+$$str;
+    }
+    return $$str;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9433'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9433
+  :user_name: horiuchi
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/570/
+  :language: ActionScript
+  :time: 2009/07/31 01:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>まだなかったので、習作として作ってみました。\r</p>\n<p>また、Wonderflにもあるので良かったら動作するのも見てみてください。</p>\n</div>\n\t"
+  :code: "package \n{\n    import flash.display.Sprite;\n    import flash.events.Event;\n
+    \   import flash.events.TimerEvent;\n    import flash.geom.ColorTransform;\n    import
+    flash.text.TextField;\n    import flash.text.TextFieldAutoSize;\n    import flash.utils.Timer;\n
+    \   \n    [SWF(width = 140, height = 80, backgroundColor = 0xCCCCCC, frameRate
+    = 30)]\n    \n    public class BinaryClock extends Sprite \n    {\n        private
+    const UNIT_LENGTH:int = 20;\n        \n        private var hourPoints:Vector.&lt;Sprite&gt;
+    = new Vector.&lt;Sprite&gt;();\n        private var minutePoints:Vector.&lt;Sprite&gt;
+    = new Vector.&lt;Sprite&gt;();\n        private var secondPoints:Vector.&lt;Sprite&gt;
+    = new Vector.&lt;Sprite&gt;();\n        private var timeTexts:Vector.&lt;TextField&gt;
+    = new Vector.&lt;TextField&gt;();\n        \n        public function BinaryClock():void\n
+    \       {\n            init();\n        }\n        \n        private function
+    init():void\n        {\n            (function(points:Vector.&lt;Sprite&gt;):void
+    {\n                for (var index:int = 0; index &lt; 5; index++) {\n                    var
+    point:Sprite = createPoint();\n                    point.x = index * UNIT_LENGTH
+    + UNIT_LENGTH;\n                    point.y = 0;\n                    points.push(point);\n
+    \               }\n            })(hourPoints);\n            var initPoints:Function
+    = function(points:Vector.&lt;Sprite&gt;, y:int):void {\n                for (var
+    index:int = 0; index &lt; 6; index++) {\n                    var point:Sprite
+    = createPoint();\n                    point.x = index * UNIT_LENGTH;\n                    point.y
+    = y;\n                    points.push(point);\n                }\n            }\n
+    \           initPoints(minutePoints, UNIT_LENGTH);\n            initPoints(secondPoints,
+    UNIT_LENGTH * 2);\n            \n            (function(fields:Vector.&lt;TextField&gt;):void
+    {\n                for (var index:int = 0; index &lt; 3; index++) {\n                    var
+    field:TextField = new TextField();\n                    field.width = UNIT_LENGTH;\n
+    \                   field.height = UNIT_LENGTH;\n                    field.x =
+    UNIT_LENGTH * 6;\n                    field.y = index * UNIT_LENGTH;\n                    field.autoSize
+    = TextFieldAutoSize.CENTER;\n                    timeTexts.push(field);\n                }\n
+    \           })(timeTexts);\n            \n            (function():Vector.&lt;TextField&gt;
+    {\n                var result:Vector.&lt;TextField&gt; = new Vector.&lt;TextField&gt;();\n
+    \               for (var index:int = 0; index &lt; 6; index++) {\n                    var
+    field:TextField = new TextField();\n                    field.width = UNIT_LENGTH;\n
+    \                   field.height = UNIT_LENGTH;\n                    field.x =
+    UNIT_LENGTH * (5 - index);\n                    field.y = 3 * UNIT_LENGTH;\n                    field.autoSize
+    = TextFieldAutoSize.CENTER;\n                    field.text = String(Math.pow(2,
+    index));\n                    result.push(field);\n                }\n                return
+    result;\n            })().map(function(field:TextField, i:int, a:*):void {\n                addChild(field);\n
+    \           });\n            \n            hourPoints = hourPoints.reverse();\n
+    \           for each (var hp:Sprite in hourPoints) {\n                addChild(hp);\n
+    \           }\n            minutePoints = minutePoints.reverse();\n            for
+    each (var mp:Sprite in minutePoints) {\n                addChild(mp);\n            }\n
+    \           secondPoints = secondPoints.reverse();\n            for each (var
+    sp:Sprite in secondPoints) {\n                addChild(sp);\n            }\n            for
+    each (var field:TextField in timeTexts) {\n                addChild(field);\n
+    \           }\n            \n            var timer:Timer = new Timer(500);\n            timer.addEventListener(TimerEvent.TIMER,
+    setBinaryTime);\n            timer.start();\n        }\n\n        private function
+    createPoint():Sprite\n        {\n            var point:Sprite = new Sprite();\n
+    \           point.graphics.beginFill(0xFFFFFF, 0.6);\n            point.graphics.drawRoundRect(0,
+    0, UNIT_LENGTH, UNIT_LENGTH, UNIT_LENGTH / 2.0, UNIT_LENGTH / 2.0);\n            point.graphics.endFill();\n
+    \           return point;\n        }\n        \n        private function setBinaryTime(event:TimerEvent):void\n
+    \       {\n            var now:Date = new Date();\n            \n            ([now.hours,
+    now.minutes, now.seconds]).forEach(function(value:int, index:int, a:*):void {\n
+    \               timeTexts[index].text = ((value &lt; 10)? \"0\": \"\") + value;\n
+    \           });\n\n            var changeColorTime:Function = function(points:Vector.&lt;Sprite&gt;,
+    value:int):void {\n                for (var index:int = 0; index &lt; points.length;
+    index++) {\n                    var mask:int = (1 &lt;&lt; index);\n                    changeColor(points[index],
+    (~value &amp; mask) &gt;&gt; index);\n                }\n            }\n            changeColorTime(hourPoints,
+    now.hours);\n            changeColorTime(minutePoints, now.minutes);\n            changeColorTime(secondPoints,
+    now.seconds);\n        }\n        \n        private function changeColor(s:Sprite,
+    i:Number):void\n        {\n            s.transform.colorTransform = new ColorTransform(i,
+    i, i, 1, 1, 1, 1, 0);\n        }\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: /web/20100707012437/http://wonderfl.net/code/0295f80c6602049e64c37f05fc40e8db71b1d479
+    :title: BinaryClock - wonderfl
+- :id: '9445'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9445
+  :user_name: uehaj
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2009/08/05 14:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>groovyで</p>\n\n\t"
+  :code: |
+    Calendar.instance.with{n-&gt;[HOUR,MINUTE].each{println Integer.toString(n.get(it),2).replaceAll(/./){it=='1'?'■':'□'}}}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9446'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9446
+  :user_name: uehaj
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2009/08/06 04:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>パディング処理を忘れてたので追加。\nあと「インスタンスごとのメタクラス」使用の方向で。</p>\n\n\t"
+  :code: |
+    '0'.metaClass.getMark = {'□'}
+    '1'.metaClass.getMark = {'■'}
+    Calendar.instance.with{now-&gt;[HOUR,MINUTE].each{
+     println Integer.toString(now.get(it),2).replaceAll(/./){it.intern().mark}.padLeft(6, '　')}
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9514'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9514
+  :user_name: Wiles
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/1094/
+  :language: C
+  :time: 2009/08/25 01:58 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">シンプルに、特に目立った点はないです。\r\n</pre>\n\t"
+  :code: "#include&lt;stdio.h&gt;\n#include&lt;time.h&gt;\n\nint main(void)\n{\n    time_t
+    Time;\n    struct tm *t;\n    int hour, min, i, \n        hstr[6], mstr[7];\n\n//現在時刻の取得\n
+    \   \n    Time = time(&amp;Time);\n    t = localtime(&amp;Time);\n    hour = t-&gt;tm_hour;\n
+    \   min = t-&gt;tm_min;\n    \n//2進数に変換して表示\n    \n    i = 0;\n    while(hour)\n
+    \   {\n        hstr[i++] = hour % 2 ? 1 : 0;\n        hour /= 2;\n    }\n    for(
+    ; i &lt; 5; i++)    hstr[i] = 0;\n    \n    for(i -= 1; i &gt;= 0; i--)\n    {\n
+    \       hstr[i] ? printf(\"■\") : printf(\"□\");\n    }\n    \n    putchar('\\n');\n
+    \   \n    i = 0;\n    while(min)\n    {\n        mstr[i++] = min % 2 ? 1 : 0;\n
+    \       min /= 2;\n    }\n    for( ; i &lt; 6; i++)    mstr[i] = 0;\n    \n    for(i
+    -= 1; i &gt;= 0; i--)\n    {\n        mstr[i] ? printf(\"■\") : printf(\"□\");\n
+    \   }\n    \n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9535'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9535
+  :user_name: bleis-tift
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/732/
+  :language: SQL
+  :time: 2009/08/29 22:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>SQL Server 2008 で確認しました。\n6 桁固定で、肝心の 2 進数への変換部分は以前投稿した、\n<a class=\"reference\"
+    href=\"/web/20100707012437/http://ja.doukaku.org/comment/9097/\">http://ja.doukaku.org/comment/9097/</a>\nをそのまま使用しました。</p>\n\n\t"
+  :code: |
+    DECLARE @now AS datetime = GETDATE(); --'20:18';
+
+    WITH
+      Input(now_str) AS (
+        SELECT LEFT(CONVERT(varchar(max), @now, 8), 5)
+      )
+    , Split(id, n, max_bits) AS (
+        SELECT 1, LEFT(now_str, 2), 6 FROM Input
+        UNION ALL
+        SELECT 2, RIGHT(now_str, 2),6 FROM Input
+      )
+    , ToBin(id, bin, deci, crnt) AS (
+        SELECT
+            id
+          , CAST(CASE
+                 WHEN n &gt;= POWER(CAST(2 AS bigint), max_bits)
+                    THEN POWER(CAST(10 AS bigint), max_bits)
+                    ELSE CAST(0 AS bigint)
+                 END AS bigint)
+          , CASE
+            WHEN n &gt;= POWER(CAST(2 AS bigint), max_bits)
+               THEN n - POWER(CAST(2 AS bigint), max_bits)
+               ELSE n
+            END
+          , max_bits - 1
+        FROM
+            Split
+        UNION ALL
+        SELECT
+            id
+          , CASE
+            WHEN deci &gt;= POWER(CAST(2 AS bigint), crnt)
+              THEN POWER(CAST(10 AS bigint), crnt)
+              ELSE 0
+            END + bin
+          , CASE
+            WHEN deci &gt;= POWER(CAST(2 AS bigint), crnt)
+              THEN deci - POWER(CAST(2 AS bigint), crnt)
+              ELSE deci
+            END
+          , crnt - 1
+        FROM
+            ToBin
+        WHERE
+            crnt &gt;= 0
+      )
+    SELECT
+        REPLACE(
+          REPLACE(
+            RIGHT(N'00000' + CAST(bin as nvarchar(6)), 6),
+            N'0', N'□'
+          ),
+          N'1', N'■'
+        )
+    FROM
+        ToBin
+    WHERE
+        crnt = -1
+    ORDER BY
+        id
+  :tags: []
+  :references:
+    :url: /web/20100707012437/http://ja.doukaku.org/comment/9097/
+    :title: LL Golf Hole 6 - 10進数を2進数に基数変換する
+- :id: '9545'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9545
+  :user_name: kzfm
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/106/
+  :language: OCaml
+  :time: 2009/09/01 07:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "let itobin i =\n  if i == 0 then [0]\n  else\n    let rec itob l i = match
+    i with\n        0 -&gt; 1::l\n      | 1 -&gt; 1::l\n      | _ -&gt; itob ((i mod
+    2)::l) (i/2)\n    in itob [] i\n;;\n\nlet rec padding l = \n  if (List.length
+    l) &lt; 6 then padding (0::l)\n  else l\n;;\n\nlet format_print l = \n  let d
+    = [|\"□\";\"■\"|] in \n  let rec square_print l = match l with\n    [] -&gt; print_string
+    \"\\n\"\n  | s::r -&gt; print_string d.(s);\n      square_print r\n    in square_print
+    l\n;;\n\n\nlet () = \n  let t = Unix.localtime(Unix.time()) in\n  format_print
+    (padding (itobin t.Unix.tm_hour));\n  format_print (padding (itobin t.Unix.tm_min))\n;;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9610'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9610
+  :user_name: nobusuke_neko
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/926/
+  :language: JavaScript
+  :time: 2009/09/26 13:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    javascript:alert(function(t){return t&gt;0?arguments.callee(t/60|0)+'\n'+('00000'+(t%2560).toString(2)).slice(-6).replace(/1/g,'■').replace(/0/g,'□'):''}(((new Date().getTime()/1000|0)+32400)%2586400))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9652'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9652
+  :user_name: tana
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/1114/
+  :language: Scala
+  :time: 2009/10/27 04:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">特徴などは特にありませんが、横長にならないようにしてみました。</pre>\n\t"
+  :code: |
+    object BinClock {
+        import java.util._
+        def main(args:Array[String]){
+            val now = Calendar.getInstance()
+            val hour = now.get(Calendar.HOUR_OF_DAY)
+            val min = now.get(Calendar.MINUTE)
+            val hour_bin = Integer.toBinaryString(hour)
+            val min_bin = Integer.toBinaryString(min)
+            val hour_shikaku = hour_bin.replace("1","■").replace("0","□")
+            val min_shikaku = min_bin.replace("1","■").replace("0","□")
+            println(hour_shikaku)
+            println(min_shikaku)
+        }
+    }
+  :tags:
+  - Scala
+  :references:
+    :url: 
+    :title: 
+- :id: '9817'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/9817
+  :user_name: taka_2
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/1132/
+  :language: Other
+  :time: 2010/01/13 01:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">VBScriptで書いてみました。</pre>\n\t"
+  :code: |
+    Option Explicit
+
+    Function formatClock(num, cols)
+        Dim strResult, currentNum, i
+
+        strResult = ""
+        currentNum = num
+        While currentNum &gt; 0
+            If currentNum Mod 2 = 0 Then
+                strResult = "□" &amp; strResult
+            Else
+                strResult = "■" &amp; strResult
+            End If
+            currentNum = Int(currentNum / 2)
+        Wend
+
+        For i = 1 To (cols - Len(strResult))
+            strResult = "□" &amp; strResult
+        Next
+
+        formatClock = strResult
+    End Function
+
+    ' 現在日時を取得
+    Dim currentDate
+    currentDate = Now()
+
+    ' バイナリクロック形式にフォーマットして表示
+    WScript.Echo(formatClock(Hour(currentDate), 5))
+    WScript.Echo(formatClock(Minute(currentDate), 6))
+  :tags:
+  - VBScript
+  :references:
+    :url: 
+    :title: 
+- :id: '10112'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/10112
+  :user_name: T_GYOUTEN
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/1107/
+  :language: Other
+  :time: 2010/02/07 17:15 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>F#で。</p>\n\n\t"
+  :code: "let strBit order chOn chOff n =\n    let rec sub rem res counter =\n        if
+    counter = order then\n            res\n        else\n            let ch = if (rem
+    &amp;&amp;&amp; 1) &lt;&gt; 0 then\n                        chOn\n                     else
+    \n                        chOff\n            sub (rem &gt;&gt;&gt; 1) (ch :: res)
+    (counter+1)\n    new string( Array.ofList(sub n [] 0))\n\nlet tm = System.DateTime.Now\n[tm.Hour;tm.Minute]\n
+    \ |&gt; List.map (strBit 6 '■' '□')\n  |&gt; List.iter (fun s -&gt; printfn \"%s\"
+    s)\n"
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '10325'
+  :parent_id: '275'
+  :url: http://ja.doukaku.org/comment/10325
+  :user_name: gushwell
+  :user_url: /web/20100707012437/http://ja.doukaku.org/user/1046/
+  :language: C
+  :time: 2010/03/05 08:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    using System;
+    using System.Linq;
+
+    namespace ConsoleApplication {
+        class Program {
+            static void Main(string[] args) {
+                // 現在の時刻を表示する
+                BinaryClock bc = new BinaryClock();
+                Console.WriteLine(bc.ToString());
+
+                // 指定した時刻を表示する
+                DateTime dt = new DateTime(2009, 1, 1, 20, 18, 0);
+                Console.WriteLine(bc.ToString(dt));
+                Console.ReadLine();
+            }
+        }
+
+        public class BinaryClock {
+            private static string ToBinString(int num, int width) {
+                string format = string.Format("{{0,{0}}}", width);
+                string s = String.Format(format,
+                                         System.Convert.ToString(num, 2));
+                return s.Aggregate("", (t, c) =&gt; t + (c == '1' ? '■' : '□'));
+            }
+
+            public string ToString(DateTime dateTime) {
+                return "　" + ToBinString(dateTime.Hour, 5) + "\n" +
+                       ToBinString(dateTime.Minute, 6);
+            }
+
+            public override string ToString() {
+                return ToString(DateTime.Now);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 

@@ -1,0 +1,250 @@
+---
+:id: '287'
+:title: 関数やメソッドのソースの平均行数
+:comments:
+- :id: '9747'
+  :parent_id: '287'
+  :url: http://ja.doukaku.org/comment/9747
+  :user_name: sumim
+  :user_url: /web/20100525170306/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2009/12/27 20:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <p>イントロスペクションおよびメトリックスのお題です。</p>\n<p>アジャイル界隈などでは、あまり長くだらだらと書いてはいけない…と言われている
+    関数 and/or メソッド ですが、ならば実際のところ、洗練された既存のライブラリにおいて、関数 and/or メソッド は平均すると何行くらいで記述されているのか…といった情報を具体的に把握しておきたいと思ったことはありませんか？</p>\n<p>そこで、みなさんイチオシの言語それ自身で書かれているライブラリを、それなりの規模になるように集めてきて、1)集めたライブラリ群内に定義されている全
+    関数 and/or メソッド の合計数（母集団の確認のため）、と 2)関数 or メソッドのソースの平均の行数、を求めるコードと、その結果を示してください。</p>\n<p>なお、関数
+    and/or メソッドに帰属するものであれば、コメント行やアノテーションのたぐいも行数のカウントに含めてください（コードが必要以上に複雑にならない範囲で結構です）。また、関数内関数定義やメソッド内クラス定義（ひいてはその中でのメソッド定義）といった入れ子になったコードの行数をどう解釈するかの判断はお任せします。関数とメソッドが共存する言語では両者を区別してカウントする必要はありません（しても構いません）。平均値を求めるコードを、対象言語で記述することが技術的に困難な場合は、UNIX的なツールを組み合わせたり、IDEなどが提供するメトリックス機能を活用して算出した結果を示すのでもよいと思います。</p>\n<p>このお題は、平均行数が
+    8.4 行（Squeak Smalltalk の組み込みライブラリ＋αより、調査メソッド総数 4万）と、一般に簡潔さが美徳とされている Smalltalk
+    からの挑戦(?)でもあります。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9753'
+  :parent_id: '287'
+  :url: http://ja.doukaku.org/comment/9753
+  :user_name: sumim
+  :user_url: /web/20100525170306/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/12/28 08:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n<p>Smalltalk ではメソッドもオブジェクトで、そのソースはメソッドオブジェクト（CompiledMethod
+    のインスタンス）の属性であるかのような扱いになっています。したがって、各メソッドに問い合わせ（getSource）て得られたソースコードの行数（lineCount）を列挙し、その平均（average）を出せば、今回調べたい平均行数が求まります。</p>\n\n\t"
+  :code: |
+    | numsOfLines |
+    numsOfLines := CompiledMethod allInstances collect: [:each | each getSource lineCount].
+    ^{#調査メソッド総数-&gt; numsOfLines size. #平均行数 -&gt; numsOfLines average asFloat}
+
+    "=&gt;{#調査メソッド総数-&gt;42237 . #平均行数-&gt;8.37561853351327} "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '9772'
+  :parent_id: '287'
+  :url: http://ja.doukaku.org/comment/9772
+  :user_name: hoge
+  :user_url: /web/20100525170306/http://ja.doukaku.org/user/1111/
+  :language: C
+  :time: 2010/01/01 05:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">　新年明けましておめでとうございます。\r\n　最初は頑張ってC言語で作れないかやってみたのですが、関数名にマクロが\r\n使われている等の理由で８割程度しか把握できませんでした。仕方がないのでVS2008\r\nのマクロ機能を使ってやってみました。\r\n\r\n　対象は、\"C:\\Program
+    Files\\Microsoft Visual Studio 9.0\\VC\\crt\\src\"にあった\r\n拡張子が\"*.c\"のファイル全てです。空のプロジェクトを作成し、これらのファイルを\r\nソースファイルとして取り込んでから、このマクロを実行すると結果が表示されます。\r\n\r\n　一応、VC++で使われているC言語ソースという限定的な条件ですが...\r\n\r\n＜調査対象のファイル＞\r\n_ctype.c\r\n_filbuf.c\r\n_file.c\r\n_filwbuf.c\r\n_flsbuf.c\r\n_flswbuf.c\r\n...\r\n\r\n＜調査対象の関数＞\r\n_Getcvt:
+    9\r\n_Wcrtomb: 54\r\n__Wcrtomb_lk: 10\r\n__iscsym: 6\r\n_iscsym_l: 7\r\n__iscsymf:
+    6\r\n_iscsymf_l: 7\r\n...\r\n\r\n＜結果＞\r\n調査ファイル総数: 708\r\n調査関数総数: 1359\r\n平均行数:
+    36.3951434878587\r\n</pre>\n\t"
+  :code: |
+    Imports System
+    Imports EnvDTE
+    Imports EnvDTE80
+    Imports EnvDTE90
+    Imports System.Diagnostics
+    Imports Microsoft.VisualStudio.VCCodeModel
+
+    Public Module CFunctionEnumeration
+        Dim numberOfFiles As Integer
+        Dim numberOfFunctions As Integer
+        Dim totalLines As Integer
+
+        ' 色々と処理が面倒なので例外にしてしまった。
+        Private Class OutputPainNotExistException
+            Inherits Exception
+
+            Public Sub New(ByVal message As String)
+                MyBase.New(message)
+            End Sub
+        End Class
+
+        Private Function GetOutputPane() As OutputWindowPane
+            ' 結果を表示するペインを作成して返す。
+            Const titleOfPain As String = "関数調査の結果"
+            Static Dim isPainCreated As Boolean = False
+            Dim pains As OutputWindowPanes = DTE.ToolWindows.OutputWindow.OutputWindowPanes
+
+            If isPainCreated = False Then
+                For Each p As OutputWindowPane In pains
+                    If p.Name = titleOfPain Then
+                        GoTo ALREADY_CREATED
+                    End If
+                Next
+
+                If pains.Add(titleOfPain) Is Nothing Then
+                    Throw New OutputPainNotExistException(titleOfPain &amp; "ペインは存在しません。")
+                End If
+
+    ALREADY_CREATED:
+                isPainCreated = True
+            End If
+
+            GetOutputPane = pains.Item(titleOfPain)
+        End Function
+
+        Private Sub OutputString(ByRef s As String)
+            GetOutputPane().OutputString(s)
+        End Sub
+
+        Private Sub OutputSourceFiles()
+            ' ソースファイル名を出力する。
+            Dim projectFolders As ProjectItems = DTE.Solution.Item(1).ProjectItems
+
+            For Each i As ProjectItem In projectFolders
+                If i.Name = "ソース ファイル" Then
+                    Dim sourceFileFolder As ProjectItems = i.ProjectItems
+
+                    For Each j As ProjectItem In sourceFileFolder
+                        OutputString(j.Name &amp; vbCrLf)
+                        numberOfFiles = numberOfFiles + 1
+                    Next
+                End If
+            Next
+        End Sub
+
+        Private Sub OutputFunctions()
+            ' 関数名とソースコードの行数を出力する。
+            Dim codeModel As VCCodeModel = DTE.Solution.Item(1).CodeModel
+
+            For Each f As VCCodeFunction In codeModel.Functions
+                Dim lines As Integer = f.EndPoint.Line() - f.StartPoint.Line() + 1
+
+                OutputString(f.Name &amp; ": ")
+                OutputString(lines &amp; vbCrLf)
+                numberOfFunctions = numberOfFunctions + 1
+                totalLines = totalLines + lines
+            Next
+        End Sub
+
+        Private Sub OutputResult()
+            OutputString("調査ファイル総数: " &amp; numberOfFiles &amp; vbCrLf)
+            OutputString("調査関数総数: " &amp; numberOfFunctions &amp; vbCrLf)
+            OutputString("平均行数: " &amp; (CDbl(totalLines) / numberOfFunctions) &amp; vbCrLf)
+
+        End Sub
+
+        Private Sub Reset()
+            numberOfFiles = 0
+            numberOfFunctions = 0
+            totalLines = 0
+        End Sub
+
+        Public Sub OutputFunctionLength()
+            Try
+                Dim p As OutputWindowPane = GetOutputPane()
+
+                Reset()
+                p.Clear()
+                OutputString("＜調査対象のファイル＞" &amp; vbCrLf)
+                OutputSourceFiles()
+                OutputString(vbCrLf)
+                OutputString("＜調査対象の関数＞" &amp; vbCrLf)
+                OutputFunctions()
+                OutputString(vbCrLf)
+                OutputString("＜結果＞" &amp; vbCrLf)
+                OutputResult()
+                p.Activate()
+            Catch e As Exception
+                MsgBox(e.Message, MsgBoxStyle.Critical)
+            End Try
+        End Sub
+    End Module
+  :tags:
+  - VC++
+  - VS2008
+  :references:
+    :url: 
+    :title: 
+- :id: '9773'
+  :parent_id: '287'
+  :url: http://ja.doukaku.org/comment/9773
+  :user_name: hoge
+  :user_url: /web/20100525170306/http://ja.doukaku.org/user/1111/
+  :language: 
+  :time: 2010/01/01 05:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">補足で、VSに理解できないように関数が記述されている場合は含まれません。あと、paneが痛いになってました...orz</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10504'
+  :parent_id: '287'
+  :url: http://ja.doukaku.org/comment/10504
+  :user_name: uehaj
+  :user_url: /web/20100525170306/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2010/05/14 22:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>groovy counter.groovy groovy-1.7.0/src/main/groovy</p>\n<p>で実行しました。実行結果</p>\n<pre
+    class=\"literal-block\">\nメソッド数は 2778\nメソッド行数平均値は 8.1400287977\n</pre>\n<p>ちなみにJava
+    API(jdk 1.6.0_17-b)だと</p>\n<pre class=\"literal-block\">\nメソッド数は 64397\nメソッド行数平均値は
+    18.2242651055\n</pre>\n<p>でした。</p>\n\n\t"
+  :code: |
+    def ant = new AntBuilder()
+
+    scanner = ant.fileScanner {
+      fileset(dir:args[0]) {
+        include(name:"**/*.java")
+      }
+    }
+
+    total = 0
+    numMethods = 0
+
+    for (f in scanner) {
+      count = 0
+      name = ''
+      prefix = null //'k#@!#@'
+      text = ''
+      f.eachLine {
+        if (it =‾ /^$prefix}$/) {
+          // println "${f.path} $name = ${count}"
+          total += count
+          numMethods++
+          // println $text
+          text = ''
+        }
+        it.eachMatch(/^(¥s+)(?:public|protected|private).*¥s(¥S+)¥(/) { g0, g1, g2-&gt;
+          text = ''
+          count = 1
+          prefix = g1
+          name = g2
+        }
+        text += it + '¥n'
+        count++
+      }
+      count = 0
+    }
+
+    println "メソッド数は $numMethods"
+    println "メソッド行数平均値は ${total/numMethods}"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

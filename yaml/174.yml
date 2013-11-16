@@ -1,0 +1,453 @@
+---
+:id: '174'
+:title: マルバツゲーム：賢いプレイヤー
+:comments:
+- :id: '6207'
+  :parent_id: '174'
+  :url: http://ja.doukaku.org/comment/6207
+  :user_name: syat
+  :user_url: /web/20081010170305/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2008/04/23 13:29 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\r\n\t  #6190 の続編です。\r<br>マルバツゲームで、賢いプレイヤーの思考ルーチンを実装してください。\r<br><br>賢いといってもいろいろありますが、\r<br>１．負けない\r<br>２．できるだけ勝つ\r<br>という条件でいってみたいと思います。\r<br><br>ランダムプレイヤーと１万回バトルした結果（勝ち・負け・分け）を表示してください。\r<br>先攻になっても後攻になっても無敗！となれば言うことなしです。\r\n\t"
+  :code: ''
+  :tags:
+  - e
+  :references:
+    :url: 
+    :title: 
+- :id: '6234'
+  :parent_id: '174'
+  :url: http://ja.doukaku.org/comment/6234
+  :user_name: horiuchi
+  :user_url: /web/20081010170305/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2008/04/30 08:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>前回のソースに、新たにPlayerを追加しました。\nRandomPlayerと対決した場合、完封できることを確認しました。\nまた、追加したPlayer同士だと常に引き分けになります。</p>\n\n\t"
+  :code: "import java.util.ArrayList;\nimport java.util.Collections;\nimport java.util.HashMap;\nimport
+    java.util.HashSet;\nimport java.util.List;\nimport java.util.Map;\nimport java.util.Random;\nimport
+    java.util.Set;\n\npublic class TicTacToe {\n    public static final int SIZE =
+    3;\n\n    private static final Pair[][] lines_ = new Pair[][] {\n            {
+    Pair.get(0, 0), Pair.get(0, 1), Pair.get(0, 2) },\n            { Pair.get(1, 0),
+    Pair.get(1, 1), Pair.get(1, 2) },\n            { Pair.get(2, 0), Pair.get(2, 1),
+    Pair.get(2, 2) },\n            { Pair.get(0, 0), Pair.get(1, 0), Pair.get(2, 0)
+    },\n            { Pair.get(0, 1), Pair.get(1, 1), Pair.get(2, 1) },\n            {
+    Pair.get(0, 2), Pair.get(1, 2), Pair.get(2, 2) },\n            { Pair.get(0, 0),
+    Pair.get(1, 1), Pair.get(2, 2) },\n            { Pair.get(2, 0), Pair.get(1, 1),
+    Pair.get(0, 2) }, };\n    public static final List&lt;List&lt;Pair&gt;&gt; LineList
+    = new ArrayList&lt;List&lt;Pair&gt;&gt;();\n    static {\n        for (Pair[]
+    line: lines_) {\n            List&lt;Pair&gt; list = new ArrayList&lt;Pair&gt;();\n
+    \           for (Pair pair: line) {\n                list.add(pair);\n            }\n
+    \           LineList.add(Collections.unmodifiableList(list));\n        }\n    }\n\n
+    \   private final Mark[][] fields_ = new Mark[SIZE][SIZE];\n\n    public TicTacToe()
+    {\n        for (int x = 0; x &lt; SIZE; x++) {\n            for (int y = 0; y
+    &lt; SIZE; y++) {\n                fields_[x][y] = Mark.E;\n            }\n        }\n
+    \   }\n\n    public Mark getMark(Pair pair) {\n        return fields_[pair.x][pair.y];\n
+    \   }\n\n    public void setMark(Pair pair, Mark mark) {\n        fields_[pair.x][pair.y]
+    = mark;\n    }\n\n    public boolean nextStep(Pair pair, Mark mark) {\n        if
+    (getMark(pair) != Mark.E)\n            return false;\n        setMark(pair, mark);\n
+    \       return true;\n    }\n\n    public Mark isEndGame() {\n        for (Pair[]
+    row : lines_) {\n            Mark m = null;\n            boolean isSame = true;\n
+    \           for (Pair cell : row) {\n                Mark mark = fields_[cell.x][cell.y];\n
+    \               if (m == null) {\n                    m = mark;\n                    continue;\n
+    \               }\n                if (m != mark) {\n                    isSame
+    = false;\n                    break;\n                }\n            }\n            if
+    (isSame)\n                return m;\n        }\n        return Mark.E;\n    }\n\n
+    \   @Override\n    public String toString() {\n        StringBuilder builder =
+    new StringBuilder();\n        builder.append(String.format(\"%s|%s|%s%n\",\n                toString(getMark(Pair.get(0,
+    0))),\n                toString(getMark(Pair.get(1, 0))),\n                toString(getMark(Pair.get(2,
+    0)))));\n        builder.append(String.format(\"-+-+-%n\"));\n        builder.append(String.format(\"%s|%s|%s%n\",\n
+    \               toString(getMark(Pair.get(0, 1))),\n                toString(getMark(Pair.get(1,
+    1))),\n                toString(getMark(Pair.get(2, 1)))));\n        builder.append(String.format(\"-+-+-%n\"));\n
+    \       builder.append(String.format(\"%s|%s|%s%n\",\n                toString(getMark(Pair.get(0,
+    2))),\n                toString(getMark(Pair.get(1, 2))),\n                toString(getMark(Pair.get(2,
+    2)))));\n        return builder.toString();\n    }\n    private String toString(Mark
+    mark) {\n        switch (mark) {\n            case O:\n            case X:\n                return
+    mark.toString();\n            case E:\n            default:\n                return
+    \" \";\n        }\n    }\n\n    public static void main(String[] args) {\n        Player
+    random1 = new RandomPlayer(Mark.O, \"random1\");\n        Player random2 = new
+    RandomPlayer(Mark.X, \"random2\");\n        Player think1 = new ThinkingPlayer(Mark.O,
+    \"think1\");\n        Player think2 = new ThinkingPlayer(Mark.X, \"think2\");\n\n
+    \       playGame(random1, random2);\n        playGame(think1, random2);\n        playGame(random1,
+    think2);\n        playGame(think1, think2);\n    }\n\n    private static void
+    playGame(Player player1, Player player2) {\n        int maxTurn = TicTacToe.SIZE
+    * TicTacToe.SIZE;\n        int[] result = new int[3];\n        for (int round
+    = 0; round &lt; 10000; round++) {\n            TicTacToe game = new TicTacToe();\n
+    \           for (int turn = 0; turn &lt;= maxTurn; turn++) {\n                if
+    (turn == maxTurn) {\n                    result[2]++;\n                    break;\n
+    \               } else if (turn % 2 == 0) {\n                    player1.put(game);\n
+    \               } else {\n                    player2.put(game);\n                }\n
+    \               Mark mark = game.isEndGame();\n                if (mark == Mark.O)
+    {\n                    result[0]++;\n                    break;\n                }
+    else if (mark == Mark.X) {\n                    result[1]++;\n                    break;\n
+    \               }\n            }\n        }\n\n        System.out.println(\"Result:\");\n
+    \       System.out.printf(\"%s won: %d%n\", player1.name, result[0]);\n        System.out.printf(\"%s
+    won: %d%n\", player2.name, result[1]);\n        System.out.printf(\"draw game
+    \ : %d%n\", result[2]);\n    }\n}\n\nenum Mark {\n    E {\n        @Override public
+    Mark getOpponent() { return E; }\n    },\n    O {\n        @Override public Mark
+    getOpponent() { return X; }\n    },\n    X {\n        @Override public Mark getOpponent()
+    { return O; }\n    };\n\n    public abstract Mark getOpponent();\n}\n\nclass Pair
+    {\n    public final int x;\n    public final int y;\n\n    private Pair(int x,
+    int y) {\n        this.x = x;\n        this.y = y;\n    }\n\n    private static
+    final List&lt;Pair&gt; cache = new ArrayList&lt;Pair&gt;();\n    static {\n        for
+    (int x = 0; x &lt; TicTacToe.SIZE; x++) {\n            for (int y = 0; y &lt;
+    TicTacToe.SIZE; y++) {\n                cache.add(new Pair(x, y));\n            }\n
+    \       }\n    }\n    public static Pair get(int x, int y) {\n        return cache.get(x
+    * TicTacToe.SIZE + y);\n    }\n\n    @Override\n    public int hashCode() {\n
+    \       return x * 3 + y;\n    }\n    @Override\n    public boolean equals(Object
+    obj) {\n        if (obj == this) return true;\n        if (!(obj instanceof Pair))
+    return false;\n        Pair other = (Pair) obj;\n        return this.x == other.x
+    &amp;&amp; this.y == other.y;\n    }\n}\n\nabstract class Player {\n    public
+    final Mark mark;\n    public final String name;\n\n    public Player(Mark mark,
+    String name) {\n        this.mark = mark;\n        this.name = name;\n    }\n
+    \   public abstract void put(TicTacToe game);\n}\n\nclass RandomPlayer extends
+    Player {\n    private final Random random_ = new Random();\n\n    public RandomPlayer(Mark
+    mark, String name) {\n        super(mark, name);\n    }\n\n    @Override\n    public
+    void put(TicTacToe game) {\n        if (game.isEndGame() != Mark.E) return;\n
+    \       for (;;) {\n            Pair pair = getNextPair();\n            boolean
+    res = game.nextStep(pair, mark);\n            if (res)\n                break;\n
+    \       }\n    }\n    private Pair getNextPair() {\n        return Pair.get(random_.nextInt(TicTacToe.SIZE),
+    random_.nextInt(TicTacToe.SIZE));\n    }\n}\n\nclass ThinkingPlayer extends Player
+    {\n    private static final Pair CENTER = Pair.get(1, 1);\n    private static
+    final List&lt;Pair&gt; CORNER = new ArrayList&lt;Pair&gt;();\n    private static
+    final List&lt;Pair&gt; SIDES = new ArrayList&lt;Pair&gt;();\n\n    public ThinkingPlayer(Mark
+    mark, String name) {\n        super(mark, name);\n        CORNER.add(Pair.get(0,
+    0));\n        CORNER.add(Pair.get(2, 2));\n        CORNER.add(Pair.get(2, 0));\n
+    \       CORNER.add(Pair.get(0, 2));\n        SIDES.add(Pair.get(1, 0));\n        SIDES.add(Pair.get(1,
+    2));\n        SIDES.add(Pair.get(0, 1));\n        SIDES.add(Pair.get(2, 1));\n
+    \   }\n\n    @Override\n    public void put(TicTacToe game) {\n        if (game.isEndGame()
+    != Mark.E) return;\n        \n        int turn = 0;\n        Map&lt;Pair, Boolean&gt;
+    map = new HashMap&lt;Pair, Boolean&gt;();\n        for (int x = 0; x &lt; TicTacToe.SIZE;
+    x++) {\n            for (int y = 0; y &lt; TicTacToe.SIZE; y++) {\n                Pair
+    pair = Pair.get(x, y);\n                Mark mark = game.getMark(pair);\n                if
+    (mark == Mark.E) continue;\n                turn++;\n                map.put(pair,
+    mark == this.mark);\n            }\n        }\n\n        switch (turn) {\n            case
+    0:\n            case 1:\n                priorityStep(game);\n                break;\n
+    \           case 2:\n                {\n                    if (map.get(CENTER)
+    == null) {\n                        game.nextStep(CENTER, this.mark);\n                    }
+    else {\n                        for (int index = 0, size = CORNER.size(); index
+    &lt; size; index++) {\n                            if (map.get(CORNER.get(index))
+    == Boolean.FALSE) {\n                                int i = (index &amp; 2) +
+    (~index &amp; 1);\n                                boolean step = game.nextStep(CORNER.get(i),
+    this.mark);\n                                if (step) return;\n                            }\n
+    \                       }\n                        priorityStep(game);\n                    }\n
+    \               }\n                break;\n            case 3:\n                {\n
+    \                   Set&lt;Pair&gt; winPair = searchWinPair(game, this.mark.getOpponent());\n
+    \                   if (!winPair.isEmpty()) {\n                        boolean
+    step = game.nextStep(winPair.toArray(new Pair[0])[0], this.mark);\n                        if
+    (!step) throw new IllegalStateException(game.toString());\n                        return;\n
+    \                   }\n                    if (game.getMark(CENTER) == this.mark)
+    {\n                        if ((game.getMark(CORNER.get(0)) == this.mark.getOpponent()
+    &amp;&amp; game.getMark(CORNER.get(1)) == this.mark.getOpponent())\n                                ||
+    (game.getMark(CORNER.get(2)) == this.mark.getOpponent() &amp;&amp; game.getMark(CORNER.get(3))
+    == this.mark.getOpponent())) {\n                            for (Pair pair: SIDES)
+    {\n                                boolean step = game.nextStep(pair, this.mark);\n
+    \                               if (step) return;\n                            }\n
+    \                       }\n                    }\n                    Set&lt;Pair&gt;
+    goodPair = searchGoodPair(game, this.mark.getOpponent());\n                    if
+    (!goodPair.isEmpty()) {\n                        boolean step = game.nextStep(goodPair.toArray(new
+    Pair[0])[0], this.mark);\n                        if (!step) throw new IllegalStateException(game.toString());\n
+    \                       return;\n                    }\n                    priorityStep(game);\n
+    \               }\n                break;\n            default:\n                {\n
+    \                   Set&lt;Pair&gt; winPair = searchWinPair(game, this.mark);\n
+    \                   if (!winPair.isEmpty()) {\n                        boolean
+    step = game.nextStep(winPair.toArray(new Pair[0])[0], this.mark);\n                        if
+    (!step) throw new IllegalStateException(game.toString());\n                        return;\n
+    \                   }\n                    Set&lt;Pair&gt; losePair = searchWinPair(game,
+    this.mark.getOpponent());\n                    if (!losePair.isEmpty()) {\n                        boolean
+    step = game.nextStep(losePair.toArray(new Pair[0])[0], this.mark);\n                        if
+    (!step) throw new IllegalStateException(game.toString());\n                        return;\n
+    \                   }\n                    Set&lt;Pair&gt; noGoodPair = searchGoodPair(game,
+    this.mark.getOpponent());\n                    if (!noGoodPair.isEmpty()) {\n
+    \                       boolean step = game.nextStep(noGoodPair.toArray(new Pair[0])[0],
+    this.mark);\n                        if (!step) throw new IllegalStateException(game.toString());\n
+    \                       return;\n                    }\n                    Set&lt;Pair&gt;
+    goodPair = searchGoodPair(game, this.mark);\n                    if (!goodPair.isEmpty())
+    {\n                        boolean step = game.nextStep(goodPair.toArray(new Pair[0])[0],
+    this.mark);\n                        if (!step) throw new IllegalStateException(game.toString());\n
+    \                       return;\n                    }\n                    priorityStep(game);\n
+    \               }\n                break;\n        }\n    }\n\n    private void
+    priorityStep(TicTacToe game) {\n        boolean step = false;\n        {\n            step
+    = game.nextStep(CENTER, this.mark);\n            if (step) return;\n        }\n
+    \       for (Pair pair: CORNER) {\n            step = game.nextStep(pair, this.mark);\n
+    \           if (step) return;\n        }\n        for (Pair pair: SIDES) {\n            step
+    = game.nextStep(pair, this.mark);\n            if (step) return;\n        }\n
+    \   }\n\n    private Set&lt;Pair&gt; searchWinPair(TicTacToe game, Mark mark)
+    {\n        Set&lt;Pair&gt; list = new HashSet&lt;Pair&gt;();\n        for (List&lt;Pair&gt;
+    line: TicTacToe.LineList) {\n            int count = 0;\n            Pair empty
+    = null;\n            for (Pair pair: line) {\n                if (game.getMark(pair)
+    == mark) {\n                    count++;\n                } else if (game.getMark(pair)
+    == mark.getOpponent()) {\n                    count = -1;\n                    break;\n
+    \               } else {\n                    empty = pair;\n                }\n
+    \           }\n            if (count == 2 &amp;&amp; empty != null) list.add(empty);\n
+    \       }\n        return list;\n    }\n\n    private Set&lt;Pair&gt; searchGoodPair(TicTacToe
+    game, Mark mark) {\n        Set&lt;Pair&gt; list = new HashSet&lt;Pair&gt;();\n
+    \       for (int x = 0; x &lt; TicTacToe.SIZE; x++) {\n            for (int y
+    = 0; y &lt; TicTacToe.SIZE; y++) {\n                Pair pair = Pair.get(x, y);\n
+    \               if (game.getMark(pair) == Mark.E) {\n                    game.setMark(pair,
+    mark);\n                    Set&lt;Pair&gt; winPair = searchWinPair(game, mark);\n
+    \                   if (winPair.size() &gt; 1) list.add(pair);\n                    game.setMark(pair,
+    Mark.E);\n                }\n            }\n        }\n        return list;\n
+    \   }\n}\n"
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '6235'
+  :parent_id: '174'
+  :url: http://ja.doukaku.org/comment/6235
+  :user_name: yuin
+  :user_url: /web/20081010170305/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2008/04/30 09:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>微妙な感じですがとりあえず･･･CleverPlayerを追加しました。\n</p>\n<p>1万回対戦させてみたところ\n</p>\n<p>Cleverが先行\n</p>\n<pre><code>Clever
+    won:9,379\nRandom won:0\ndraw      :621\n</code></pre>\n<p>Randomが先行\n</p>\n<pre><code>Clever
+    won:8,596\nRandom won:0\ndraw      :1,404\n</code></pre>\n<p>Clever vs Clever\n</p>\n<pre><code>Clever
+    won:0\nClever won:0\ndraw      :10,000\n</code></pre>\n<p>という感じでした。戦略は優先度順に\n</p>\n<ol>\n<li>\n
+    \    置けば勝ち、置かなければ負ける、という位置があればそこに置く\n </li>\n\n <li>\n     自分が後手で1ターン目に相手が真ん中に置かなかった場合の2ターン目<ul>\n<li>\n
+    \    相手が置いているところが全て角なら角以外の淵に置く\n </li>\n\n <li>\n     でなければ相手の置いているところから距離が一番近い角に置く\n
+    </li>\n</ul>\n</li>\n\n <li>\n     真ん中が空いていれば真ん中に置く\n </li>\n\n <li>\n     角が空いていれば角に置く\n
+    </li>\n\n <li>\n     置けるところに置く\n </li>\n</ol>\n<p>としてみました。\n</p>\n\n\n\n\t"
+  :code: "import java.util.Random\n\nclass TicTacToe(val players:List[Player]) {\n
+    \ val size = 3\n  protected val field = new Array[Array[char]](size,size)\n  val
+    lines = (_stline((v,v2) =&gt; (v,v2))++_stline((v,v2) =&gt; (v2,v))++\n              List(((size-1).until(-1,-1)).map(v=&gt;
+    (v,(size-1-v)))) ++\n              List((0 until size).map(v=&gt;(v,v)))).map(_.toList)\n\n
+    \ def _stline(f:(int,int) =&gt; Pair[int,int]) = \n    (0 until size).map(v =&gt;
+    (0 until size).map(v2 =&gt; f(v,v2)))\n\n  def start:Option[Player] = {\n    for(val
+    i&lt;-(0 until size); val j&lt;-(0 until size)) { field(i)(j) = ' '}\n    Stream.const(players).flatMap(v=&gt;v).take(size*size).find
+    {player =&gt; \n      val p@Pair(y,x) = player.put(this)\n      if(!available_?(p))
+    error(\"Oops!\")\n      field(y)(x) = player.mark\n      judge\n    }\n  }\n\n
+    \ def judge = lines.exists(l =&gt; l.forall(!available_?(_)) &amp;&amp; l.forall(v
+    =&gt; at(l(0)) == at(v)))\n  def available_?(pos:Pair[int,int]) = at(pos) equals
+    ' '\n  def at(pos:Pair[int,int]) = field(pos._1)(pos._2)\n  def at_eq(pos:Pair[int,int],
+    mark:char) = at(pos) equals mark\n  def enemy_of(player:Player) = players.find{_.mark
+    != player.mark}.get\n}\n\nabstract class Player{\n  val mark:char\n  val name:String\n
+    \ def put(ttt:TicTacToe):Pair[int,int]\n}\n\nclass RandomPlayer(override val mark:char,
+    override val name:String) extends Player{\n  val rnd = new Random\n  override
+    def put(ttt:TicTacToe) = {\n    def _n = (rnd.nextInt(ttt.size), rnd.nextInt(ttt.size))\n
+    \   def next(v:Pair[int,int]):Stream[Pair[int,int]] = Stream.cons(v, next(_n))\n
+    \   next(_n).find(ttt.available_?).get\n  }\n}\n\nclass CleverPlayer(override
+    val mark:char, override val name:String) extends Player {\n  override def put(ttt:TicTacToe):Pair[int,int]
+    = {\n    val enemy = ttt.enemy_of(this)\n    val return_if_available_find = (l:Seq[Pair[int,int]])
+    =&gt; l.find(ttt.available_?) match {\n      case Some(pos) =&gt; return pos\n
+    \     case _ =&gt; ()\n    }\n\n    def line2(v:char) = ttt.lines.filter(_.count(ttt.at_eq(_,v))
+    == 2)\n    return_if_available_find(List(mark, enemy.mark).flatMap(line2).flatMap(v=&gt;v))\n\n
+    \   val all  = (for(val i&lt;-(0 until ttt.size); val j&lt;-(0 until ttt.size))
+    yield (i,j)).toList\n    val center = (ttt.size/2, ttt.size/2)\n    val corners
+    = List((0,0), (ttt.size-1,ttt.size-1), (0,ttt.size-1), (ttt.size-1, 0))\n    val
+    others = all.diff(center::corners)\n\n    if(all.count(ttt.at_eq(_, enemy.mark))
+    == 2 &amp;&amp; ttt.at_eq(center, this.mark)) {\n      if(!others.forall(ttt.available_?))
+    {\n        val ps = all.filter(ttt.at_eq(_, enemy.mark))\n        def vecv(a:Pair[int,int])
+    = (0 /: ps){(r, p) =&gt; r+(a._1 - p._1).abs+(a._2 - p._2).abs}\n        return_if_available_find(corners.sort(vecv(_)
+    &lt; vecv(_)))\n      }\n      return_if_available_find(others)\n    }\n\n    return_if_available_find(List(center))\n
+    \   return_if_available_find(corners)\n    others.find(ttt.available_?).get\n
+    \ }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6236'
+  :parent_id: '174'
+  :url: http://ja.doukaku.org/comment/6236
+  :user_name: syat
+  :user_url: /web/20081010170305/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2008/04/30 13:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  無敗のアルゴリズムはネット上にあんまり転がっていないと思って出題したのですが、結構あっさり解かれてしまいますね。。。\r<br><br>これから投稿される方も、ぜひ自力でアルゴリズムを考えてみてください。自分だったらこうするという手順をプログラムに落とし込んでいくのは結構楽しいですよ！\r<br><br>ちなみに出題者の実装は #6235 の yuin さんの書かれた戦略とほぼ同じものになりました。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6237'
+  :parent_id: '174'
+  :url: http://ja.doukaku.org/comment/6237
+  :user_name: 匿名
+  :user_url: /web/20081010170305/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/04/30 15:25 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>こんにちは。前回投稿した#6205を改造してプレイヤをつくりました。今回は1ソースのお手軽実装です。\n元のシステムの流れを変えないようにしながらも幾らか追加点がありますがシステムのコードが長いので省略させていただきます。\nで、ベターなほうのプレイヤ同士だと全部引き分けでした。ランダム要素が無いのでしょうがないですね。\nあと、盤面の幅は３に依存しています。\nあぁ、バグ取りはしましたけど保障はしません。</p>\n<p>Result:</p>\n<p>Random
+    Player.[103] BetterThinkPlayer.[7210] Draw[2687]</p>\n<p>BetterThinkPlayer.[9287]
+    Random Player.[0] Draw[713]</p>\n\n\t"
+  :code: "#include \"Player.h\"\n\nclass BetterPlayer:public Player{//長さ３専用\npublic:\n
+    \   char*GetName(){ return \"BetterThinkPlayer.\";}\n    void Play(MBGame&amp;
+    in){\n        if(in.HasEmpty() &amp;&amp; in.Length()&gt;3) {\n            while(in.SetStone(rand()%in.Length(),rand()%in.Length(),Mark_));\n
+    \           return;\n        }\n        //マスの重み\n        short Point[]={    43,27
+    ,41,\n                        28,100,26,\n                        42,29 ,44,\n
+    \       };\n        int op=0;\n        do{\n            if(!in.HasEmpty()) return;\n
+    \           think(in,Point,sizeof(Point));\n            for(int i=0;i&lt;sizeof(Point);i++){\n
+    \               if(Point[i] &gt;Point[op]){\n                    op=i;\n                }\n
+    \           }\n            Point[op]=-10000;\n        }while(!in.SetStone(op%3,op/3,Mark_));\n
+    \       \n    }\nprotected:\n    \n    void think(MBGame&amp; in,short Point[],int
+    N){\n        const short Posi = 10;\n        const short Nega = -5;\n        const
+    short denger =9999;\n        char Lines[8][3]={\n                        {0,1,2},{3,4,5},{6,7,8},//横\n
+    \                       {0,3,6},{1,4,7},{2,5,8},//縦\n                        {0,4,8},{2,4,6},//斜め\n
+    \       };\n        char Side[9][9]={    \n                        {1,3,-1},//-1は番兵\n
+    \                       {0,2,4,-1},\n                        {1,5,-1},\n                        {0,4,6,-1},\n
+    \                       {0,1,2,3,5,6,7,8,-1},\n                        {2,4,8,-1},\n
+    \                       {3,7,-1},\n                        {6,4,8,-1},    \n                        {5,7,-1},\n
+    \       };\n        for(int i=0;i&lt;9;i++){//こまの配置による判定\n            for(int
+    j=0;Side[i][j]!= -1;j++){\n                int x=0,y=0;\n                int N
+    = Side[i][j];\n                x = N%3;\n                y = N/3;\n                Mark
+    M= in.At(x,y);\n                if(M == Mark_) Point[Side[i][j]]+= Posi;\n                if(M
+    != Mark_ &amp;&amp; M != None ) Point[Side[i][j]]+= Nega;\n            }\n        }\n
+    \       for(int i=0;i&lt;8;i++){//超危ない時の判定\n            int P=0;\n            int
+    x=0,y=0;\n            for(int j=0;j&lt;3;j++){\n                int N= Lines[i][j];\n
+    \               x = N%3;\n                y = N/3;\n                Mark M = in.At(x,y);\n
+    \               if(M == Mark_) P++;\n                if(M != None &amp;&amp; M
+    != Mark_) P--;\n            }\n            for(int j=0;j&lt;3;j++){\n                if(P
+    == 2) Point[Lines[i][j]]+=denger;\n                if(P == -2) Point[Lines[i][j]]+=denger;\n
+    \           }\n        }\n    }\n\n};\n"
+  :tags:
+  - VC2008Express
+  :references:
+    :url: 
+    :title: 
+- :id: '6238'
+  :parent_id: '174'
+  :url: http://ja.doukaku.org/comment/6238
+  :user_name: 匿名
+  :user_url: /web/20081010170305/http://ja.doukaku.org/user/4/
+  :language: C
+  :time: 2008/04/30 16:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>バグ見つけてしまいました。面目ない。\nコメントの位置を参考にして必要なら差し替えてください。</p>\n<p>Random
+    Player.[293] BetterThinkPlayer.[8721] Draw[986]</p>\n<p>BetterThinkPlayer.[9858]
+    Random Player.[0] Draw[142]</p>\n\n\t"
+  :code: |2
+            for(int i=0;i&lt;9;i++){//こまの配置による判定
+                int x,y;
+                    x = i%3;
+                    y = i/3;
+                Mark M= in.At(x,y);
+                for(int j=0;Side[i][j]!= -1;j++){
+                    if(M == Mark_) Point[Side[i][j]]+= Posi;
+                    if(M != Mark_ &amp;&amp; M != None ) Point[Side[i][j]]+= Nega;
+                }
+            }
+  :tags:
+  - VC2008Express　Dｉff
+  :references:
+    :url: 
+    :title: 
+- :id: '6239'
+  :parent_id: '174'
+  :url: http://ja.doukaku.org/comment/6239
+  :user_name: sumim
+  :user_url: /web/20081010170305/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2008/05/01 05:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n<p>勝ちの手か、負け回避の必要がなければ、</p>\n<ul class=\"simple\">\n<li>中央が空いていれば中央</li>\n<li>隅が空いていれば、相手が陣取ったマス目に近いほうの開いている隅。ただし、後手で
+    ○×○ と斜めに列んだときは隅以外。</li>\n<li>ランダム</li>\n</ul>\n<p>の判断順としてみました。</p>\n\n\t"
+  :code: "| 全マス目 全ライン 勝敗カウンタ 中央のマス 隅のマス群 縁のマス群 |\n\n中央のマス := #(2 2).\n隅のマス群 := #((1
+    1) (3 3) (1 3) (3 1)).\n縁のマス群 := #((1 2) (3 2) (2 1) (2 3)).\n全マス目 := (中央のマス,
+    隅のマス群, 縁のマス群) asOrderedCollection.\n\n全ライン := OrderedCollection new.\n(1 to: 3)
+    do: [:座標１ |\n    全ライン add: ((1 to: 3) collect: [:座標２ | {座標１. 座標２}]).\n    全ライン
+    add: ((1 to: 3) collect: [:座標２ | {座標２. 座標１}])].\n全ライン add: #((1 1) (2 2) (3 3));
+    add: #((1 3) (2 2) (3 1)).\n\n^#(賢い先手 #賢い後手 #賢い両者) collect: [:モード |\n\n    勝敗カウンタ
+    := Bag new.\n\n    1e4 timesRepeat: [\n        | 残りマス群 先手 後手 打ち手順 ランダム 手番 結果 |\n
+    \       残りマス群 := 全マス目 copy.\n        先手 := OrderedCollection new. 後手 := 先手 copy.\n
+    \       打ち手順 := {先手. 後手}.\n        ランダム := モード caseOf: {\n                [#賢い先手]
+    -&gt; [後手].\n                [#賢い後手] -&gt; [先手]}\n            otherwise: [nil].\n
+    \       手番 := 0.\n        結果 := nil.\n\n        [残りマス群\n            ifEmpty: [結果
+    := #引き分け]\n            ifNotEmpty: [\n                | 打ち手 敵の手 必勝手検索 必勝の手 守りの手
+    詰み回避の手 最善手 打つ手 |\n                打ち手 := 打ち手順 atWrap: (手番 := 手番 + 1).\n                敵の手
+    := 打ち手順 atWrap: 手番 + 1.\n\n                必勝手検索 := [:対象マス群 |\n                    |
+    候補群 |\n                    全ライン\n                        detect: [:構成マス群 |\n                            (候補群
+    := 構成マス群 difference: 対象マス群) size = 1 and: [\n                                残りマス群
+    includesAllOf: 候補群]]\n                        ifNone: [候補群 := #()]..\n                    候補群
+    ifNotEmpty: [候補群 first] ifEmpty: [nil]].\n\n                必勝の手 := [必勝手検索 value:
+    打ち手].\n                守りの手 := [必勝手検索 value: 敵の手].\n\n                詰み回避の手 :=
+    [\n                    (残りマス群 includes: 中央のマス) ifTrue: [中央のマス] ifFalse: [\n                        (敵の手
+    includesAnyOf: {隅のマス群 first: 2. 隅のマス群 last: 2})\n                            ifTrue:
+    [縁のマス群 first]\n                            ifFalse: [\n                                (隅のマス群
+    intersection: 残りマス群)\n                                    ifNotEmptyDo: [:候補群
+    |\n                                        候補群 detectMin: [:候補 |\n                                            敵の手
+    inject: 0 into: [:総和 :敵のマス |\n                                                総和
+    + (敵のマス * 候補) sum]]]\n                                    ifEmpty: [nil]]]].\n\n
+    \               最善手 := [\n                    必勝の手 value ifNil: [\n                        守りの手
+    value ifNil: [\n                            詰み回避の手 value ifNil: [残りマス群 atRandom]]]].\n\n
+    \               打つ手 := 打ち手 ~~ ランダム ifTrue: [最善手 value] ifFalse: [残りマス群 atRandom].\n
+    \               打ち手 add: (残りマス群 remove: 打つ手).\n                (全ライン anySatisfy:
+    [:必須マス群 | 打ち手 includesAllOf: 必須マス群])\n                    ifTrue: [結果 := 打ち手 ==
+    先手 ifTrue: [#先手勝ち] ifFalse: [#後手勝ち]]].\n        結果 isNil] whileTrue.\n\n        勝敗カウンタ
+    add: 結果].\n\n    モード -&gt; 勝敗カウンタ sortedCounts asArray]\n\n\"=&gt; {#賢い先手-&gt;{9774-&gt;#先手勝ち.
+    226-&gt;#引き分け}. \n    #賢い後手-&gt;{7962-&gt;#後手勝ち. 2038-&gt;#引き分け}. \n    #賢い両者-&gt;{10000-&gt;#引き分け}}
+    \"\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '6240'
+  :parent_id: '174'
+  :url: http://ja.doukaku.org/comment/6240
+  :user_name: 匿名
+  :user_url: /web/20081010170305/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2008/05/01 06:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>プレイヤの説明が抜けてましたね。</p>\n<p>基本構造。</p>\n<p>評価関数というものを使っています。</p>\n<p>説明。</p>\n<p>Ｐｌａｙの中の変数Ｐｏｉｎｔにマスの重みを持たせています。優先順位は「１、真ん中。２、隅。３、残り。」　重みの高い順に選んでいっておける場所を発見したら手を終了します。\nで、重みは変化します。\nあるポイントに自分のコマがあったら周りをポイント＋。逆に相手のコマがあったらポイント-しています。さらに危険な場所を発見したら巨数を＋して回避にあてます。重みをいじれば幾らかバリエーションがだせます。そんな感じの流れです。</p>\n<p>最後に。</p>\n<p>幾らか急いだために作りこみが甘かったことをここに懺悔いたします。\n修正版だと先手が常に勝つようになってしまいました。重みを調整すれば平等になります。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6242'
+  :parent_id: '174'
+  :url: http://ja.doukaku.org/comment/6242
+  :user_name: sumim
+  :user_url: /web/20081010170305/http://ja.doukaku.org/user/88/
+  :language: diff
+  :time: 2008/05/01 11:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>バグがありました。いったい何を思ってそんなふうに書いてしまったのか、それでなぜそれっぽく動いていたのかまったく不思議です(^_^;)。以下、差分です。</p>\n\n\t"
+  :code: "6c6\n&lt; 全マス目 := (中央のマス, 隅のマス群, 縁のマス群) asOrderedCollection.\n---\n&gt;
+    全マス目 := ({中央のマス}, 隅のマス群, 縁のマス群) asOrderedCollection.\n51c51,52\n&lt;                         (敵の手
+    includesAnyOf: {隅のマス群 first: 2. 隅のマス群 last: 2})\n---\n&gt;                         (敵の手
+    size = 2 and: [{隅のマス群 first: 2. 隅のマス群 last: 2}\n&gt;                                 anySatisfy:
+    [:二隅 | (敵の手 copyWithoutAll: 二隅) isEmpty]])\n58c59\n&lt;                                                 総和
+    + (敵のマス * 候補) sum]]]\n---\n&gt;                                                 総和
+    + ((候補 - 敵のマス) * (候補 - 敵のマス)) sum]]]\n76,77c77,78\n&lt; \"=&gt; {#賢い先手-&gt;{9774-&gt;#先手勝ち.
+    226-&gt;#引き分け}. \n&lt;     #賢い後手-&gt;{7962-&gt;#後手勝ち. 2038-&gt;#引き分け}. \n---\n&gt;
+    \"=&gt;  {#賢い先手-&gt;{9607-&gt;#先手勝ち. 393-&gt;#引き分け}.\n&gt;     #賢い後手-&gt;{8544-&gt;#後手勝ち.
+    1456-&gt;#引き分け}.\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '6244'
+  :parent_id: '174'
+  :url: http://ja.doukaku.org/comment/6244
+  :user_name: syat
+  :user_url: /web/20081010170305/http://ja.doukaku.org/user/766/
+  :language: Other
+  :time: 2008/05/01 15:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>AIぽい解だと思�\n\n\n\n\n<!--\n     FILE ARCHIVED ON 17:03:05 Oct 10,
+    2008 AND RETRIEVED FROM THE\n     INTERNET ARCHIVE ON 13:07:46 Nov 16, 2013.\n
+    \    JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.\n\n     ALL
+    OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.\n     SECTION 108(a)(3)).\n--></p>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 

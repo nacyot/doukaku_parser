@@ -1,0 +1,447 @@
+---
+:id: '280'
+:title: UTF-16をUTF-8に変換
+:comments:
+- :id: '9468'
+  :parent_id: '280'
+  :url: http://ja.doukaku.org/comment/9468
+  :user_name: greentea
+  :user_url: /web/20100506230753/http://ja.doukaku.org/user/573/
+  :language: C
+  :time: 2009/08/10 12:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  <div class=\"section\">\n<p>UTF-16の文字コードを16進(1オクテットごとにスペース区切り)の形で入力します。入力した文字コードを、2進数の形(1オクテットごとにスペース区切り)で出力してください。\r</p>\n<p>入力する文字コードはUCS-2の範囲(サロゲートペアを使わなくてもよい範囲)のみに限定しても構いませんが、可能ならばサロゲートペアにも対応したものに挑戦してください。\r</p>\n<p>\r</p>\n<ul>\n<li>\n
+    例1: abc(U+0041 U+0042 U+0043)\r\n<ul>\n<li>\n 入力 00 41 00 42 00 43\r\n</li>\n<li>\n
+    出力 01000001 01000010 01000011\r\n</li>\n</ul>\n</li>\n<li>\n 例2: あいう(U+3042 U+3044
+    U+3046)\r\n<ul>\n<li>\n 入力 30 42 30 44 30 46\r\n</li>\n<li> 出力 11100011  10000001
+    \ 10000010  11100011  10000001  10000100  11100011  10000001  10000110\r</li>\n</ul>\n</li>\n</ul>\n<p>\r</p>\n<p>正攻法からトリッキーな手段まで、いろいろお待ちしております。</p>\n</div>\r\n\t"
+  :code: "#include &lt;stdio.h&gt;                  \n#include &lt;stdlib.h&gt;                 \n#include
+    &lt;string.h&gt;                 \n\ntypedef unsigned short utf16char; /* sizeof(short)
+    &gt;= 2 octets */\n#define UTF8_MAXOCTETS 3 /* UCS-2ではutf-8にしたとき3 octets以内に収まる
+    */\ntypedef struct{                                                           \n
+    \       int len;                                                          \n        char
+    data[UTF8_MAXOCTETS];                                        \n} Utf8char;                                                               \n\nvoid
+    encode(Utf8char *utf8, utf16char utf16){\n        int i, len;                          \n\n
+    \       if(!(utf16 &amp; (~0x7f))) len = 1;\n        else if(!(utf16 &amp; (~0x7ff)))
+    len = 2;\n        else len = 3;                        \n\n        switch(len){\n
+    \       case 1:     \n                utf8-&gt;data[0] = utf16 &amp; 0x7f;\n                break;
+    \                      \n        case 2:                              \n                utf8-&gt;data[0]
+    = (utf16&gt;&gt;6 &amp; 0x1f) | 0xc0;\n                utf8-&gt;data[1] = (utf16
+    &amp; 0x3f) | 0x80;   \n                break;                                   \n
+    \       case 3:                                          \n                utf8-&gt;data[0]
+    = (utf16&gt;&gt;12 &amp; 0xf) | 0xe0;\n                utf8-&gt;data[1] = (utf16&gt;&gt;6
+    &amp; 0x3f) | 0x80;\n                utf8-&gt;data[2] = (utf16 &amp; 0x3f) | 0x80;
+    \  \n                break;                                   \n        }                                                \n
+    \       utf8-&gt;len = len;                                 \n}                                                        \n\nvoid
+    print_bin(char c){\n        printf(\"%d%d%d%d%d%d%d%d \", c&gt;&gt;7&amp;1, c&gt;&gt;6&amp;1,
+    c&gt;&gt;5&amp;1, c&gt;&gt;4&amp;1, c&gt;&gt;3&amp;1, c&gt;&gt;2&amp;1, c&gt;&gt;1&amp;1,
+    c&amp;1);\n}                                                                                                \n\nint
+    main(int argc, char **argv){\n        int bytes = argc-1, len = bytes / 2;\n        int
+    i, j;\n        utf16char *utf16;\n        char *utf8;\n        int u8len = 0;\n
+    \       Utf8char u8char;\n\n        if(!bytes) return 0;\n        if(bytes % 2){\n
+    \               printf(\"Invalid input.\\n\");\n                return 1;\n        }\n
+    \       utf16 = malloc(sizeof(utf16char)*len);\n        utf8 = malloc(len*UTF8_MAXOCTETS);\n\n
+    \       for(i=0,j=1;i&lt;len;i++,j+=2) utf16[i] = strtol(argv[j], NULL, 16)&lt;&lt;8
+    | strtol(argv[j+1], NULL, 16);\n\n        for(i=0;i&lt;len;i++){\n                encode(&amp;u8char,
+    utf16[i]);\n                memcpy(utf8 + u8len, u8char.data, u8char.len);\n                u8len
+    += u8char.len;\n        }\n        for(i=0;i&lt;u8len;i++) print_bin(utf8[i]);\n
+    \       putchar('\\n');\n\n        free(utf16);\n        free(utf8);\n}\n"
+  :tags: []
+  :references:
+    :url: /web/20100506230753/http://www.wdic.org/w/WDIC/UTF-8
+    :title: 通信用語の基礎知識 UTF-8
+- :id: '9558'
+  :parent_id: '280'
+  :url: http://ja.doukaku.org/comment/9558
+  :user_name: athos
+  :user_url: /web/20100506230753/http://ja.doukaku.org/user/755/
+  :language: Scheme
+  :time: 2009/09/07 12:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Gauche は標準で UTF-8 をサポートしているので、\r\nUCS コードポイントからバイト列への変換は
+    Gauche に任せて楽してます :-)\r\n\r\ngosh&gt; (utf16-&gt;utf8 \"00 41 00 42 00 43\")\r\n\"01000001
+    01000010 01000011\"\r\ngosh&gt; (utf16-&gt;utf8 \"30 42 30 44 30 46\")\r\n\"11100011
+    10000001 10000010 11100011 10000001 10000100 11100011 10000001 100001\\\r\n10\"</pre>\n\t"
+  :code: |
+    (use util.match)
+    (use util.list)
+    (use srfi-1)
+
+    (define (utf16-&gt;utf8 utf16)
+      (string-join
+        (append-map (lambda (ucs)
+                      (map (cut format "~8,'0b" &lt;&gt;)
+                           (ucs-&gt;bytes ucs)))
+                    (byte-list-&gt;ucs-list
+                      (map (cut string-&gt;number &lt;&gt; 16)
+                           (string-split utf16 #\space))))))
+
+    (define (ucs-&gt;bytes ucs)
+      (call-with-input-string #`",(ucs-&gt;char ucs)"
+        (cut port-&gt;list read-byte &lt;&gt;)))
+
+    (define (byte-list-&gt;ucs-list bytes)
+      (let loop ([bytes bytes] [accum '()])
+        (match (take* bytes 2)
+          [() (reverse accum)]
+          [(hi lo) (loop (cddr bytes) (cons (+ (* 256 hi) lo) accum))]
+          [else (error "error.")])))
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '9559'
+  :parent_id: '280'
+  :url: http://ja.doukaku.org/comment/9559
+  :user_name: uehaj
+  :user_url: /web/20100506230753/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2009/09/07 13:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>正攻法でやってみました。サロゲートペアも多分対応していると思いますが、macosxではフォントが対応していないせいか化けますね。</p>\n\n\t"
+  :code: |
+    byte[]inbytes = args[0].split(' ').collect{Byte.parseByte(it,16)}
+    bais = new ByteArrayInputStream(inbytes)
+    isr = new InputStreamReader(bais, "UTF-16")
+    baos = new ByteArrayOutputStream()
+    osw = new OutputStreamWriter(baos, "UTF-8")
+
+    osw.write(isr.text)
+    osw.flush()
+
+    println baos.toByteArray().collect {
+     Integer.toBinaryString(0xff&amp;(int)it).padLeft(8,'0')
+    }.join(' ')
+
+    // groovy unicode.groovy '00 41 00 42 00 43'
+    // [以下が出力される]
+    // 01000001 01000010 01000011
+
+    // groovy unicode.groovy '30 42 30 44 30 46'
+    // [以下が出力される]
+    // 11100011 10000001 10000010 11100011 10000001 10000100 11100011 10000001 10000110
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9560'
+  :parent_id: '280'
+  :url: http://ja.doukaku.org/comment/9560
+  :user_name: turugina
+  :user_url: /web/20100506230753/http://ja.doukaku.org/user/760/
+  :language: Perl
+  :time: 2009/09/07 13:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>変換はEncodeまかせです。</p>\n\n\t"
+  :code: |
+    use strict;
+    use warnings;
+    use Encode;
+    $,=' ';
+    print map{sprintf'%08b',$_}
+        unpack('C*',
+            encode('utf8',
+                decode('utf16be',
+                    pack('C*',
+                        map hex,@ARGV))));
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9561'
+  :parent_id: '280'
+  :url: http://ja.doukaku.org/comment/9561
+  :user_name: sumim
+  :user_url: /web/20100506230753/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/09/08 01:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n\n\t"
+  :code: |
+    | utf16to8 |
+    utf16to8 := [:inStr |
+        | array str utf8 |
+        array :=inStr subStrings collect: [:each | Number readFrom: each base: 16].
+        str := array asByteArray asString convertFromEncoding: 'utf-16'.
+        utf8 := str convertToEncoding: 'utf-8'.
+        utf8 asByteArray asArray collect: [:each | (each radix: 2) forceTo: 8 paddingStartWith: $0]].
+
+    utf16to8 value: '00 41 00 42 00 43'.   "=&gt; #('01000001' '01000010' '01000011') "
+    utf16to8 value: '30 42 30 44 30 46'.   "=&gt; #('11100011' '10000001' '10000010' '11100011' '10000001' '10000100' '11100011' '10000001' '10000110') "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '9562'
+  :parent_id: '280'
+  :url: http://ja.doukaku.org/comment/9562
+  :user_name: ocean
+  :user_url: /web/20100506230753/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2009/09/08 02:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>codecsモジュールを使ってみました。サロゲートペアについては確認してません。</p>\n\n\t"
+  :code: |
+    import codecs
+
+    def solve(*a):
+        s = codecs.getdecoder("utf-16be")("".join(map(chr, a)))[0]
+        def format(c):
+            s = bin(ord(c))
+            assert s[:2] == '0b'
+            return s[2:].rjust(8, '0')
+        print " ".join(map(format, s.encode("utf-8")))
+
+    def main():
+        solve(0x00, 0x41, 0x00, 0x42, 0x00, 0x43)
+        solve(0x30, 0x42, 0x30, 0x44, 0x30, 0x46)
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9563'
+  :parent_id: '280'
+  :url: http://ja.doukaku.org/comment/9563
+  :user_name: ocean
+  :user_url: /web/20100506230753/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2009/09/08 02:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>投稿してから気づきましたが、こうすればcodecsモジュールは必要ありませんね（汗）</p>\n\n\t"
+  :code: |
+    def solve(*a):
+        s = "".join(map(chr, a)).decode("utf-16be")
+        def format(c):
+            s = bin(ord(c))
+            assert s[:2] == '0b'
+            return s[2:].rjust(8, '0')
+        print " ".join(map(format, s.encode("utf-8")))
+
+    def main():
+        solve(0x00, 0x41, 0x00, 0x42, 0x00, 0x43)
+        solve(0x30, 0x42, 0x30, 0x44, 0x30, 0x46)
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9566'
+  :parent_id: '280'
+  :url: http://ja.doukaku.org/comment/9566
+  :user_name: bleis-tift
+  :user_url: /web/20100506230753/http://ja.doukaku.org/user/732/
+  :language: SQL
+  :time: 2009/09/09 04:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>SQL Server 2008 で確認しました。</p>\n<p>ToBin 以降は補助文字でも対応できるように書いてありますので、もうちょっとがんばればサロゲートペアにも対応可能です。</p>\n\n\t"
+  :code: |
+    WITH
+      Input(id, txt) AS (
+        SELECT 1, '00 41 00 42 00 43'
+        UNION ALL SELECT 2, '30 42 30 44 30 46'
+      )
+    , Split(id, i, d16, txt) AS (
+        SELECT
+            id
+          , 0
+          , LEFT(txt, 2) + SUBSTRING(txt, 4, 2)
+          , SUBSTRING(txt, 7, LEN(txt))
+        FROM
+            Input
+        UNION ALL
+        SELECT
+            id
+          , i + 1
+          , LEFT(txt, 2) + SUBSTRING(txt, 4, 2)
+          , SUBSTRING(txt, 7, LEN(txt))
+        FROM
+            Split
+        WHERE
+            LEN(txt) &lt;&gt; 0
+      )
+    , ToNum(id, i, num) AS (
+        SELECT
+            id
+          , i
+          , 1 * CAST(SUBSTRING(d16, 4, 1) AS int) +
+            16 * CAST(SUBSTRING(d16, 3, 1) AS int) +
+            16 * 16 * CAST(SUBSTRING(d16, 2, 1) AS int) +
+            16 * 16 * 16 * CAST(SUBSTRING(d16, 1, 1) AS int)
+        FROM
+            Split
+      )
+    , ToBin(id, i, num, bin, deci, crnt) AS (
+        SELECT
+            id
+          , i
+          , num
+          , CAST(CASE
+                 WHEN num &gt;= POWER(CAST(2 AS bigint), 32)
+                   THEN '1'
+                   ELSE '0'
+                 END AS varchar(max))
+          , CASE
+            WHEN num &gt;= POWER(CAST(2 AS bigint), 32)
+              THEN num - POWER(CAST(2 AS bigint), 32)
+              ELSE num
+            END
+          , 31
+        FROM
+            ToNum
+        UNION ALL
+        SELECT
+            id
+          , i
+          , num
+          , bin + CASE
+                  WHEN deci &gt;= POWER(CAST(2 AS bigint), crnt)
+                    THEN '1'
+                    ELSE '0'
+                  END
+          , CASE
+            WHEN deci &gt;= POWER(CAST(2 AS bigint), crnt)
+              THEN deci - POWER(CAST(2 AS bigint), crnt)
+              ELSE deci
+            END
+          , crnt - 1
+        FROM
+            ToBin
+        WHERE
+            crnt &gt;= 0
+      )
+    , ToUtf8(id, i, utf8) AS (
+        SELECT
+            id
+          , i
+          , CASE
+            WHEN num BETWEEN 0x0000000 AND 0x0000007F THEN RIGHT(bin, 8)
+            WHEN num BETWEEN 0x0000080 AND 0x000007FF THEN '110' + SUBSTRING(bin, 22, 5) + ' 10' + RIGHT(bin, 6)
+            WHEN num BETWEEN 0x0000800 AND 0x0000FFFF THEN '1110' + SUBSTRING(bin, 18, 4) + ' 10' + SUBSTRING(bin, 22, 6) + ' 10' + RIGHT(bin, 6)
+            WHEN num BETWEEN 0x0010000 AND 0x001FFFFF THEN '11110' + SUBSTRING(bin, 13, 3) + ' 10' + SUBSTRING(bin, 16, 6) + ' 10' + SUBSTRING(bin, 22, 6) + ' 10' + RIGHT(bin, 6)
+            WHEN num BETWEEN 0x0200000 AND 0x03FFFFFF THEN '111110' + SUBSTRING(bin, 8, 2) + ' 10' + SUBSTRING(bin, 10, 3) + ' 10' + SUBSTRING(bin, 16, 6) + ' 10' + SUBSTRING(bin, 22, 6) + ' 10' + RIGHT(bin, 6)
+            WHEN num BETWEEN 0x4000000 AND 0x7FFFFFFF THEN '1111110' + SUBSTRING(bin, 3, 1) + ' 10' + SUBSTRING(bin, 4, 2) + ' 10' + SUBSTRING(bin, 10, 3) + ' 10' + SUBSTRING(bin, 16, 6) + ' 10' + SUBSTRING(bin, 22, 6) + ' 10' + RIGHT(bin, 6)
+            END
+        FROM
+            ToBin
+        WHERE
+            crnt = -1
+      )
+    , Result(id, txt, next_i) AS (
+        SELECT
+            id
+          , utf8
+          , 1
+        FROM
+            ToUtf8
+        WHERE
+            i = 0
+        UNION ALL
+        SELECT
+            R.id
+          , txt + ' ' + U8.utf8
+          , next_i + 1
+        FROM
+            Result R
+              INNER JOIN ToUtf8 U8 ON R.id = U8.id AND R.next_i = U8.i
+      )
+    SELECT
+        id
+      , txt
+    FROM
+        Result P
+    WHERE
+        LEN(txt) = (
+          SELECT MAX(LEN(txt)) FROM Result C WHERE P.id = C.id
+        )
+    ;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9567'
+  :parent_id: '280'
+  :url: http://ja.doukaku.org/comment/9567
+  :user_name: bleis-tift
+  :user_url: /web/20100506230753/http://ja.doukaku.org/user/732/
+  :language: 
+  :time: 2009/09/09 05:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>29～32 行目、[a-fA-F]の可能性を考慮するのを忘れました・・・</p>\n<p>各 SUBSTRING 部分で CASE
+    式による分岐を入れればよさそうですね。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9568'
+  :parent_id: '280'
+  :url: http://ja.doukaku.org/comment/9568
+  :user_name: baal
+  :user_url: /web/20100506230753/http://ja.doukaku.org/user/827/
+  :language: Scheme
+  :time: 2009/09/09 09:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Wikipedia 見つつ変換処理も書いてみました。\n\t"
+  :code: |
+    (use util.list)
+
+    (define (utf16-2byte-&gt;utf8 b1 b2)
+      (cond
+        ((and (zero? b1) (&lt; b2 (expt 2 7))) (list b2))
+        ((&lt; b1 (expt 2 3))
+          (list
+            (logior #b11000000 (logand #b00011100 (ash b1 2))
+                               (logand #b00000011 (ash b2 -6)))
+            (logior #b10000000 (logand #b00111111 b2))))
+        (else
+          (list
+            (logior #b11100000 (logand #b00001111 (ash b1 -4)))
+            (logior #b10000000 (logand #b00111100 (ash b1 2))
+                               (logand #b00000011 (ash b2 -6)))
+            (logior #b10000000 (logand #b00111111 b2))))))
+
+    (define (utf16-4byte-&gt;utf8 b1 b2 b3 b4)
+      (let ((bb1 (+ 1 (logior (logand #b00001100 (ash b1 2))
+                              (logand #b00000011 (ash b2 -6)))))
+            (bb2 (logior (logand #b11111100 (ash b2 2)) (logand #b00000011 b3)))
+            (bb3 b4))
+        (list
+          (logior #b11110000 (ash bb1 -2))
+          (logior #b10000000 (logand #b00110000 (ash bb1 4))
+                             (logand #b00001111 (ash bb2 -4)))
+          (logior #b10000000 (logand #b00111100 (ash bb2 2))
+                             (logand #b00000011 (ash bb3 -6)))
+          (logior #b10000000 (logand #b00111111 bb3)))))
+
+    (define (utf16-&gt;utf8 utf16)
+      (string-join
+        (map (lambda (n) (format "~8,'0b" n))
+          (let loop ((ls (map (lambda (s) (string-&gt;number s 16)) (string-split utf16 #\space)))
+                     (ret '()))
+            (if (pair? ls)
+              (if (&lt;= #xD8 (car ls) #xDF)
+                (loop (drop* ls 4) (append ret (apply utf16-4byte-&gt;utf8 (take* ls 4))))
+                (loop (drop* ls 2) (append ret (apply utf16-2byte-&gt;utf8 (take* ls 2)))))
+              ret)))))
+  :tags:
+  - Gauche
+  :references:
+    :url: 
+    :title: 

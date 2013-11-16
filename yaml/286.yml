@@ -1,0 +1,101 @@
+---
+:id: '286'
+:title: コレクションの実装
+:comments:
+- :id: '9728'
+  :parent_id: '286'
+  :url: http://ja.doukaku.org/comment/9728
+  :user_name: 柿
+  :user_url: /web/20100605045451/http://ja.doukaku.org/user/832/
+  :language: Ruby
+  :time: 2009/12/19 01:00 GMT
+  :vote_count: '4'
+  :vote_score: '-4'
+  :body: "\r\n\t  <p>コレクションフレームワークに則ってコレクションクラスを実装して下さい．</p>\n<p>具体的にどのようなコレクションを実装しても構いませんが，コレクションフレームワークで用意された基本的なメソッドは一通り呼べるようにして下さい．\nforeach系の構文があれば，それでも使えるとよいです．</p>\n<p>例えば，Rubyであれば以下のようなコードで(mapを直接定義することなく)要素を列挙できる必要があるでしょう．</p>\n\r\n\t"
+  :code: |
+    p MyCollection.new.map {|i| i }
+
+    # for でも使える
+    for i in MyCollection.new
+      p i
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9729'
+  :parent_id: '286'
+  :url: http://ja.doukaku.org/comment/9729
+  :user_name: sumim
+  :user_url: /web/20100605045451/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/12/21 02:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalkでは、Collectionクラスを継承し、#add: #do: #remove:ifAbsent:
+    #atRandom: を再定義することで、要求されるインターフェイスを満たす新たなコレクションクラスを設けることが可能です。</p>\n<p>Bagクラスの定義が参考になるでしょう。</p>\n\n\t"
+  :code: |
+    Collection subclass: #MyCollection
+       instanceVariableNames: 'contents'
+
+    MyCollection &gt;&gt; add: element
+       ^contents add: element
+
+    MyCollection &gt;&gt; do: aBlock
+       contents do: [:each | aBlock value: each]
+
+    MyCollection &gt;&gt; remove: element ifAbsent: aBlock
+       ^contents remove: element ifAbsent: [aBlock value]
+
+    MyCollection &gt;&gt; atRandom: aGenerator
+       ^contents atRandom: aGenerator
+
+    MyCollection &gt;&gt; setContents: newContents
+       contents := newContents
+
+    "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
+
+    MyCollection class &gt;&gt; new
+       ^self new: 1
+
+    MyCollection class &gt;&gt; new: numElements
+       ^super new setContents: (OrderedCollection new: numElements); yourself
+
+    MyCollection class &gt;&gt; newFrom: aCollection
+       ^self withAll: aCollection
+
+    MyCollection class &gt;&gt; example
+       | myCollection |
+       myCollection := MyCollection newFrom: #(4 3 2 1).   "=&gt; a MyCollection(4 3 2 1) "
+       myCollection collect: [:each | each * 2].           "=&gt; a MyCollection(8 6 4 2) "
+       myCollection select: [:each | each even].           "=&gt; a MyCollection(4 2) "
+       myCollection max.                                   "=&gt; 4 "
+       myCollection * 2.                                   "=&gt; a MyCollection(8 6 4 2) "
+       myCollection atRandom                               "=&gt; 3 "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '9733'
+  :parent_id: '286'
+  :url: http://ja.doukaku.org/comment/9733
+  :user_name: sumim
+  :user_url: /web/20100605045451/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/12/22 10:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>書き忘れましたが、新しく定義したコレクションについて collection + 2 のような処理ができるのは当然として、Smalltalk
+    の場合、さらに、2 + collection のように交換した場合も評価可能になります。これって、今回の拡張とは全然関係のない 2（が属するクラス SmallInteger）の
+    #+ というメソッドをコールする…というオブジェクト指向の仕組みのことを考えるとちょっと不思議で面白い機能だと思いませんか？</p>\n<p>拡張に対するこのような柔軟性は、有名な「ダブルディスパッチ」という仕組みにより実現されています。</p>\n\n\t"
+  :code: |
+    | myCollection |
+    myCollection := MyCollection newFrom: (1 to: 3).   "=&gt; a MyCollection(1 2 3) "
+    myCollection + 2.                                  "=&gt; a MyCollection(3 4 5) "
+    2 + myCollection.                                  "=&gt; a MyCollection(3 4 5) "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 

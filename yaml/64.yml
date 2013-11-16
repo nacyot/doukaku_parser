@@ -1,0 +1,915 @@
+---
+:id: '64'
+:title: 制限時間内のキー入力検査
+:comments:
+- :id: '3420'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3420
+  :user_name: raynstard
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2007/10/01 03:31 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\r\n\t  ユーザーの入力を検査する関数 InputCheckerを作成して\r\n3回連続実行してください。\r\n<p>\r\n関数 InputCheckerは、以下の仕様を満たしてください。\r\n</p>\n<ol>\n<li>
+    引数に 時間(秒) Nと文字列 Sを受け取ること。\r\n</li>\n<li> ユーザからの標準入力とあらかじめ指定された S を比較し、\r\n   一致すれば「OK」、一致しなければ「NG」を標準出力へ出力すること。\r\n</li>\n<li>
+    ユーザーの入力がN秒以内に完了しなかった場合は、比較せず\r\n   「TIME OUT」を標準出力へ出力すること。\r\n</li>\n<li> 経過時間はユーザーが入力を開始した地点から計測すること。\r\n</li>\n<li>
+    ENTER キーの入力によってユーザー入力が完了したと仮定すること。\r\n</li>\n<li> ユーザの入力が完了するまでは、完了を待ち続けること\r\n</li>\n</ol>\n<p>\r\nたとえば、「InputCheker(5,
+    \"ABCDEF\")」と指定した場合、\r\n出力例はこんな感じです。\r\n</p>\n<p>\r\n</p>\n<ol><li> input(ABCDEF)
+    =&gt;ABCDEF&lt;ENTER&gt;\r\n<ol>\n<li> result =&gt; OK\r\n</li>\n<li> result =&gt;
+    NG\r\n</li>\n<li> result =&gt; TIME OUT\r\n</li>\n</ol>\n</li></ol>\n<p>\r\n<code>\r\n1.
+    input(ABCDEF) =&gt; \r\n</code>\r\n</p>\n<p>\r\nと出力して入力待ちをし、ユーザーが「ABCDEF&lt;ENTER&gt;」を入力したとき、\r\n入力開始から5秒以内ならば「OK」、5秒をこえていれば「TIME
+    OUT」を出力します。\r\nこのとき、ユーザーがキーを押下しなければ1. を出力してから\r\nたとえ10秒たっていても「TIME OUT」にはならないので注意してください。\r\n時間計測はあくまでユーザーが入力を開始してからです。\r\n\r\n</p>\n<hr>\r\n\r\nこのお題はraynstardさんの投稿です。ご協力ありがとうございます。\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3204'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3204
+  :user_name: mamamoto
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2007/10/01 07:10 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">curses初めて使いました。</pre>\n\t"
+  :code: |
+    require 'curses'
+    require 'timeout'
+
+    def inputChecker(n, str)
+      Curses.init_screen
+      Curses.setpos(0, 0)
+      Curses.addstr("input(#{str}) =&gt; ")
+      Curses.refresh
+
+      result = nil
+
+      begin
+        input = ""
+        c = Curses.getch.chr
+
+        timeout(n){
+          until c == "\n"
+            input += c
+            c = Curses.getch.chr
+          end
+
+          result = input == str ? "OK" : "NG"
+        }
+      rescue Timeout::Error
+        result = "TIME OUT"
+      end
+
+      Curses.setpos(1, 0)
+      Curses.addstr("result =&gt; #{result}")
+      Curses.refresh
+    end
+
+    inputChecker(5, "ABCDEF")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3206'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3206
+  :user_name: sumim
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/10/01 07:49 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  Squeak Smalltalk で。\r<br><br>残念ながら Squeak Smalltalk には自身の標準入力やホスト OS のそれとの連携といった概念が（少なくともデフォルト状態では…）ないので、マウスポインタ付近にプロンプトを表示して入力を促すことで対応させていただきました。標準入出力のしかたを問うことが題意でしたら、どうぞあしからず。\n\t"
+  :code: "| inputChecker |\ninputChecker := [:timeLimitSec :expecStr |\n\t| char stream
+    start resultMsg initPosition |\n\tstream := WriteStream with: 'input(', expecStr,
+    ') =&gt; '.\n\tinitPosition := stream position.\n\tstart := nil.\n\t[   stream
+    contents, ' ' displayAt: Sensor cursorPoint + 10 asPoint.\n\t\t[Sensor keyboardPressed]
+    whileFalse.\n\t\t(char := Sensor keyboard) = Character cr\n\t] whileFalse: [\n\t\tstart
+    ifNil: [start := Time millisecondClockValue].\n\t\tchar == Character backspace\n\t\t\tifTrue:
+    [stream position: (stream position - 1 max: initPosition)]\n\t\t\tifFalse: [stream
+    nextPut: char]].\n\tresultMsg := (Time millisecondClockValue - start) / 1.0e3
+    &lt;= timeLimitSec\n\t\tifFalse: ['TIME OUT']\n\t\tifTrue: [(stream contents last:
+    expecStr size) = expecStr\n\t\t\tifTrue: ['OK'] ifFalse: ['NG']].\n\t#result -&gt;
+    resultMsg].\n\ninputChecker value: 5 value: 'ABCDEF'\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '3208'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3208
+  :user_name: nobsun
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/10/01 08:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">標準ではない System.Timeout モジュールを使う</pre>\n\t"
+  :code: |
+    module Main (main) where
+
+    import System.Environment
+    import System.IO
+    import System.Timeout
+
+    main :: IO ()
+    main = do { prog &lt;- getProgName
+              ; args &lt;- getArgs
+              ; case args of
+                  t:str:_ -&gt; loop 3 (inputChecker (read t) str)
+                  _       -&gt; usage prog
+              }
+
+    loop :: Int -&gt; IO () -&gt; IO ()
+    loop 0 _ = return ()
+    loop n f = f &gt;&gt; loop (n-1) f
+
+    usage :: String -&gt; IO ()
+    usage prog = hPutStrLn stderr $ prog ++ " &lt;timeout&gt; &lt;string&gt;"
+
+    inputChecker :: Int -&gt; String -&gt; IO ()
+    inputChecker t s
+     = do { hPutStr stderr $ "input(" ++ s ++ ") =&gt; "
+          ; hSetBuffering stdin NoBuffering
+          ; c &lt;- hGetChar stdin
+          ; ms &lt;- timeout (t*1000000) (hGetLine stdin)
+          ; case ms of
+              Nothing -&gt; hPutStrLn stdout "\n result =&gt; TIME OUT" &gt;&gt; hFlush stdout
+              Just s' -&gt; if s == (c:s') then hPutStrLn stdout " result =&gt; OK" &gt;&gt; hFlush stdout
+                         else hPutStrLn stdout " result =&gt; NG" &gt;&gt; hFlush stdout
+          }
+
+    {-
+    *Main&gt; :main 5 ABCDEF
+    input(ABCDEF) =&gt; ABCDEF
+     result =&gt; OK
+    input(ABCDEF) =&gt; A
+     result =&gt; TIME OUT
+    input(ABCDEF) =&gt; PQR
+     result =&gt; NG
+    *Main&gt; _
+    -}
+  :tags:
+  - System.Timeout
+  :references:
+    :url: /web/20081202204309/http://darcs.haskell.org/packages/base/System/Timeout.hs
+    :title: System.Timeout.hs
+- :id: '3209'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3209
+  :user_name: sawat
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/322/
+  :language: JavaScript
+  :time: 2007/10/01 08:54 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  これも標準入出力ではありません。ブラウザ上でキーイベントを受けて、ブラウザ上に結果を表示します。\r<br>標準入出力を使うことが必須の要件でしたらゴメンナサイです。\r<br>IEとFirefoxのみで確認してます。\r<br>"
+  :code: "function InputChecker(timeout, s) {\n  var start;\n  var input = [];\n  var
+    prompt = \"input(\"+ s + \")=&amp;gt;\"\n  var pre = document.createElement(\"pre\");\n
+    \ pre.innerHTML = prompt;\n  document.body.appendChild(pre);\n  \n  function result()
+    {\n    var time = new Date().getTime() - start.getTime();\n    if(time &gt; timeout
+    * 1000) return \"TIMEOUT\";\n    else if(s == input) return \"OK\";\n    else
+    return \"NG\"\n  }\n  var f = function(e) {\n    e = e || event;\n    if(!start)
+    start = new Date();\n    if(e.keyCode == 13) { // Enter\n      pre.innerHTML +=
+    \"&lt;br/&gt;result=&amp;gt;\" + result() + \"&lt;br/&gt;\" + prompt;\n      input
+    = \"\";\n      start = undefined;\n    } else if(e.charCode == 0 &amp;&amp; e.keyCode)
+    { // for firefox. ignore BS, Del, .. etc.\n    } else {\n      var c = String.fromCharCode(e.keyCode
+    || e.charCode);\n      pre.innerHTML += c;\n      input += c;\n    }\n  }\n  if(document.attachEvent)
+    document.attachEvent(\"onkeypress\", f);\n  else if(document.addEventListener)
+    document.addEventListener(\"keypress\", f, false);\n  else document.onkeypress
+    = f;\n}\nnew InputChecker(5, \"ABCDEF\");\n"
+  :tags:
+  - Firefox
+  - IE
+  :references:
+    :url: 
+    :title: 
+- :id: '3212'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3212
+  :user_name: raynstard
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2007/10/01 11:00 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">ども、raynstardです。\r\nあくまで管理人さんの意志を優先しますが\r\n僕がお題を投稿したときの意図としては\r\n「時間計測はあくまでユーザーが入力を開始してからです。」を\r\nどう実現するかを気にしていました。\r\n\r\nなのでキー入力をトリガにして\r\n非同期的な時間計測が実現されていれば\r\n良いかなーなんて考えていました。\r\n\r\nお題投稿した時点で、getche()を使えるのが\r\nC,python,RUBYくらいしか見つからなかったので。。。\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3213'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3213
+  :user_name: 匿名
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/10/01 11:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ちょっと冗漫ですが、こんなところで。\r\n\r\n# try節からreturnしてもfinally通るんだっけかな。\r\n</pre>\n\t"
+  :code: |
+    import termios, sys, tty, select
+
+    def InputChecker(N, S):
+      sys.stdout.write('input(%s) =&gt; ' % S)
+      sys.stdout.flush()
+      fd = sys.stdin.fileno()
+      poll = select.poll()
+      poll.register(fd, select.POLLIN)
+      attr = termios.tcgetattr(fd)
+      tty.setcbreak(fd)
+      s = ''
+      flg = False
+      try:
+        while True:
+          t = poll.poll(N * 1000)
+          if not t:
+            if not flg:
+              continue
+            print '\nresult =&gt; TIME OUT'
+            break
+          flg = True
+          c = sys.stdin.read(1)
+          sys.stdout.write(c)
+          sys.stdout.flush()
+          if c == '\n':
+            if S == s:
+              print 'result =&gt; OK'
+            else:
+              print 'result =&gt; NG'
+            break
+          s += c
+      finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, attr)
+        poll.unregister(fd)
+
+    InputChecker(5, 'ABCDEF')
+  :tags:
+  - Posix
+  :references:
+    :url: 
+    :title: 
+- :id: '3214'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3214
+  :user_name: raynstard
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2007/10/01 12:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  &lt;form&gt;を使えばHTMLでもいけるかなと思っていたのですが、まさかそのままで実現するとは思いつきませんでした～。\r\n\r\nやってみてびっくり、まるでコンソールのように動きますね(笑\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3215'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3215
+  :user_name: koguro
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/438/
+  :language: Scheme
+  :time: 2007/10/01 14:36 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">c-wrapperでcursesを使いました。</pre>\n\t"
+  :code: |
+    (use c-wrapper)
+    (c-load "curses.h" :libs "-lcurses")
+
+    (initscr)
+
+    (define (input-checker n str)
+      (cbreak)
+      (printw "input(%s) =&gt; " str)
+      (refresh)
+      (receive (t input) (let* ((c0 (integer-&gt;char (getch)))
+                                (st (sys-time)))
+                           (do ((c c0 (integer-&gt;char (getch)))
+                                (lst '() (cons c lst)))
+                               ((memq c '(#\lf #\cr))
+                                (values (- (sys-time) st) (list-&gt;string (reverse lst))))))
+        (printw "result =&gt; %s\n" (cond
+                                  ((&lt; n t) "TIME OUT")
+                                  ((equal? str input) "OK")
+                                  (else "NG")))
+        (refresh)))
+
+    (input-checker 5 "ABCDEF")
+  :tags:
+  - c-wrapper
+  - curses
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '3216'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3216
+  :user_name: koguro
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/438/
+  :language: 
+  :time: 2007/10/01 14:51 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">すみません、さっきのコードでmemqを使っている箇所がありますが、文字の判定なので正しくはmemvを使うべきですね。\r\n\r\nGauche
+    0.8.11だとmemqでも動くようですが。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3217'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3217
+  :user_name: kozima
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/164/
+  :language: Emacs
+  :time: 2007/10/01 15:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Emacs のミニバッファから。</pre>\n\t"
+  :code: |
+    (defun input-checker (n s)
+      (interactive "nTime(second): \nsString: ")
+      (let ((c (read-char (concat "input(" s ")=&gt;"))))
+        (push c unread-command-events))
+      (with-timeout (n (message "TIME OUT"))
+        (let ((input (read-string (concat "input(" s ")=&gt;"))))
+          (message (if (string= input s) "OK" "NG")))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3218'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3218
+  :user_name: 匿名
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/10/01 15:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">少しだけ改良。</pre>\n\t"
+  :code: |
+    from sys import stdin, stdout
+    import tty, select
+
+    def write(s):
+      stdout.write(s)
+      stdout.flush()
+
+    def InputChecker(N, S):
+      write('input(%s) =&gt; ' % S)
+      poll = select.poll()
+      poll.register(stdin, select.POLLIN)
+      attr = tty.tcgetattr(stdin)
+      tty.setcbreak(stdin)
+      s = ''
+      try:
+        while True:
+          l = poll.poll(N * 1000)
+          if not l:
+            if not s:
+              continue
+            write('\nresult =&gt; TIME OUT\n')
+            return
+          c = stdin.read(1)
+          write(c)
+          if c == '\n':
+            write('result =&gt; %s\n' % ('OK' if S == s else 'NG'))
+            return
+          s += c
+      finally:
+        tty.tcsetattr(stdin, tty.TCSADRAIN, attr)
+        poll.unregister(stdin)
+
+    InputChecker(5, 'ABCDEF')
+  :tags:
+  - posix
+  :references:
+    :url: 
+    :title: 
+- :id: '3221'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3221
+  :user_name: yohei
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/415/
+  :language: C
+  :time: 2007/10/01 17:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">秒数はあまり正確でないです。</pre>\n\t"
+  :code: "using System;\nusing System.Threading;\nclass Program {\n    static void
+    InputCheck(int n, string s) {\n        Console.Write(\"input({0}) =&gt; \", s);\n
+    \       while (!Console.KeyAvailable) Thread.Sleep(100);\n        DateTime timeout
+    = DateTime.Now.AddSeconds(n); \n        string match = s.Equals(Console.ReadLine())
+    ? \"OK\" : \"NG\";\n        Console.WriteLine(\"result =&gt; {0}\", DateTime.Now
+    &lt; timeout ? match : \"TIME OUT\");\n    }\n    static void Main(string[] args)
+    {\n        InputCheck(5, \"ABCDEFG\");\n        InputCheck(4, \"HIJKLMN\");\n
+    \       InputCheck(3, \"OPQRSTUVWXYZ\");\n    }\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3222'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3222
+  :user_name: nobsun
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/98/
+  :language: 
+  :time: 2007/10/01 21:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">補足です。\r\nSystem.Timeoutモジュールは、次のghcのバージョン6.8.xのbaseパッケージに追加されるようです。</pre>\n\t"
+  :code: ''
+  :tags:
+  - ghc-6.8.x
+  :references:
+    :url: /web/20081202204309/http://www.haskell.org/ghc/dist/stable/docs/libraries/base/System-Timeout.html
+    :title: System.Timeout
+- :id: '3223'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3223
+  :user_name: nobsun
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/98/
+  :language: Haskell
+  :time: 2007/10/01 22:08 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ああーっ。仕様6を満たしてなかった。\r\ntimeout というので短絡的に仕様6が頭から\r\n飛んじゃったみたい。\r\n仕様6があるほうがやさしいかも。。。\r\n\r\nというわけで変更。</pre>\n\t"
+  :code: "import System.Environment\nimport System.IO\nimport System.Time\n\nmain
+    :: IO ()\nmain = do { prog &lt;- getProgName\n          ; args &lt;- getArgs\n
+    \         ; case args of\n              t:str:_ -&gt; loop 3 (inputChecker (read
+    t) str)\n              _       -&gt; usage prog\n          }\n\nloop :: Int -&gt;
+    IO () -&gt; IO ()\nloop 0 _ = return ()\nloop n f = f &gt;&gt; loop (n-1) f\n\nusage
+    :: String -&gt; IO ()\nusage prog = hPutStrLn stderr $ prog ++ \" &lt;timeout&gt;
+    &lt;string&gt;\"\n\ninputChecker :: Int -&gt; String -&gt; IO ()\ninputChecker
+    t s\n = do { hPutStr stderr $ \"input(\" ++ s ++ \") =&gt; \"\n      ; hSetBuffering
+    stdin NoBuffering\n      ; c &lt;- hGetChar stdin\n      ; start &lt;- getClockTime\n
+    \     ; s' &lt;- hGetLine stdin\n      ; end &lt;- getClockTime\n      ; let interval
+    = diffClockTimes end start\n      ; if interval &gt; noTimeDiff {tdSec = t}\n
+    \         then hPutStrLn stdout \" result =&gt; TIME OUT\" &gt;&gt; hFlush stdout\n
+    \         else if s == (c:s') \n                 then hPutStrLn stdout \" result
+    =&gt; OK\" &gt;&gt; hFlush stdout\n                 else hPutStrLn stdout \" result
+    =&gt; NG\" &gt;&gt; hFlush stdout\n      }\n\n{-\n*Main&gt; :main 5 ABCDEF\ninput(ABCDEF)
+    =&gt; ABCDEF\n result =&gt; OK\ninput(ABCDEF) =&gt; ABC\n result =&gt; NG\ninput(ABCDEF)
+    =&gt; ABCDEF\n result =&gt; TIME OUT\n-}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3224'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3224
+  :user_name: 匿名
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/10/02 00:13 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">ReadLine()は使わないで書いてあるようなのですが、\r\n平気なのでしょうか？\r\n\r\nby
+    C#わからない人</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20081202204309/http://msdn2.microsoft.com/ja-jp/library/system.console.keyavailable(VS.80).aspx
+    :title: ' KeyAvailable プロパティは、Read メソッドや ReadLine メソッドではなく、必ず、ReadKey メソッドとの組み合わせで使用してください。'
+- :id: '3227'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3227
+  :user_name: mamamoto
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/437/
+  :language: Ruby
+  :time: 2007/10/02 03:10 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">僕も6番思いっきりシカトでした。\r\n3回連続実行も。これで大丈夫と思うのですが。</pre>\n\t"
+  :code: |
+    require 'curses'
+
+    def inputChecker(n, str)
+      Curses.addstr("input(#{str}) =&gt; ")
+      Curses.refresh
+
+      input = ""
+      timeout = false
+
+      until (c = Curses.getch.chr) == "\n"
+        timer ||= Thread.new{ sleep(n); timeout = true }
+        input += c
+      end
+
+      result = timeout ? "TIME OUT" : input == str ? "OK" : "NG"
+
+      Curses.setpos(Curses.stdscr.cury+1, 0)
+      Curses.addstr("result =&gt; #{result}")
+      Curses.refresh
+
+      Curses.setpos(Curses.stdscr.cury+2, 0)
+    end
+
+    if __FILE__ == $0
+      Curses.init_screen
+      3.times{ inputChecker(5, "ABCDEF") }
+      Curses.close_screen
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3228'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3228
+  :user_name: mamamoto
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/437/
+  :language: 
+  :time: 2007/10/02 07:39 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  <pre class=\"compact\">手元で試してみたら最後に(endwin)の\r\n終了処理を入れないと、\r\nモードが元にもどらないでエスケープ絡みがおかしくなるようです。\r\n\r\nしかしc-wrapperってすごいですね。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3229'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3229
+  :user_name: ocean
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/177/
+  :language: C
+  :time: 2007/10/02 08:07 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Windows専用。</pre>\n\t"
+  :code: |
+    #include &lt;windows.h&gt;
+    #include &lt;stdexcept&gt;
+    #include &lt;string&gt;
+
+    char GetChar(HANDLE h)
+    {
+        char c;
+
+        DWORD read;
+
+        while (true)
+        {
+            if (! ::ReadFile(h, &amp;c, 1, &amp;read, NULL))
+            {
+                throw std::runtime_error("::ReadFile() failed");
+            }
+
+            if (read == 1 &amp;&amp; c != '\r') // skip CR
+            {
+                break;
+            }
+        }
+
+        return c;
+    }
+
+    void WriteString(HANDLE h, const std::string&amp; s)
+    {
+        const char* p = s.c_str();
+
+        DWORD size = s.size();
+
+        while (size)
+        {
+            DWORD written;
+
+            if (! ::WriteFile(h, p, size, &amp;written, NULL))
+            {
+                throw std::runtime_error("::WriteFile() failed");
+            }
+
+            p += written;
+
+            size -= written;
+        }
+
+        ::FlushFileBuffers(h);
+    }
+
+    void InputChecker(DWORD timeout, const std::string&amp; expected)
+    {
+        HANDLE hStdIn = ::GetStdHandle(STD_INPUT_HANDLE);
+
+        HANDLE hStdOut = ::GetStdHandle(STD_OUTPUT_HANDLE);
+
+        if (hStdIn == INVALID_HANDLE_VALUE || hStdOut == INVALID_HANDLE_VALUE)
+        {
+            throw std::runtime_error("cannot get console handle");
+        }
+
+        WriteString(hStdOut, "input(" + expected + ") =&gt; ");
+
+        ::WaitForSingleObject(hStdIn, INFINITE);
+
+        const DWORD beg = ::GetTickCount();
+
+        std::string s;
+
+        char c;
+
+        while ((c = GetChar(hStdIn)) != '\n')
+        {
+            s.append(1, c);
+        }
+
+        const DWORD end = ::GetTickCount();
+
+        std::string result;
+
+        if (end - beg &gt;= timeout * 1000)
+        {
+            result = "TIME OUT";
+        }
+        else if (s == expected)
+        {
+            result = "OK";
+        }
+        else
+        {
+            result = "NG";
+        }
+
+        WriteString(hStdOut, "   result =&gt; " + result + "\r\n");
+    }
+
+    int main()
+    {
+        try
+        {
+            while (true)
+            {
+                InputChecker(5, "ABCDEF");
+            }
+        }
+        catch (std::exception&amp; e)
+        {
+            WriteString(::GetStdHandle(STD_ERROR_HANDLE), std::string("error: ") + e.what() + "\r\n");
+        }
+    }
+  :tags:
+  - Windows
+  :references:
+    :url: 
+    :title: 
+- :id: '3231'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3231
+  :user_name: koguro
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/438/
+  :language: 
+  :time: 2007/10/02 12:53 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  たしかにmanで見てみると、\"A  program  should  always  call endwin before exiting
+    or escaping from curses mode temporarily.\" とあるので、endwinを呼ぶべきですね。行儀が悪いプログラムでした。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3232'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3232
+  :user_name: raynstard
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/127/
+  :language: C
+  :time: 2007/10/02 13:02 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">真っ先に投稿があると思っていたCがなかなかこないので投稿(笑\r\n\r\n環境がcygwinのせいかcursesのライブラリがうまく動かず、\r\nそれならばと
+    int 16hしてみたがやっぱりダメ;;\r\n\r\nということで、termiosを使いました。\r\nあといらんコード混ぜて見た目ちょっとだけかっこよくしてみた(笑\r\n\r\n//gcc
+    -Wall -std=c99 doukaku64.c -o test</pre>\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;string.h&gt;
+    #include &lt;time.h&gt;
+    #include &lt;sys/syslimits.h&gt;
+    #include &lt;unistd.h&gt;
+    #include &lt;termios.h&gt;
+
+    int InputChecker(time_t sec, const char *str)
+    {
+        size_t length = strlen(str);    // オリジナルの文字数
+        char in[ LINE_MAX+1 ];          // 入力文字列
+        size_t len;                     // 入力文字数
+        time_t t;                       // 入力時間
+        struct termios tos, tos_org;
+
+        tcgetattr( 0, &amp;tos ); tos_org = tos;
+
+        memset(in, '\0', sizeof(in));
+        printf("input:[%s] =&gt; 入力待ち\r", str); fflush(stdout);
+        printf("input:[%s] =&gt; ", str); fflush(stdout);
+
+        tos.c_lflag &amp;= ~(ICANON | ECHO);
+    //  tos.c_lflag |= ECHO;
+        tos.c_cc[VMIN]  = 1;
+        tos.c_cc[VTIME] = 0;
+        tcsetattr( 0, TCSADRAIN, &amp;tos );
+        read( 0, &amp;in[0], sizeof(char) );
+        printf("\rinput:[%s] =&gt;%12s\r", str, ""); fflush(stdout);
+        printf("input:[%s] =&gt;%c", str, in[0]); fflush(stdout);
+        t = time(NULL);
+
+        tos.c_lflag |= (ICANON | ECHO);
+        tos.c_cc[VMIN]  = 0;
+        tos.c_cc[VTIME] = 0;
+        tcsetattr( 0, TCSADRAIN, &amp;tos );
+        read( 0, &amp;in[1], LINE_MAX );
+        t = time(NULL) - t;
+
+        len = strlen( in );
+        if( in[len-1] == '\n' ) in[len-1] = '\0';
+        if( in[len-2] == '\r' ) in[len-2] = '\0';
+        if( t &lt;= sec )
+        {
+            if( strcmp(str, in) == 0 )
+            {
+                printf("result: OK\n");
+            }
+            else
+            {
+                printf("result: NG  / input:[%s]\n", in);
+            }
+        }
+        else
+        {
+            printf("result: TIME OUT\n");
+        }
+        tcsetattr( 0, TCSADRAIN, &amp;tos_org );
+        return 0;
+    }
+
+    int main(int argc, char *argv[])
+    {
+        InputChecker(5, "ABCDEF");
+        InputChecker(2, "AAA");
+        InputChecker(0, "A");
+        return  0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3233'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3233
+  :user_name: raynstard
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/127/
+  :language: diff
+  :time: 2007/10/02 13:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">しまった一部消し忘れていました</pre>\n\t"
+  :code: |
+    --- doukaku64.c.org     2007-10-02 22:04:20.984375000 +0900
+    +++ doukaku64.c 2007-10-02 22:04:25.062500000 +0900
+    @@ -20,7 +20,6 @@
+         printf("input:[%s] =&gt; ", str); fflush(stdout);
+
+         tos.c_lflag &amp;= ~(ICANON | ECHO);
+    -//  tos.c_lflag |= ECHO;
+         tos.c_cc[VMIN]  = 1;
+         tos.c_cc[VTIME] = 0;
+         tcsetattr( 0, TCSADRAIN, &amp;tos );
+    @@ -47,7 +46,7 @@
+             }
+             else
+             {
+    -            printf("result: NG  / input:[%s]\n", in);
+    +            printf("result: NG\n");
+             }
+         }
+         else
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3235'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3235
+  :user_name: 匿名
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/10/02 13:14 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">条件６の対応もれを訂正。</pre>\n\t"
+  :code: |
+    from sys import stdin, stdout
+    import tty, select
+
+    def write(s):
+      stdout.write(s)
+      stdout.flush()
+
+    def InputChecker(N, S):
+      write('input(%s) =&gt; ' % S)
+      poll = select.poll()
+      poll.register(stdin, select.POLLIN)
+      attr = tty.tcgetattr(stdin)
+      tty.setcbreak(stdin)
+      s = ''
+      timeout = False
+      try:
+        while True:
+          if not poll.poll(N * 1000):
+            if not s:
+              continue
+            timeout = True
+          c = stdin.read(1)
+          write(c)
+          if c == '\n':
+            write('result =&gt; %s\n' % ('TIME OUT' if timeout else 'OK' if S == s else 'NG'))
+            return
+          s += c
+      finally:
+        tty.tcsetattr(stdin, tty.TCSADRAIN, attr)
+        poll.unregister(stdin)
+
+    InputChecker(5, 'ABCDEF')
+  :tags:
+  - posix
+  :references:
+    :url: 
+    :title: 
+- :id: '3237'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3237
+  :user_name: yohei
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/415/
+  :language: C
+  :time: 2007/10/02 18:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  KeyAvailableがtrueでも、ReadLine, Readは、Enterキー待ちになるので組み合わせるな、と解釈しましたが…\r<br>他の理由で組み合わせるなと書いてる可能性も、無いとはいえないですね。\r<br><br>ReadKeyを使ったのも書いて比べてみました。\r<br>動作の違いは、ReadLineは整形済みの文字列の入力であるのに対し、ReadKeyは、コード単位の入力になります。\r<br>具体的には、バックスペースが'\\b'として入力される、日本語入力には、対応するエンコーディングの変換が必要、など。\r<br>なので、このコードはASCIIコードのみ対応で、打ち間違いは許されません。\n\t"
+  :code: |
+    static void InputChecker(int n, string s) {
+        StringBuilder sb = new StringBuilder(s.Length * 2);
+        Console.Write("input({0}) =&gt; ", s);
+        ConsoleKeyInfo key = Console.ReadKey();
+        DateTime timeout = DateTime.Now.AddSeconds(n);
+        while (key.Key != ConsoleKey.Enter) {
+            sb.Append(key.KeyChar);
+            key = Console.ReadKey();
+        }
+        string match = s.Equals(sb.ToString()) ? "OK" : "NG";
+        Console.WriteLine();
+        Console.WriteLine("result =&gt; {0}", DateTime.Now &lt; timeout ? match : "TIME OUT");
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3238'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3238
+  :user_name: ocean
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/177/
+  :language: diff
+  :time: 2007/10/02 19:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">3回実行というのを見落としてました。</pre>\n\t"
+  :code: "--- orig.cpp\tWed Oct  3 04:14:39 2007\n+++ main.cpp\tWed Oct  3 04:15:00
+    2007\n@@ -97,7 +97,7 @@\n {\n     try\n     {\n-        while (true)\n+        for
+    (int i = 0; i &lt; 3; ++i)\n         {\n             InputChecker(5, \"ABCDEF\");\n
+    \        }\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3239'
+  :parent_id: '64'
+  :url: http://ja.doukaku.org/comment/3239
+  :user_name: こう。
+  :user_url: /web/20081202204309/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2007/10/03 00:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">久々に書いてみた。</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;conio.h&gt;\n#include &lt;time.h&gt;\n#include
+    &lt;string.h&gt;\n\nvoid inputchecker(int sec,char* \n\n\n\n\n<!--\n     FILE
+    ARCHIVED ON 20:43:09 Dec 2, 2008 AND RETRIEVED FROM THE\n     INTERNET ARCHIVE
+    ON 13:40:48 Nov 16, 2013.\n     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT
+    INTERNET ARCHIVE.\n\n     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT
+    (17 U.S.C.\n     SECTION 108(a)(3)).\n-->"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

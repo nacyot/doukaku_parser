@@ -1,0 +1,743 @@
+---
+:id: '75'
+:title: 四字熟語パズルの作成
+:comments:
+- :id: '3644'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3644
+  :user_name: にしお
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/01 03:02 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\r\n\t  <p>与えられた四字熟語のリストから下のように四角く配置することのできる熟語の組み合わせを探すプログラムを作成してください。</p>\n<p>出力例:</p>\n<pre
+    class=\"literal-block\">\n無憂無風\n礼　　林\n千　　火\n万水千山\n\n知行合一\n者　　筆\n不　　勾\n言語道断\n</pre>\n<p>四字熟語は左から右、上から下へ読むものとします。また右上隅の漢字と左下隅の漢字は異なるものでなければいけません。</p>\n<p>四字熟語のデータは扱いやすい形(たとえばユニコード文字列のリスト)で与えられていると仮定して構いません。サンプルデータが必要であれば\n<a
+    class=\"reference\" href=\"/web/20081202141836/http://vector.aol.co.jp/soft/data/writing/se400206.html\">FOR
+    Microsoft IME The四字熟語辞典(データ / 文書作成)</a>\nにテキスト形式のデータが入っているのでそれを使えると思います。</p>\n<p>問題の規模の参考までに、40行程度のPythonスクリプトでこのデータ(重複をのぞいて8312件)を処理してみたところ2.4GHzのCPUで13秒程度かかりました。結果は8133件出力されました。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3658'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3658
+  :user_name: kozima
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/11/02 06:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">それなりに効率化を図ったつもり。\r\nサンプルデータ 8312 件を 2.66 GHz
+    の CPU で 3.5 秒でした。\r\n出力が 12118 件で問題文と一致しませんが、\r\n特におかしな結果は見当たりませんでした。</pre>\n\t"
+  :code: |
+    (defun group (list key &amp;optional (test #'eql))
+      (let ((tbl (make-hash-table :test test)))
+        (dolist (x list) (push x (gethash (funcall key x) tbl)))
+        tbl))
+
+    (defun make-puzzle (words)
+      (let ((tbl1 (group words (lambda (s) (elt s 0)))))
+        (loop for grp1 being each hash-value of tbl1 nconc
+          (loop for a in grp1 and rest1 on (cdr grp1) nconc
+            (loop for b in rest1
+              if (char/= (elt a 3) (elt b 3)) nconc
+              (loop for c in (gethash (elt a 3) tbl1) nconc
+                (loop for d in (gethash (elt b 3) tbl1)
+                  if (char= (elt c 3) (elt d 3))
+                  collect (list a b c d))))))))
+
+    ;;; test
+    (compile 'make-puzzle)
+
+    (let ((words (with-open-file (s "words.txt" :direction :input)
+                   (loop for x = (read-line s nil) while x collect x))))
+      (print (time (make-puzzle words))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3659'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3659
+  :user_name: kozima
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/164/
+  :language: 
+  :time: 2007/11/02 06:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">データは words.txt というファイルの中に入っていて、\r\n改行で区切られていると仮定しています。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3661'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3661
+  :user_name: sumim
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/11/02 09:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Squeak Smalltalk で。\r<br><br>四字熟語のデータは、熟語ごとに行を改めた Unicode のテキストファイル（in.txt）で与えられているとします。\r<br><br>#groupBy:having: は、レシーバ（コレクション）に対し、まず第一引数のブロックで指定した条件（キー）にもとづいて要素を括りだした後、各グループについてあらためて第二引数で与えたブロックの条件に合致するかをチェックし、当てはまるものだけを集めて返すメソッドです。\r<br><br>結果として得られた四個の組の要素に重複がないことは組をセットにしてその要素を数えること（quartet asSet size = 4）で、また、右上隅と左下隅の文字が異なることは、最初の熟語の最後の文字と、最後の熟語の最初の文字が一致しないこと（quartet first last ~= quartet last first）でチェックしています。\r<br><br>お題の例と同じデータを使っているはずなのですが、出力件数は 11712 でした。熟語四組の抽出には、1.0 GHz PowerPC (Mac OS X 10.4.10) で 14 秒弱ほどかかりました（ただし、入出力時間は含まず）。\n\t"
+  :code: |
+    | in yojis yoji firstCharDict pairs bothCharsDict results out timeToRun |
+
+    in := FileStream fileNamed: 'in.txt'.
+    yojis := OrderedCollection new.
+    [(yoji := in nextLine) notNil] whileTrue: [yojis add: yoji].
+    in close.
+
+    timeToRun := [
+        firstCharDict := yojis
+            groupBy: [:each | each first]
+            having: [:group | group size &gt; 1].
+
+        pairs := OrderedCollection new.
+        yojis do: [:first |
+            firstCharDict at: first last ifPresent: [:found |
+                found do: [:second | pairs add: {first. second}]]].
+
+        bothCharsDict := pairs
+            groupBy: [:pair | {pair first first. pair second last}]
+            having: [:group | group size &gt; 1].
+
+        results := OrderedCollection new.
+        bothCharsDict do: [:val | val combinations: 2 atATimeDo: [:pair |
+            | quartet |
+            quartet := pair first, pair second.
+            (quartet asSet size = 4 and: [quartet first last ~= quartet last first])
+                ifTrue: [results add: quartet]]]
+    ] timeToRun.
+
+    out := FileStream fileNamed: 'out.txt'.
+    results do: [:quartet |
+        out nextPutAll: quartet first; cr.
+        (2 to: 3) do: [:idx |
+            out nextPut: (quartet third at: idx).
+            out nextPutAll: '　　'.
+            out nextPut: (quartet second at: idx); cr].
+        out nextPutAll: quartet last; cr; cr].
+    out edit.
+
+    ^{results size. timeToRun}   "=&gt; #(11712 13835) "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '3662'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3662
+  :user_name: kenaxt
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/456/
+  :language: Ruby
+  :time: 2007/11/02 10:29 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">サンプルデータ(8312件),CPU1.8GHz,3秒で14,456件出力されました。</pre>\n\t"
+  :code: "def jukugo(f)\n  r, ht, a, h, t = {}, {}, {}, {}, {}\n  open(f) {|fin|\n
+    \   cnt = 0\n    while line = fin.gets\n      a[cnt] = line\n\n      h[line[0..1]]
+    = [] if not h[line[0..1]]\n      h[line[0..1]] &lt;&lt; cnt #--- head\n\n      t[cnt]
+    = line[6..7] #--- tail\n      cnt+=1\n    end\n  }\n  t.each{|c,i|\n    next if
+    not h[i]\n    \n    hh = a[c][0..1]\n    h[i].each{|k|\n      tt = a[k][6..7]\n
+    \     next if hh == tt\n      hhtt = hh+tt\n      ht[hhtt] = [] if not ht[hhtt]\n\n
+    \     ht[hhtt].each {|m|\n        mm = [a[m[0]], a[m[1]], a[c], a[k]].flatten.sort\n
+    \       r[sprintf(\"%s\\n\",mm)] = true if mm.uniq.size == 4\n      }\n      ht[hhtt]
+    &lt;&lt; [c, k]\n    }\n  }\n  r.each {|i|puts i}\nend\n\njukugo(ARGV[0])\n"
+  :tags:
+  - Ruby1.8.5
+  :references:
+    :url: 
+    :title: 
+- :id: '3663'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3663
+  :user_name: にしお
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2007/11/02 10:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">なぜ4人とも結果が違うのかがむしろ新たな問題になっちゃうかも(笑\r\nソースコードは公開されていますし。\r\n\r\nとりあえず僕のコードも公開することにします。\r\n変数dataにユニコード文字列のリストが入っています。</pre>\n\t"
+  :code: "starts = set(w[0] for w in data)\nends = set(w[3] for w in data)\n\nfrom
+    collections import defaultdict\nstart_dict = defaultdict(list)\nend_dict = defaultdict(list)\n\nfor
+    w in data:\n    start_dict[w[0]].append(w)\n    end_dict[w[3]].append(w)\n\ncount
+    = 0\nfor s in start_dict:\n    starts = start_dict[s]\n    n = len(starts)\n    if
+    n &lt; 2: continue\n    for e in end_dict:\n        ends = end_dict[e]\n        if
+    len(ends) &lt; 2: continue\n        heads = [w[0] for w in ends]\n        for
+    i in range(n):\n            w = starts[i]\n            tail = w[3]\n            if
+    tail not in heads: continue\n            for j in range(i + 1, n):\n                w2
+    = starts[j]\n                tail2 = w2[3]\n                if tail == tail2:
+    continue\n                if tail2 in heads:\n                    w3 = ends[heads.index(tail)]\n
+    \                   w4 = ends[heads.index(tail2)]\n                    count +=
+    1\n                    print w\n                    print u\"%s　　%s\" % (w2[1],
+    w3[1]) \n                    print u\"%s　　%s\" % (w2[2], w3[2]) \n                    print
+    w4\n                    print\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3664'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3664
+  :user_name: にしお
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/11/02 10:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">僕のコードも30～31行目あたり手抜きなので\r\nもう一度きちんと考える必要がありそうだ…\r\n</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3665'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3665
+  :user_name: あにす
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/504/
+  :language: VB
+  :time: 2007/11/02 11:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  　コマンドライン引数に、四字熟語を改行で区切って列挙したファイルのパスを指定したものとします。ファイルのパスは複数指定可です。文字コードはUnicodeです。\r<br>出力例に含まれる四字熟語を列挙したファイルでは一瞬で例と同じ出力結果が得られました。\r<br>　今、ダウンロードしたサンプルを上記形式に加工したファイルを読み込ませて実行しているのですが、待てど暮らせど終わりません。もう1時間程経ってます。\r<br>　VB.net一番乗り狙って投稿します。\n\t"
+  :code: "Module Module1\n\n    Sub Main(ByVal args() As String) '引数に四字熟語をCRLFで区切り列挙したテキストファイルを指定。文字コードはUnicode。ファイルは複数指定可能。\n
+    \       Dim Ticks As Long = Now.Ticks\n        Dim JukugoList As New List(Of String)
+    '四字熟語のリスト  \n        '四字熟語リストの読み込みループ\n        For Each CmdLine As String In args\n
+    \           JukugoList.AddRange(System.IO.File.ReadAllLines(CmdLine))\n        Next\n
+    \       JukugoPuzul(JukugoList)\n        Console.WriteLine(Now.Ticks - Ticks)\n
+    \       Console.ReadKey()\n    End Sub\n\n    Private Sub JukugoPuzul(ByVal JukugoList
+    As List(Of String))\n        Dim Kouho As New List(Of String())\n        For Each
+    JukugoTop As String In JukugoList '上\n            For Each JukugoRight As String
+    In JukugoList '右\n                For Each JukugoBottom As String In JukugoList
+    '下\n                    For Each JukugoLeft As String In JukugoList '左\n                        If
+    JukugoTop.Substring(3, 1) = JukugoRight.Substring(0, 1) AndAlso _\n                        JukugoRight.Substring(3,
+    1) = JukugoBottom.Substring(3, 1) AndAlso _\n                        JukugoBottom.Substring(0,
+    1) = JukugoLeft.Substring(3, 1) AndAlso _\n                        JukugoLeft.Substring(0,
+    1) = JukugoTop.Substring(0, 1) Then\n                            If JukugoTop.Substring(3,
+    1) &lt;&gt; JukugoBottom.Substring(0, 1) Then '右上隅の漢字と左下隅の漢字は異なるものでなければいけません。\n
+    \                               Dim Group() As String = {JukugoTop, JukugoRight,
+    JukugoBottom, JukugoLeft}\n                                If ChofukuCheck(Kouho,
+    Group) Then\n                                    OutPut(Group)\n                                    Kouho.Add(Group)\n
+    \                               End If\n                            End If\n                        End
+    If\n                    Next\n                Next\n            Next\n        Next\n
+    \   End Sub\n\n    Private Function ChofukuCheck(ByVal List As List(Of String()),
+    ByVal Kouho As String()) As Boolean\n        For Each Group As String() In List\n
+    \           Dim Count As Integer = 0\n            For Each Jukugo As String In
+    Group\n                For Each Jukugo1 As String In Kouho\n                    If
+    Jukugo = Jukugo1 Then\n                        Count += 1\n                    End
+    If\n                Next\n            Next\n            If Count = 4 Then\n                Return
+    False\n            End If\n        Next\n        Return True\n    End Function\n\n
+    \   Private Sub OutPut(ByVal Group() As String)\n        Console.WriteLine(Group(0))\n
+    \       Console.WriteLine(Group(3).Substring(1, 1) &amp; \"　　\" &amp; Group(1).Substring(1,
+    1))\n        Console.WriteLine(Group(3).Substring(2, 1) &amp; \"　　\" &amp; Group(1).Substring(2,
+    1))\n        Console.WriteLine(Group(2) &amp; vbCrLf)\n    End Sub\n\nEnd Module\n"
+  :tags:
+  - VB.NET2005
+  - VB2005
+  :references:
+    :url: 
+    :title: 
+- :id: '3666'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3666
+  :user_name: あにす
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/504/
+  :language: 
+  :time: 2007/11/02 11:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">やっぱりガチムチにFor Eachの4重ネストで総当り判定してるのが遅い原因でしょうか…。\r\nまだ終わりません…。CPUは2GHz、デバッグモードで実行してます。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3667'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3667
+  :user_name: あにす
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/504/
+  :language: VB
+  :time: 2007/11/02 12:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  　高速化しました。\r<br>サンプル(重複あり)8,582件\r<br>結果12,117件\r<br>CPU2.0GHz　610秒orz\n\t"
+  :code: "Module Module1\n\n    Sub Main(ByVal args() As String) '引数に四字熟語をCRLFで区切り列挙したテキストファイルを指定。文字コードはUnicode。ファイルは複数指定可能。\n
+    \       Dim Ticks As Long = Now.Ticks\n        Dim JukugoList As New List(Of String)
+    '四字熟語のリスト  \n        '四字熟語リストの読み込みループ\n        For Each CmdLine As String In args\n
+    \           JukugoList.AddRange(System.IO.File.ReadAllLines(CmdLine))\n        Next\n
+    \       JukugoPuzul(JukugoList)\n        Console.WriteLine((Now.Ticks - Ticks)
+    / 10000000L &amp; \"秒\")\n        Console.ReadKey()\n    End Sub\n\n    Private
+    Sub JukugoPuzul(ByVal JukugoList As List(Of String))\n        Dim Kouho As New
+    List(Of String())\n        For Each JukugoTop As String In JukugoList '上\n            Dim
+    Top() As Char = JukugoTop.ToCharArray\n            For Each JukugoRight As String
+    In JukugoList '右\n                Dim Right() As Char = JukugoRight.ToCharArray\n
+    \               If Top(3) = Right(0) Then\n                    For Each JukugoBottom
+    As String In JukugoList '下\n                        Dim Bottom() As Char = JukugoBottom.ToCharArray\n
+    \                       If Right(3) = Bottom(3) Then\n                            For
+    Each JukugoLeft As String In JukugoList '左\n                                Dim
+    Left() As Char = JukugoLeft.ToCharArray\n                                If Bottom(0)
+    = Left(3) AndAlso _\n                                Left(0) = Top(0) Then\n                                    If
+    Top(3) &lt;&gt; Bottom(0) Then '右上隅の漢字と左下隅の漢字は異なるものでなければいけません。\n                                        Dim
+    Group() As String = {JukugoTop, JukugoRight, JukugoBottom, JukugoLeft}\n                                        If
+    ChofukuCheck(Kouho, Group) Then\n                                            OutPut(Group)\n
+    \                                           Kouho.Add(Group)\n                                        End
+    If\n                                    End If\n                                End
+    If\n                            Next\n                        End If\n                    Next\n
+    \               End If\n            Next\n        Next\n        Console.WriteLine(Kouho.Count
+    &amp; \"組の組み合わせがありました。\")\n    End Sub\n\n    Private Function ChofukuCheck(ByVal
+    List As List(Of String()), ByVal Kouho As String()) As Boolean\n        For Each
+    Group As String() In List\n            Dim Count As Integer = 0\n            For
+    Each Jukugo As String In Group\n                For Each Jukugo1 As String In
+    Kouho\n                    If Jukugo = Jukugo1 Then\n                        Count
+    += 1\n                    End If\n                Next\n            Next\n            If
+    Count = 4 Then\n                Return False\n            End If\n        Next\n
+    \       Return True\n    End Function\n\n    Private Sub OutPut(ByVal Group()
+    As String)\n        Console.WriteLine(Group(0))\n        Console.WriteLine(Group(3).Substring(1,
+    1) &amp; \"　　\" &amp; Group(1).Substring(1, 1))\n        Console.WriteLine(Group(3).Substring(2,
+    1) &amp; \"　　\" &amp; Group(1).Substring(2, 1))\n        Console.WriteLine(Group(2)
+    &amp; vbCrLf)\n    End Sub\n\nEnd Module\n"
+  :tags:
+  - VB.net
+  - VB2005
+  :references:
+    :url: 
+    :title: 
+- :id: '3668'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3668
+  :user_name: yuin
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/11/02 13:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">12107件でした。kozimaさんと近いですね。\r\nAthlon64 3000,メモリ1G,WinXPで出力含め１５秒ほどでした。\r\n\r\nちなみに、Scalaのforはモナドのための記法として扱えます。\r\nHashMap#getはOptionといういわゆるMaybeモナドですのでシンプルに書けます。</pre>\n\t"
+  :code: "import scala.io.Source.fromFile\nimport scala.collection.mutable.{HashMap,LinkedHashSet}\n\nobject
+    JukugoPazzule {\n  type S = LinkedHashSet[String]\n  val jukugos = fromFile(\"kanji_uniq.txt\").getLines.toList\n
+    \ val headMap = (new HashMap[Char, S]() /: jukugos){(map, jukugo) =&gt; \n    map.getOrElseUpdate(jukugo(0),
+    new S) += jukugo; map\n  }\n\n  def solve = {\n    var i = 0\n    var uniqChekMap
+    = new S\n    for(j1 &lt;- jukugos;\n        jlst2 &lt;- headMap.get(j1(0));\n
+    \       j2 &lt;- jlst2 if j2 != j1;\n        jlst3 &lt;- headMap.get(j1(3));\n
+    \       j3 &lt;- jlst3 if j3!=j2 &amp;&amp; j3!=j1 &amp;&amp; j1(3)!=j2(3);\n
+    \       jlst4 &lt;- headMap.get(j2(3));\n        j4 &lt;- jlst4 if j4!=j3 &amp;&amp;
+    j4!=j2 &amp;&amp; j4!=j1 &amp;&amp; j4(3)==j3(3)\n    ) {\n      var all = List(j1,j2,j3,j4).sort(_&lt;_).mkString(\"\")\n
+    \     if(!uniqChekMap.contains(all)) {\n        print(j1)\n        (1 to 2).foreach{i
+    =&gt; println(j2(i)+\"    \"+j3(i))}\n        println(j4)\n        println(\"-----------------------\")\n
+    \       i = i+1\n        uniqChekMap += all\n      }\n    }\n    println(i)\n
+    \ }\n}\n\nJukugoPazzule.solve\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3669'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3669
+  :user_name: shin
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/110/
+  :language: Perl
+  :time: 2007/11/02 13:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">熟語データはeuc-jpのin.txt\r\n\r\nCeleron2.4GHzで8.6秒ほどかかって12118件でした。\r\n\r\n40行目は鏡像のチェックです</pre>\n\t"
+  :code: |
+    #!/usr/local/bin/perl
+
+    use strict;
+    use warnings;
+
+    use encoding 'euc-jp';
+
+    open( my $file, "&lt;:encoding(euc-jp)", "in.txt" ) or die;
+    my @words;
+    my %left_right_list;    #1文字目をキーにしたテーブル
+    my %bottom_list;        #1,4文字目をキーにしたテーブル
+    for my $word (&lt;$file&gt;)
+    {
+        chomp $word;
+        push @words, $word;
+        my ( $char_0, $char_3 ) = ( split //, $word )[ 0, 3 ];
+        push @{ $left_right_list{$char_0} }, $word;
+        push @{ $bottom_list{"$char_0$char_3"} }, $word;
+    }
+    close $file;
+
+    my $counter;
+    my %seen;
+    for my $top (@words)
+    {
+        my ( $top_char_0, $top_char_3 ) = ( split //, $top )[ 0, 3 ];
+
+        for my $left ( @{ $left_right_list{$top_char_0} } )
+        {
+            next if $top eq $left;
+            my $left_char_3 = substr $left, 3, 1;
+            next if $top_char_3 eq $left_char_3;
+
+            for my $right ( @{ $left_right_list{$top_char_3} } )
+            {
+                my $right_char_3 = substr $right, 3, 1;
+
+                for my $bottom ( @{ $bottom_list{"$left_char_3$right_char_3"} } )
+                {
+                    next if $seen{"$left$top$bottom$right"};
+                    $seen{"$top$left$right$bottom"} = 1;
+                    print "$top $left $right $bottom\n";
+                    print substr( $left, 1, 1 ), "　", "　", substr( $right, 1, 1 ), "\n";
+                    print substr( $left, 2, 1 ), "　", "　", substr( $right, 2, 1 ), "\n";
+                    print "$bottom\n";
+                    print "--------\n";
+                    $counter++;
+                }
+            }
+        }
+    }
+    print "$counter\n";
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3670'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3670
+  :user_name: sumim
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/88/
+  :language: diff
+  :time: 2007/11/02 15:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  数が食い違う原因はまだ分からないのですが、とりあえずひとつ明らかなバグが見つかったので修正。結果、少し増えて 12109 件でした。多数派の数にちょっと近づいたか？(^_^;)\n\t"
+  :code: |
+    @@ -8,7 +8,7 @@
+     timeToRun := [
+         firstCharDict := yojis
+             groupBy: [:each | each first]
+    -        having: [:group | group size &gt; 1].
+    +        having: [:group | true].
+
+         pairs := OrderedCollection new.
+         yojis do: [:first |
+    @@ -37,4 +37,4 @@
+         out nextPutAll: quartet last; cr; cr].
+     out edit.
+
+    -^{results size. timeToRun}   "=&gt; #(11712 13835) "
+    +^{results size. timeToRun}   "=&gt; #(12109 13792) "
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3671'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3671
+  :user_name: 匿名
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/11/02 15:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">set()で重複を除いて、12118件の組み合わせ\r\nとなりました。shift_jisコーデックだとデコード\r\nエラーになったので、cp932でデコード。</pre>\n\t"
+  :code: |
+    import codecs
+
+    def count(words):
+        table = {}
+        for word in words:
+            table.setdefault(word[0], []).append(word)
+        ans = 0
+        for words in table.itervalues():
+            for i1 in xrange(len(words)):
+                for i2 in xrange(i1 + 1, len(words)):
+                    c1 = words[i1][-1]
+                    c2 = words[i2][-1]
+                    if c1 == c2:
+                        continue
+                    for word1 in table.get(c1, []):
+                        for word2 in table.get(c2, []):
+                            if word1[-1] == word2[-1]:
+                                ans += 1
+        return ans
+
+    def main():
+        words = set()
+        for line in codecs.open("a.txt", "r", "cp932"):
+            word = line.strip()
+            if len(word) != 4:
+                raise ValueError("not 4 length word: " + word)
+            words.add(word)
+        print count(words)
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3672'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3672
+  :user_name: ocean
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/11/02 15:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ログインしてなかったので改めて投稿。</pre>\n\t"
+  :code: |
+    import codecs
+
+    def count(words):
+        table = {}
+        for word in words:
+            table.setdefault(word[0], []).append(word)
+        ans = 0
+        for words in table.itervalues():
+            for i1 in xrange(len(words)):
+                for i2 in xrange(i1 + 1, len(words)):
+                    c1 = words[i1][-1]
+                    c2 = words[i2][-1]
+                    if c1 == c2:
+                        continue
+                    for word1 in table.get(c1, []):
+                        for word2 in table.get(c2, []):
+                            if word1[-1] == word2[-1]:
+                                ans += 1
+        return ans
+
+    def main():
+        words = set()
+        for line in codecs.open("a.txt", "r", "cp932"):
+            word = line.strip()
+            if len(word) != 4:
+                raise ValueError("not 4 length word: " + word)
+            words.add(word)
+        print count(words)
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3673'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3673
+  :user_name: sumim
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2007/11/02 15:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Unicode の扱いが分かる言語が Python だけだったので にしおさんの結果と差分をとってみたところ、にしおさんのにあって私のになかったのは次の７個でした。\r<br><br>#('一切即一' '一期四相' '一期四相' '相門有相')\r<br>#('一場春夢' '夢中説夢' '一切即一' '一場春夢')\r<br>#('一念通天' '天下第一' '一切即一' '一切即一')\r<br>#('一了百当' '当代第一' '一切即一' '一切即一')\r<br>#('一期一会' '会三帰一' '一切即一' '一切即一')\r<br>#('一文不知' '知行合一' '一切即一' '一切即一')\r<br>#('一読三嘆' '嘆息嗟嘆' '一切即一' '一読三嘆')\r<br><br>とりあえずこれらについては、私のほうではセットを使って重複を外す手続きをしているのでその関係かと思われます。\r<br><br>これと別に、同じ組み合わせでも順序が違うときに省くかどうかという判断も影響しそうです。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3675'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3675
+  :user_name: 匿名
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/4/
+  :language: R
+  :time: 2007/11/02 16:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">重複なしの8312単語，utf-8 でソートしたもの\r\n\r\n9080個の解が見つかったというのだが（少ない?）\r\n\r\n1.33GH
+    PowerPC G4\r\n\r\n&gt; system.time(foo())\r\n1 1 180 一上一下 一期四相 相利共生 下化衆生 \r\n2
+    1 300 一上一下 一貧一富 富貴利達 下学上達 \r\n3 2 175 一世一度 一朝之忿 忿忿之心 度衆生心 \r\n4 2 245 一世一度 一筆啓上
+    上下一心 度衆生心 \r\n5 2 268 一世一度 一草一木 木人石心 度衆生心 \r\n6 4 21 一世之雄 一入再入 入室升堂 雄気堂堂 \r\n　　　途中省略\r\n071
+    8153 8158 鬼手仏心 鬼面仏心 心煩意乱 心狂意乱 \r\n9072 8153 8158 鬼手仏心 鬼面仏心 心融神会 心領意会 \r\n9073
+    8153 8158 鬼手仏心 鬼面仏心 心融神会 心領神会 \r\n9074 8153 8158 鬼手仏心 鬼面仏心 心領意会 心領神会 \r\n9075
+    8153 8159 鬼手仏心 鬼面嚇人 人人具足 心満意足 \r\n9076 8157 8158 鬼臉嚇人 鬼面仏心 心満意足 人給家足 \r\n9077
+    8157 8159 鬼臉嚇人 鬼面嚇人 人人具足 人給家足 \r\n9078 8158 8159 鬼面仏心 鬼面嚇人 人人具足 心満意足 \r\n9079
+    8185 8186 魯魚帝虎 魯魚烏焉 焉馬之誤 虎虚之誤 \r\n9080 8223 8225 鴻門玉斗 鴻鵠之志 志士仁人 斗南一人 \r\nm = 9080
+    \r\n   ユーザ   システム       経過  \r\n  1676.849    582.988   2544.118 \r\n</pre>\n\t"
+  :code: |
+    foo &lt;- function() {
+        x &lt;- read.table("yojijukugo.txt", header=FALSE, as.is=TRUE)
+        y &lt;- unique(sort(x[,2]))
+        n &lt;- length(y)
+        w &lt;- sapply(y, function(i) unlist(strsplit(i, "")))
+        h &lt;- w[1,]
+        t &lt;- w[4,]
+        head &lt;- unique(h)
+        nh &lt;- length(head)
+        m &lt;- 0
+        for (i0 in 1:nh) { # for (i0 in 1:nh)
+            h12 &lt;- which(h == head[i0])
+            lh12 &lt;- length(h12)
+            if (lh12 == 1) next
+            a &lt;- combn(lh12, 2)
+            for (ia in 1:ncol(a)) {
+                i1 &lt;- h12[a[1,ia]]
+                i2 &lt;- h12[a[2,ia]]
+                ki3 &lt;- which(h == t[i2])
+                ki4 &lt;- which(h == t[i1])
+                x &lt;- outer(t[ki3], t[ki4], "==")
+                x[lower.tri(x, diag=TRUE)] &lt;- FALSE
+                x &lt;- which(x, arr.ind=TRUE)
+                if (nrow(x) == 0) next
+                for (ib in 1:nrow(x)) {
+                    i3 &lt;- ki3[x[ib, 1]]
+                    i4 &lt;- ki4[x[ib, 2]]
+                    m &lt;- m+1
+                    cat(m, i1, i2, y[c(i1, i2, i3, i4)], "\n")
+                }
+            }
+        }
+        cat("m =",m,"\n")
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3677'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3677
+  :user_name: sumim
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/88/
+  :language: 
+  :time: 2007/11/02 17:12 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  ocean さんの Python 版 12118 個と比較したところ、先の 7 個に加えて次の２点が私のでははじかれていました。やはり、４組のうちの重複要素の扱いに起因する違いのようです。\r<br><br>#('一唱三嘆' '嘆息嗟嘆' '一切即一' '一唱三嘆')\r<br>#('一切即一' '一炊之夢' '一炊之夢' '夢中説夢')\r<br><br><br>あと、以下の並びの異なる２セットをそれぞれ区別するかで 12109 と 12107 の差が出ることも分かりました。\r<br><br>#('一切即一' '一読三嘆' '一唱三嘆' '嘆息嗟嘆')\r<br>#('一切即一' '一唱三嘆' '一読三嘆' '嘆息嗟嘆')\r<br><br>#('一炊之夢' '夢中説夢' '一切即一' '一場春夢')\r<br>#('一場春夢' '夢中説夢' '一切即一' '一炊之夢')\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3679'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3679
+  :user_name: naranja
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/448/
+  :language: D
+  :time: 2007/11/02 20:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">12109 個でした。\r\n\r\n四字熟語データは重複を除いたものを改行区切りで
+    UTF-8 で\r\nwords.txt に保存してあります。\r\n\r\nPentium4 3GHz、メモリ 2GB 下では 0.38 秒程度でした。</pre>\n\t"
+  :code: |
+    import std.stdio;
+    import std.file;
+    import std.string;
+    import std.utf;
+
+    void main(){
+        wchar[][][wchar] hash;
+        foreach(word; splitlines(cast(string)read("words.txt"))){
+            wchar[] convedWord = word.toUTF16();
+            hash[convedWord[0]] ~= convedWord;
+        }
+        bool[wchar[]] checked;
+        int count;
+        foreach(arr; hash){
+            foreach(top; arr){
+                if(top[0] in hash){
+                    foreach(left; hash[top[0]]){
+                        if(!(left in checked) &amp;&amp; top[3] in hash){
+                            foreach(right; hash[top[3]]){
+                                if(left[3] in hash &amp;&amp; right != top &amp;&amp; right != left){
+                                    foreach(bottom; hash[left[3]]){
+                                        if(bottom[3] == right[3] &amp;&amp; bottom[0] != top[3]
+                                           &amp;&amp; bottom != top &amp;&amp; bottom != left &amp;&amp; bottom != right){
+                                            writefln(top);
+                                            writefln(left[1], "　　", right[1]);
+                                            writefln(left[2], "　　", right[2]);
+                                            writefln(bottom);
+                                            writefln("-------");
+                                            count++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                checked[top] = true;
+            }
+        }
+        writefln(count);
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3680'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3680
+  :user_name: matyr
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/343/
+  :language: JavaScript
+  :time: 2007/11/02 21:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t   100秒程(@Turion64x2 1.8GHz)かかって，8312件 → 24236通り。\r<br> 「可能な四角を全て出力」と解釈して鏡像・重複共に許したため，他の人の約二倍量になりました。\n\t"
+  :code: |
+    function doukaku75(y){
+      for(var h = {}, i = y.length, c; i--;)
+        (h[c = y[i].charAt(0)] || (h[c] = {}))[i] = y[i].charAt(3);
+      var o = [], s = '　　', n = '\n', t, l, r, b, tl, tr, bl, htl, htr, hbl;
+      for(tl in h) for(t in htl = h[tl]) for(l in htl) if((tr = htl[t]) != (bl = htl[l])) // 右上隅 != 左下隅
+        for(r in htr = h[tr]) for(b in hbl = h[bl]) if(htr[r] == hbl[b])
+          o[++i] = [y[t], n,
+                    y[l].charAt(1), s, y[r].charAt(1), n,
+                    y[l].charAt(2), s, y[r].charAt(2), n,
+                    y[b]].join('');
+      return o;
+    }
+
+    with(WSH.stdIn) for(var lst = [], i = 0; !atEndOfStream;) lst[i++] = readLine();
+    var start = new Date, result = doukaku75(lst);
+    WSH.echo(result.length, (new Date - start) +'[ms]\n\n'+ result.join('\n\n'));
+  :tags:
+  - WSH
+  :references:
+    :url: 
+    :title: 
+- :id: '3681'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3681
+  :user_name: あにす
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/504/
+  :language: 
+  :time: 2007/11/02 22:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  重複無しの8312件を食わせて走らせてみました。\r<br>OS:Windows XP Home SP2\r<br>CPU:AMD Sempron 3400+ 1.99GHz\r<br>メモリ:480MB\r<br>処理時間:507.078125秒\r<br>件数:12117件\r<br><br>　組み合わせた後に重複チェックをしているので、元データの重複は件数に影響しないようです。\r<br>　僕は\r<br>&gt;四角く配置することのできる熟語の組み合わせを探すプログラム\r<br>と言うところに着目して、同じ熟語の組み合わせなら、四角に組む順番が違っても同一の組み合わせと判断して結果から除いています。\r<br>　もっと厳密に定義をすれば件数が揃うんじゃないでしょうか。\r<br>　それよりも、この桁違いの遅さは何なんでしょうorz .NETだからって極端に遅いって事も無いと思うのですが…。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3687'
+  :parent_id: '75'
+  :url: http://ja.doukaku.org/comment/3687
+  :user_name: 匿名
+  :user_url: /web/20081202141836/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/11/03 03:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  四字熟語のリストは標準入力から１行１エントリの形式で与えます。\r<br>出題で参考に与えられたリストを重複排除したもの(8312個)を使用したところ、12118個の組み合わせが見つかりました（単純に縦横を入れ替えて同じになるのは除外しています）。例として「阿」で始まる組み合わせを示します。\r<br><br>阿衡之才 阿付雷同 才子佳人 同行二人\r<br>阿衡之才 阿附迎合 才弁縦横 合従連横\r<br>阿衡之才 阿諛迎合 才弁縦横 合従連横\r<br>阿衡之才 阿諛苟合 才弁縦横 合従連横\r<br>阿付雷同 阿諛追随 同心同徳 随喜功徳\r<br>阿爺下頷 阿諛追随 頷下之珠 随侯之珠\r<br>阿諛取容 阿諛奉承 容貌顔色 承顔候色\r<br><br>上記データの場合、1.67 GHz PowerPC G4 で 10秒程度かかりました。\n\t"
+  :code: "import java.util.*;\nimport java.io.*;\n\npublic class Sample {\n    public
+    static void main(String[] args) throws IOException {\n        BufferedReader r
+    = new BufferedReader(new InputStreamReader(System.in));\n        ArrayList&lt;String&gt;
+    jukugoList = new ArrayList&lt;String&gt;();\n        LinkedHashMap&lt;Integer,
+    List&lt;String&gt;&gt; startMap = new LinkedHashMap&lt;Integer, List&lt;String&gt;&gt;();\n
+    \       String jukugo;\n        \n\n\n\n\n<!--\n     FILE ARCHIVED ON 14:18:36
+    Dec 2, 2008 AND RETRIEVED FROM THE\n     INTERNET ARCHIVE ON 13:37:06 Nov 16,
+    2013.\n     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.\n\n
+    \    ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.\n     SECTION
+    108(a)(3)).\n-->"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

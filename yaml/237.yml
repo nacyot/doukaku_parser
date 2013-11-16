@@ -1,0 +1,481 @@
+---
+:id: '237'
+:title: 麻雀の和了判定
+:comments:
+- :id: '8532'
+  :parent_id: '237'
+  :url: http://ja.doukaku.org/comment/8532
+  :user_name: wm
+  :user_url: /web/20091219030926/http://ja.doukaku.org/user/1015/
+  :language: Other
+  :time: 2009/02/18 13:10 GMT
+  :vote_count: '9'
+  :vote_score: '-5'
+  :body: "\r\n\t  麻雀の手牌が和了形か否かを判定するコードを書いてください。\r<br><br>手牌を表すのは、mn+h 枚を表す配列です。フォーマットは A, B の2つから任意に選んだものを受け取ってください。以下の2つは同じものです:\r<br>handA = [2,1,1,1,1,2,2,1,3] # 牌1が2個、牌2が1個、牌3が1個、牌4が1個、牌5が1個、牌6が2個、牌7が2個、牌8が1個、牌9が3個\r<br>handB = [1,1,2,3,4,5,6,6,7,7,8,9,9,9] # 牌1、牌1、牌2、牌3、牌4、牌5、牌6、牌7、牌7、牌8、牌9、牌9、牌9\r<br><br>ある配列が和了形であるとは、手牌が「刻子」「順子」を合計 n 個と「対子」1 個との和であることをいうものとします。\r<br>「刻子」とは1種の牌が m 個あることをいいます。\r<br>「順子」とは連続したインデクスを持つ牌が m 種各1個あることをいいます。\r<br>「対子」とは1種の牌が h 個あることをいいます。\r<br><br>上の例は、和了形です。なぜなら、当該配列が\r<br>Bタイプで表記すると、刻子 [9,9,9], 順子 [2,3,4], [5,6,7], [6,7,8], 対子 [1,1] の、\r<br>Aタイプで表記すると、刻子 [0,0,0,0,0,0,0,0,3], 順子 [0,1,1,1,0,0,0,0,0], [0,0,0,0,1,1,1,0,0], [0,0,0,0,0,1,1,1,0], 対子 [2,0,0,0,0,0,0,0,0] の、\r<br>和だからです。\r<br><br>・ n は任意のものを受け取れるようにしてください。\r<br>・ 牌のインデクスの数 (Aタイプの長さ、Bタイプの要素の最大値) M も任意としてください。\r<br>・ 1種の牌の最大個数 (Aタイプの要素の最大値、Bタイプの1種の要素の最大重複度) L も任意としてください。\r<br>・ 一般の麻雀の場合は、m=3, n=4, h=2, M=9, L=4 です。この条件に特化した高速化が可能なら行ってもかまいません。\r<br><br>擬似コードで、ごく短い例を示します。\r<br>"
+  :code: |
+    for 考えられる対子:
+        対子を手牌から抜く
+        for 考えられる刻子のパターン:
+            刻子を手牌から抜く
+            手牌が順子の和となっていれば、和了形として抜ける
+            刻子を手牌へ戻す
+        対子を手牌へ戻す
+    ここに到達していれば、和了形ではない
+  :tags:
+  - 擬似コード
+  :references:
+    :url: 
+    :title: 
+- :id: '8568'
+  :parent_id: '237'
+  :url: http://ja.doukaku.org/comment/8568
+  :user_name: muscovyduck
+  :user_url: /web/20091219030926/http://ja.doukaku.org/user/679/
+  :language: Python
+  :time: 2009/02/28 22:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>書いていたら頭がこんがらがって来ました。実行結果は下記です:</p>\n<pre class=\"literal-block\">\n[1,
+    1, 2, 3, 4, 5, 6, 6, 7, 7, 8, 9, 9, 9] True\n[1, 2, 4, 4, 5, 6, 7, 8, 9, 7, 8,
+    9, 4, 4] False\n[1, 1, 1, 3, 3, 3, 5, 5, 5, 7, 7, 7, 9, 9] True\n[1, 1, 1, 3,
+    3, 3, 5, 5, 5, 7, 7, 7, 9, 7] False\n[1, 1, 1, 3, 3, 3, 5, 5, 5, 7, 7, 7, 9, 8]
+    True\n</pre>\n<p>参考: <a class=\"reference\" href=\"/web/20091219030926/http://hp.vector.co.jp/authors/VA046927/mjscore/mjalgorism.html\">麻雀
+    和了判定（役の判定） アルゴリズム</a></p>\n\n\t"
+  :code: |
+    # -*- coding: utf-8 -*-
+
+    def get_set_candidate(hand, num):
+      result = []
+      hand = hand[:]
+      hand.sort()
+      for i in range(1, len(hand)+1):
+        if hand.count(i) &gt;= num:
+          result.append(i)
+      return result
+
+    def clear_set(hand, clear_tile, num):
+      hand = hand[:]
+      hand.sort()
+      for i in range(0, num):
+        hand.remove(clear_tile)
+      return hand
+
+    def make_comb(list, num):
+      if num &lt;= 0: return [[]]
+      size = len(list)
+      result = []
+      clonecker = lambda list1, list2: map((lambda i: list1 + i), list2)
+      for i in range(size-num+1):
+        result += clonecker([list[i]], make_comb(list[i+1:], num-1))
+      return result
+
+    def all_comb(list):
+      result = []
+      for i in range(len(list)+1):
+        result += make_comb(list, i)
+      return result
+
+    def check_sequence(hand, m=3):
+      result = []
+      hand = hand[:]
+      hand.sort()
+      for i in range(0, len(hand)/m):
+        j = hand.pop()
+        try:
+          hand.remove(j-1)
+          hand.remove(j-2)
+        except:
+          return False
+      return True
+
+    def check_winning(hand, m=3, h=2):
+      for i in get_set_candidate(hand, h):
+        hand2 = clear_set(hand, i, h)
+        for j in all_comb(get_set_candidate(hand2, m)):
+          hand3 = hand2[:]
+          for k in j:
+            hand3 = clear_set(hand3, k, m)
+          if check_sequence(hand3, m): return True
+      return False
+
+    hand1 = [1,1,2,3,4,5,6,6,7,7,8,9,9,9]
+    hand2 = [1,2,4,4,5,6,7,8,9,7,8,9,4,4]
+    hand3 = [1,1,1,3,3,3,5,5,5,7,7,7,9,9]
+    hand4 = [1,1,1,3,3,3,5,5,5,7,7,7,9,7]
+    hand5 = [1,1,1,3,3,3,5,5,5,7,7,7,9,8]
+
+    print hand1, check_winning(hand1)
+    print hand2, check_winning(hand2)
+    print hand3, check_winning(hand3)
+    print hand4, check_winning(hand4)
+    print hand5, check_winning(hand5)
+  :tags: []
+  :references:
+    :url: /web/20091219030926/http://blog.gijutsuya.jp/harajune/2008/08/10/ruby-array%E3%81%A7%E7%B5%84%E3%81%BF%E5%90%88%E3%82%8F%E3%81%9B%E3%82%92%E5%87%BA%E5%8A%9B%E3%81%99%E3%82%8B%E6%96%B9%E6%B3%95/
+    :title: ruby Arrayで組み合わせを出力する方法 - 進・日進月歩
+- :id: '8569'
+  :parent_id: '237'
+  :url: http://ja.doukaku.org/comment/8569
+  :user_name: sumim
+  :user_url: /web/20091219030926/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/03/01 00:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n<p>幅優先で探索して和了パターンが１つでも見つかれば true を返します。牌は１文字の種類とインデックス文字列の組み合わせで与えます。なお、インデックス文字列の文字数が最大値（M）の文字列の文字数に満たない場合、あらかじめ左側を「0」で埋めて文字数を合わせて与える必要があります。</p>\n\n\t"
+  :code: "| m n h M L 対子群 手牌 刻子群 同種牌群 和了パターン 残り 待ち行列 刻順子群 |\nm := 3. n := 4. h :=
+    2. M := 9. L := 4.\n手牌 := #(a1 a1 a2 a3 a4 a5 a6 a6 a7 a7 a8 a9 a9 a9).\n\nself
+    assert: (手牌 allSatisfy: [:each | each size = (M printString size + 1)]).\nself
+    assert: 手牌 size = (m * n + h).\nself assert: 手牌 asBag sortedCounts first key &lt;=
+    L.\n対子群 := (手牌 groupBy: [:each | each] having: [:group | group size &gt;=  h])
+    values \n    collect: [:group | (group first: h) asArray].\n刻子群 := (手牌 groupBy:
+    [:each | each] having: [:group | group size &gt;=  m]) values \n    collect: [:group
+    | (group first: m) asArray].\n同種牌群 := (手牌 groupBy: [:each | each first] having:
+    [:group | group size &gt;= m]) values.\n刻順子群 := OrderedCollection withAll: 刻子群.\n同種牌群
+    do: [:group | \n    | 牌種 インデックス列 |\n    牌種 := group anyOne first.\n    インデックス列
+    := (group collect: [:each | each allButFirst asInteger]) asSet asSortedArray.\n
+    \   ((1 to: M - m + 1) \n            collect: [:start | start to: start + m -
+    1] \n            thenSelect: [:range | インデックス列 includesAllOf: range]) \n        do:
+    [:range | \n            刻順子群 add: (range collect: [:each | \n                ((each
+    printPaddedWith: $0 to: M printString size) \n                    copyWithFirst:
+    牌種) asSymbol])]].\n和了パターン := Set new.\n対子群 do: [:対子 |\n    残り := 手牌 asOrderedCollection.\n
+    \   対子 do: [:各々 | 残り remove: 各々].\n    待ち行列 := OrderedCollection with: {対子. 残り}.\n
+    \   [待ち行列 notEmpty] whileTrue: [\n        | 状態 |\n        状態 := 待ち行列 removeFirst.\n
+    \       状態 last ifEmpty: [和了パターン add: 状態 allButLast asBag] ifNotEmpty: [\n            刻順子群
+    do: [:刻順子 |\n                (刻順子 inject: 1 into: [:prev :牌 | \n                        (状態
+    last indexOf: 牌 startingAt: prev ifAbsent: [状態 last size + 1]) + 1]) \n                    &lt;=
+    (状態 last size + 1) ifTrue: [\n                        | 次 | \n                        次
+    := 状態 last copy.\n                        刻順子 do: [:各々 | 次 remove: 各々].\n                        待ち行列
+    add: (状態 allButLast, {刻順子 asArray. 次})]]]]].\n和了パターン notEmpty\n\n\"=&gt; true
+    \"\n"
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '8575'
+  :parent_id: '237'
+  :url: http://ja.doukaku.org/comment/8575
+  :user_name: turugina
+  :user_url: /web/20091219030926/http://ja.doukaku.org/user/760/
+  :language: XSLT
+  :time: 2009/03/03 03:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>受け付けるフォーマットはBタイプです。\n以下のようなxml文書を入力として与えると、hand要素に\"和了形\"属性(true/false)を追加して出力します。:</p>\n<pre
+    class=\"literal-block\">\n&lt;hands&gt;\n  &lt;hand&gt;1,1,2,3,4,5,6,6,7,7,8,9,9,9&lt;/hand&gt;\n
+    \ &lt;hand&gt;1,1,2,2,2,3,3,3,3,4,4,5,6,6&lt;/hand&gt;\n  &lt;hand&gt;1,1,2,2,4,4,5,5,6,6,7,7,9,9&lt;/hand&gt;\n
+    \ &lt;hand&gt;1,1,2,2,4,4,5,5,6,7,8,7,8,9&lt;/hand&gt;\n&lt;/hands&gt;\n</pre>\n<p>後、お題にはなかったのですが、七対子にも対応してみました。</p>\n\n\t"
+  :code: |
+    &lt;xsl:stylesheet version="2.0"
+      xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+      xmlns:xs="http://www.w3.org/2001/XMLSchema"
+      xmlns:fn="http://www.w3.org/2005/xpath-functions"
+      xmlns:my="uri:ja.doukaku.org:my-functions"
+      exclude-result-prefixes="my"
+      &gt;
+
+      &lt;xsl:output method="xml" /&gt;
+
+      &lt;xsl:variable name="debug" as="xs:boolean" select="false()" /&gt;
+      &lt;xsl:variable name="can七対子" as="xs:boolean" select="true()" /&gt;
+
+      &lt;xsl:variable name="m" as="xs:integer" select="3" /&gt;
+      &lt;xsl:variable name="n" as="xs:integer" select="4" /&gt;
+      &lt;xsl:variable name="h" as="xs:integer" select="2" /&gt;
+      &lt;xsl:variable name="M" as="xs:integer" select="9" /&gt;
+      &lt;xsl:variable name="L" as="xs:integer" select="4" /&gt;
+
+      &lt;xsl:template match="/hands"&gt;
+        &lt;hands&gt;
+          &lt;xsl:apply-templates select="./hand" /&gt;
+        &lt;/hands&gt;
+      &lt;/xsl:template&gt;
+
+      &lt;xsl:template match="hand"&gt;
+        &lt;xsl:variable name="pai" as="xs:integer*"&gt;
+          &lt;xsl:variable name="pai-unordered" as="xs:integer*"&gt;
+            &lt;xsl:for-each select="fn:tokenize(text(), ',')"&gt;
+              &lt;xsl:sequence select="xs:integer(.)" /&gt;
+            &lt;/xsl:for-each&gt;
+          &lt;/xsl:variable&gt;
+          &lt;xsl:for-each select="$pai-unordered"&gt;
+            &lt;xsl:sort /&gt;
+            &lt;xsl:sequence select="." /&gt;
+          &lt;/xsl:for-each&gt;
+        &lt;/xsl:variable&gt;
+        &lt;xsl:if test="fn:max($pai) &amp;gt; $M"&gt;
+          &lt;xsl:message terminate="yes"&gt;
+            &lt;xsl:text&gt;invalid max value of pai. expected &lt;/xsl:text&gt;
+            &lt;xsl:value-of select="$M" /&gt;
+            &lt;xsl:text&gt; but &lt;/xsl:text&gt;
+            &lt;xsl:value-of select="fn:max($pai)" /&gt;
+          &lt;/xsl:message&gt;
+        &lt;/xsl:if&gt;
+        &lt;xsl:for-each select="fn:distinct-values($pai)"&gt;
+          &lt;xsl:if test="fn:count(fn:index-of($pai, .)) &amp;gt; $L"&gt;
+            &lt;xsl:message terminate="yes"&gt;
+              &lt;xsl:text&gt;invalid count per a kind, expected &lt;/xsl:text&gt;
+              &lt;xsl:value-of select="$L" /&gt;
+              &lt;xsl:text&gt; but &lt;/xsl:text&gt;
+              &lt;xsl:value-of select="fn:count(fn:index-of($pai, .))" /&gt;
+              &lt;xsl:text&gt; for &lt;/xsl:text&gt;
+              &lt;xsl:value-of select="." /&gt;
+            &lt;/xsl:message&gt;
+          &lt;/xsl:if&gt;
+        &lt;/xsl:for-each&gt;
+
+        &lt;xsl:element name="hand"&gt;
+          &lt;xsl:attribute name="和了形"&gt;
+            &lt;xsl:value-of select="my:check-和了形($pai)" /&gt;
+          &lt;/xsl:attribute&gt;
+          &lt;xsl:value-of select="text()" /&gt;
+        &lt;/xsl:element&gt;
+      &lt;/xsl:template&gt;
+
+      &lt;xsl:function name="my:check-和了形" as="xs:boolean"&gt;
+        &lt;xsl:param name="pai" as="xs:integer*" /&gt;
+
+        &lt;xsl:variable name="result" as="xs:boolean*"&gt;
+          &lt;xsl:sequence select="my:check-対子($pai,0)" /&gt;
+        &lt;/xsl:variable&gt;
+
+        &lt;xsl:value-of select="fn:count($result)&amp;gt;0" /&gt;
+      &lt;/xsl:function&gt;
+
+      &lt;xsl:function name="my:check-対子" as="xs:boolean*"&gt;
+        &lt;xsl:param name="pai" as="xs:integer*" /&gt;
+        &lt;xsl:param name="depth" as="xs:integer" /&gt;
+
+        &lt;xsl:if test="$debug"&gt;
+          &lt;xsl:message&gt;
+            &lt;xsl:text&gt;check1: &lt;/xsl:text&gt;
+            &lt;xsl:value-of select="$pai" /&gt;
+          &lt;/xsl:message&gt;
+        &lt;/xsl:if&gt;
+
+        &lt;xsl:choose&gt;
+          &lt;xsl:when test="fn:empty($pai)"&gt;
+            &lt;xsl:sequence select="true()" /&gt;
+          &lt;/xsl:when&gt;
+          &lt;xsl:otherwise&gt;
+            &lt;xsl:if test="$depth=0 or $can七対子"&gt;
+              &lt;xsl:for-each select="1 to (fn:count($pai) - ($h - 1))"&gt;
+                &lt;xsl:variable name="i" as="xs:integer" select="." /&gt;
+                &lt;xsl:if test="fn:count(fn:distinct-values(fn:subsequence($pai,$i, $h)))=1"&gt;
+                  &lt;xsl:variable name="next-pai" as="xs:integer*"
+                    select="$pai[position() &amp;lt; $i or $i + ($h - 1) &amp;lt; position()]" /&gt;
+                  &lt;xsl:sequence select="my:check-対子($next-pai, $depth+1)" /&gt;
+                &lt;/xsl:if&gt;
+              &lt;/xsl:for-each&gt;
+            &lt;/xsl:if&gt;
+            &lt;xsl:if test="$depth=1"&gt;
+              &lt;xsl:sequence select="my:check-刻子($pai, $depth)" /&gt;
+            &lt;/xsl:if&gt;
+          &lt;/xsl:otherwise&gt;
+        &lt;/xsl:choose&gt;
+      &lt;/xsl:function&gt;
+
+      &lt;xsl:function name="my:check-刻子" as="xs:boolean*"&gt;
+        &lt;xsl:param name="pai" as="xs:integer*" /&gt;
+        &lt;xsl:param name="depth" as="xs:integer" /&gt;
+
+        &lt;xsl:if test="$debug"&gt;
+          &lt;xsl:message&gt;
+            &lt;xsl:text&gt;check2: &lt;/xsl:text&gt;
+            &lt;xsl:value-of select="$pai" /&gt;
+          &lt;/xsl:message&gt;
+        &lt;/xsl:if&gt;
+
+        &lt;xsl:choose&gt;
+          &lt;xsl:when test="fn:count($pai)=0"&gt;
+            &lt;xsl:if test="$depth - 1!=$n"&gt;
+              &lt;xsl:message terminate="yes"&gt;
+                &lt;xsl:text&gt; invalid count of 刻子/順子. expected &lt;/xsl:text&gt;
+                &lt;xsl:value-of select="$n" /&gt;
+                &lt;xsl:text&gt; but &lt;/xsl:text&gt;
+                &lt;xsl:value-of select="$depth - 1" /&gt;
+              &lt;/xsl:message&gt;
+            &lt;/xsl:if&gt;
+            &lt;xsl:sequence select="true()" /&gt;
+          &lt;/xsl:when&gt;
+          &lt;xsl:otherwise&gt;
+            &lt;xsl:for-each select="1 to (fn:count($pai) - ($m - 1))"&gt;
+              &lt;xsl:variable name="i" as="xs:integer" select="." /&gt;
+              &lt;xsl:if test="fn:count(fn:distinct-values(fn:subsequence($pai,$i, $m)))=1"&gt;
+                &lt;xsl:variable name="next-pai" as="xs:integer*"
+                  select="$pai[position() &amp;lt; $i or $i + ($m - 1) &amp;lt; position()]" /&gt;
+                &lt;xsl:sequence select="my:check-刻子($next-pai, $depth+1)" /&gt;
+              &lt;/xsl:if&gt;
+            &lt;/xsl:for-each&gt;
+            &lt;xsl:sequence select="my:check-順子($pai, $depth)" /&gt;
+          &lt;/xsl:otherwise&gt;
+        &lt;/xsl:choose&gt;
+      &lt;/xsl:function&gt;
+
+      &lt;xsl:function name="my:check-順子" as="xs:boolean*"&gt;
+        &lt;xsl:param name="pai" as="xs:integer*" /&gt;
+        &lt;xsl:param name="depth" as="xs:integer" /&gt;
+
+        &lt;xsl:if test="$debug"&gt;
+          &lt;xsl:message&gt;
+            &lt;xsl:text&gt;check3: &lt;/xsl:text&gt;
+            &lt;xsl:value-of select="$pai" /&gt;
+          &lt;/xsl:message&gt;
+        &lt;/xsl:if&gt;
+
+        &lt;xsl:choose&gt;
+          &lt;xsl:when test="fn:count($pai)=0"&gt;
+            &lt;xsl:if test="$depth - 1 != $n"&gt;
+              &lt;xsl:message terminate="yes"&gt;
+                &lt;xsl:text&gt; invalid count of 刻子/順子. expected &lt;/xsl:text&gt;
+                &lt;xsl:value-of select="$n" /&gt;
+                &lt;xsl:text&gt; but &lt;/xsl:text&gt;
+                &lt;xsl:value-of select="$depth - 1" /&gt;
+              &lt;/xsl:message&gt;
+            &lt;/xsl:if&gt;
+            &lt;xsl:sequence select="true()" /&gt;
+          &lt;/xsl:when&gt;
+          &lt;xsl:otherwise&gt;
+            &lt;xsl:for-each select="1 to (fn:count($pai) - ($m - 1))"&gt;
+              &lt;xsl:variable name="i" as="xs:integer" select="." /&gt;
+              &lt;xsl:variable name="indexes" as="xs:integer*"&gt;
+                &lt;xsl:variable name="values" as="xs:integer*"&gt;
+                  &lt;xsl:sequence select="$pai[$i]" /&gt;
+                  &lt;xsl:for-each select="1 to ($m - 1)"&gt;
+                    &lt;xsl:sequence select="$pai[$i] + ." /&gt;
+                  &lt;/xsl:for-each&gt;
+                &lt;/xsl:variable&gt;
+                &lt;xsl:for-each select="$values"&gt;
+                  &lt;xsl:variable name="idx" as="xs:integer*"
+                    select="fn:index-of($pai, .)" /&gt;
+                  &lt;xsl:if test="fn:exists($idx)"&gt;
+                    &lt;xsl:sequence select="$idx[1]" /&gt;
+                  &lt;/xsl:if&gt;
+                &lt;/xsl:for-each&gt;
+              &lt;/xsl:variable&gt;
+              &lt;xsl:if test="fn:count($indexes)=$m"&gt;
+                &lt;xsl:variable name="next-pai" as="xs:integer*"
+                  select="$pai[fn:empty(fn:index-of($indexes, position()))]" /&gt;
+                &lt;xsl:sequence select="my:check-順子($next-pai, $depth+1)" /&gt;
+              &lt;/xsl:if&gt;
+            &lt;/xsl:for-each&gt;
+          &lt;/xsl:otherwise&gt;
+        &lt;/xsl:choose&gt;
+      &lt;/xsl:function&gt;
+    &lt;/xsl:stylesheet&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8784'
+  :parent_id: '237'
+  :url: http://ja.doukaku.org/comment/8784
+  :user_name: lunlumo
+  :user_url: /web/20091219030926/http://ja.doukaku.org/user/813/
+  :language: Ruby
+  :time: 2009/04/05 09:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>　Aタイプ向けに書いてみました。</p>\n\n\t"
+  :code: |
+    #! /usr/bin/ruby -Ks
+
+    class CheckFinished
+        PAIR = 2
+        SET = 3
+        ORDER = 3
+        def self.check_finished(pieces)
+            check_pair(pieces)
+        end
+        def self.check_pair(pieces)
+            pieces.each_index do |i|
+                if pieces[i] &gt;= PAIR
+                    (s = pieces.clone)[i] = s[i] - PAIR
+                    if check_set((0..s.size - 1).to_a.select { |j| s[j] &gt;= SET }, s)
+                        return true
+                    end
+                end
+            end
+            false
+        end
+        def self.check_set(indexes, pieces)
+            if indexes.empty?
+                check_order(pieces)
+            else
+                i = (x = indexes.clone).shift
+                (0..pieces[i] / SET).each do |w|
+                    (s = pieces.clone)[i] = s[i] - SET * w
+                    if check_order(s) || check_set(x, s)
+                        return true
+                    end
+                end
+                false
+            end
+        end
+        def self.check_order(pieces)
+            if pieces.reject { |p| p == 0 }.empty?
+                true
+            else
+                c = (0..pieces.size - ORDER).find { |i| pieces[i] &gt; 0 }
+                unless c &amp;&amp; (c..c + ORDER - 1).select { |j| pieces[j] &gt; 0 }.size == ORDER
+                    false
+                else
+                    check_order(pieces.clone.fill(c, ORDER) { |j| pieces[j] - 1 })
+                end
+            end
+        end
+        private_class_method :check_pair, :check_set, :check_order
+    end
+
+    pieces = [2,1,1,1,1,2,2,1,3]
+    puts "[#{pieces.join(',')}] =&gt; " + CheckFinished.check_finished(pieces).to_s
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9627'
+  :parent_id: '237'
+  :url: http://ja.doukaku.org/comment/9627
+  :user_name: T_GYOUTEN
+  :user_url: /web/20091219030926/http://ja.doukaku.org/user/1107/
+  :language: Other
+  :time: 2009/10/11 05:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>フォーマットＡで、m,hも指定可能にしてみました。使用言語はF#です。\r</p>\n<p>m=3でh=2の場合\r</p>\n<p>&gt;
+    isFinished 3 2 [|2;1;1;1;1;2;2;1;3|];;\r</p>\n<p>val it : bool = true</p>\n</div>\n\t"
+  :code: "let isMoreEqM m  (arr : int []) (index : int) =\n    arr.[index] &gt;= m\n\n//配列arrにおいてindexから始まる連続したm個の要素が全部１以上か\nlet
+    isConsecMoreEq1 m  (arr : int []) (index : int) =\n    let mutable res = true\n
+    \   for i in 0 .. (m - 1) do\n        if arr.[index + i] = 0 then\n            res
+    &lt;- false\n    res\n\n//後ろにk個の0を付け加えた配列を返す\nlet addEle k (arr : int []) =\n
+    \   let t = Array.zeroCreate (arr.Length + k)\n    for i in 0 .. (arr.Length -
+    1) do\n        t.[i] &lt;- arr.[i]\n    t\n\nlet isFinished mIn hIn (arrIn : int
+    []) =\n    let targetArr = addEle (mIn - 1) arrIn\n    let isRemoveAll m (arr
+    : int []) =\n        let searchIndexEnd = arr.Length - m\n        let result =
+    ref false\n        let rec reMoveM (arr : int []) index =\n            if index
+    = searchIndexEnd + 1 then\n                    result := true\n            elif
+    arr.[index] = 0 then\n                    reMoveM arr (index + 1) \n            elif
+    \ (isMoreEqM m arr index = true) &amp;&amp; (isConsecMoreEq1 m arr index = true)
+    then\n                    reMoveKousi m arr index\n                    reMoveJyunsi
+    m arr index  \n            elif  isMoreEqM m arr index = true then\n                    reMoveKousi
+    m arr index\n            elif  isConsecMoreEq1 m arr index = true then\n                    reMoveJyunsi
+    m arr index\n            else\n                    ()     \n        and reMoveKousi
+    mA (arrA :int []) indexA =\n             arrA.[indexA] &lt;- arrA.[indexA] - mA;
+    \n             reMoveM arrA indexA \n             arrA.[indexA] &lt;- arrA.[indexA]
+    + mA; \n        \n        and reMoveJyunsi mB (arrB :int []) index =\n             for
+    i in 0 .. (mB-1) do\n                 arrB.[index+i] &lt;- arrB.[index+i] - 1\n
+    \            reMoveM arrB index \n             for i in 0 .. (mB-1) do\n                 arrB.[index+i]
+    &lt;- arrB.[index+i] + 1\n  \n        reMoveM arr 0\n        !result                  \n
+    \  \n    let rec reMoveH m h (arr : int []) index =\n        let searchIndexEnd
+    = arr.Length - m\n        if index = searchIndexEnd + 1 then\n            false\n
+    \       else\n            if arr.[index] &gt;= h then\n                arr.[index]
+    &lt;- arr.[index] - h\n                if isRemoveAll m arr = true then\n                    true\n
+    \               else\n                    arr.[index] &lt;- arr.[index] + h\n
+    \                   reMoveH m h arr (index + 1)\n            else\n              reMoveH
+    m h arr (index + 1)  \n    \n    reMoveH mIn hIn targetArr 0\n"
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 

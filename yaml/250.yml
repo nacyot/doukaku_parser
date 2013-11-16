@@ -1,0 +1,1128 @@
+---
+:id: '250'
+:title: 16進数から10進数の変換
+:comments:
+- :id: '8955'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8955
+  :user_name: shojiHIDAKA
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/1051/
+  :language: 
+  :time: 2009/05/19 09:30 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  <p>１６進数を１０進数に変換してください。</p>\n<p>ただし、入出力は文字列とし、次の変換は最低必ずできなければいけないこととします。</p>\n<ol
+    class=\"arabic simple\">\n<li>0x12437308CCB6       →20080902065334</li>\n</ol>\n<p>2.0x2C9C1227FC6520B
+    \    →200904012311450123</p>\n<p>あわせて、扱える最大の整数も明らかにしてください。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8972'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8972
+  :user_name: turugina
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/760/
+  :language: Perl
+  :time: 2009/05/22 01:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>変換対象の16進数文字列はコマンドライン引数から。</p>\n<p>use bigint で使用されるMath::BigIntには
+    ”Arbitrary size integer\" って書いてあるので、任意長の整数を扱えるのではないかと思いますが。</p>\n\n\t"
+  :code: |
+    use bigint;
+    print "".hex shift;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8974'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8974
+  :user_name: rennos
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/1024/
+  :language: HSP
+  :time: 2009/05/22 03:21 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  文字列処理でごり押し。\r<br>速度の最適化はしていません。\r<br><br>理論上は無限桁の整数に対応していますが、メモリ・時間の誓約を加味すると……？\r<br>わたしのラップトップでは 150 桁まで確認できました。( *LOmake を使用 )\r<br>"
+  :code: "// ※負数は扱えない\n// ※HSP3.2b2 のみ対応( strf, strtrim )\n\n#module StrCalclator\n\n#define
+    true  1\n#define false 0\n\n#define ctype numrg(%1,%2,%3) \\\n    ( ((%2) &lt;=
+    (%1)) &amp;&amp; ((%1) &lt;= (%3)) )\n\n//------------------------------------------------\n//
+    数字 → 数値\n//------------------------------------------------\n#defcfunc charToNumber
+    int chr\n    if ( numrg(chr, '0', '9') ) {\n        return chr - '0'\n        \n
+    \   } else : if ( numrg(chr, 'a', 'z') ) {\n        return chr - 'a' + 10\n        \n
+    \   } else : if ( numrg(chr, 'A', 'Z') ) {\n        return chr - 'A' + 10\n    }\n
+    \   return 0\n    \n//------------------------------------------------\n// 数値
+    → 数字\n//------------------------------------------------\n#defcfunc numberToChar
+    int n\n    if ( numrg(n, 0, 9) ) {\n        return n + '0'\n    } else : if (
+    numrg(n, 10, 36) ) {\n        return n + 'A'\n    } else {\n        return ' '\n
+    \   }\n    \n//------------------------------------------------\n// 桁を大きい方にそろえる\n//
+    \n// @ 足りない分は左側に0で詰めます\n//------------------------------------------------\n#deffunc
+    Str_toSamePlaces var p1, var p2,  local len, local sResult\n    len = strlen(p1),
+    strlen(p2)\n    \n    if ( len(0) == len(1) ) {\n        \n    } else : if ( len(0)
+    &gt; len(1) ) {\n        p2     = strf(\"%0\"+ len(0) +\"s\", p2)\n        len(1)
+    = len(0)\n    } else {\n        p1     = strf(\"%0\"+ len(1) +\"s\", p1)\n        len(0)
+    = len(1)\n    }\n    return len(0)\n    \n//------------------------------------------------\n//
+    文字列同士の加法\n//------------------------------------------------\n#defcfunc StrCalc_add
+    str p1, str p2, \\\n    local sLeft, local sRight, local sResult, \\\n    local
+    cntRoundUp, local places, local n, local c\n    \n    sLeft      = p1\n    sRight
+    \    = p2\n    cntRoundUp = 0        // 繰り上がり (適当英単語)\n    \n    // 桁を大きい方にそろえる\n
+    \   Str_toSamePlaces sLeft, sRight\n    places = stat\n    \n    sdim sResult,
+    places + 1\n    \n    // 桁ごとの足し算\n    for i, places - 1, -1, -1    // 後ろの桁からの減数ループ\n
+    \       \n        // 桁の数値を得る\n        c(0) = peek(sLeft,  i)\n        c(1) = peek(sRight,
+    i)\n        n(0) = charToNumber(c(0))\n        n(1) = charToNumber(c(1))\n        \n
+    \       // 繰り上がりを考慮して足し算する\n        n(2)       = n(0) + n(1) + cntRoundUp\n        cntRoundUp
+    = 0\n        \n        // 繰り上がり？\n        if ( n(2) &gt;= 10 ) {\n            cntRoundUp
+    ++\n            n(2)    -= 10\n        }\n        \n        c(2) = numberToChar(n(2))\n
+    \       \n        // 結果に書き込む\n        poke sResult, i, c(2)\n        \n    next\n
+    \   \n    // 最後の繰り上がり\n    if ( cntRoundUp ) {\n        sResult = strf(\"%c\",
+    numberToChar(cntRoundUp)) + sResult\n    }\n    \n    return sResult\n    \n//------------------------------------------------\n//
+    文字列同士の乗法\n//------------------------------------------------\n#defcfunc StrCalc_mul
+    str p1, str p2,  \\\n    local sLeft, local sRight, local sMiddle, local sResult,
+    \\\n    local cntRoundUp, local places, local n, local c\n    \n    sLeft      =
+    p1\n    sRight     = p2\n    places     = strlen(sLeft), strlen(sRight)\n    \n
+    \   sdim sResult, places * 2\n    sdim sMiddle, places + 1, places    // 途中式\n
+    \   \n    // 右辺の桁ごとにループ\n    repeat places(1)\n        c(1) = peek(sRight, places(1)
+    - cnt - 1)\n        n(1) = charToNumber(c(1))\n        \n        if ( n(1) ==
+    0 ) {\n            sMiddle(cnt) = \"0\"\n            continue\n        }\n        \n
+    \       cntRoundUp = 0        // 繰り上がり (適当英単語)\n        \n        // 桁ごとのかけ算\n
+    \       for i, places(0) - 1, -1, -1            // 後ろの桁からの減数ループ\n            \n
+    \           // 桁の数値を得る\n            c(0) = peek(sLeft,  i)\n            n(0) =
+    charToNumber(c(0))\n            \n            // 繰り上がりを考慮してかけ算する\n            n(2)
+    \      = n(0) * n(1) + cntRoundUp\n            cntRoundUp = 0\n            repeat\n
+    \               if ( n(2) &gt;= 10 ) {\n                    cntRoundUp ++\n                    n(2)
+    \   -= 10\n                } else {\n                    break\n                }\n
+    \           loop\n            \n            c(2) = numberToChar(n(2))\n            \n
+    \           // 途中式に書き込む\n            poke sMiddle(cnt), i, c(2)\n            \n
+    \       next\n        \n        // 最後の繰り上がり\n        if ( cntRoundUp ) {\n            sMiddle(cnt)
+    = strf(\"%c%s\", numberToChar(cntRoundUp), sMiddle(cnt))\n        }\n        \n
+    \       // 後ろ側に 0 を並べて桁揃え\n        sMiddle(cnt) += strf(\"%0\"+ cnt +\"s\", \"\")\n
+    \       \n    loop\n    \n    // 途中式をすべて足し合わせる\n    repeat places(1)\n        sResult
+    = StrCalc_add(sResult, sMiddle(cnt))\n    loop\n    \n    return sResult\n    \n//------------------------------------------------\n//
+    文字列の累乗\n//------------------------------------------------\n#defcfunc StrCalc_pow
+    str p1, int p2,  local sResult\n    sdim sResult\n    sResult = \"1\"\n    \n
+    \   repeat p2\n        sResult = StrCalc_mul(sResult, p1)\n    loop\n    return
+    sResult\n    \n//------------------------------------------------\n// 10進数以外の基数の文字列を10進数文字列に変換\n//
+    \n// @ 2 ～ 32 進数まで保証\n// @ 負数は扱えない\n//------------------------------------------------\n#defcfunc
+    StrCalc_toDigit str p1, int fromRadix, \\\n    local sFromRadix, local sInput,
+    local sDigit\n    if ( fromRadix &lt;= 0 )  { return \"\" }        // エラー\n    if
+    ( fromRadix == 10 ) { return p1 }        // 変換する必要なし\n    \n    sdim sInput,  320\n
+    \   sdim sDigit,  320\n    sFromRadix = str(fromRadix)\n    \n    // 小文字にする\n
+    \   sInput = p1\n    places = strlen(sInput)\n    \n    // 十進数に直す\n    repeat
+    places\n        c      = peek(sInput, places - (cnt + 1))\n        stmp   = StrCalc_mul(
+    str( charToNumber(c) ), StrCalc_pow(sFromRadix, cnt) )\n        sDigit = StrCalc_add(
+    sDigit, stmp )\n    loop\n    \n    return sDigit\n    \n#global\n    \n*main\n
+    \   sLeft   = \"12437308CCB6\",   \"2C9C1227FC6520B\",    \"ff\"\n    sResult
+    = \"20080902065334\", \"200904012311450123\", \"255\"\n    \n    repeat 3\n        mes
+    \"#\"+ cnt +\"\\n解答：\"+ StrCalc_toDigit(sLeft(cnt), 16) +\"\\n正答：\"+ sResult(cnt)\n
+    \       mes\n    loop\n    \n    stop\n    \n// おまけ\n*LOmake\n    n = 15                //
+    入力する16進数の桁数の10分の1\n    sdim sHex, 1024\n    repeat n\n        sHex += \"1234567890\"\n
+    \   loop\n    \n    sDig = StrCalc_toDigit(sHex, 16)\n    logmes sDig\n    stop\n"
+  :tags:
+  - HSP3.2β2
+  :references:
+    :url: 
+    :title: 
+- :id: '8975'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8975
+  :user_name: sumim
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/05/22 04:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。</p>\n<p>Integer のクラスメソッド #readFrom:base: は、第一引数に変換したい文字列のストリームを、第二引数に何進数か指定してコールすることで十進数への変換が可能です。</p>\n<p>桁数の制約は特にありません。</p>\n<p>なお、文字列の先頭に16進数リテラル記述であることを示す
+    '16r' が付けてある場合は、当該文字列にメッセージ asNumber を送るだけで済ませることもできます。</p>\n<p>もちろんリテラルであれば、変換操作自体必要ありません。</p>\n\n\t"
+  :code: |
+    Integer readFrom: '12437308CCB6' readStream base: 16      "=&gt; 20080902065334 "
+    Integer readFrom: '2C9C1227FC6520B' readStream base: 16   "=&gt; 200904012311450123 "
+
+    '16r12437308CCB6' asNumber      "=&gt; 20080902065334 "
+    '16r2C9C1227FC6520B' asNumber   "=&gt; 200904012311450123 "
+
+    16r12437308CCB6      "=&gt; 20080902065334 "
+    16r2C9C1227FC6520B   "=&gt; 200904012311450123 "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '8976'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8976
+  :user_name: horiuchi
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/570/
+  :language: Ruby
+  :time: 2009/05/22 04:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>String#hex メソッドで変換ができます。\n標準入力から入力された値を変換する場合には、以下のようにすればできます。</p>\n\n\t"
+  :code: |
+    p ARGV.map{|s|s.hex}
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8978'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8978
+  :user_name: eagletmt
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/712/
+  :language: Haskell
+  :time: 2009/05/22 09:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  任意長の整数を扱えるはずです．\n\t"
+  :code: |
+    main = interact $ unlines . map (show . (read :: String -&gt; Integer)) . lines
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8979'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8979
+  :user_name: 割と普通
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/581/
+  :language: Other
+  :time: 2009/05/22 04:55 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">.NETだとConvertクラスが異常に強力なのでこれでいけます。\r\n取り扱える最大値について、int64.MaxValueから取得できる値が限界となります。\r\n※
+    当然これ以上に大きい値ではOverflowExceptionがでます</pre>\n\t"
+  :code: |
+    static void Main(string[] args)
+    {
+        Console.WriteLine(ConvertTo16("12437308CCB6"));
+        Console.WriteLine(ConvertTo16("2C9C1227FC6520B"));
+        Console.WriteLine(ConvertTo16(Convert.ToString(Int64.MaxValue, 16)));
+        Console.ReadLine();
+    }
+
+    static long ConvertTo16(string hexstr)
+    {
+        return Convert.ToInt64(hexstr, 16);
+    }
+
+    //20080902065334
+    //200904012311450123
+    //9223372036854775807
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8980'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8980
+  :user_name: 割と普通
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/581/
+  :language: 
+  :time: 2009/05/22 05:06 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <p>ConvertTo16じゃなく、ConvertFrom16にすべきな挙句、.NETなのにotherにしてしまった…orz</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8982'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8982
+  :user_name: saito
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/1054/
+  :language: Scheme
+  :time: 2009/05/22 07:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Scheme にはそういう関数が用意されているのでそれを使っただけです。\r\n使える値の大きさの上限は処理系によると思います。\n\t"
+  :code: |
+    (define (hex-&gt;dec h)
+      (number-&gt;string
+       (string-&gt;number h 16)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8984'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8984
+  :user_name: kkobayashi
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2009/05/22 15:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>変換機能は組み込みでありますが、内部的にはdouble型なのでdouble型のビット長（通常64bit）を超えると結果がおかしくなってしまいます。</p>\n<p>gmpライブラリーを使うと任意の多倍長整数が扱えます。</p>\n\n\t"
+  :code: |
+    # builtin
+    &gt; 0x12437308CCB6
+    [1] 20080902065334
+    &gt; 0x2C9C1227FC6520B
+    [1] 200904012311450112
+    &gt; typeof(0x2C9C1227FC6520B)
+    [1] "double"
+
+    # gmp
+    &gt; library(gmp)
+    &gt; as.bigz("0x12437308CCB6")
+    [1] "20080902065334"
+    &gt; as.bigz("0x2C9C1227FC6520B")
+    [1] "200904012311450123"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8986'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8986
+  :user_name: stog
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/860/
+  :language: Python
+  :time: 2009/05/22 12:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Python 2.4</p>\n<p>コマンドライン引数から16進数文字列を入力。</p>\n<p>int関数で変換しています。</p>\n<p>int型の範囲に収まらなければ自動的にlong型になり、long型には桁数の制限がないようです。</p>\n\n\t"
+  :code: |
+    import sys
+    print int(sys.argv[1], 16)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8987'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8987
+  :user_name: stog
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/860/
+  :language: PHP
+  :time: 2009/05/22 13:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">PHP 5.1.6\r\n\r\nhexdec()ではinteger型の範囲をこえる数値は、float型で返すみたいなので、\r\ngmp_strval()を使いました。</pre>\n\t"
+  :code: |
+    // hexdec() ※うまくいかない
+    $ php -r 'echo hexdec($argv[1]),"\n";' 0x12437308CCB6
+    20080902065334
+    $ php -r 'echo hexdec($argv[1]),"\n";' 0x2C9C1227FC6520B
+    2.0090401231145E+17
+
+    // gmp_strval()
+    $ php -r 'echo  gmp_strval($argv[1]),"\n";' 0x12437308CCB6
+    20080902065334
+    $ php -r 'echo  gmp_strval($argv[1]),"\n";' 0x2C9C1227FC6520B
+    200904012311450123
+  :tags: []
+  :references:
+    :url: /web/20100628135106/http://jp.php.net/manual/ja/function.hexdec.php
+    :title: PHP Manual - hexdec
+- :id: '8988'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8988
+  :user_name: 匿名
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/4/
+  :language: OCaml
+  :time: 2009/05/22 13:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Ｆ＃で、入力ＨＥＸ文字列は、コマンドライン引数で指定します。\r\nuint64 の範囲で実行可\r\n実行例：\r\n&gt;hex2dec
+    0x12437308ccb6\r\n20080902065334\r\n\r\n&gt;hex2dec 0x2c9c1227fc6520b\r\n200904012311450123\r\n</pre>\n\t"
+  :code: "#light\n\nopen System\n\n[&lt;STAThread&gt;]\n[&lt;EntryPoint&gt;]\nlet
+    main(args) = \n    match args with \n    | [|hexString|] -&gt; \n        printfn
+    \"%u\" &lt;| uint64 hexString\n    | _ -&gt; \n        printfn \"Usage Hex2dec
+    hexString\"\n    0\n"
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '8989'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8989
+  :user_name: genzou
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2009/05/22 16:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">コマンドから実行。\r\n\r\nLongの方がスマートですが、0x7fffffffffffffffまでの制限ありです。\r\nBigIntegerは事実上無制限のようです。\r\n\r\nBigDecimal
+    -OKWave &lt;http://74.125.153.132/search?q=cache:fEYO5fTGEsoJ:okwave.jp/qa715480.html+java+biginteger+%E6%9C%80%E5%A4%A7&amp;cd=13&amp;hl=ja&amp;ct=clnk&amp;gl=jp&gt;\r\n</pre>\n\t"
+  :code: |
+    groovy -e "println Long.decode(args[0])" 0x12437308CCB6
+    groovy -e "println new BigInteger(args[0] - ~/0x/, 16)" 0x2C9C1227FC6520B
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8991'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8991
+  :user_name: 匿名
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/4/
+  :language: Perl
+  :time: 2009/05/22 19:45 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">引数は、コマンドラインで指定します。\r\n短い桁数の計算に分解しているので、特に制限はありません。\r\n</pre>\n\t"
+  :code: |
+    use strict;
+    my $base = "0123456789abcdef";
+    my $num_16 = shift; $num_16 =~ s/^0x//; $num_16 = "\L$num_16";
+    my @num_16 = reverse split //, $num_16;
+    my @result;
+
+    foreach my $idx (0 .. $#num_16) {
+      my $n = index($base, $num_16[$idx]);
+      next unless $n;
+      my @temp = calc($n, $idx);
+      foreach my $idx (0 .. $#temp) {
+        $result[$idx] += $temp[$idx];
+        if ($result[$idx] &gt; 9) {
+          $result[$idx] -= 10; $result[$idx + 1]++;
+        }
+      }
+    }
+    print reverse(@result), "\n";
+
+    sub calc {
+      my @work = reverse split //, shift(); my $x = shift;
+
+      while ($x--) {
+        $_ = $_ * 16 foreach @work;
+        foreach my $idx (0 .. $#work) {
+          if ($work[$idx] &gt; 9) {
+            my ($up, $n) = $work[$idx] =~ /^(.+)(.)$/;
+            $work[$idx] = $n; $work[$idx + 1] += $up;
+          }
+        }
+        if ($work[$#work] &gt; 9) {
+          my ($m, $n) = $work[$#work] =~ /^(.+)(.)$/;
+          $work[$#work] = $n; push @work, reverse(split //, $m);
+        }
+      }
+      return @work;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8992'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8992
+  :user_name: lunlumo
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/813/
+  :language: Java
+  :time: 2009/05/22 20:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>　BigIntegerで。BigIntegerは任意精度なので上限はありません。</p>\n\n\t"
+  :code: |
+    import java.math.BigInteger;
+
+    public class ToDecimal {
+        public static void main(String[] args) {
+            System.out.println(new BigInteger(args[0].replaceFirst("^0x", ""), 16).toString());
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8993'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8993
+  :user_name: lunlumo
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/813/
+  :language: Scala
+  :time: 2009/05/23 01:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>　BigIntを使って書いてみました。内部的にBigIntegerが使われているので特に上限はありません。</p>\n\n\t"
+  :code: |
+    println(BigInt(args.first.replaceFirst("^0x", ""), 16).toString)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8994'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8994
+  :user_name: syat
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/766/
+  :language: C
+  :time: 2009/05/23 01:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  C99にはlong long型があるから簡単じゃん、と思ったら処理系の違いで苦労した。\r<br>strtoull で変換し、printf の %ull で出力するのが標準かと。\r<br>VC2008EE と gcc(MinGW) で確認しました。\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+
+    #ifdef _MSC_VER
+      #define strtoull _strtoui64
+    #endif
+
+    #ifdef __MINGW32__
+      #define FORMAT_LLU "%I64u"
+    #else
+      #define FORMAT_LLU "%llu"
+    #endif
+
+    int main(void) {
+        char buf[128];
+
+        memset(buf, 0x00, sizeof(buf));
+        if ( fgets(buf, sizeof(buf), stdin) ) {
+            unsigned long long ll;
+
+            ll = strtoull(buf, NULL, 16);
+
+            printf(FORMAT_LLU, ll);
+        }
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: /web/20100628135106/http://blog.headwing.com/2007/08/16/64bit-integer-in-mingwc/
+    :title: HeadWing | 64bit Integer in MinGWC
+- :id: '8995'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8995
+  :user_name: syat
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/766/
+  :language: 
+  :time: 2009/05/23 01:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>書き忘れましたが、扱える整数の幅は符号なし64bitなので、\n0 ～ 18446744073709551615 です。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8996'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8996
+  :user_name: spoon
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/1036/
+  :language: OCaml
+  :time: 2009/05/23 02:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    let [|hex_string|] = Sys.argv;;
+    print_endline (Int64.to_string (Int64.of_string hex_string));;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8997'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8997
+  :user_name: 匿名
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/4/
+  :language: OCaml
+  :time: 2009/05/23 06:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">F# で、Math.BigInt を使って桁の制限をなくしたバージョン\r\n実行例：\r\n&gt;
+    hex2dec \"0x12437308CCB6\";;\r\nval it : Math.BigInt = 20080902065334I\r\n&gt;
+    hex2dec \"0x2C9C1227FC6520B\";;\r\nval it : Math.BigInt = 200904012311450123I\r\n</pre>\n\t"
+  :code: |
+    #light
+
+    let hex2dec (s:string) =
+        let hs = s.[2..] //先頭の0x を取り除く
+        let intToBigInt (x:int) = Math.BigInt(x)
+        let bs = 16I
+        let times_base x y = x * bs + y
+        Seq.fold times_base 0I &lt;| Seq.map (intToBigInt &lt;&lt; int &lt;&lt; (^) "0x" &lt;&lt; string) hs
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '8998'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8998
+  :user_name: g000001
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/405/
+  :language: Common
+  :time: 2009/05/23 07:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  標準関数のparse-integerには基数を指定できますので、16進表記から変換することが可能です。\r<br>また、標準で#xというリーダーマクロが定義されていますので、これを用いて直接的に表記することも可能です。\r<br>"
+  :code: |
+    (parse-integer "12437308CCB6" :radix 16)
+    ;=&gt; 20080902065334
+        12
+
+    (parse-integer "2C9C1227FC6520B" :radix 16)
+    ;=&gt; 200904012311450123
+        15
+
+    (list #x12437308CCB6 #x2C9C1227FC6520B)
+    ;=&gt; (20080902065334 200904012311450123)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8999'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/8999
+  :user_name: g000001
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/405/
+  :language: 
+  :time: 2009/05/23 13:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>上限について書き忘れました。\nCommon Lispでは整数の大きさについて制限は設けられていません。\n<a class=\"reference\"
+    href=\"/web/20100628135106/http://www.lispworks.com/documentation/HyperSpec/Body/t_intege.htm\">http://www.lispworks.com/documentation/HyperSpec/Body/t_intege.htm</a></p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9005'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/9005
+  :user_name: pooq
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/606/
+  :language: J
+  :time: 2009/05/25 15:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">   hex2dec '12437308CCB6'\r\n20080902065334\r\n
+    \  hex2dec '2C9C1227FC6520B'\r\n200904012311450123\r\n   hex2dec 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'\r\n340282366920938463463374607431768211455\r\n
+    \  (2x^128)-1\r\n340282366920938463463374607431768211455\r\n</pre>\n\t"
+  :code: |
+    hex2dec =: 16x #. '0123456789ABCDEF' i. ]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9006'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/9006
+  :user_name: tkturbo
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/1056/
+  :language: JavaScript
+  :time: 2009/05/25 16:22 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  初投稿です。\r\n\r\n数値文字列として変換してみました。\r\n\r\n変換後の最大値はおそらくNumber.MAX_VALUEになるかと。\r\n\r\n#
+    とりあえず4-500桁ぐらいまでは動作検証しました。\n\t"
+  :code: |
+    /* --------------------------------------------------------------------------- */
+    String.prototype.toCharArray=function(){
+      var arr = new Array(this.length);
+      for(var i = 0; i &lt; this.length; i++){ arr[i] = this.charAt(i); };
+      return arr;
+    };
+    /* --------------------------------------------------------------------------- */
+    function add(strnum1, strnum2){
+      var arr1 = strnum1.toCharArray().reverse();
+      var arr2 = strnum2.toCharArray().reverse();
+      var max = (arr1.length &gt; arr2.length ? arr1.length : arr2.length) - 1;
+      var strsum = "";
+      for(var i = 0, up = 0; i &lt;= max; i++){
+        var c1 = i &lt; arr1.length ? parseInt(arr1[i],10) : 0;
+        var c2 = i &lt; arr2.length ? parseInt(arr2[i],10) : 0;
+        c1 += up;
+        c1 += c2;
+        up = Math.floor(c1/10);
+        c1 %= 10;
+        strsum = c1 + strsum;
+        if(i == max) strsum = up+strsum;
+      }
+      return strsum;
+    };
+    /* --------------------------------------------------------------------------- */
+    function sum(arr){
+      var strsum = "";
+      for(var i = 0; i &lt; arr.length; i++){
+        strsum = add(strsum, arr[i]);
+      }
+      return strsum.replace(/^0*/,"");
+    };
+    /* --------------------------------------------------------------------------- */
+    function multiple(a, b){
+      var arr_a = a.toCharArray().reverse();
+      var arr_b = b.toCharArray().reverse();
+      var arr_c = new Array(arr_b.length);
+      var max = arr_a.length-1;
+      for(var i = 0, zeropad=""; i &lt; arr_b.length; i++,zeropad+="0"){
+        var str_c = "";
+        for(var j = 0, up=0; j&lt;arr_a.length; j++){
+          var c = (parseInt(arr_a[j], 10) * parseInt(arr_b[i],10));
+          c+=up;
+          up = Math.floor(c/10);
+          c %= 10;
+          str_c = c+str_c;
+          if(j==max &amp;&amp; up&gt;0) str_c=up+str_c;
+        }
+        str_c+=zeropad;
+        arr_c[i] = str_c;
+      }
+      return sum(arr_c);
+    };
+    /* --------------------------------------------------------------------------- */
+    function hex2decimal(hexstr){
+      var template = "0123456789ABCDEF";
+      var arr = hexstr.toUpperCase().substring(2).toCharArray().reverse();
+      for(var i = 0, hex="1"; i &lt; arr.length; i++, hex=multiple(hex,"16")){
+        var numc = "" + template.indexOf(arr[i]);
+        var mult = multiple(numc, hex);
+        arr[i] = mult;
+      }
+      var decstr=sum(arr);
+      if(decstr.length==0) desctr="0";
+      return decstr;
+    };
+  :tags: []
+  :references:
+    :url: /web/20100628135106/http://blog.livedoor.jp/tkturbo/archives/51529351.html
+    :title: ''
+- :id: '9008'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/9008
+  :user_name: tkturbo
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/1056/
+  :language: 
+  :time: 2009/05/25 19:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>リンク貼るの失敗してますたorz</p>\n<p>また、最大値について、「変換後の値がNumber.MAX_VALUE桁となる値」と修正します。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: /web/20100628135106/http://blog.livedoor.jp/tkturbo/archives/51529351.html
+    :title: 検証用ページ
+- :id: '9013'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/9013
+  :user_name: kh
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/654/
+  :language: D
+  :time: 2009/05/27 00:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>言語組み込みで扱える最大整数は64bitのlongです。なぜか標準ライブラリに16進文字列から整数に変換する関数がないのでC99からstrtollを借ります。</p>\n<p>標準ライブラリに多倍長整数はあります。</p>\n\n\t"
+  :code: "import core.stdc.stdlib: strtoll;\nimport std.bigint: BigInt;\nimport std.stdio;\n\nvoid
+    main() {\n    // longは64bit\n    long x = strtoll(\"0x12437308CCB6\", null, 16);\n
+    \   writeln(x); // 20080902065334\n    \n    // BigIntは多倍長整数\n    BigInt y = \"0x2C9C1227FC6520B\";\n
+    \   writeln(y); // 200904012311450123\n}\n"
+  :tags:
+  - D2.030
+  :references:
+    :url: 
+    :title: 
+- :id: '9027'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/9027
+  :user_name: egtra
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2009/05/31 12:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  unsigned long longは大抵の環境で64ビット符号無し整数として使えるだろうとあてにしています。&lt;boost/cstdint.hpp&gt;をインクルードして、boost::uint_least64_tあたりを使うのがおすすめですが、この程度のサンプルにBoostを用意させるのも大げさだろうということで、unsigned
+    long longを使っています。\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+
+    int main()
+    {
+        unsigned long long n;
+        std::cin &gt;&gt; std::hex &gt;&gt; n;
+        std::cout &lt;&lt; n &lt;&lt; std::endl;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9067'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/9067
+  :user_name: bleis-tift
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/732/
+  :language: SQL
+  :time: 2009/06/07 23:47 GMT
+  :vote_count: '3'
+  :vote_score: '3'
+  :body: "\n\t  <p>SQL Server 2008 で確認しました。\n最大値は、bigint の限界なので、9,223,372,036,854,775,807
+    です。</p>\n\n\t"
+  :code: |
+    WITH
+      InputStrs(id, hex) AS (
+        SELECT 1, '0x12437308CCB6'
+        UNION ALL
+        SELECT 2, '0x2C9C1227FC6520B'
+      )
+    , HexStrs(id, hex) AS (
+        SELECT
+            id
+          , SUBSTRING(hex, 3, LEN(hex))
+        FROM
+            InputStrs
+      )
+    , MaxLen(max_len) AS (
+        SELECT MAX(LEN(hex)) FROM HexStrs
+      )
+    , Seq(id, n) AS (
+        SELECT id, 1 FROM HexStrs
+        UNION ALL
+        SELECT
+            Seq.id
+          , n + 1
+        FROM
+            Seq INNER JOIN HexStrs ON Seq.id = HexStrs.id
+        WHERE
+            n + 1 &lt;= (SELECT max_len FROM MaxLen)
+      )
+    , Chs(id, ch, i) AS (
+        SELECT
+            id
+          , SUBSTRING(hex, LEN(hex), 1)
+          , 1
+        FROM
+            HexStrs
+        UNION ALL
+        SELECT
+            Chs.id
+          , SUBSTRING(hex, LEN(hex) - Chs.i, 1)
+          , i + 1
+        FROM
+            Chs
+              INNER JOIN HexStrs ON Chs.id = HexStrs.id
+        WHERE
+            i &lt; (SELECT max_len FROM MaxLen)
+      )
+    SELECT
+        SUM(CASE
+            WHEN ch = ''
+              THEN 0
+            WHEN ch LIKE '[A-F]'
+              THEN ASCII(ch) - ASCII('A') + 10
+              ELSE CAST(ch AS int)
+            END * POWER(CAST(16 AS bigint), i - 1))
+    FROM
+        Chs
+    GROUP BY
+        id
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9184'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/9184
+  :user_name: muscovyduck
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/679/
+  :language: Ruby
+  :time: 2009/06/16 08:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>Rubyでは数値リテラルとして16進整数表現があるので、そのまま文字列をevalすれば望む値が得られます。出力も文字列という出題なので、to_sで文字列にしています。\n</p>\n<p>参考:
+    <a href=\"/web/20100628135106/http://www.ruby-lang.org/ja/man/html/_A5EAA5C6A5E9A5EB.html\">リテラル
+    - Rubyリファレンスマニュアル</a>\n</p>\n<p>ちなみにRuby自体には「最大の整数」という制限はなく、メモリの許す限り大きな整数を扱うことができます。\n</p>\n\n\n\n\t"
+  :code: |
+    p eval("0x12437308CCB6").to_s    #=&gt; "20080902065334"
+    p eval("0x2C9C1227FC6520B").to_s #=&gt; "200904012311450123"
+  :tags: []
+  :references:
+    :url: /web/20100628135106/http://www.ruby-lang.org/ja/man/html/Integer.html
+    :title: Integer - Rubyリファレンスマニュアル
+- :id: '9192'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/9192
+  :user_name: tsekine
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/124/
+  :language: Bash
+  :time: 2009/06/18 03:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>最大の整数は実装依存ですが、私の64bitマシンでは2^63-1が最大です。</p>\n\n\t"
+  :code: |
+    h2i(){
+      local -i i
+      if [[ "$1" == 0x* ]]; then
+        i="$1"
+      else
+        i=16#"$1"
+      fi
+      echo $i
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9223'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/9223
+  :user_name: pooq
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/606/
+  :language: BASIC
+  :time: 2009/06/23 04:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">有理数モードにすると桁数の制限がなくなるが\r\n対応している演算は四則演算とべき乗だけである。\r\nBVAL関数をそのまま使うと最初のサンプルは、うまくいくが\r\n2番目のサンプルでは精度が足りない。\r\nそこで、1桁ごとに分解して集計した。\r\n</pre>\n\t"
+  :code: |
+    OPTION ARITHMETIC RATIONAL
+
+    FUNCTION hex2dec$(h$)
+       LET n = LEN(h$)
+       LET t = 0
+       FOR i = 0 TO n - 1
+          LET t = t + BVAL(h$(n - i : n - i),16) * 16 ^ i
+       NEXT I
+       LET hex2dec$ = STR$(t)
+    END FUNCTION
+
+    PRINT hex2dec$("12437308CCB6")      !=&gt;20080902065334
+    PRINT hex2dec$("2C9C1227FC6520B")   !=&gt;200904012311450123
+    END
+  :tags:
+  - 十進BASIC
+  :references:
+    :url: 
+    :title: 
+- :id: '9259'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/9259
+  :user_name: 匿名
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/4/
+  :language: D
+  :time: 2009/06/29 03:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  苦肉の策です（笑）\r\n\r\n全く、リテラルは２進数までサポートしているくせに…\n\t"
+  :code: |
+    import std.stdio;
+
+    void main() {
+        long x = mixin("0x12437308CCB6");
+        writeln(x); // 20080902065334
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9395'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/9395
+  :user_name: shojiHIDAKA
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/1051/
+  :language: 
+  :time: 2009/07/19 11:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  float型の場合は桁こぼれを起すという、出題のポイントを正しく理解されているようで、とても嬉しいです。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9396'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/9396
+  :user_name: shojiHIDAKA
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/1051/
+  :language: 
+  :time: 2009/07/19 12:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>処理系の整数の大きさに制限がないことと、そのプログラムで扱える最大の整数、つまり正しく変換される上限が、同じだと、なぜ考えうるのかよく判りませんがLispって、そういうものなんですね。なるほど。</p>\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9441'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/9441
+  :user_name: noriscape
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/1089/
+  :language: XSLT
+  :time: 2009/08/03 14:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  XSLT1.0で実装。\r<br>XPath1.0の数値型は浮動小数点数しか存在せず、その精度は処理系によって異なるようです。倍精度くらいで実装されているようで、この数値型をそのまま利用すると(29-51行)、条件2の変換が正確に行えませんでした。\r<br>そこで、入力された16進数を上位ビットと下位ビットに分けて数値化し、10進数として表示する時に2つの数を合成する手法を用いました(52-95行)。それでもFirefoxだと16桁でヘタってしまいましたが、Xalanは26桁まで頑張ってくれました。\r<br><br>実行結果（実行方法：適当なXMLにこのXSLTを適用）\r<br> - Firefox 3.5.1:\r<br>0x12437308CCB6 = 20080902065334.\r<br>0x2C9C1227FC6520B = 200904012311450100.\r<br>0x12437308CCB6 = (bignum) 20080902065334.\r<br>0x2C9C1227FC6520B = (bignum) 200904012311450123.\r<br>0xCDEF89AB45670123 = (bignum) 14839230665905865403.\r<br>0x112233445566778899AABBCCDD = (bignum) 1357463230989497420518412782813.\r<br><br> - Xalan 1.10.0:\r<br>0x12437308CCB6 = 20080902065334.\r<br>0x2C9C1227FC6520B = 200904012311450112.\r<br>0x12437308CCB6 = (bignum) 20080902065334.\r<br>0x2C9C1227FC6520B = (bignum) 200904012311450123.\r<br>0xCDEF89AB45670123 = (bignum) 14839230665905864995.\r<br>0x112233445566778899AABBCCDD = (bignum) 1357463230989497419223659171037.\r<br>"
+  :code: |
+    &lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+    &lt;xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"&gt;
+      &lt;xsl:output method="text" /&gt;
+      &lt;xsl:variable name="var" select="document('')/xsl:stylesheet/xsl:template[@name='var']" /&gt;
+      &lt;xsl:template match="/"&gt;
+        &lt;xsl:variable name="test1" select="'0x12437308CCB6'" /&gt;
+        &lt;xsl:variable name="test2" select="'0x2C9C1227FC6520B'" /&gt;
+        &lt;xsl:variable name="test3" select="'0xCDEF89AB45670123'" /&gt;
+        &lt;xsl:variable name="test4" select="'0x112233445566778899AABBCCDD'" /&gt;
+        &lt;xsl:call-template name="hex2dec"&gt;
+          &lt;xsl:with-param name="input" select="$test1" /&gt;
+        &lt;/xsl:call-template&gt;
+        &lt;xsl:call-template name="hex2dec"&gt;
+          &lt;xsl:with-param name="input" select="$test2" /&gt;
+        &lt;/xsl:call-template&gt;
+        &lt;xsl:call-template name="bighex2dec"&gt;
+          &lt;xsl:with-param name="input" select="$test1" /&gt;
+        &lt;/xsl:call-template&gt;
+        &lt;xsl:call-template name="bighex2dec"&gt;
+          &lt;xsl:with-param name="input" select="$test2" /&gt;
+        &lt;/xsl:call-template&gt;
+        &lt;xsl:call-template name="bighex2dec"&gt;
+          &lt;xsl:with-param name="input" select="$test3" /&gt;
+        &lt;/xsl:call-template&gt;
+        &lt;xsl:call-template name="bighex2dec"&gt;
+          &lt;xsl:with-param name="input" select="$test4" /&gt;
+        &lt;/xsl:call-template&gt;
+      &lt;/xsl:template&gt;
+      &lt;xsl:template name="hex2dec"&gt;
+        &lt;xsl:param name="input" /&gt;
+        &lt;xsl:value-of select="$input" /&gt; = &lt;!--
+        --&gt;&lt;xsl:apply-templates select="$var" mode="translate"&gt;
+          &lt;xsl:with-param name="input" select="substring($input,3)" /&gt;
+        &lt;/xsl:apply-templates&gt;.
+    &lt;!--
+      --&gt;&lt;/xsl:template&gt;
+      &lt;xsl:template match="xsl:template" mode="translate"&gt;
+        &lt;xsl:param name="input"  /&gt;
+        &lt;xsl:param name="output" select="0" /&gt;
+        &lt;xsl:choose&gt;
+          &lt;xsl:when test="$input=''"&gt;
+            &lt;xsl:value-of select="$output" /&gt;
+          &lt;/xsl:when&gt;
+          &lt;xsl:otherwise&gt;
+            &lt;xsl:apply-templates select="." mode="translate"&gt;
+              &lt;xsl:with-param name="input" select="substring($input,2)" /&gt;
+              &lt;xsl:with-param name="output" select="$output * 16 + hex[@name=substring($input,1,1)]" /&gt;
+            &lt;/xsl:apply-templates&gt;
+          &lt;/xsl:otherwise&gt;
+        &lt;/xsl:choose&gt;
+      &lt;/xsl:template&gt;
+      &lt;xsl:template name="bighex2dec"&gt;
+        &lt;xsl:param name="input" /&gt;
+        &lt;xsl:variable name="partition" select="floor((string-length($input)-2) div 2)" /&gt;
+        &lt;xsl:value-of select="$input" /&gt; = (bignum) &lt;!--
+        --&gt;&lt;xsl:apply-templates select="$var" mode="btranslate"&gt;
+          &lt;xsl:with-param name="input" select="substring($input,3,$partition)" /&gt;
+          &lt;xsl:with-param name="input2" select="substring($input,3+$partition)" /&gt;
+        &lt;/xsl:apply-templates&gt;.
+    &lt;!--
+      --&gt;&lt;/xsl:template&gt;
+      &lt;xsl:template match="xsl:template" mode="btranslate"&gt;
+        &lt;xsl:param name="input" select="''" /&gt;
+        &lt;xsl:param name="input2" select="''" /&gt;
+        &lt;xsl:param name="output" select="0" /&gt;
+        &lt;xsl:param name="output2" select="0" /&gt;
+        &lt;xsl:variable name="in1" select="substring($input,1,1)" /&gt;
+        &lt;xsl:choose&gt;
+          &lt;xsl:when test="$input=''"&gt;
+            &lt;xsl:choose&gt;
+              &lt;xsl:when test="$input2=''"&gt;
+                &lt;xsl:variable name="outA" select="substring($output,1,string-length($output)-string-length($output2))" /&gt;
+                &lt;xsl:variable name="outB" select="substring($output,string-length($output)-string-length($output2)+1) + $output2" /&gt;
+                &lt;xsl:variable name="overflow" select="number(string-length($outB)&gt;string-length($output2))" /&gt;
+                &lt;xsl:value-of select="$outA + $overflow" /&gt;
+                &lt;xsl:value-of select="substring($outB,1+$overflow)" /&gt;
+              &lt;/xsl:when&gt;
+              &lt;xsl:otherwise&gt;
+                &lt;xsl:apply-templates select="." mode="btranslate"&gt;
+                  &lt;xsl:with-param name="input2" select="substring($input2,2)" /&gt;
+                  &lt;xsl:with-param name="output" select="$output*16" /&gt;
+                  &lt;xsl:with-param name="output2" select="$output2 * 16 + hex[@name=substring($input2,1,1)]" /&gt;
+                &lt;/xsl:apply-templates&gt;
+              &lt;/xsl:otherwise&gt;
+            &lt;/xsl:choose&gt;
+          &lt;/xsl:when&gt;
+          &lt;xsl:otherwise&gt;
+            &lt;xsl:apply-templates select="." mode="btranslate"&gt;
+              &lt;xsl:with-param name="input" select="substring($input,2)" /&gt;
+              &lt;xsl:with-param name="input2" select="$input2" /&gt;
+              &lt;xsl:with-param name="output" select="$output * 16 + hex[@name=substring($input,1,1)]" /&gt;
+            &lt;/xsl:apply-templates&gt;
+          &lt;/xsl:otherwise&gt;
+        &lt;/xsl:choose&gt;
+      &lt;/xsl:template&gt;
+      &lt;xsl:template match="text()" mode="translate" /&gt;
+      &lt;xsl:template match="text()" mode="btranslate" /&gt;
+      &lt;xsl:template match="text()" /&gt;
+      &lt;xsl:template name="var"&gt;
+        &lt;hex name="0"&gt;0&lt;/hex&gt;
+        &lt;hex name="1"&gt;1&lt;/hex&gt;
+        &lt;hex name="2"&gt;2&lt;/hex&gt;
+        &lt;hex name="3"&gt;3&lt;/hex&gt;
+        &lt;hex name="4"&gt;4&lt;/hex&gt;
+        &lt;hex name="5"&gt;5&lt;/hex&gt;
+        &lt;hex name="6"&gt;6&lt;/hex&gt;
+        &lt;hex name="7"&gt;7&lt;/hex&gt;
+        &lt;hex name="8"&gt;8&lt;/hex&gt;
+        &lt;hex name="9"&gt;9&lt;/hex&gt;
+        &lt;hex name="A"&gt;10&lt;/hex&gt;
+        &lt;hex name="B"&gt;11&lt;/hex&gt;
+        &lt;hex name="C"&gt;12&lt;/hex&gt;
+        &lt;hex name="D"&gt;13&lt;/hex&gt;
+        &lt;hex name="E"&gt;14&lt;/hex&gt;
+        &lt;hex name="F"&gt;15&lt;/hex&gt;
+      &lt;/xsl:template&gt;
+    &lt;/xsl:stylesheet&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9674'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/9674
+  :user_name: pooq
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/606/
+  :language: Arc
+  :time: 2009/11/10 17:10 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">arc&gt; (hex2dec \"12437308CCB6\")\r\n\"20080902065334\"\r\narc&gt;
+    (hex2dec \"2C9C1227FC6520B\")\r\n\"200904012311450123\"\r\n\r\n扱える整数については制限はありません。\r\n</pre>\n\t"
+  :code: |
+    (def hex2dec (x) (string (coerce x 'int 16)))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '10353'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/10353
+  :user_name: todogzm
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/550/
+  :language: Other
+  :time: 2010/03/25 19:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Clojure勉強中です。\nJavaのBigIntegerを使用しています。BigIntegerは任意精度の整数なので、扱える整数の上限はありません。:</p>\n<pre
+    class=\"literal-block\">\nuser=&gt; (hex-to-decimal \"0x12437308CCB6\")\n20080902065334\n\nuser=&gt;
+    (hex-to-decimal \"0x2C9C1227FC6520B\")\n200904012311450123\n</pre>\n\n\t"
+  :code: |
+    (defn hex-to-decimal [hex]
+      (BigInteger. (subs hex 2) 16))
+  :tags:
+  - Clojure
+  :references:
+    :url: 
+    :title: 
+- :id: '10358'
+  :parent_id: '250'
+  :url: http://ja.doukaku.org/comment/10358
+  :user_name: 匿名
+  :user_url: /web/20100628135106/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2010/03/27 01:20 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  \n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 

@@ -1,0 +1,2650 @@
+---
+:id: '9'
+:title: 分数を小数に展開
+:comments:
+- :id: '3365'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/3365
+  :user_name: にしお
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/05 06:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\r\n\t  整数a, bを受け取り，分数a/bを小数に展開した文字列を返す関数/メソッドを作成してください。結果が循環小数になる場合は，循環部を{}でくくってください。例：\r\n<pre>\r\na=3,
+    b=8 → 0.375\r\na=3, b=14 → 0.2{142857}\r\n</pre>\r\n<p>\r\n与えられる整数a, bは次の条件を満たすものと仮定して構いません。\r\n1
+    ≦ a ＜ b ≦ 2147483647。なお2147483647は2^31-1です。\r\n</p>\n<p>\r\nこのお題はtnkさんの投稿を元に作成しました。ご投稿ありがとうございます。\r\n\t</p>"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '177'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/177
+  :user_name: mattn
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/52/
+  :language: Vim
+  :time: 2007/07/05 07:52 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  君はやれば出来るんだから、ちゃんと宿題やってきなさい！ってよく言われたなぁ...(意味不明)\r\n\n\t"
+  :code: |
+    fun! Frac(a, b)
+      let a = a:a
+      let b = a:b
+      let i = 0
+      let col = range(1, b*b)
+      let col[0] = 0
+      let col[b] = 0
+      let s = (a / b) . "."
+      while 1
+        let i = i + 1
+        let a = a % b
+        let col[b+i] = a
+        let j = col[a]
+        if j &gt;= 0 &amp;&amp; j &lt; i &amp;&amp; col[b+j] == a
+          break
+        endif
+        let col[a] = i
+        let a = a * 10
+        let s .= (a / b)
+      endwhile
+      if a == 0
+        return s
+      endif
+      if col[a] == (i-1)
+        let i = 1
+      endif
+      let s = strpart(s, 0, col[a]+1) . "{" . strpart(s, col[a]+1, i) . "}"
+      return s
+    endfun
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '179'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/179
+  :user_name: shn
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/115/
+  :language: Python
+  :time: 2007/07/05 07:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  素直に書いたらこんなのになりました･･･\n\t"
+  :code: |
+    def modulo(numerator, denominator):
+        while numerator:
+            div, numerator = numerator // denominator, numerator % denominator
+            yield div, numerator
+            numerator *= 10
+
+    def recurring_decimal(numerator, denominator):
+        result = []
+        reminds = {}
+        for u, r in enumerate(modulo(numerator, denominator)):
+            result.append(str(r[0]))
+            if r[1] in reminds:
+                # 循環有り
+                idx = reminds[r[1]]+1
+                return '%s.%s{%s}' % (result[0], ''.join(result[1:idx]), ''.join(result[idx:]))
+            reminds[r[1]] = u
+        # 循環無し
+        if len(result)==1:
+            return result[0]
+        else:
+            return '%s.%s' % (result[0], ''.join(result[1:]))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '182'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/182
+  :user_name: katsu
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/117/
+  :language: Scheme
+  :time: 2007/07/05 08:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  schemeですけど、gaucheでしか動かないと思います。エレガントではないので申し訳ないです。\n\t"
+  :code: |
+    (use text.tree)
+
+    (define (div a b)
+      (tree-&gt;string `("0." ,(div2 (* a 10) b (make-hash-table 'eqv?)))))
+
+    (define (div2 a b h)
+      (cond ((hash-table-get h a #f)
+             =&gt; (lambda (x)
+                  (set-car! x `("{" ,(car x)))
+                  `("}")))
+            (else
+              (call-with-values
+                (cut quotient&amp;remainder a b)
+                (lambda (q r)
+                  (if (zero? r) `(,q)
+                      (let1 p (cons q #f)
+                        (hash-table-put! h a p)
+                        (set-cdr! p (div2 (* r 10) b h))
+                        p)))))))
+
+    (print (div 3 8))
+    (print (div 3 14))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '183'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/183
+  :user_name: にしお
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/1/
+  :language: Python
+  :time: 2007/07/05 08:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">基本的な流れは同じですが、いらないと思うところを削るとこうなりました。\r\n・問題条件でa
+    &lt; bなので整数部は0に決まっている\r\n・単にwhileでループするだけなのでジェネレータ使うまでもない？\r\n・組み込み関数にdivmodがある\r\n・文字列化を後でやればremindsはいらない\r\nという感じでしょうか。</pre>\n\t"
+  :code: |
+    def fraction_to_decimal(numerator, denominator):
+        result = []
+        num = numerator * 10
+        den = denominator
+        while num:
+            div, num = divmod(num, den)
+            if div in result:
+                # repeating
+                idx = result.index(div)
+                return "0.%s{%s}" % (
+                    "".join(str(x) for x in result[:idx]),
+                    "".join(str(x) for x in result[idx:]))
+
+            result.append(div)
+            num *= 10
+
+        return "0." + "".join(str(x) for x in result)
+  :tags:
+  - Python2.5
+  :references:
+    :url: 
+    :title: 
+- :id: '184'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/184
+  :user_name: にしお
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/05 08:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">あー、denominatorが使われるのは1回だけだから\r\n名前を付け替える必要はなかったか…。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '185'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/185
+  :user_name: kawauchi
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/14/
+  :language: Ruby
+  :time: 2007/07/05 09:16 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  未検証\n\t"
+  :code: |
+    require 'rational'
+
+    def func(a, b)
+      c = a / b
+      dst = ["#{c}."]
+      d = [0, Rational(a, b) - c]
+      h = []
+      1.upto(10) {|i|
+        d = d[1].divmod(Rational(1, 10 ** i))
+        k = [d[0], d[1].numerator, d[1].denominator / 10 ** i]
+        if k == [0, 0, 0]
+          return dst.to_s
+        end
+        if n = h.index(k)
+          return (dst[0..n] + ["{"] + dst[n + 1..dst.size] + ["}"]).to_s
+        end
+        h &lt;&lt; k
+        dst &lt;&lt; d[0]
+      }
+      dst.to_s + "..."
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '186'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/186
+  :user_name: naruse
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/120/
+  :language: Ruby
+  :time: 2007/07/05 09:17 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: |
+    def flac_to_decimal(a,b)
+      r = '0.'
+      m = []
+      while a != 0
+        m &lt;&lt; a
+        a *= 10
+        r += "#{a/b}"
+        if i = m.index(a%=b)
+          r[i+2,0] = '{'
+          r += '}'
+          break
+        end
+      end
+      r
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '187'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/187
+  :user_name: shn
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/115/
+  :language: 
+  :time: 2007/07/05 09:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  divmod なんてあるんすねぇ。\r\n\r\ndivじゃなくて、numの2回目で跳ねないと 1 / 191とかで間違えますぜ\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '188'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/188
+  :user_name: naruse
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/120/
+  :language: 
+  :time: 2007/07/05 09:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  &gt;&gt;&gt; fraction_to_decimal(3,14)\r\n'0.{214}'\r\nとなってしまうので、remindsは必要だと思います。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '189'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/189
+  :user_name: にしお
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/05 09:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ああっ、確かにそうですね。\r\nうっかりしてました。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '193'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/193
+  :user_name: satyri
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/76/
+  :language: PHP
+  :time: 2007/07/05 12:44 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">んー、いまいち。</pre>\n\t"
+  :code: "&lt;?php\nfunction decimal($numerator, $denominator){\n\t$remainders = array();\n\t$fraction
+    = array();\n\t$remainder = $numerator % $denominator;\n\twhile(!(in_array($remainder,
+    $remainders) || $remainder == 0)){\n\t\t$numerator = $remainder * 10;\n\t\t$quotient
+    = floor($numerator / $denominator);\n\t\t$remainders[] = $remainder;\n\t\t$fraction[]=
+    $quotient;\n\t\t$remainder = $numerator % $denominator;\n\t}\n\tif(!(floor($remainder
+    * 10 / $denominator) == 0 &amp;&amp; $remainder == 0)){\n\t\t$loop_start = array_search($remainder,
+    $remainders);\n\t\t$fraction[$loop_start] = '{'.$fraction[$loop_start];\n\t\t$fraction[]
+    = '}';\n\t}\n\treturn '0.'.join('',$fraction);\n}\necho(decimal(3, 14));\n?&gt;\n"
+  :tags:
+  - PHP
+  :references:
+    :url: 
+    :title: 
+- :id: '196'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/196
+  :user_name: rubikitch
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/105/
+  :language: Common
+  :time: 2007/07/05 14:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">CL-USER&gt; (rational-&gt;decimal 3/14)\r\n\"0.2{142857}\"\r\nCL-USER&gt;
+    (rational-&gt;decimal 1/4)\r\n\"0.25\"\r\nCL-USER&gt; (rational-&gt;decimal 17/14)\r\n\"1.2{142857}\"\r\n</pre>\n\t"
+  :code: |
+    (defun %rational-&gt;decimal-calc (rat)
+      (let ((a (numerator rat))
+            (b (denominator rat))
+            ret mods)
+        (loop
+           do
+             (setf a (* 10 a))
+             (push (floor (/ a b)) ret)
+             (setf a (mod a b))
+           until
+             (or (zerop a) (member a mods))
+           do
+             (push a mods)
+           finally
+             (setf ret (nreverse ret)))
+        (if (zerop a)
+            ret
+            (nconc (insert ret (position (floor (/ (* 10 a) b)) ret :from-end t) "{") '("}")))))
+
+    (defun insert (list n newelt)
+      `(,@(butlast list (- (length list) n)) ,newelt ,@(nthcdr n list)))
+
+    (defun rational-&gt;decimal (rat)
+      (multiple-value-bind (int frac) (truncate rat)
+        (format nil "~a.~{~a~}" int (%rational-&gt;decimal-calc frac))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '197'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/197
+  :user_name: malark
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/122/
+  :language: Java
+  :time: 2007/07/05 14:41 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  <pre class=\"compact\">Java1.6(1.5+?)です。\r\n1&lt;=a&lt;b&lt;2^32-1って条件は無視しちゃいました、a=int
+    &amp; b=int &amp; b!=0 なら…\r\n…故に?長くなっててすみません(汗</pre>\n\t"
+  :code: "/**\n * \n * @param dividend (a) 被除数\n * @param divisor (b) 除数\n * @return
+    商\n */\npublic static String getResult(final int dividend, final int divisor)
+    {\n    return generateResultString(getDigits(dividend, divisor));\n}\n\nprivate
+    static List&lt;Integer&gt; getDigits(final int dividend, final int divisor) {\n\n
+    \   final List&lt;Integer&gt; dividends = new LinkedList&lt;Integer&gt;();\n    final
+    List&lt;Integer&gt; digits = new LinkedList&lt;Integer&gt;();\n\n    getDigits(dividend,
+    divisor, digits, dividends);\n    return digits;\n}\n\nprivate static void getDigits(final
+    int dividend, final int divisor,\n        final List&lt;Integer&gt; digits, final
+    List&lt;Integer&gt; dividends) {\n\n    final int containedIndex = dividends.indexOf(Integer.valueOf(dividend));\n
+    \   if (containedIndex &gt;= 0) {\n        digits.add(Integer.valueOf(containedIndex
+    - digits.size()));\n        return;\n    }\n\n    digits.add(Integer.valueOf(dividend
+    / divisor));\n\n    final int remainder = dividend % divisor;\n    if (remainder
+    != 0) {\n        dividends.add(Integer.valueOf(dividend));\n        getDigits(remainder
+    * 10, divisor, digits, dividends);\n\n    }\n}\n\nprivate static String generateResultString(final
+    List&lt;Integer&gt; digits) {\n    \n    final StringBuilder sb = new StringBuilder();\n
+    \   assert digits.size() &gt; 0;\n    sb.append(digits.get(0));\n    \n    if
+    (digits.size() &gt; 1) {\n        sb.append(\".\");\n        for (final Iterator&lt;Integer&gt;
+    itr = digits.listIterator(1); itr.hasNext();) {\n            final int digit =
+    itr.next().intValue();\n            if (digit &gt;= 0) {\n                sb.append(digit);\n
+    \           } else {\n                sb.insert(sb.length() + digit, \"{\");\n
+    \               sb.append(\"}\");\n            }\n        }\n    }\n    return
+    sb.toString();\n}\n"
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '198'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/198
+  :user_name: ether
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/96/
+  :language: OCaml
+  :time: 2007/07/05 15:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre>\r\n#  pretty_fmt (decimal_of_frac 3 8);;\r\n- : string = \"0.375\"\r\n#
+    \ pretty_fmt (decimal_of_frac 3 14);;\r\n- : string = \"0.2{142857}\"\r\n# pretty_fmt
+    (decimal_of_frac 355 113);;\r\n- : string =\r\n\"3.{1415929203539823008849557522123893805309734513274336283185840707964601769911504424778761061946902654867256637168}\"\r\n</pre>\n\t"
+  :code: "let find_index_of e l =\n  try\n    let (i, _) = List.findi (fun i' e' -&gt;
+    e = e') l in Some i\n  with Not_found -&gt; None\n\nlet decimal_of_frac a b =
+    \n  let rec decimal_of_frac' a quots rems =\n    let quot = a / b and rem = a
+    mod b in\n    match find_index_of (a mod b) rems with\n    | Some i -&gt; (quot::quots,
+    i)\n    | None   -&gt; decimal_of_frac' (rem * 10) (quot::quots) (rem::rems)\n
+    \ in\n  decimal_of_frac' a [] []\n\nlet pretty_fmt (numbers, i) =\n  let loop
+    = List.rev (List.take (i + 1) numbers) in\n  let d::ds = List.rev (List.drop (i
+    + 1) numbers) in\n  let string_of_nums ns = String.concat \"\" (List.map string_of_int
+    ns) in\n  (string_of_int d) ^ \".\" ^ (string_of_nums ds) ^ \n    if loop = [0]
+    then \"\" else \"{\" ^ (string_of_nums loop) ^ \"}\"\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '199'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/199
+  :user_name: ether
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/96/
+  :language: 
+  :time: 2007/07/05 15:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  コメント崩れちゃった。失礼しました。\r\n\r\nあと List.findi を使うのに ExtLib を読んで open ExtList
+    しないといけないのを書き忘れました。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '200'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/200
+  :user_name: malark
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/122/
+  :language: Java
+  :time: 2007/07/05 15:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">バグ混在…a=10,b=17を与えたときに\r\n\"0.{14084507042253521126760563380281690}\"となるべきところが\r\n\"0{.1408450704225352112676056338028169}\"に…\r\n\r\n整数部から循環?してる場合に再現…といっても他の例がないので何とも言えないけど、とりあえず応急措置を…</pre>\n\t"
+  :code: |
+    private static String generateResultString(final List&lt;Integer&gt; digits) {
+
+        final StringBuilder sb = new StringBuilder();
+        assert digits.size() &gt; 0;
+        sb.append(digits.get(0));
+
+        if (digits.size() &gt; 1) {
+            sb.append('.');
+            for (final Iterator&lt;Integer&gt; itr = digits.listIterator(1); itr.hasNext();) {
+                final int digit = itr.next().intValue();
+                if (digit &gt;= 0) {
+                    sb.append(digit);
+                } else {
+                    int insertPoint = sb.length() + digit;
+                    if ('.' == sb.charAt(insertPoint)) {
+                        insertPoint += 1;
+                        sb.append(0);
+                    }
+                    sb.insert(insertPoint, '{');
+                    sb.append('}');
+                }
+            }
+        }
+        return sb.toString();
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '201'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/201
+  :user_name: tnk
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/30/
+  :language: 
+  :time: 2007/07/05 16:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">どこかおかしいですよ。\r\n\r\nPython 2.5 (r25:51908, Sep
+    19 2006, 09:52:17) [MSC v.1310 32 bit (Intel)] on win32\r\nType \"help\", \"copyright\",
+    \"credits\" or \"license\" for more information.\r\n&gt;&gt;&gt; def fraction_to_decimal(numerator,
+    denominator):\r\n...     result = []\r\n...     num = numerator * 10\r\n...     den
+    = denominator\r\n...     while num:\r\n...         div, num = divmod(num, den)\r\n...
+    \        if div in result:\r\n...             # repeating\r\n...             idx
+    = result.index(div)\r\n...             return \"0.%s{%s}\" % (\r\n...                 \"\".join(str(x)
+    for x in result[:idx]),\r\n...                 \"\".join(str(x) for x in result[idx:]))\r\n...
+    \        result.append(div)\r\n...         num *= 10\r\n...     return \"0.\"
+    + \"\".join(str(x) for x in result)\r\n...\r\n&gt;&gt;&gt; fraction_to_decimal(3,8)\r\n'0.375'\r\n&gt;&gt;&gt;
+    fraction_to_decimal(3,14)\r\n'0.{214}'</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '202'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/202
+  :user_name: minke
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/28/
+  :language: Ruby
+  :time: 2007/07/05 16:24 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  ほぼ同じなんですが、Hashを使ったほうが効率良いですよね。\n\t"
+  :code: |
+    def frac_to_decimal(a,b)
+      r = '0.'
+      m = {}
+      i = 1
+      while a &gt; 0
+        m[a] = (i+=1)
+        a *= 10
+        r += (a/b).to_s
+        if m.key?(a%=b)
+          r.insert(m[a], '{') &lt;&lt; '}'
+          break
+        end
+      end
+      r
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '203'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/203
+  :user_name: mimizu
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/103/
+  :language: Java
+  :time: 2007/07/05 16:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  こんなところでしょうか\n\t"
+  :code: "import java.util.Map;\nimport java.util.HashMap;\n\npublic class Fraction
+    {\n\t\n\tpublic static String toRepeatingDecimal(int numerator, int denominator)
+    {\n\t\tMap&lt;Integer, Integer&gt; remainders = new HashMap&lt;Integer, Integer&gt;();\n\t\tlong
+    d, q, r;\n\t\tint i = 0;\n\t\tStringBuffer sb = new StringBuffer();\n\t\td = denominator;\n\t\tr
+    = numerator;\n\t\tq = r / d;\n\t\tr = r % d;\n\t\tremainders.put((int)r, i++);\n\t\tr
+    *= 10;\n\t\tsb.append(q);\n\t\tif (r &gt; 0) {\n\t\t\tsb.append('.');\n\t\t\tdo
+    {\n\t\t\t\tq = r / d;\n\t\t\t\tr = r % d;\n\t\t\t\tsb.append(q);\n\t\t\t\tInteger
+    index = remainders.get((int)r);\n\t\t\t\tif (index != null) {\n\t\t\t\t\tsb.insert(sb.length()
+    - i + index, '{');\n\t\t\t\t\tsb.append('}');\n\t\t\t\t\tbreak;\n\t\t\t\t}\n\t\t\t\tremainders.put((int)r,
+    i++);\n\t\t\t\tr *= 10;\n\t\t\t} while (r &gt; 0);\n\t\t}\n\t\treturn sb.toString();\n\t}\n\t\n}\n"
+  :tags:
+  - Java1.5
+  - Java1.6
+  :references:
+    :url: 
+    :title: 
+- :id: '204'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/204
+  :user_name: rucker
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/07/05 16:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">無駄を省いてみた。\r\n$remainders の使い方を変えてみた。</pre>\n\t"
+  :code: "&lt;?php\nfunction decimal($numerator, $denominator)\n{\n\t$remainders =
+    array();\n\t$fraction = array();\n\t$remainder = $numerator;\n\tfor(;;)\n\t{\t$remainder
+    *= 10;\n\t\t$fraction[] = floor($remainder / $denominator);\n\t\t$remainder %=
+    $denominator;\n\t\tif(!$remainder)\n\t\t\tbreak;\n\t\tif(isset($remainders[$remainder]))\n\t\t{\t$loop_start
+    = $remainders[$remainder];\n\t\t\t$fraction[$loop_start] = '{'.$fraction[$loop_start];\n\t\t\t$fraction[]
+    = '}';\n\t\t\tbreak;\n\t\t}\n\t\t$remainders[$remainder] = count($fraction);\n\t}\n\treturn
+    '0.'.join('',$fraction);\n}\necho decimal(3, 14),\"\\n\";\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '205'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/205
+  :user_name: rucker
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/130/
+  :language: PHP
+  :time: 2007/07/05 16:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  う、早速バグ発見。修正\n\t"
+  :code: "&lt;?php\nfunction decimal($numerator, $denominator)\n{\n\t$remainders =
+    array();\n\t$fraction = array();\n\t$remainder = $numerator;\n\tfor(;;)\n\t{\t$remainders[$remainder]
+    = count($fraction);\n\t\t$remainder *= 10;\n\t\t$fraction[] = floor($remainder
+    / $denominator);\n\t\t$remainder %= $denominator;\n\t\tif(!$remainder)\n\t\t\tbreak;\n\t\tif(isset($remainders[$remainder]))\n\t\t{\t$loop_start
+    = $remainders[$remainder];\n\t\t\t$fraction[$loop_start] = '{'.$fraction[$loop_start];\n\t\t\t$fraction[]
+    = '}';\n\t\t\tbreak;\n\t\t}\n\t}\n\treturn '0.'.join('',$fraction);\n}\necho decimal(3,
+    14),\"\\n\";\necho decimal(10, 17),\"\\n\";\n?&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '206'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/206
+  :user_name: tnk
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/30/
+  :language: Java
+  :time: 2007/07/05 17:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">出題者が回答していいのかな・・・。\r\nJava 1.5以降です。Auto Boxingって楽だなあ。</pre>\n\t"
+  :code: |
+    public static String getDecimal(long a, long b) {
+        java.util.Vector&lt;Long&gt; nums = new java.util.Vector&lt;Long&gt;();
+        StringBuffer res = new StringBuffer("0.");
+        while (true) {
+            nums.add(a);
+            a *= 10;
+            res.append(a/b);
+            a %= b;
+            if (a == 0) {
+                return res.toString();
+            }
+            if (nums.contains(a)) {
+                int off = nums.indexOf(a) + 2;
+                return res.substring(0,off) + "{" + res.substring(off) + "}";
+            }
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '211'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/211
+  :user_name: raynstard
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/127/
+  :language: C
+  :time: 2007/07/06 00:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Cでがんばってみたあんなに短くなるほかの言語がうらやましい。\r\nもっと効率のいい書き方ないかなぁ。\r\n循環小数の判定がむずかしい。。。</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;string.h&gt;\n#include &lt;assert.h&gt;\n\nint
+    cal(char *ans, size_t bufsize, int a, int b)\n{\n    const char * const head   =
+    ans;\n    char       *jyunkan_start = NULL;  // 循環の始点\n    const char *match_start
+    \  = NULL; // \n    size_t      match_count   = 0;\n\n    memset(ans, '\\0', bufsize);\n\n
+    \   a = (a % b) * 10; \n    for( size_t n=1; n&lt;bufsize; n ++, ans ++ )\n    {\n
+    \       // 計算\n        *ans = '0' + a / b;\n        a = (a % b) * 10;\n        if(
+    a == 0 ) break;\n\n        /**********************/\n        /* 循環小数のチェック */\n
+    \       /**********************/\n        if( match_start == NULL )\n        {\n
+    \           if( jyunkan_start == NULL )\n            {\n                jyunkan_start
+    = ans;\n                continue;\n            }\n            if( *jyunkan_start
+    == *ans )\n            {\n                // 循環の開始位置かもしれない\n                match_start
+    = ans;\n                match_count ++;\n            }\n        }\n        else\n
+    \       {\n            // 循環の可能性あり\n            if( *(jyunkan_start+match_count)
+    == *ans )\n            {\n                if( (size_t)(match_start-jyunkan_start)==match_count)\n
+    \               {\n                    // ロジック上開始位置がずれるので巻き戻し\n                    while(
+    head != jyunkan_start )\n                    {\n                        if( *(jyunkan_start-1)
+    == *(ans-1))\n                        {\n                            jyunkan_start
+    --;\n                            ans --;\n                        }\n                        else
+    \n                        {\n                            break;\n                        }\n
+    \                   }\n                    // 循環部分を {}\n                    memmove(jyunkan_start+1,
+    jyunkan_start, match_count);\n                    jyunkan_start[0] = '{';\n                    jyunkan_start[match_count+1]
+    = '}';\n                    jyunkan_start[match_count+2] = '\\0';\n                    break;\n
+    \               }\n                match_count ++;\n            }\n            else\n
+    \           {\n                // はずれ\n                jyunkan_start ++;\n                match_start
+    = NULL;\n                match_count = 0;\n            }\n        }\n    }\n\n
+    \   return 0;\n}\n\nint main(int argc, char *argv[])\n{\n    char   ans[64]; //
+    循環する小数部の倍以上必要\n    struct {\n        int a, b;\n        char ans[64];\n    } \n
+    \   test[] = \n    {\n        {  1,  2, \"5\" },\n        {  1,  3, \"{3}\" },\n
+    \       {  1,  7, \"{142857}\" },\n        {  3, 14, \"2{142857}\" },\n        {
+    50, 51, \"{9803921568627450}\" },\n        { 13, 191,\"068062827225130890052356020942408376963350785340314136125654450\"
+    }\n    };\n\n    for( size_t n=0; n&lt;sizeof(test)/sizeof(*test); n++)\n    {\n
+    \       cal(ans, sizeof(ans), test[n].a, test[n].b); \n        printf(\"ans=0.%s\\n\",
+    ans);\n        assert( strcmp(ans, test[n].ans) == 0 );\n    }\n    return 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '212'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/212
+  :user_name: katsu
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/117/
+  :language: 
+  :time: 2007/07/06 01:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  2147483645 / 2147483647 でOut of Memoryが出ちゃいました。\r\nスタックの事もあるし、考え直します。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '213'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/213
+  :user_name: こう。
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2007/07/06 01:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  とりあえず書いてみた。\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;string.h&gt;\n\nchar* flac2decimals(int
+    a,int b,char* ans){\n\tchar point[256];\t//小数点以下\n\tint num[256];\t\t//循環チェック\n\tint
+    pos;\n\tint i;\n\t\n\tsprintf(ans,\"%d\",a/b);\n\t\n\tif(a%=b){\n\t\tstrcat(ans,\".\");\n\t\tpos=0;\n\t\tdo{\n\t\t\ta*=10;\n\t\t\tnum[pos]=a;\n\t\t\t//循環チェック\n\t\t\tfor(i=0;i&lt;pos;i++){\n\t\t\t\t//循環していたら\n\t\t\t\tif(num[i]==a){\n\t\t\t\t\t//循環部以前の処理\n\t\t\t\t\tif(i)
+    strncat(ans,point,i);\n\t\t\t\t\t//循環部の処理\n\t\t\t\t\tstrcat(ans,\"{\");\n\t\t\t\t\tstrcat(ans,point+i);\n\t\t\t\t\tstrcat(ans,\"}\");\n\t\t\t\t\treturn
+    ans;\n\t\t\t\t}\n\t\t\t}\n\t\t\tpoint[pos]=a/b+'0';\n\t\t\tpoint[pos+1]='\\0';\n\t\t\tpos++;\n\t\t}while(a%=b);\n\t\tstrcat(ans,point);\n\t}\n\treturn
+    ans;\n}\n\nint main(){\n\tchar buf[256];\n\tprintf(\"9/ 3 = %s\\n\",flac2decimals(9,
+    3,buf));\n\tprintf(\"3/ 8 = %s\\n\",flac2decimals(3, 8,buf));\n\tprintf(\"3/14
+    = %s\\n\",flac2decimals(3,14,buf));\n\tprintf(\"1/ 3 = %s\\n\",flac2decimals(1,
+    3,buf));\n\tprintf(\"1/11 = %s\\n\",flac2decimals(1,11,buf));\n\treturn 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '214'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/214
+  :user_name: sumim
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/07/06 02:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">naruse さんの Ruby 版のまんまパクリですが(^_^;)。</pre>\n\t"
+  :code: |
+    | a b result memo index |
+    a := 3.
+    b := 14.
+    result := '0.'.
+    memo := OrderedCollection new.
+    [a isZero] whileFalse: [
+       memo add: a.
+       a := a * 10.
+       result := result, (a // b) printString.
+       a := a \\ b.
+       (index := memo indexOf: a) &gt; 0
+          ifTrue: [^(result first: index + 1), '{', (result allButFirst: index + 1), '}']].
+    ^result
+
+    "=&gt; '0.2{142857}' "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '217'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/217
+  :user_name: yuki
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/138/
+  :language: 
+  :time: 2007/07/06 05:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  書いてみたけど、ほとんど同じくなったので投稿は省略します。\r\nでもこのままだと、31/701とか101/1999とかが通りません。\r\n最悪ケースだと、分母bの長さ分＋Ã\x8EÂ±の配列が必要なのかな？\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '218'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/218
+  :user_name: katsu
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/117/
+  :language: Scheme
+  :time: 2007/07/06 06:04 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  副作用無し版。gaucheです。\r\n検索が遅いので、桁が多いと遅くなります。\n\t"
+  :code: |
+    (use text.tree)
+    (use srfi-1)
+    (use srfi-11)
+    (use gauche.sequence)
+
+    (define (div3 a b)
+      (tree-&gt;string (cons "0."
+        (let loop ((a (* 10 a)) (b b) (r ()) (l ()))
+          (cond ((find-index (pa$ = a) l) =&gt;
+                 (lambda (m)
+                   (reverse
+                     (call-with-values (cut split-at r (+ m 1))
+                                       (cut append '("}") &lt;&gt; '("{") &lt;&gt;)))))
+                ((&lt; a b) (loop (* a 10) b (cons 0 r) (cons a l)))
+                (else (let-values (((quo rem) (quotient&amp;remainder a b)))
+                        (if (zero? rem)
+                          (reverse (cons quo r))
+                          (loop (* rem 10) b (cons quo r) (cons a l))))))))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '223'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/223
+  :user_name: こう。
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/134/
+  :language: 
+  :time: 2007/07/06 07:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  そうですね。このままではバッファが足りませんでした。\r\n+Ã\x8EÂ±はいくつなんだろ？やっぱり動的に配列確保しかないか。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '238'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/238
+  :user_name: rucker
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/130/
+  :language: C
+  :time: 2007/07/06 09:57 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">出力バッファを動的に確保してみた。\r\n循環チェックのバッファはb-1あればOK</pre>\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;string.h&gt;\n\nchar* flac2decimals(int
+    a,int b){\n\tint bufsize=256;\n\tchar *ans=(char *)malloc(bufsize+3);\t//出力(+3は{}とターミネータの分)\n\n\tsnprintf(ans,bufsize,\"%d\",a/b);\n\n\tif(a%=b){\n\t\tint
+    *num=(int *)calloc(sizeof(int),b-1);\t\t//循環チェック\n\t\tint pos=strchr(ans,'\\0')-ans;\n\t\tans[pos++]='.';\n\t\tfor(;;){\n\t\t\tnum[a-1]=pos;\n\t\t\ta*=10;\n\t\t\tans[pos++]=a/b+'0';\n\t\t\tif(!(a%=b))\n\t\t\t\tbreak;\n\t\t\tif(num[a-1])\n\t\t\t{\t//循環していたら\n\t\t\t\tmemmove(ans+num[a-1]+1,ans+num[a-1],pos-num[a-1]);\n\t\t\t\tans[num[a-1]]='{';\n\t\t\t\t++pos;\n\t\t\t\tans[pos++]='}';\n\t\t\t\tbreak;\n\t\t\t}\n\t\t\tif(pos&gt;=bufsize)\n\t\t\t\tans=(char
+    *)realloc(ans,(bufsize+=256)+3);\n\t\t}\n\t\tans[pos]='\\0';\n\t\tfree(num);\n\t}\n\treturn
+    ans;\n}\n\nint main(){\n\tchar *ans;\n\tprintf(\" 9/ 3 = %s\\n\",ans=flac2decimals(9,
+    3)); free(ans);\n\tprintf(\" 3/ 8 = %s\\n\",ans=flac2decimals(3, 8)); free(ans);\n\tprintf(\"
+    3/14 = %s\\n\",ans=flac2decimals(3,14)); free(ans);\n\tprintf(\" 1/ 3 = %s\\n\",ans=flac2decimals(1,
+    3)); free(ans);\n\tprintf(\" 1/11 = %s\\n\",ans=flac2decimals(1,11)); free(ans);\n\tprintf(\"10/17
+    = %s\\n\",ans=flac2decimals(10,17)); free(ans);\n\tprintf(\"31/701= %s\\n\",ans=flac2decimals(31,701));
+    free(ans);\n\treturn 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '246'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/246
+  :user_name: raynstard
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/127/
+  :language: C
+  :time: 2007/07/06 10:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">別にいいやと放置していたらバグだったorz</pre>\n\t"
+  :code: |
+    - 36: match_count ++;
+    + 36: match_count = 1;
+
+    - 71: jyunkan_start ++;
+    + 71: jyunkan_start = ans;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '248'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/248
+  :user_name: raynstard
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/127/
+  :language: 
+  :time: 2007/07/06 10:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  そうか。商じゃなくて剰余で循環小数かをチェックすれば良かったのか。。。。\r\n\r\n循環小数は 分母に指定した値の既約公数分まで増えるらしい(by
+    ウィキペディア#循環小数)ので固定で取って制限かけちゃうのが現実的だと思います。\r\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '252'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/252
+  :user_name: yuki
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/138/
+  :language: C
+  :time: 2007/07/06 11:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  メモリ節約という事でビットバッファ使ってみました。\r\na（とc）を64bitにしてバッファを256MBにすれば仕様が満たせますね。\r\n\n\t"
+  :code: "void frac_to_decimal(int a, int b, char *ans)\n{\n\tint c;\n\tunsigned char
+    remain[256];\n\tint clip;\n\tchar digit[2];\n\n\tsprintf(ans, \"%d\", a/b);\n\n\ta
+    = a%b;\n\tif(a) {\n\t\tc = a;\n\t\tstrcat(ans, \".\");\n\n\t\twhile(a)\n\t\t{\n\t\t\tremain[a/8]
+    |= 1&lt;&lt;(a%8);\n\t\t\ta = (a*10)%b;\n\t\t\tif( remain[a/8] &amp; (1&lt;&lt;(a%8))
+    ) break;\n\t\t}\n\n\t\tdigit[1] = 0;\n\t\tclip = 0;\n\t\twhile(c)\n\t\t{\n\t\t\tif(a
+    &amp;&amp; a==c)\n\t\t\t{\n\t\t\t\tif(clip) {\n\t\t\t\t\tstrcat(ans, \"{\");\n\t\t\t\t\tclip
+    = 1;\n\t\t\t\t} else {\n\t\t\t\t\tstrcat(ans, \"}\");\n\t\t\t\t\treturn;\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tc
+    = c*10\n\t\t\tdigit[0] = '0' + c/b;\n\t\t\tstrcat(ans, digit);\n\t\t\tc = c%b;\n\t\t}\n\t}\n\n\treturn;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '265'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/265
+  :user_name: tsekine
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/124/
+  :language: Bash
+  :time: 2007/07/06 14:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Bash でも、結構短く書けました。\n\t"
+  :code: |
+    print_frac () {
+      local -i rem="$1"
+      local -i -r b=$2
+      local -i -a rem_hist
+      local -i i=0
+      local s="0."
+      while [ $rem -ne 0 ]; do
+        s="$s$((rem * 10 / b))"
+        rem_hist[rem]="i++"
+        rem="rem * 10 % b"
+        let "rem == 0" &amp;&amp; break
+        if [ "" != "${rem_hist[rem]}" ]; then
+          s="${s:0:2+rem_hist[rem]}{${s:2+rem_hist[rem]}}"
+          break
+        fi
+      done
+      echo "$s"
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '294'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/294
+  :user_name: nkmrtks
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/155/
+  :language: Common
+  :time: 2007/07/07 04:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">循環無し：a/b = x/(10^r)\r\n循環あり：a/b = x/(10^r *
+    9*Ã\x8EÂ£(10^i)) {i=0～s}\r\na,b,x,r,sは全て整数\r\nとして表すことできる。\r\n\r\n上記の前提で愚直に数学的アプローチ。\r\n少数を扱わない（truncateとか使わない）ために馬鹿なことしてます:p\r\n分母が大きいと大抵stack
+    overflow</pre>\n\t"
+  :code: |
+    (defun div (aa bb)
+      (let ((a (/ aa (gcd aa bb)))
+            (b (/ bb (gcd aa bb))))
+        (labels
+            ((pow (x y)
+               (labels
+                   ((pow1 (num x y)
+                      (if (&lt;= y 0)
+                          num
+                        (pow1 (* num x) x (1- y)))))
+                 (pow1 1 x y)))
+             (divd (n d)
+               (case n
+                 (0 (values 0 0))
+                 (t (labels
+                        ((divn1 (n d r)
+                           (if (= (mod n d) 0)
+                               (divn1 (/ n d) d (1+ r))
+                             (values n r))))
+                      (divn1 n d 0)))))
+             (div9 (n)
+               (case n
+                 ((list 0 1) (values 0 0))
+                 (t (labels
+                        ((div9d (n rec dd fig)
+                           (labels
+                               ((lsd9 (n dd)
+                                  (labels
+                                      ((lsd9-d (n m d)
+                                         (if (= (mod (* n m) 10) d)
+                                             m
+                                           (lsd9-d n (1+ m) d))))
+                                    (lsd9-d (mod n 10) 0 (- 9 (mod dd 10))))))
+                             (when (and rec (= dd 0))
+                               (when (= (car rec) 0) (pop rec) (decf fig))
+                               (return-from div9d
+                                 (values (dolist (x (cdr rec) (car rec))
+                                           (setf (car rec) (+ (* (car rec) 10) x)))
+                                         fig)))
+                             (push (lsd9 n dd) rec)
+                             (div9d n rec (/ (- (+ dd (* n (car rec))) (mod (+ dd (* n (car rec))) 10)) 10) (1+ fig)))))
+                      (multiple-value-bind (rec s) (div9d n nil 0 0)
+                        (values (* rec n) s)))))))
+          (multiple-value-bind (n r2) (divd b 2)
+            (multiple-value-bind (n r5) (divd n 5)
+              (multiple-value-bind (dd s) (div9 n)
+                (let* ((r (max r2 r5))
+                       (x (/ (* a (if (= s 0) 1 dd) (pow 10 r)) b)))
+                  (if (= s 0)
+                      (if (= r 0)
+                          (format nil "~D" x)
+                        (format nil (format nil "~D.~~~D,'0D" (/ (- x (mod x (pow 10 r))) (pow 10 r)) r) (mod x (pow 10 r))))
+                    (let* ((rec (mod x dd))
+                           (fix (/ (- x rec) dd)))
+                      (format nil "~A~A"
+                              (if (= r 0)
+                                  (format nil "~D." fix)
+                                (format nil (format nil "~D.~~~D,'0D" (/ (- fix (mod fix (pow 10 r))) (pow 10 r)) r) (mod fix (pow 10 r))))
+                              (format nil (format nil "{~~~D,'0D}" s) rec)))))))))))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '299'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/299
+  :user_name: yuki
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/138/
+  :language: 
+  :time: 2007/07/07 08:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ちょっと解説。\r\n循環する始点と終点では、剰余が同じになる事を利用して、前段のwhileループで剰余aを見つけだし（a=0の場合は割切れる）、後段のwhileで表示を行っています。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '312'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/312
+  :user_name: 匿名
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/07/07 12:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">これ条件が厳しすぎませんか？\r\n循環部が何億桁とかどう処理すればよいのやら</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '330'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/330
+  :user_name: 匿名
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/07/08 00:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  バッファサイズの設定で小数部が一万桁を超える事はないという仮定を置いています。実際には2^31-1まで達し得る事を考えると、可変長にすべきとは思いますが、それよりも気になっているのは循環を検出するロジックが小数部の桁数の二乗のオーダーになってしまっている事です。もっと数学的な性質を理解すればスマートに解けるのでしょうか。\n\t"
+  :code: |
+    public class Sample {
+        private static final int BUFFSIZE = 10000;
+
+        public static void main(String[] args) {
+            System.out.println(
+                f(Integer.parseInt(args[0]), Integer.parseInt(args[1])));
+        }
+
+        static String f(int a, int b) {
+            int[] recurringChecker = new int[BUFFSIZE];
+            byte[] quotient = new byte[BUFFSIZE];
+            int c = a / b;
+            StringBuffer answer = new StringBuffer(80);
+            answer.append(c);
+            a -= c * b;
+            if (a != 0) {
+                answer.append(".");
+            }
+            int n = 0;
+            int recurringBegin = -1;
+            boolean recurring = false;
+            while (a != 0 &amp;&amp; !recurring) {
+                recurringChecker[n] = a;
+                a = a * 10;
+                c = a / b;
+                quotient[n] = (byte)c;
+                a -= c * b;
+                n++;
+                for (int i = 0; i &lt; n; i++) {
+                    if (a == recurringChecker[i]) {
+                        recurringBegin = i;
+                        recurring = true;
+                    }
+                }
+            }
+            for (int i = 0; i &lt; n; i++) {
+                if (i == recurringBegin) {
+                    answer.append("{");
+                }
+                answer.append(quotient[i]);
+            }
+            if (recurring) {
+                answer.append("}");
+            }
+            return answer.toString();
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '340'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/340
+  :user_name: 匿名
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/07/08 07:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  10/33が{0.3}になるのがどうか・・・\n\t"
+  :code: |
+    import sys
+
+    def to_decimal(a, b):
+        if not 1 &lt;= a &lt; b:
+            raise ValueError("invalid value a=%d, b=%d" % (a, b))
+        result = []
+        h = {}
+        while a:
+            if "." not in result and a &gt;= b:
+                result.append(".")
+            i = h.get(a, None)
+            if i is not None: # cycling
+                result.insert(i, '{')
+                result.append('}')
+                break
+            h[a] = len(result)
+            result.append(str(a // b))
+            a = (a % b) * 10
+        return "".join(result)
+
+    if __name__ == '__main__':
+        print to_decimal(int(sys.argv[1]), int(sys.argv[2]))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '379'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/379
+  :user_name: yuki
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/138/
+  :language: C
+  :time: 2007/07/09 04:58 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  完全回答編：仕様を満たすように組んでみました。\r\n約21億桁の文字列をメモリ上に持つのが事実上不可能なので、若干仕様を拡大解釈して結果を標準出力にしています\r\n\r\n最大で約256MBのメモリを消費します。\r\n仕様内での最長の循環小数は分母(b)が2147483639の時で、\r\n結果をファイルにリダイレクトさせて約30分で約2GBのファイルができあがります。（Pentium4-3GHzマシン使用。前段に約9分後段に約20分かかります）\r\n\n\t"
+  :code: "#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n#include &lt;math.h&gt;\n\n\nint
+    mod10(int a, int b)\t/* (a*10)%b */\n{\n\treturn( (int)fmod( (double)a *10, double(b)
+    ) );\n}\n\nint div10(int a, int b)\t/* (a*10)/b */\n{\n\treturn( (int)floor( ((double)a
+    *10) / double(b) ) );\n}\n\n\nint f2d_mod(int a, int b, unsigned char *remain)\n{\n\ta
+    = a%b;\n\twhile(a)\n\t{\n\t\tremain[a/8] |= 1&lt;&lt;(a%8);\n\t\ta = mod10(a,b);\n\t\tif(
+    remain[a/8] &amp; (1&lt;&lt;(a%8)) ) break;\n\t}\n\n\treturn a;\n}\n\nvoid f2d(int
+    a, int b, int mod)\n{\n\tint clip = 0;\n\n\tprintf(\"%d\", a/b);\n\n\ta = a%b;\n\tif(a)
+    {\n\t\tprintf(\".\");\n\n\t\twhile(a)\n\t\t{\n\t\t\tif(mod &amp;&amp; a==mod)\n\t\t\t{\n\t\t\t\tif(clip)
+    {\n\t\t\t\t\tprintf(\"}\");\n\t\t\t\t\treturn;\n\t\t\t\t} else {\n\t\t\t\t\tprintf(\"{\");\n\t\t\t\t\tclip
+    = 1;\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tprintf(\"%d\", div10(a,b));\n\t\t\ta = mod10(a,b);\n\t\t}\n\t}\n\n\tprintf(\"\\n\");\n\treturn;\n}\n\nvoid
+    frac_to_decimal(int a, int b)\n{\n\tunsigned char *remain;\n\tint mod;\n\n\tif(a&lt;0
+    || b&lt;=0) return;\n\n\tremain = (unsigned char *)malloc(b/8 +1);\n\tmemset(remain,
+    0, sizeof(unsigned char) *(b/8 +1) );\n\tmod = f2d_mod(a, b, remain);\n\tfree(remain);\n\tf2d(a,
+    b, mod);\n\n\treturn;\n}\n\nint main(int argc, char* argv[])\n{\n\tint a,b;\n\n\tif(
+    argc==3)\n\t{\n\t\ta = atoi(argv[1]);\n\t\tb = atoi(argv[2]);\n\n\t\tprintf(\"a=%d,
+    b=%d\\n\", a, b);\n\t\tfrac_to_decimal(a,b);\n\n\t}\n\n\treturn 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '396'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/396
+  :user_name: 匿名
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/07/09 13:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  出題者のtnkさんのプログラムを参考に考えました（というか、ほとんどそのまんまか）。\r\nバッファサイズを可変長にする事と、処理時間が出力の２乗に比例してしまう点をHashMapを使用する事で解決しました。（のつもりです）\n\t"
+  :code: |
+    import java.util.HashMap;
+
+    public class Sample {
+        public static void main(String[] args) {
+            System.out.println(
+               getDecimal(Integer.parseInt(args[0]), Integer.parseInt(args[1])));
+        }
+
+        public static String getDecimal(long a, long b) {
+            HashMap&lt;Long, Integer&gt; nums = new HashMap&lt;Long, Integer&gt;(1000);
+            StringBuffer res = new StringBuffer("0.");
+            int n = 0;
+            while (true) {
+                nums.put(a, n++);
+                a *= 10;
+                res.append(a/b);
+                a %= b;
+                if (a == 0) {
+                    return res.toString();
+                }
+                if (nums.containsKey(a)) {
+                    int off = nums.get(a) + 2;
+                    return res.substring(0,off) + "{" + res.substring(off) + "}";
+                }
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '403'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/403
+  :user_name: iwk
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/49/
+  :language: OCaml
+  :time: 2007/07/09 19:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    open System;;
+
+    let simplify (n,m) =
+        let rec gcd a b =
+            match a,b with
+            | _,0 -&gt; a
+            | 0,_ -&gt; b
+            | a,b -&gt; gcd b (a % b)
+        and d = gcd n m in
+        (n / d, m / d);;
+
+    let pow base index =
+        int_of_float ( (float_of_int base) ** (float_of_int index) );;
+
+    let rec count2And5Factors n =
+        let rec count base cnt = function
+            | 0 -&gt; cnt
+            | m when not (m % base = 0) -&gt; cnt
+            | m -&gt; count base (cnt+1) (m/base)
+        in (count 2 0 n, count 5 0 n);;
+
+    let getRec (m,n) =
+       let rec recurring index = function
+           | 1 -&gt; 0
+           | num -&gt; if ((pow 10 index) - 1) % num = 0
+                     then ((pow 10 index) - 1) / num
+                     else recurring (index+1) num
+           in m * (recurring 1 n);;
+
+    let rec decimal_of_frac (m,n) =
+        let (ixTwo, ixFiv) = count2And5Factors n in
+             let rec r = max ixTwo ixFiv
+             and divide (k,l) = int_of_float (float_of_int k / float_of_int l)
+             and n' = n / (pow 2 ixTwo) / (pow 5 ixFiv)
+             and m' = m * (pow 2 (r-ixTwo)) * (pow 5 (r-ixFiv))
+             and finite_part = (divide (m',n'))
+             and proper_m = m'-(finite_part * n')
+             and recurring = getRec (simplify (proper_m,n'))
+             and finite_dec = (float_of_int finite_part) * (10.0 ** -float_of_int r)
+             in Printf.sprintf "%g{%d}" finite_dec recurring;;
+  :tags:
+  - F#
+  :references:
+    :url: 
+    :title: 
+- :id: '426'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/426
+  :user_name: yuki
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/138/
+  :language: 
+  :time: 2007/07/10 04:00 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  コピペミスりました。\r\n最長は2147483629（=2^31-19）の時でした。\r\nアルゴリズム的にはこの辺が限界かなぁ？\r\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '428'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/428
+  :user_name: kozima
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/164/
+  :language: Common
+  :time: 2007/07/10 04:15 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">バッファ使わないで頑張りました。巨大な数もほとんど使ってないつもり。\r\n1/8388609
+    (1,398,101 桁で循環)ぐらいなら計算できました。</pre>\n\t"
+  :code: "(defun expand-rational (a b)\n  (if (zerop (rem (expt 10 31) b))\n      ;;
+    b が 10 の冪で割り切れるなら有限\n      (expand-terminating a b)\n    ;; 割り切れないなら循環する\n    (expand-recurring
+    a b)))\n\n(defun expand-terminating (a b)\n  (do ((c (/ a b) (* c 10))\n       (e
+    0 (1+ e)))\n      ((integerp c)\n       ;; a/b = c * 10^{-e}, c は 10 の倍数ではない整数\n
+    \      (format t \"0.~V,'0D\" e c))))\n\n(defun normalize-denominator (b)\n  (let
+    ((tmp b) (i 0))\n    (loop\n      (let ((g (gcd tmp 10)))\n\t(if (= g 1)\n\t    (return
+    (values i tmp))\n\t  (setq tmp (/ tmp g)\n\t\ti (1+ i)))))))\n\n(defun expand-recurring
+    (a b)\n  (multiple-value-bind (e b1)\n      (normalize-denominator b)\n    ;;
+    a/b = 10^{-e} * a / b1, (b1, 10) = 1\n    ;; let n + x = a/b1, x &lt; 1\n    (multiple-value-bind
+    (n x)\n\t(truncate (/ a b1))\n      (if (plusp n)\n\t  (format t \"0.~V,'0D\"
+    e n)\n\t(format t \"0.~V@{0~}\" e t))\n      (princ \"{\")\n      (expand-recurring-part
+    x)\n      (princ \"}\"))))\n\n;; 分母 b1 から循環節の長さを求める。b1 は 10 と互いに素と仮定\n(defun rec-length
+    (b1)\n  (do ((x (mod 10 b1) (mod (* x 10) b1))\n       (c 1 (+ c 1)))\n      ((=
+    x 1) c)))\n\n;; x &lt; 1 の循環節を出力\n(defun expand-recurring-part (x)\n  (let ((len
+    (rec-length (denominator x))) d)\n    (dotimes (i len)\n      (multiple-value-setq
+    (d x) (truncate (* x 10)))\n      (princ d))))\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '437'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/437
+  :user_name: にしお
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/10 05:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  コメント崩れを修正しました。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '442'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/442
+  :user_name: cats
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/07/10 06:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    class Program
+    {
+      static void Main(string[] args)
+      {
+        Console.WriteLine(CalcFraction(3, -8));
+        Console.WriteLine(CalcFraction(3, 14));
+      }
+      static string CalcFraction(int num, int den)
+      {
+        if (den == 0) throw new DivideByZeroException();
+        bool bMinus = (num &lt; 0 &amp;&amp; den &gt; 0) || (num &gt; 0 &amp;&amp; den &lt; 0);
+        num = Math.Abs(num); den = Math.Abs(den);
+        int p, k = num / den;
+        num -= k * den;
+        StringBuilder sb = new StringBuilder((bMinus ? "-" : "") + k);
+        if (num == 0) return sb.ToString();
+        sb.Append('.');
+        Dictionary&lt;int, int&gt; dic = new Dictionary&lt;int, int&gt;();
+        while (num &gt; 0)
+        {
+          num *= 10;
+          if (dic.TryGetValue(num, out p))
+          {
+            sb.Insert(p, "{");
+            sb.Append("}");
+            break;
+          }
+          dic[num] = sb.Length;
+          k = num / den;
+          num -= k * den;
+          sb.Append(k.ToString());
+        }
+        return sb.ToString();
+      }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '444'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/444
+  :user_name: こう。
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2007/07/10 07:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  蛇足的に大量メモリ不要版を書いてみた。結果は標準出力に変更。\r\n実際は循環節の終了点が分かるのでそのサイズで文字列用バッファを取ればいいんだろうけど。\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;string.h&gt;\n\nvoid put_decimals2(int
+    a,int b){\n\tunsigned int i,j;\n\tint loop_start_num;\n\tint mod;\n\tprintf(\"%d/%d=%d\",a,b,a/b);\n\tif(a%b){\n\t//割り切れない場合、小数点以下を表示\n\t\tprintf(\".\");\n\n\t//循環節の開始位置を探す。\n\t\tmod=(a%b)*10;\n\t\t//開始位置の仮定\n\t\tloop_start_num=mod;\n\t\tfor(j=0;j&lt;b;j++){\n\t\t\tfor(i=j+1;i&lt;j+b;i++){\n\t\t\t\tmod=(mod%b)*10;\n\t\t\t\tif(mod==0){\n\t\t\t\t//循環しないなら表示して終了\n\t\t\t\t\tmod=a;\n\t\t\t\t\twhile(mod=(mod%b)*10){\n\t\t\t\t\t\tprintf(\"%d\",mod/b);\n\t\t\t\t\t}\n\t\t\t\t\tprintf(\"\\n\");\n\t\t\t\t\treturn;\n\t\t\t\t}\n\t\t\t\tif(mod==loop_start_num)
+    break;\t//終端を見つけたら終わり\n\t\t\t}\n\t\t\tif(mod==loop_start_num) break;\t//終端を見つけたら終わり\n\t\t\t\n\t\t\t//開始位置の仮定を一桁移す。\n\t\t\tloop_start_num=(loop_start_num%b)*10;\n\t\t}\n\n\t//循環ありの場合の表示\n\t\tmod=a;\n\t\tfor(i=0;i&lt;j;i++){\n\t\t\t//循環節までを表示\n\t\t\tmod=(mod%b)*10;\n\t\t\tprintf(\"%d\",mod/b);\n\t\t}\n\t\tprintf(\"{\");\n\t\t//循環節を表示\n\t\tmod=(mod%b)*10;\n\t\tdo{\n\t\t\tprintf(\"%d\",mod/b);\n\t\t\tmod=(mod%b)*10;\n\t\t}while(mod!=loop_start_num);\n\t\tprintf(\"}\\n\");\n\t}\n}\n\nint
+    main(){\n\tput_decimals2(  3,    8);\n\tput_decimals2(  3,   14);\n\tput_decimals2(
+    \ 1,    3);\n\tput_decimals2(  1,   11);\n\tput_decimals2( 31,  701);\n\tput_decimals2(101,
+    1999);\n\n\treturn 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '446'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/446
+  :user_name: こう。
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/134/
+  :language: 
+  :time: 2007/07/10 07:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  i、j、loop_start_num、modはlong longだな。\r\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '487'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/487
+  :user_name: 匿名
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/07/10 13:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#312です。\r\n標準出力参りました(^_^)\r\n\r\n1回目のループで循環部の始点終点をチェックすると2回目のループで一回に一桁ずつではなく\r\n何桁かいっぺんに処理出来るので除算剰余の回数が減って速くなるかもしれません。\r\n64bitINTを使うと9桁かな。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '520'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/520
+  :user_name: yuki
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/138/
+  :language: C
+  :time: 2007/07/11 02:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  64bit intが使える環境が手元にないのでdoubleを使用してますけど、その辺は同じように高速化できますね。\r\n\r\n　こう。さんの#444を参考にして中間解を作ってみました。\r\n#444の、循環開始点の仮定を移動して再検索する代わりに、\r\n非循環部分＋循環部分１桁を配列に持って検索しています。\r\n\r\n　相変わらず（メモリ上に持てないので）結果は標準出力です。\r\n最長桁のケース（b=2147483629
+    =2^31-19）で、\r\n前段に約6分後段に約5分半、計11分半かかります。（Pentium4-3GHzマシン使用）\n\t"
+  :code: "#include &lt;stdlib.h&gt;\n#include &lt;string.h&gt;\n#include &lt;math.h&gt;\n\nint
+    f2d_mod2(int a, int b, int *count)\n{\n\tdouble _b = b;\n\tint i;\n\tint d;\n\tint
+    remain[30];\n\n\t*count = 0;\n\n\ta = a%b;\n\tfor(d=0; d&lt;30; d++)\n\t{\n\t\tremain[d]
+    = a;\n\t\ta = (int)fmod( (double)a *10, _b );\n\t\tfor(i=0; i&lt;=d; i++)\n\t\t{\n\t\t\tif(
+    a == remain[i] )\n\t\t\t{\n\t\t\t\t*count = d -i +1;\n\t\t\t\treturn a;\n\t\t\t}\n\t\t}\n\t}\n\n\tif(a)
+    {\n\t\tfor(;;d++)\n\t\t{\n\t\t\ta = (int)fmod( (double)a *10, _b );\n\t\t\tfor(i=0;
+    i&lt;30; i++)\n\t\t\t{\n\t\t\t\tif( a == remain[i] )\n\t\t\t\t{\n\t\t\t\t\t*count
+    = d -i +1;\n\t\t\t\t\treturn a;\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n\n\treturn 0;\n}\n\nvoid
+    f2d_print(int a, int b, int mod, int count)\n{\n\tdouble _a;\n\tdouble _b = b;\n\n\tprintf(\"%d\",
+    a/b);\n\n\ta = a%b;\n\tif(a) {\n\t\t_a = (double)a;\n\t\tprintf(\".\");\n\n\t\tif(mod)\n\t\t{\n\t\t\twhile((int)_a!=mod)\n\t\t\t{\n\t\t\t\tprintf(\"%d\",
+    (int)floor( _a*10 / _b ));\n\t\t\t\t_a = fmod( _a*10, _b );\n\t\t\t}\n\t\t\tprintf(\"{\");\n\t\t\twhile(count&gt;9)\n\t\t\t{\n\t\t\t\tcount
+    -= 9;\n\t\t\t\tprintf(\"%09d\", (int)floor( _a*1000000000 / _b ));\n\t\t\t\t_a
+    = fmod( _a*1000000000, _b );\n\t\t\t};\n\t\t}\n\n\t\tdo {\n\t\t\tprintf(\"%d\",
+    (int)floor( _a*10 / _b ));\n\t\t\t_a = fmod( _a*10, _b );\n\t\t} while((int)_a!=mod);\n\n\t\tif(mod)
+    printf(\"}\");\n\t}\n\n\tprintf(\"\\n\");\n\treturn;\n}\n\nvoid frac_to_decimal(int
+    a, int b)\n{\n\tint mod;\n\tint count;\n\n\tif(a&lt;0 || b&lt;=0) return;\n\n\tmod
+    = f2d_mod2(a, b, &amp;count);\n\tf2d_print(a, b, mod, count);\n\n\treturn;\n}\n\nint
+    main(int argc, char* argv[])\n{\n\tint a,b;\n\n\tif( argc==3)\n\t{\n\t\ta = atoi(argv[1]);\n\t\tb
+    = atoi(argv[2]);\n\n//\t\tprintf(\"a=%d, b=%d\\n\", a, b);\n\t\tfrac_to_decimal(a,b);\n\n\t}\n\n\treturn
+    0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '521'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/521
+  :user_name: yuki
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/138/
+  :language: 
+  :time: 2007/07/11 02:36 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  配列remainが30にしてあるのは、\r\n最長桁の割り切れる場合のケース(b=1073741824 =2^30)が小数点以下30桁で、\r\n最長桁の非循環部分を持つ割り切れない場合のケース(b=1610612736
+    =3*2^29)が\r\n非循環部分29桁と循環部分1桁になる為で、\r\n　つまり、小数点から30桁までに必ず循環開始点（または割り切れる点）が\r\n出現することを利用して30にしています。\r\n一般的には最長の循環開始点はlog2(b)桁なのですが、コード上では固定にしてあります。\r\n　\r\nこの問題は中々奥が深いですね。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '567'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/567
+  :user_name: こう。
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2007/07/11 12:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  かなり奥深いですね。\r\n数学的に解いてみました。\r\n\r\n本とはもう少し厳密に出来るとは思うんですが。\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n\n//非循環小数の表示\n//put_decimals4で小数点まで表示しているのでその残りのみ表示\nvoid
+    put_decimal_nlp(int a,int b){\n\tlong long mod;\n\tmod=(long long)(a%b)*10;\n\tdo{\n//\t\tprintf(\"%d\",(int)(mod/b));\n\t\tputchar('0'+(int)(mod/b));\n\t\tmod=(mod%b)*10;\n\t}while(mod);\n\tputchar('\\n');\n}\n\n//循環小数の表示\n//put_decimals4で小数点まで表示しているのでその残りのみ表示\nvoid
+    put_decimal_lp(int a,int b,int loop_start_pos){\n\tint i;\n\tlong long mod;\n\tlong
+    long loop_start_mod;\n\tmod=(long long)(a%b)*10;\n\t\n\t//循環節までを表示\n\tfor(i=0;i&lt;loop_start_pos;i++){\n//\t\tprintf(\"%d\",(int)(mod/b));\n\t\tputchar('0'+(int)(mod/b));\n\t\tmod=(mod%b)*10;\n\t}\n\tloop_start_mod=mod;\n\t//循環節を表示\n\tputchar('{');\n\tdo{\n//\t\tprintf(\"%d\",(int)(mod/b));\n\t\tputchar('0'+(int)(mod/b));\n\t\tmod=(mod%b)*10;\n\t\ti++;\n\t}while(mod!=loop_start_mod);\n\tputs(\"}\");\n}\n\nvoid
+    put_decimals4(int a,int b){\n\tlong long i,j,k;\n\tlong long mod_buf[31];\n\tlong
+    long mod;\n\tint num_2,num_5;\n\tlong long nonloop_max;\n\tlong long loop_max;\n\t\n\tprintf(\"%d/%d=%d\",a,b,a/b);\n\tif(a%b==0){\n\t\tprintf(\"\\n\");\n\t\treturn;\n\t}\n\tputchar('.');\n\t\n\t//bの２，５についての素因数分解\n\tnum_2=0;\n\tmod=b;\n\twhile(mod%2==0){\n\t\tmod/=2;\n\t\tnum_2++;\n\t}\n\t\n\tnum_5=0;\n\tmod=b;\n\twhile(mod%5==0){\n\t\tmod/=5;\n\t\tnum_5++;\n\t}\n\t\n\tnonloop_max=max(num_2,num_5);\n\tif(nonloop_max==0){\n\t\t/*純循環小数なら表示*/\n\t\tput_decimal_lp(a,b,0);\n\t\treturn;\n\t}\n\t\n\tloop_max=(b&gt;&gt;num_2);\n\tif(num_5)
+    loop_max/=(5^num_5);\n\t\n\tif(loop_max==1){\n\t\t//非循環関数なので表示\n\t\tput_decimal_nlp(a,b);\n\t\treturn;\n\t}\n\t\n\tmod=a%b;\n\t//非循環候補の取り込み\n\tfor(i=0;i&lt;=nonloop_max;i++){\n\t\tmod=(mod%b)*10;\n\t\tif(mod==0){\n\t\t//循環しないなら表示して終了\n\t\t\tput_decimal_nlp(a,b);\n\t\t\treturn;\n\t\t}\n\t\tmod_buf[i]=mod;\n\t}\n\t\n\tmod=a%b;\n\tmod=(mod%b)*10;\n\t\n\t//循環節の開始位置を探す。\n\tfor(i=1;i&lt;loop_max+nonloop_max;i++){\n\t\tmod=(mod%b)*10;\n\t\t//バッファ内との循環チェック\n\t\tfor(j=0;j&lt;=nonloop_max;j++){\n\t\t\tif(mod==mod_buf[j]){\n\t\t\t\tput_decimal_lp(a,b,j);\n\t\t\t\treturn;\n\t\t\t}\n\t\t}\n\t}\n\t\n\t//必ず非循環か循環のはずなのでここに来ることはない。\n\treturn;\n}\n\nint
+    main(){\n\tput_decimals4(         3,        30);\n\tput_decimals4(         3,
+    \        8);\n\tput_decimals4(         3,        14);\n\tput_decimals4(         1,
+    \        3);\n\tput_decimals4(         1,        11);\n\tput_decimals4(        31,
+    \      701);\n\tput_decimals4(       101,      1999);\n\tput_decimals4(         1,2097152000);\t//最小の非循環小数？\n\tput_decimals4(1073741823,1073741824);//最小の非循環小数？\n\tput_decimals4(
+    \ 21474836,2147483629);\n\n\treturn 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '568'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/568
+  :user_name: こう。
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/134/
+  :language: Other
+  :time: 2007/07/11 12:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  一応、循環小数についての考察結果を載せておきます。\r\nこれを元に考えたらこうなりました^^;;\r\n\n\t"
+  :code: |
+    分数n/mの非循環時30桁、循環時m-1桁、非循環部29桁の証明。
+    まずA mod Bが必ず0になる条件はAがBの倍数の場合。
+    次に((A mod B)*10)mod Bを考える。これはA/Bで小数点以下一位を求めた時の余りであり、
+    これが必ず0になるのは前条件の通りBが2または5の場合。
+
+    これより必ず割り切れる非循環小数になるn/mはn'/(2^x*5^y)と書ける。
+    (n'はnを、nとmの公約数で割ったものになる。)
+
+    これを変形すると
+    n/m=n*5^(x-y)/10^x=n*2^(y-x)/10^y
+
+    これより非循環小数で小数点以下の最長桁数はMAX(x,y)になることがわかる。
+    今、m&lt;2^31であるのでxまたはyが最大になるmは2^30であり、最長桁数は30桁になる。
+
+    純循環小数になるn/mはmの素因数に2,5を含まない。
+    x mod mを考えると取り得る値は０～m-1。しかし、0の場合は割り切れて循環しないという
+    ことになるので1～m-1のm-1個。よって最大でもm-1しか循環しません。
+
+    では非循環部を持たない循環小数はというとここまでで出てこなかったもの
+    n/m=n/(m'*2^x*5^y)　※m'は2,5を素因数に含まない。
+    となる。
+
+    これは変形して n/m=n1/m'+n2/(2^x*5^y)と書け、純循環小数+非循環小数の形になる。
+    つまり、非循環部は非循環小数の長さとなり、循環部の長さはm'-1より短くなる。
+    今、m&lt;2^31であるのでxまたはyが最大になるmを考えると、m'は最小の3、その場合のxは29と
+    なり、非循環部の最長桁数は29桁になる。
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '581'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/581
+  :user_name: 沢渡 みかげ
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/101/
+  :language: Mathematica
+  :time: 2007/07/11 14:24 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">循環小数はRealDigits一発で求まるのですが，題意を満たす文字列を生成するためにずいぶん長いコードを書きました．\r\nもっとスマートに変換する方法もあるかもしれませんが・・・\r\n\r\n単に手元で確認するだけであれば，\r\n&lt;&lt;
+    NumberTheory`ContinuedFractions`;\r\nPeriodicForm[RealDigits[3/14]]\r\nのようにすれば，循環部分の数字の上に「_」がついた形で表示されます．\r\n</pre>\n\t"
+  :code: "realdigit[a_, b_] :=\n    Module[{data, norepeat, repeat, pos, result},\n
+    \     data = RealDigits[a/b];\n      If[VectorQ[Last@First@data],\n        norepeat
+    = Drop[First@data, -1];\n        repeat = Last@First@data;\n        ,\n        norepeat
+    = First@data;\n        repeat = {};\n        ];\n      pos = Last@data;\n      result
+    = \"\";\n      If[pos == 0 ,\n        result = result &lt;&gt; \"0.\",];\n      While[Length@norepeat
+    &gt; 0,\n        \tresult = result &lt;&gt; ToString@First@norepeat;\n        \tnorepeat
+    = Drop[norepeat, 1];\n        \tpos--;\n        \tIf[pos == 0,\n          \tresult
+    = result &lt;&gt; \".\",];\n        ];\n      If[Length@repeat &gt; 0,\n        result
+    = result &lt;&gt; \"{\";\n        While[Length[repeat] &gt; 0,\n          \tresult
+    = result &lt;&gt; ToString@First@repeat;\n          \trepeat = Drop[repeat, 1];\n
+    \         \tpos--;\n          \tIf[pos == 0,\n            \tresult = result &lt;&gt;
+    \".\",];\n          ];\n        result = result &lt;&gt; \"}\";\n        ,];\n
+    \     result\n      ];\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '603'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/603
+  :user_name: こう。
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2007/07/12 01:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  多分、この辺がベストかな？表示以外にはほとんど時間はかからないはず。関数名は考えるのまんどくなったｗ\n\t"
+  :code: "#include &lt;stdio.h&gt;\n#include &lt;stdlib.h&gt;\n\n//小数の表示\nvoid put_decimal(int
+    a,int b,int loop_start_pos){\n\tint i;\n\tlong long mod;\n\tlong long loop_start_mod;\n\n\tprintf(\"%d/%d=%d.\",a,b,a/b);\n\tmod=(long
+    long)(a%b)*10;\n\t\n\t//循環節までを表示\n\tfor(i=0;i&lt;loop_start_pos;i++){\n\t\tputchar('0'+(int)(mod/b));\n\t\tmod=(mod%b)*10;\n\t\tif(mod==0){\n\t\t\tputchar('\\n');\n\t\t\treturn;\n\t\t}\n\t}\n\tloop_start_mod=mod;\n\t//循環節を表示\n\tputchar('{');\n\tdo{\n\t\tputchar('0'+(int)(mod/b));\n\t\tmod=(mod%b)*10;\n\t\ti++;\n\t}while(mod!=loop_start_mod);\n\tputs(\"}\");\n}\n\nvoid
+    put_decimals4(int a,int b){\n\tlong long i,j;\n\tlong long mod_buf[31];\t//循環開始位置チェック用のバッファ\n\tlong
+    long mod;\t//余り\n\tint num_2,num_5;\t\t//素因数分解の結果：2の乗数、5の乗数\n\tlong long nonloop_max;\t//非循環部の最大桁数\n\tlong
+    long loop_max;\t\t//循環部の最大桁数\n\tint denom;\t\t\t//計算用分母\n\t\n\tif(a%b==0){\n\t\tprintf(\"%d/%d=%d\\n\",a,b,a/b);\n\t\treturn;\n\t}\n\t\n\tdenom=b;\n\t\n\t//bの２，５についての素因数分解\n\tnum_2=0;\n\tnum_5=0;\n\t\n\twhile(denom%2==0){\n\t\tdenom/=2;\n\t\tnum_2++;\n\t}\n\t\n\twhile(denom%5==0){\n\t\tdenom/=5;\n\t\tnum_5++;\n\t}\n\t\n\tnonloop_max=max(num_2,num_5);\n\tloop_max=denom;\n\t\n\t//素因数に2,5を含まなければ純循環関数\n\tif(nonloop_max==0){\n\t\t//純循環小数なので表示\n\t\tput_decimal(a,b,0);\n\t\treturn;\n\t}\n\t\n\t//もし分子がdenomの倍数なら約分できる。\n\t//分母が2^x*5^yであるなら非循環小数\n\tif(loop_max==1&amp;&amp;a%denom==0){\n\t\t//非循環関数なので表示\n\t\tput_decimal(a,b,nonloop_max);\n\t\treturn;\n\t}\n\t\n\t//循環節ありの循環小数\n\tmod=a%b*10;\n\tmod_buf[0]=mod;\n\t\n\t//循環節の開始位置を探す。\n\tfor(i=1;i&lt;loop_max+nonloop_max;i++){\n\t\tmod=(mod%b)*10;\n\t\t//非循環候補の取り込み\n\t\tif(i&lt;=nonloop_max){\n\t\t\tmod_buf[i]=mod;\n\t\t}\n\t\t//バッファ内との循環チェック\n\t\tfor(j=0;j&lt;=min(i,nonloop_max);j++){\n\t\t\tif(mod==mod_buf[j]){\n\t\t\t\t//循環開始位置がわかったら表示\n\t\t\t\tput_decimal(a,b,j);\n\t\t\t\treturn;\n\t\t\t}\n\t\t}\n\t}\n\t\n\t//必ず非循環か循環のはずなのでここに来ることはない。\n\treturn;\n}\n\nint
+    main(){\n\tput_decimals4(         3,        30);\n\tput_decimals4(         3,
+    \        8);\n\tput_decimals4(         3,        14);\n\tput_decimals4(         1,
+    \        3);\n\tput_decimals4(         9,         3);\n\tput_decimals4(         1,
+    \       11);\n\tput_decimals4(        31,       701);\n\tput_decimals4(       101,
+    \     1999);\n\tput_decimals4(         1,2097152000);\t//最小の非循環小数？\n\tput_decimals4(1073741823,1073741824);\t//最長の非循環小数？\n\tput_decimals4(
+    \ 21474836,2147483629);\t//最長の循環小数？\n\n\treturn 0;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '604'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/604
+  :user_name: こう。
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2007/07/12 01:41 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  やっぱちょっと修正。\n\t"
+  :code: "//小数の表示\nvoid put_decimal(int a,int b,int non_loop_size){\n\tint i;\n\tlong
+    long mod;\n\tlong long loop_start_mod;\n\n\tprintf(\"%d/%d=%d.\",a,b,a/b);\n\tmod=(long
+    long)(a%b)*10;\n\t\n\t//循環節までを表示\n\tfor(i=0;i&lt;non_loop_size;i++){\n\t\tputchar('0'+(int)(mod/b));\n\t\tmod=(mod%b)*10;\n\t\tif(mod==0){\n\t\t\tputchar('\\n');\n\t\t\treturn;\n\t\t}\n\t}\n\tloop_start_mod=mod;\n\t//循環節を表示\n\tputchar('{');\n\tdo{\n\t\tputchar('0'+(int)(mod/b));\n\t\tmod=(mod%b)*10;\n\t\ti++;\n\t}while(mod!=loop_start_mod);\n\tputs(\"}\");\n}\n\nvoid
+    put_decimals4(int a,int b){\n\tlong long i,j;\n\tlong long mod_buf[31];\n\tlong
+    long mod;\n\tint num_2,num_5;\t\t//素因数分解の結果：2の乗数、5の乗数\n\tlong long nonloop_max;\t//非循環部の最大桁数\n\tlong
+    long loop_max;\t\t//循環部の最大桁数\n\tint num,denom;\t\t\t//判別計算用分子、分母\n\t\n\tif(a%b==0){\n\t\tprintf(\"%d/%d=%d\\n\",a,b,a/b);\n\t\treturn;\n\t}\n\n\tnum=a;\n\tdenom=b;\n\t//２，５で約分\n\twhile(num%2==0&amp;&amp;denom%2==0){\n\t\tnum/=2;\n\t\tdenom/=2;\n\t}\n\twhile(num%5==0&amp;&amp;denom%5==0){\n\t\tnum/=5;\n\t\tdenom/=5;\n\t}\n\t\n\t//分母の２，５についての素因数分解\n\tnum_2=0;\n\tnum_5=0;\n\t\n\twhile(denom%2==0){\n\t\tdenom/=2;\n\t\tnum_2++;\n\t}\n\t\n\twhile(denom%5==0){\n\t\tdenom/=5;\n\t\tnum_5++;\n\t}\n\t\n\tnonloop_max=max(num_2,num_5);\n\tloop_max=denom;\n\t\n\t//素因数に2,5を含まなければ純循環関数\n\tif(nonloop_max==0){\n\t\t//純循環小数なので表示\n\t\tput_decimal(a,b,0);\n\t\treturn;\n\t}\n\t\n\t//もし分子がdenomの倍数なら約分できる。\n\t//分母が2^x*5^yであるなら非循環小数\n\tif(loop_max==1&amp;&amp;a%denom==0){\n\t\t//非循環関数なので表示\n\t\tput_decimal(a,b,nonloop_max);\n\t\treturn;\n\t}\n\t\n\t//循環節ありの循環小数\n\tmod=a%b*10;\n\tmod_buf[0]=mod;\n\t\n\t//循環節の開始位置を探す。\n\tfor(i=1;i&lt;loop_max+nonloop_max;i++){\n\t\tmod=(mod%b)*10;\n\t\t//非循環候補の取り込み\n\t\tif(i&lt;=nonloop_max){\n\t\t\tmod_buf[i]=mod;\n\t\t}\n\t\t//バッファ内との循環チェック\n\t\tfor(j=0;j&lt;=min(i,nonloop_max);j++){\n\t\t\tif(mod==mod_buf[j]){\n\t\t\t\t//循環開始位置がわかったら表示\n\t\t\t\tput_decimal(a,b,j);\n\t\t\t\treturn;\n\t\t\t}\n\t\t}\n\t}\n\t\n\t//必ず非循環か循環のはずなのでここに来ることはない。\n\treturn;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '608'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/608
+  :user_name: こう。
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2007/07/12 04:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  さらにミス発見orz\r\n\r\n\r\n\n\t"
+  :code: "Ã\x97\nfor(j=0;j&lt;=min(i,nonloop_max);j++){\n○\nfor(j=0;j&lt;=min(i-1,nonloop_max);j++){\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '611'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/611
+  :user_name: こう。
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/134/
+  :language: C
+  :time: 2007/07/12 06:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  結局のところ、これでよさげ。\r\nもう少し計算したらloop_maxじゃなく、実際の循環部の長さも求められそうなんだけど、どうなんだろ？\n\t"
+  :code: "void put_decimals5(int a,int b){\n\tlong long i;\n\tlong long mod;\n\tint
+    num_2,num_5;\t\t//素因数分解の結果：2の乗数、5の乗数\n\tlong long nonloop_max;\t//非循環部の最大桁数\n//\tlong
+    long loop_max;\t\t//循環部の最大桁数\n\tlong long loop_start_mod;\t//循環節開始時の余り\n\tint
+    num,denom;\t\t\t//計算用分母\n\t\n\tprintf(\"%d/%d=%d\",a,b,a/b);\n\tif(a%b==0){\n\t\tputchar('\\n');\n\t\treturn;\n\t}\n\ta%=b;\n\t\n\tnum=a;\n\tdenom=b;\n\t//２，５で約分\n\twhile(num%2==0&amp;&amp;denom%2==0){\n\t\tnum/=2;\n\t\tdenom/=2;\n\t}\n\twhile(num%5==0&amp;&amp;denom%5==0){\n\t\tnum/=5;\n\t\tdenom/=5;\n\t}\n\t\n\t//分母の２，５についての素因数分解\n\tnum_2=0;\n\tnum_5=0;\n\t\n\twhile(denom%2==0){\n\t\tdenom/=2;\n\t\tnum_2++;\n\t}\n\t\n\twhile(denom%5==0){\n\t\tdenom/=5;\n\t\tnum_5++;\n\t}\n\t\n\tnonloop_max=max(num_2,num_5);\n//\tloop_max=denom;\n\n\tputchar('.');\n\tmod=(long
+    long)(a%b)*10;\n\t\n\t//非循環部を表示\n\tfor(i=0;i&lt;nonloop_max;i++){\n\t\tputchar('0'+(int)(mod/b));\n\t\tmod=(mod%b)*10;\n\t}\n\tif(mod){\n\t\t//循環節を表示\n\t\tloop_start_mod=mod;\n\t\tputchar('{');\n\t\tdo{\n\t\t\tputchar('0'+(int)(mod/b));\n\t\t\tmod=(mod%b)*10;\n\t\t}while(mod!=loop_start_mod);\n\t\tputchar('}');\n\t}\n\tputchar('\\n');\n\treturn;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '627'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/627
+  :user_name: 匿名
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/4/
+  :language: Python
+  :time: 2007/07/12 09:50 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">自分なりに書き換えてみました。どんなもんでしょう。</pre>\n\t"
+  :code: |
+    def f(a, b):
+            x = ''
+            h = {a: 0}
+            while 1:
+                    i, a = divmod(a * 10, b)
+                    x += str(i)
+                    if a == 0:
+                            return '0.' + x
+                    if h.has_key(a):
+                            return '0.%s{%s}' % (x[:h[a]], x[h[a]:])
+                    h[a] = len(x)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '644'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/644
+  :user_name: 匿名
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/07/12 11:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#312です。\r\nCだと商と剰余をいっぺんに取る関数ありませんでしたっけ？\r\nループ中に割り算が半分になるので速くなると思います。\r\n\r\nあと速度にはあまり影響なさそうですけど約分は既約分数を求めるとかでしょうか。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '645'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/645
+  :user_name: rubikitch
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/105/
+  :language: D
+  :time: 2007/07/12 11:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "module doukaku;\n\nprivate import std.string;\nprivate import std.stdio;\nprivate
+    import std.math;\n\nstruct Decimal {\n    int int_part;\n    char[] frac_part;\n
+    \   int period_idx;\n}\n\nDecimal rational2Decimal_aux(int a, int b) {\n    char[]
+    ret;\n    char[] mods;\n    char firstp = 1;\n    Decimal dec;\n\n    do {\n        if
+    (!firstp) mods ~= a;\n        a *= 10;\n        ret ~= a/b;\n        a %= b;\n
+    \       firstp = 0;\n    } while (!( !a || find(mods, a) != -1 ));\n\n    dec.frac_part
+    = ret;\n    dec.period_idx = a ? find(ret, 10*a/b) : -1;\n    return dec;\n}\n
+    \   \nDecimal rational2Decimal(int a, int b) {\n    Decimal dec;\n    dec = rational2Decimal_aux(a
+    % b, b);\n    dec.int_part = a/b;\n    return dec;\n}    \n\nvoid write_Decimal(Decimal
+    x) {\n    writef(\"%d.\", x.int_part);\n    foreach(i, n; x.frac_part) {\n        if
+    (i == x.period_idx) writef(\"{\");\n        writef(\"%d\", n);\n    }\n    if
+    (x.period_idx != -1) writef(\"}\");\n    writefln(\"\");\n}\n\nvoid main() {\n
+    \   write_Decimal(rational2Decimal(3,14));  // 0.2{142857}\n    write_Decimal(rational2Decimal(17,14));
+    // 1.2{142857}\n    write_Decimal(rational2Decimal(1,4));   // 0.25\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '659'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/659
+  :user_name: iwk
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/49/
+  :language: 
+  :time: 2007/07/12 13:49 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  ものすごく興ざめな話ですが、循環小数の指数については『数論入門 / 北村泰一著』あたりをどうぞ。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '711'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/711
+  :user_name: yuki
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/138/
+  :language: 
+  :time: 2007/07/13 02:05 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  それはそれでありですけど、「どう書く？」っていうのがここの趣旨だと思います。\r\n読んで（知った上で）または、読まずに（知らないなりに）、どう書くかが問われるのでは？\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '770'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/770
+  :user_name: iwk
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/49/
+  :language: 
+  :time: 2007/07/13 15:22 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  だからものすごく興ざめな話なわけです。(^^;A\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '857'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/857
+  :user_name: yuin
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/07/14 17:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: "import scala.collection.mutable._\ndef f(a:Int, b:Int):String = {\n  var
+    result = new ListBuffer[Int]\n  val mods   = new LinkedHashSet[Int]\n  mods +=
+    a%b\n  def l(v:Int):Int = {\n    result += (v*10)/b\n    val mod = v*10%b\n    if(mods.contains(mod))
+    mods.indexOf(mod)\n    else if(mod == 0) -1 \n    else {mods+=mod;l(mod)}\n  }\n
+    \ val i = l(a)\n  var p = result.mkString(\"\")\n  if(i != -1) p = p.substring(0,i)+\"{\"+p.substring(i)+\"}\"\n
+    \ \"0.\"+p\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '865'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/865
+  :user_name: rubikitch
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/105/
+  :language: Emacs
+  :time: 2007/07/14 18:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    (defun %rational-&gt;decimal-calc (a b)
+      (let (ret mods)
+        (loop
+           do
+             (setf a (* 10 a))
+             (push (floor (/ a b)) ret)
+             (setf a (mod a b))
+           until
+             (or (zerop a) (member a mods))
+           do
+             (push a mods)
+           finally
+             (setf ret (nreverse ret)))
+        (if (zerop a)
+            ret
+            (nconc (%insert-list ret (position (floor (/ (* 10 a) b)) ret :from-end t) "{") '("}")))))
+
+    (defun %insert-list (list n newelt)
+      `(,@(butlast list (- (length list) n)) ,newelt ,@(nthcdr n list)))
+
+    (defun rational-&gt;decimal (a b)
+      (let* ((int (truncate a b))
+             (numerator (% a b))
+             (denominator b))
+        (concat (format "%d." int)
+                (mapconcat (lambda (x) (format "%s" x))
+                           (%rational-&gt;decimal-calc numerator denominator) ""))))
+
+    ;; (rational-&gt;decimal 3 14)
+    ;; (rational-&gt;decimal 17 14)
+    ;; (rational-&gt;decimal 1 4)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '873'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/873
+  :user_name: rubikitch
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/105/
+  :language: Lua
+  :time: 2007/07/14 20:48 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "function rational2Decimal_aux(a, b)\n  ret = {}\n  mods = {}\n  dec = {}\n
+    \ firstp = true\n  repeat\n    if not firstp then\n      table.insert(mods, a,
+    true)\n    end\n    a = a * 10\n    table.insert(ret, math.floor(a/b))\n    a
+    = math.mod(a, b)\n    firstp = false\n  until a == 0 or mods[a] == true\n  dec.frac_part
+    = ret\n  if a ~= 0 then\n    dec.period_idx = position(ret, math.floor(10*a/b))\n
+    \ else\n    dec.period_idx = false\n  end\n  return dec\nend\n\nfunction position(ary,
+    elt)\n  ret = nil\n  table.foreachi(ary, function(i, x)\n                        if
+    x == elt then\n                          ret = i\n                        end\n
+    \                     end)\n  return ret\nend\n\nfunction rational2Decimal(a,
+    b)\n  dec = rational2Decimal_aux(math.mod(a, b), b)\n  dec.int_part = math.floor(a/b)\n
+    \ return dec\nend\n  \nfunction write_Decimal(dec)\n  str = string.format(\"%d.\",
+    dec.int_part)\n  table.foreachi(dec.frac_part, function(i, n)\n                                if
+    i == dec.period_idx then str = str .. \"{\" end\n                                str
+    = str .. string.format(\"%d\", n)\n                              end)\n  if dec.period_idx
+    then\n    str = str .. \"}\"\n  end\n  print(str)\nend\n\nwrite_Decimal(rational2Decimal(3,14))
+    \ -- 0.2{142857}\nwrite_Decimal(rational2Decimal(17,14)) -- 1.2{142857}\nwrite_Decimal(rational2Decimal(1,4))
+    \  -- 0.25\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '895'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/895
+  :user_name: ofk
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/247/
+  :language: JavaScript
+  :time: 2007/07/15 06:01 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">（　＾Ï\x89＾）</pre>\n\t"
+  :code: "function f2d(a, b){\n\tfunction indexOf(a, b, c) {\n\t\tfor (var i = 0,
+    j = a.length - 1; i &lt; j; ++i)\n\t\t\tif (a[i][0] == b &amp;&amp; t[i][1] ==
+    c)\n\t\t\t\treturn i;\n\t\treturn -1;\n\t}\n\tfunction join(a) {\n\t\tvar r =
+    '';\n\t\tfor (var i = 0, j = a.length; i &lt; j; ++i)\n\t\t\tr += a[i][0];\n\t\treturn
+    r;\n\t}\n\tvar t = [], p = -1;\n\twhile (a) {\n\t\tif (a &lt; b) {\n\t\t\ta *=
+    10;\n\t\t\tcontinue;\n\t\t}\n\t\tvar c = Math.floor(a / b), d = a % b;\n\t\tp
+    = indexOf(t, c, d);\n\t\tif (p != -1)\n\t\t\tbreak;\n\t\tt.push([c, d]);\n\t\tif
+    (d == 0)\n\t\t\tbreak;\n\t\ta %= b;\n\t}\n\tvar r = '0.';\n\tif (p != -1)\n\t\treturn
+    r + join(t.slice(0, p)) + '{' + join(t.slice(p)) + '}';\n\treturn r + join(t);\n}\n\nalert(f2d(3,
+    8)); // 0.375\nalert(f2d(3, 14)); // 0.2{142857}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '924'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/924
+  :user_name: rubikitch
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/105/
+  :language: Perl
+  :time: 2007/07/15 12:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  書いてて苦しい。リファレンスで頭おかしくなりそうorz\n\t"
+  :code: "sub find {\n    my($aryref, $elt) = @_;\n    for (my $i=0; $i&lt;=length(@$aryref);
+    $i++){\n        return $i if $elt == $$aryref[$i];\n    }\n    return -1;\n}\n
+    \   \nsub rational2Decimal_aux {\n    my($a, $b)=@_;\n    my @ret=(), @mods=();\n
+    \   my $firstp = 1;\n\n  loop:\n    if (!$firstp) { push(@mods,$a); }\n    $a
+    *= 10;\n    push(@ret, int($a/$b));\n    $a %= $b;\n    $firstp = 0;\n    if (!(
+    !$a || grep({$_==$a} @mods))) { goto loop }; # do-while\n\n    {frac_part =&gt;
+    \\@ret,\n     period_idx =&gt; $a ? find(\\@ret, int(10*$a/$b)) : -1};\n}\n    \nsub
+    rational2Decimal {\n    my($a, $b) = @_;\n    my $dec = rational2Decimal_aux($a
+    % $b, $b);\n    $$dec{int_part} = int($a/$b);\n    $dec;\n}\n\nsub write_Decimal
+    {\n    my $x = $_[0];\n    printf(\"%d.\", $$x{int_part});\n    my $i = 0;\n    foreach
+    my $n (@{$$x{frac_part}}) {\n        if ($i == $$x{period_idx}) { print(\"{\");
+    }\n        printf(\"%d\", $n);\n        $i++;\n    }\n    if ($$x{period_idx}
+    != -1) { print(\"}\"); }\n    print(\"\\n\");\n}\n\nwrite_Decimal(rational2Decimal(3,14));
+    \ # 0.2{142857}\nwrite_Decimal(rational2Decimal(17,14)); # 1.2{142857}\nwrite_Decimal(rational2Decimal(1,4));
+    \  # 0.25\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1318'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/1318
+  :user_name: katsu
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/117/
+  :language: Prolog
+  :time: 2007/07/22 02:18 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  他のハッシュ使ったのと同じアルゴリズムです。効率を保ったまま独自性が出せないので、悔しい。\n\t"
+  :code: |
+    div0(A,B,R,M):-R is A // B, M is A mod B.
+    div(A,B,R):-empty_assoc(C),div(A,B,C,D,D,R).
+    div(0,_,_,Dr,[],Dr).
+    div(A,_,C,Dh,['}'],Dr):-get_assoc(A,C,Val),match0(Dh,Val,Dr),!.
+    div(A,B,C,Dh,[R|Dt],Dr):-A1 is A * 10, div0(A1,B,R,M), put_assoc(A,C,[R|Dt],C1), div(M,B,C1,Dh,Dt,Dr).
+
+    match0(D,V,R):-length(D,LenD),length(V,LenV),Len is LenD - LenV, t(Len,D,V,R).
+    t(0,_,V,['{'| V]).
+    t(N,[D|Ds],V,[D|Rs]):-succ(N1,N),t(N1,Ds,V,Rs).
+
+    :- div(3,14,X0),concat_atom(['0.'|X0],X),writeln(X).
+  :tags:
+  - SWI-prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '1358'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/1358
+  :user_name: shiro
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/41/
+  :language: Haskell
+  :time: 2007/07/23 02:48 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">Haskell練習中。頭の中が富豪になってゆくのを感じる…\r\n\r\n実行例:\r\n*Main&gt;
+    toFrac 1 91\r\n\"0.{010989}\"\r\n*Main&gt; toFrac 3 14\r\n\"0.2{142857}\"\r\n*Main&gt;
+    toFrac 3 83\r\n\"0.{03614457831325301204819277108433734939759}\"\r\n</pre>\n\t"
+  :code: "gen a b qrs = case divMod a b of\n               (q,0) -&gt; rev_tos ((q,0):qrs)\n
+    \              (q,r) -&gt; case break ((r==) . snd) qrs of\n                             (_,[])
+    \ -&gt; gen (r*10) b ((q,r):qrs)\n                             (rep,pre) -&gt;
+    concat [rev_tos pre,\"{\",rev_tos ((q,r):rep),\"}\"]\n  where rev_tos qrs = concatMap
+    show $ reverse $ map fst qrs\n\n-- Inserts the decimal point. \ntoFrac a b = d:'.':rest\n
+    \ where d:rest = gen a b []\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1427'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/1427
+  :user_name: kkobayashi
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2007/07/24 15:16 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">m/(2^x * 5^y) + n/p のように部分分数展開して、割り切れる部分(2^x
+    * 5^y)と純循環小数部分(p)\r\nに分ければフェルマーの小定理(？)で循環部の長さが分かるので、(割り切れる部分の長さ＋循環節の長さ)\r\nが分かります。長さが分かればある程度まとまった桁ごとに(5桁ごととか)小数部分を計算できるので\r\n高速化できるのでは・・・\r\n\r\nと、ここまで考えて、任意の倍長整数(多分最大で10^2147483646
+    mod 2147483647)を扱えるようにしないと\r\n無理では・・・？と思えてきたので断念することにしました。普通に実装しています。\r\n\r\n&gt;
+    decimal(1, 7)\r\n[1] \"0.{142857}\"\r\n&gt; decimal(1, 7*2)\r\n[1] \"0.0{714285}\"\r\n&gt;
+    decimal(1, 7*2*4)\r\n[1] \"0.017{857142}\"\r\n&gt; decimal(1, 7*2*4*8)\r\n[1]
+    \"0.002232{142857}\"\r\n&gt; decimal(1, 7*2*4*8*16)\r\n[1] \"0.0001395089{285714}\"</pre>\n\t"
+  :code: |
+    decimal &lt;- function(a, b){
+       int &lt;- paste(a%/%b, ".", sep="")
+       num &lt;- a%%b
+       mod &lt;- rep(0, b)
+       div &lt;- NULL
+       i   &lt;- 0
+       repeat{
+           mod[num] &lt;- (i &lt;- i+1)
+           div &lt;- c(div, (num &lt;- num*10)%/%b)
+           if((num &lt;- num%%b) == 0){
+               return(paste(c(int, div), collapse=""))
+           }
+           else if(mod[num]){
+               return(paste(c(int, append(div, "{", after=mod[num]-1),"}"), collapse=""))
+           }
+       }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1559'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/1559
+  :user_name: 匿名
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/4/
+  :language: Lua
+  :time: 2007/07/29 05:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    function decimal(a,b)
+      local r,t,i,z,p = {},{},1,1
+      while a &gt;= b do
+        b,z = b*10,z+1
+      end
+      while a ~= 0 do
+        t[a],i,a = i,i+1,a*10
+        table.insert(r,math.floor(a/b))
+        a = a%b
+        if t[a] then
+          p = t[a]
+          break
+        end
+      end
+      if p then
+        r[p] = "{"..r[p]
+        table.insert(r,"}")
+      end
+      table.insert(r,z,".")
+      if z == 1 then
+        table.insert(r,1,"0")
+      end
+      return table.concat(r)
+    end
+    assert(decimal(3,8) == "0.375")
+    assert(decimal(3,14) == "0.2{142857}")
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1705'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/1705
+  :user_name: tomatsu
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/323/
+  :language: Pnuts
+  :time: 2007/08/02 12:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    function getDecimal(a, b){
+      nums=list()
+      res = StringBuilder("0.")
+      n = 0
+      while (true){
+        nums.add(a)
+        a *= 10
+        res.append(a/b)
+        a %= b
+        if (a == 0) return string(res)
+        if (nums.contains(a)){
+          off = nums.indexOf(a) + 2
+          return res[0..off-1] + "{" + res[off..] + "}"
+        }
+      }
+    }
+    println(getDecimal(3,14))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1882'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/1882
+  :user_name: yattom
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/335/
+  :language: awk
+  :time: 2007/08/05 15:42 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">ex)\r\n&gt; type test.txt\r\n3 8\r\n3 14\r\n1
+    3\r\n\r\n&gt; gawk -fdiv.awk test.txt\r\n0.375\r\n0.2{142857}\r\n0.{3}\r\n\r\n実装は
+    function div (a,b) です。\r\n循環が始まるかどうか調べるのに、\r\n「&lt;a&gt;:&lt;x*b&gt;」という文字列をキーとした配列(ハッシュ)を\r\n使っています。\r\n\r\n9行目あたりが煩雑だなあ。</pre>\n\t"
+  :code: "function div(a, b,   idx, x, i, result, mod) {\n\tresult = \"0.\"\n\tidx
+    = 0\n\twhile(a &gt; 0) {\n\t\ta *= 10\n\t\tx = int(a / b)\n\t\tif((a \":\" (x
+    * b)) in mod) {\n\t\t\ti = mod[a \":\" (x * b)]\n\t\t\tresult = substr(result,
+    1, i + 2) \"{\" substr(result, i + 3) \"}\"\n\t\t\tbreak\n\t\t}\n\t\tresult =
+    result x\n\t\tmod[a \":\" (x * b)] = idx\n\t\ta -= x * b\n\t\tidx++\n\t}\n\treturn
+    result\n}\n\n{\n\tprint div($1, $2)\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2187'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/2187
+  :user_name: tell
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/228/
+  :language: Ruby
+  :time: 2007/08/14 23:42 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  2と5以外の素数の法とそれ以外の数の法で生成する\r\n巡回群を見て比べると，結構おもしろいかもしれない\r\n\n\t"
+  :code: |
+    def rational_to_decimal( a, b )
+      series = []
+      check = {}
+      loop {
+        quotient, residu = a.divmod( b )
+        series.push( quotient )
+        if 0 == residu
+          return "%d.%s" % [ series[0], series[ 1..-1 ] ]
+        elsif check[ residu ]
+          return "%d.%s{%s}" % [ series[0],
+                                 series[ 1...check[ residu ] ],
+                                 series[ check[ residu ]..-1 ] ]
+        else
+          check[ residu ] = series.length
+        end
+        a = residu * 10
+      }
+    end
+
+    ## テスト
+
+    2.upto( 100 ) {| denominator |
+      1.upto( denominator - 1 ) {| i |
+        puts( "%4d / %4d = %s" % [ i,
+                                   denominator,
+                                   rational_to_decimal( i, denominator )] )
+      }
+      puts
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3919'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/3919
+  :user_name: dankogai
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/26/
+  :language: Perl
+  :time: 2007/11/12 17:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>ストレートフォワードかつきれいなコードなので、Perlにも移植させていただきました。何をやっているかを解りやすくするため、変数名をもう少しdescriptiveにし、10より大きな整数の場合にもきちんと動くようにしてあります。\n</p>\n<p>Dan
+    the Math Monger\n</p>\n\n\n\n\t"
+  :code: |
+    #!/usr/local/bin/perl
+    use strict;
+    use warnings;
+
+    # cf. http://ja.doukaku.org/comment/202/
+
+    sub rat2dec {
+        my ( $num, $den ) = @_;
+        my $result = int( $num / $den );
+        my $offset = length $result;
+        $result .= '.';
+        $num %= $den;
+        my %repeat;
+        my $i = 1;
+        while ( $num &gt; 0 ) {
+            $repeat{$num} = $i++;
+            $num *= 10;
+            $result .= int( $num / $den );
+            next unless $repeat{ $num %= $den };
+            substr( $result, $repeat{$num} + $offset, 0, '{' );
+            $result .= '}';
+            last;
+        }
+        $result;
+    }
+
+    print rat2dec(@ARGV), "\n";
+  :tags:
+  - math
+  :references:
+    :url: 
+    :title: 
+- :id: '6144'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/6144
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2008/04/05 14:23 GMT
+  :vote_count: '2'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ウサギとカメによる循環検出アルゴリズム\r\nFloyd's cycle-finding
+    algorithm（\"tortoise and the hare\" algorithm）\r\nhttp://en.wikipedia.org/wiki/Floyd's_cycle-finding_algorithm\r\nを使った方法。\r\n\r\n計算オーダーは小数の長さの線形オーダーのはず。\r\n</pre>\n\t"
+  :code: "import Char\n\n-- 余り列から循環部を探す\n-- (A) ウサギは一つ飛ばしで進む\n-- (B) カメと同時観察\n-- (C)
+    ウサギが 0 を見つけるか循環してカメと出会うまで待つ\n-- (D) カメに循環部を見てきてもらう\n\ncyclePart xs = if (d ==
+    0)\n  then [0]\n  else c: (takeWhile (/= c) $ fst $ unzip ys)  where  -- (D) \n
+    \ ((c,d):ys) = dropWhile (\\(a,b) -&gt; b /= 0 &amp;&amp; b /= a) -- (C)\n    $
+    zip xs                                          -- (B)\n    $ map head $ iterate
+    (drop 2) $ tail xs           -- (A)\n\n-- (E) 商列と余り列\n-- (F) 余り列の循環部\n-- (G) 循環部の前までの長さ\n--
+    (H) 商列を循環部以前と以降にわける\n-- (I) 商列の循環部\n--     qs3 = take (length rcycle) qs2 を zipWith
+    を使って書いた\n\ntoDicimal m n = show q0 ++ \".\" ++ intsToStr qs1 ++ cyc  where\n  (q0,m')
+    = divMod m n\n  (_:qs,rs) = unzip\n    $ iterate ((`divMod` n).(10*).snd) (0,m')
+    \        -- (E)\n  rcycle = cyclePart rs                               -- (F)\n
+    \ len = length $ takeWhile (`notElem` rcycle) rs      -- (G)\n  (qs1,qs2) = splitAt
+    len qs                          -- (H)\n  cyc = if (rcycle == [0])\n    then \"\"\n
+    \   else \"{\" ++ intsToStr qs3 ++ \"}\"  where\n      qs3 = zipWith const qs2
+    rcycle                  -- (I)\n  intsToStr = map intToDigit\n\n{-\n&gt; toDicimal
+    3 14\n0.2{142857}\n-}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6148'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/6148
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2008/04/06 16:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">ウサギとカメによる循環検出アルゴリズム\r\nFloyd's cycle-finding
+    algorithm（\"tortoise and the hare\" algorithm）\r\nhttp://en.wikipedia.org/wiki/Floyd's_cycle-finding_algorithm\r\nを使った方法。\r\n\r\n前回のは上記のアルゴリズム通りに書いていなかった\r\n（計算コストも線形オーダーになっていなかった）\r\nので書き直し。今度こそ。\r\n</pre>\n\t"
+  :code: "import Char\n\n-- 余り列からμ（循環部より前の長さ）とλ（循環部の長さ）を求める\n-- (A) ウサギは一つ飛ばしで進む\n--
+    (B) カメとウサギを同時観察\n-- (C) ウサギが 0 を見つけるか循環してカメと出会うまで待つ\n-- (D) mu はμ\n-- (E) lm はμ＋λ\n\nmuLam
+    xs = if (d == 0)\n  then (length $ takeWhile (/= 0) xs, 0)\n  else (mu, lm-mu)
+    where\n  ys@((_,d):_) = dropWhile (\\(a,b) -&gt; b /= 0 &amp;&amp; b /= a) --
+    (C)\n    $ zip (tail xs)                                     -- (B)\n    $ map
+    head $ tail $ iterate (drop 2) xs             -- (A)\n  (_,(c,_,mu):zs) = span
+    (\\(a,b,_) -&gt; a /= b)           -- (D)\n    $ zip3 xs (fst $ unzip ys) [0..]\n
+    \ (_,_,lm) = head $ dropWhile (\\(a,_,_) -&gt; a /= c) zs   -- (E)\n \n-- (F)
+    商列と余り列\n-- (G) 循環部の前までの長さと循環部の長さ\n-- (H) 商列を循環部以前と以降にわける\n-- (I) 商列の循環部\n\ntoDicimal
+    m n = show q0 ++ \".\" ++ intsToStr qs1 ++ cyc  where\n  (q0,m') = divMod m n\n
+    \ (_:qs,rs) = unzip\n    $ iterate ((`divMod` n).(10*).snd) (0,m')     -- (F)\n
+    \ (mu,lam) = muLam rs                             -- (G)\n  (qs1,qs2) = splitAt
+    mu qs                       -- (H)\n  cyc = if (lam == 0)\n    then \"\"\n    else
+    \"{\" ++ intsToStr (take lam qs2) ++ \"}\"   -- (I)\n  intsToStr = map intToDigit\n\n{-\n&gt;
+    toDicimal 3 14\n0.2{142857}\n-}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6173'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/6173
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2008/04/12 07:48 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">数学的な性質を使ったバージョン。\r\nやっていることは kozimaさんの #428
+    とほとんど同じです。\r\n\r\ngolf的なところ\r\n\r\n・(1+r0%n) と１加えてから計算を進め最後に (tail $ show q1)
+    と\r\n  結果の文字列を tail して先頭の「１」をとることにより循環部より\r\n  前部分のリーディング０の生成処理。\r\n・find ((/=r2).snd)
+    [dM (10*r)] \r\n  は\r\n  if (b /= r2) then Just (a,b) else Nothing where (a,b)
+    = dM (10*r)\r\n  の意。\r\n</pre>\n\t"
+  :code: |
+    import Ratio
+    import List
+
+    toDecimal m n = show q0 ++ "." ++ (tail $ show q1) ++ cyc  where
+      (q0,r0) = divMod m n
+      x = until ((==1).gcd 10.denominator) (10*) (1+r0%n)
+      (m',n') = (numerator x, denominator x)
+      dM = (`divMod` n')
+      (q1,r1) = dM m'
+      cyc | n' == 1   = ""
+          | otherwise = "{" ++ (rs &gt;&gt;= show) ++ "}"  where
+              rs = q2: unfoldr f r2  where
+                (q2,r2) = dM (10*r1)
+                f r = find ((/=r2).snd) [dM (10*r)]
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6175'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/6175
+  :user_name: '[1..100]&gt;&gt;=pen'
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/304/
+  :language: Haskell
+  :time: 2008/04/14 09:08 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">http://en.wikipedia.org/wiki/Floyd's_cycle-finding_algorithm\r\nに書いてあったもう一つの循環検出アルゴリズム\r\n「Brent
+    のアルゴリズム」を使ったバージョン。\r\n\r\nBrent によるとこの循環検出方法は Floyd の方法より平均で約３６％速いそうです。\r\n</pre>\n\t"
+  :code: |
+    import List (unfoldr,findIndex)
+    import Monad (msum)
+
+    {-
+    余り列からμ（循環部より前の長さ）とλ（循環部の長さ）を求める
+
+    (A) xs を１個、２個、４個、８個・・・からなる区間に分ける。
+      例えば xs = [1..] だったら [[1],[2,3],[4,5,6,7],..] に分けるように。
+      （本当はさらにもうちょっと加工している）
+    (B) 各区間で先頭の値と同じものが区間中にあるか検索する
+    (C) 最初に見つかった検索成功情報を取ってくる。
+      成功情報は Just i の形で i は λ-1 に等しい。
+    (D) インデックスを Just の中から取り出し１加える。
+    (E) λステップ進んだ位置とスタート位置から同時に進む（カウンタ付き）。
+    (F) 循環して出会うまで待つ。
+    -}
+
+    muLam xs = (mu, if (d==0) then 0 else lam) where
+      ys = unfoldr f (1,xs)                                         -- (A)
+      f (m,zs) = Just (splitAt 1 zs1, (2*m,zs2)) where
+        (zs1,zs2) = splitAt m zs
+      lam = maybe 0 (+1)                                            -- (D)
+        $ msum                                                      -- (C)
+        $ zipWith (\([a],as) ([b],_) -&gt; findIndex (==a) (as++[b]))  -- (B)
+            ys (tail ys)
+      (_,d,mu) = head $ dropWhile (\(a,b,_) -&gt; a/=b)                -- (F)
+        $ zip3 xs (drop lam xs) [0..]                               -- (E)
+
+    toDecimal m n = show q0 ++ "." ++ (qs1 &gt;&gt;= show) ++ cyc  where
+      (q0,m') = divMod m n
+      (_:qs,rs) = unzip $ iterate ((`divMod` n).(10*).snd) (0,m')
+      (mu,lam) = muLam rs
+      (qs1,qs2) = splitAt mu qs
+      cyc | lam == 0  = ""
+          | otherwise = "{" ++ (take lam qs2 &gt;&gt;= show) ++ "}"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8166'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/8166
+  :user_name: taninsw
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/973/
+  :language: Haskell
+  :time: 2008/12/14 06:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>結構迷いました。</p>\n<p>initsを使ったところがトリックーというか意味不明に見えるかもしれませんが、ちゃんと答は返します。</p>\n\n\t"
+  :code: "import List\n\nfraction n d = iterate f (0,n)\n  where f (a,b) = divMod
+    (b*10) d \n\nfractionToStr n d = let frac        = fraction n d\n                        chopped
+    \    = tail $ footChopped frac\n                        cHead       = cyclingHead
+    frac\n                    in  if cHead ==(0,0) then \"0.\" ++ mkStr chopped\n
+    \                                        else let (a,b) = break (==cHead) chopped\n
+    \                                             in \"0.\" ++ mkStr a ++\"[\"++mkStr
+    b++\"]\"\n  where mkStr xs = (concat.map show.map fst) xs\n\n\nall_different xs
+    \ = nub xs  == xs\ndontHaveZero  xs  = all (/=(0,0))  xs\n\nfootChopped  fraction
+    = last $ takeWhile (\\x-&gt;all_different x &amp;&amp; dontHaveZero x) $ tail
+    $ inits $ fraction\n\ncyclingHead  fraction = last $ head $  dropWhile (\\x-&gt;all_different
+    x &amp;&amp; dontHaveZero x)$ \n                        tail $ inits $ fraction\n\n{-\n*Main&gt;
+    fractionToStr 3 14\n\"0.2[142857]\"\n*Main&gt; fractionToStr 3 8\n\"0.375\"\n*Main&gt;
+    fractionToStr 2 125\n\"0.016\"\n*Main&gt; fractionToStr 1 3\n\"0.[3]\"\n*Main&gt;
+    fractionToStr 1240 24090\n\"0.[05147364]\"\n-}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '8505'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/8505
+  :user_name: fumokmm
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/856/
+  :language: Groovy
+  :time: 2009/02/15 07:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">筆算のやり方を忠実に(？)再現してみました。\r\n\r\n小数点第100位まで求めています。(35行目)\r\nそれ以上は...と表示させて終了するように\r\nしてあります。(四捨五入なし)\r\n</pre>\n\t"
+  :code: |
+    assert recurringDecimal(3, 8)     == '0.375'
+    assert recurringDecimal(3, 14)    == '0.2{142857}'
+    assert recurringDecimal(1, 3)     == '0.{3}'
+    assert recurringDecimal(1, 7)     == '0.{142857}'
+    assert recurringDecimal(3, 7)     == '0.{428571}'
+    assert recurringDecimal(269, 111) == '2.{423}'
+
+    /**
+     * 循環小数に変換
+     *     例) 3/14 → 0.2{142857}
+     * @param numer 分子
+     * @param denom 分母
+     * @return 循環小数
+     */
+    def recurringDecimal(int numer, int denom) {
+        def rslt = '' &lt;&lt; '' // バッファ
+        def remainMap = [:] // 剰余:小数点第n位
+        def frac = []       // 小数部
+
+        // とりあえずqとrを求める
+        int q = numer / denom // quotient(商)
+        int r = numer % denom // remainder(剰余)
+
+        // 整数部を投入
+        rslt &lt;&lt; q
+        // 剰余が0なら終了
+        if (r == 0) {
+            return rslt.toString()
+        }
+        rslt &lt;&lt; '.'
+        // 剰余を保持しておく
+        remainMap[r] = 0
+
+        // 小数第100位まで繰り返し
+        for(digit in 0..&lt;100) {
+            // numerをr * 10に置き換えて、q, rを求める
+            numer = r * 10
+            q = numer / denom
+            r = numer % denom
+            // 小数部分を追加
+               frac &lt;&lt; q
+            // 剰余がremainMapに含まれている場合、循環部分を取り出して返却して終了
+            if (remainMap.containsKey(r)) {
+                def beforeRecurr = frac[0..&lt;remainMap[r]]
+                def recurr = frac[remainMap[r]..-1]
+                rslt &lt;&lt; beforeRecurr.join() &lt;&lt; "{${recurr.join()}}"
+                return rslt.toString()
+            }
+            // 剰余が0なら終了
+            if (r == 0) {
+                rslt &lt;&lt; frac.join()
+                return rslt.toString()
+            }
+            // 剰余を保持しておく
+            remainMap[r] = digit + 1
+        }
+
+        // 既定の小数点桁数を超過
+        rslt &lt;&lt; frac.join() &lt;&lt; '...'
+        return rslt.toString()
+    }
+  :tags: []
+  :references:
+    :url: /web/20100611020558/http://ja.wikipedia.org/wiki/%E5%BE%AA%E7%92%B0%E5%B0%8F%E6%95%B0
+    :title: 循環小数 - Wikipedia
+- :id: '9214'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/9214
+  :user_name: egtra
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2009/06/21 12:27 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>再帰にするぞ、と意気込んだものの、unfold使ったところで力尽きました。BOOST_FOREACHをstd::for_eachにすればもう少しましに思いますが、そうするにはラムダ式が欲しくなります……（今回、ラムダ式は控えました）。</p>\n<p>中のBOOST_FOREACHは、有限小数なら有限回（桁数の分だけの回数）で終了します。無限小数の場合を拾ってbreakするコードが加わっているわけです。</p>\n<p>VC++2008とg++
+    3.4.4でコンパイルできることを確かめてあります。</p>\n\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    #include &lt;map&gt;
+    #include &lt;cstdlib&gt;
+    #include &lt;boost/foreach.hpp&gt;
+    #include &lt;pstade/oven/unfold.hpp&gt;
+    #include &lt;pstade/oven/dropped.hpp&gt;
+    #include &lt;boost/optional.hpp&gt;
+    #include &lt;boost/bind.hpp&gt;
+
+    namespace ov = pstade::oven;
+
+    // div_tだと別途、比較関数を用意しないとmapに格納できないため、今回はpairのほうが便利。
+    typedef std::pair&lt;int, int&gt; div_pair;
+
+    // 次の1桁と残りの値のpairを返す。
+    div_pair next_digit(div_pair x, int denom)
+    {
+        std::div_t d = div(x.second * 10, denom);
+        return div_pair(d.quot, d.rem);
+    }
+
+    // 最後の桁を出力したら、uninitialzed状態を返す。
+    // なお、無限小数なら uninitialzed状態を返すことは永遠にない。
+    boost::optional&lt;div_pair&gt; last_digit_jadge(div_pair d)
+    {
+        return d.first == 0 &amp;&amp; d.second == 0
+            ? boost::optional&lt;div_pair&gt;()
+            : d;
+    }
+
+    template&lt;typename Range&gt;
+    std::string expand_digit(Range const&amp; r)
+    {
+        typedef std::map&lt;div_pair, int&gt; rem_map;
+        rem_map rem;
+        std::string s;
+        int i = 0;
+        BOOST_FOREACH(const div_pair d, r | ov::dropped(1))
+        {
+            std::pair&lt;rem_map::const_iterator, bool&gt; res = rem.insert(std::make_pair(d, i));
+            if (!res.second)
+            {
+                // 無限小数（循環節2周目突入）の場合
+                s.insert(s.begin() + res.first-&gt;second, '{');
+                s.insert(s.end(), '}');
+                break;
+            }
+            ++i;
+            s += static_cast&lt;char&gt;(d.first + '0');
+        }
+        return s;
+    }
+
+    int main()
+    {
+        int a, b;
+        std::cin &gt;&gt; a &gt;&gt; b;
+        std::cout &lt;&lt; "0." &lt;&lt; expand_digit(ov::unfold(
+            div_pair(0, a), last_digit_jadge, boost::bind(next_digit, _1, b))) &lt;&lt; std::endl;
+        return 0;
+    }
+  :tags:
+  - Boost
+  - PStade.Oven
+  :references:
+    :url: /web/20100611020558/http://ja.wikipedia.org/wiki/%E5%BE%AA%E7%92%B0%E5%B0%8F%E6%95%B0
+    :title: 循環小数 - Wikipedia
+- :id: '9215'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/9215
+  :user_name: egtra
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2009/06/21 12:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>おまけ: unfold使うようにする前に作った、素朴なバージョン。</p>\n<p>next_digit関数相当のコードがforループ内のあちこちに散らばっているのが美しくないですが、コード全体を見渡せば、こっちのほうがよっぽど素直なプログラムだと思います。</p>\n\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    #include &lt;map&gt;
+    #include &lt;functional&gt;
+    #include &lt;cstdlib&gt;
+
+    // div_t を辞書式順序で比較する関数オブジェクト。
+    // これは、小なり比較ができないと map に格納できないため。
+    struct div_lex_comp : std::binary_function&lt;std::div_t, std::div_t, bool&gt;
+    {
+        result_type operator ()(first_argument_type lhs, second_argument_type rhs) const
+        {
+            return lhs.quot &lt; rhs.quot
+                ? true
+                : lhs.rem &lt; rhs.rem;
+        }
+    };
+
+    inline bool operator ==(const div_t&amp; lhs, const div_t&amp; rhs)
+    {
+        return lhs.quot == rhs.quot &amp;&amp; lhs.rem == rhs.rem;
+    }
+
+    std::string expand_digit(int a, int b)
+    {
+        typedef std::map&lt;std::div_t, int, div_lex_comp&gt; rem_map;
+        rem_map rem;
+        std::string s;
+        for (int i = 0; ; ++i)
+        {
+            a *= 10;
+            std::div_t d = div(a, b);
+            std::pair&lt;rem_map::iterator, bool&gt; res = rem.insert(std::make_pair(d, i));
+            if (!res.second)
+            {
+                // 無限小数（循環節2周目突入）の場合
+                s.insert(s.begin() + res.first-&gt;second, '{');
+                s.insert(s.end(), '}');
+                break;
+            }
+            a = d.rem;
+            s += static_cast&lt;char&gt;(d.quot + '0');
+            if (d.rem == 0)
+            {
+                return s; // 有限小数だった場合
+            }
+        }
+        return s;
+    }
+
+    int main()
+    {
+        int a, b;
+        std::cin &gt;&gt; a &gt;&gt; b;
+        std::cout &lt;&lt; "0." &lt;&lt; expand_digit(a, b) &lt;&lt; std::endl;
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9495'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/9495
+  :user_name: horiuchi
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/570/
+  :language: ActionScript
+  :time: 2009/08/20 07:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <div class=\"section\">\n<p>ActionScriptのカバレッジ稼ぎ。</p>\n</div>\n\t"
+  :code: |
+    class CalcDecimal
+    {
+        public static function getDecimal(a:int, b:int):String {
+            var cache:/*Boolean*/Array = new Array();
+            var res:String = "";
+            while (true) {
+                cache[a] = true;
+                a *= 10;
+                res += String(int(a / b));
+                a %= b;
+                if (a == 0) {
+                    break;
+                }
+                if (cache[a]) {
+                    res = "{" + res + "}";
+                    break;
+                }
+            }
+            return "0." + res;
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9761'
+  :parent_id: '9'
+  :url: http://ja.doukaku.org/comment/9761
+  :user_name: Lost_dog
+  :user_url: /web/20100611020558/http://ja.doukaku.org/user/1129/
+  :language: Haskell
+  :time: 2009/12/29 09:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Lost_dogです。なんかみなさんは計算量を気にしてコーディングしてるみたいですが、私はHaskellらしさを前面に出すべく、シンプルに書きました…というか、そんな実力がないのでｗ　また今度チャレンジしてみます。</p>\n<p>あと、splitAtCycleっていう関数を書きましたが、汎用的な名前に反して、機能はしょぼいです。</p>\n<p>小数の循環は、余りが既出の数字になった時点で繰り返しが決定するので、本当にサイクル列を探す必要がないわけです。</p>\n<p>やってることは概して#1358のshiroさんと同じかな？と思います。</p>\n\n\t"
+  :code: "import List\n\nmain :: IO ()\nmain = do [x,y] &lt;- fmap (map read.words)
+    getLine\n          putStrLn $ p $ splitAtCycle $ decimal x y\n\np :: Show a =&gt;
+    ([(a,b)],[(a,c)]) -&gt; String\np (a,b) = concat $ delete \"{0}\" [\"0.\"++f a,\"{\"++f
+    b++\"}\"] where f = (&gt;&gt;=show.fst)\n\ndecimal :: Integral a =&gt; a -&gt;
+    a -&gt; [(a,a)]\ndecimal x y = p : decimal r y where p@(q,r) = (10*x) `divMod`
+    y \n\nsplitAtCycle :: Eq a =&gt; [a] -&gt; ([a],[a])\nsplitAtCycle xs = splitAtCycle'
+    [] xs \n  where splitAtCycle' xs (y:ys) = case y`elemIndex`xs of\n                                    Just
+    k  -&gt; splitAt k xs\n                                    Nothing -&gt; splitAtCycle'
+    (xs++[y]) ys\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 

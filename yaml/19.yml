@@ -1,0 +1,1817 @@
+---
+:id: '19'
+:title: XMLから情報を取り出す
+:comments:
+- :id: '3375'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/3375
+  :user_name: にしお
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/12 20:13 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\r\n\t  お題「<a href=\"/web/20100617095748/http://ja.doukaku.org/18/\">HTTPでGET</a>」の続編です。\r\n指定されたURL「http://ja.doukaku.org/feeds/comments/」をGETするとXML文字列が手に入ります。このXML文字列がすでに入手できてdataという変数に代入されているとします。このdataから、以下のような表記で書き込まれている「更新日時」を取り出すコードを書いてください。\r\n<pre>\r\n&lt;lastBuildDate&gt;Thu,
+    12 Jul 2007 09:42:50 -0000&lt;/lastBuildDate&gt;\r\n</pre>\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '692'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/692
+  :user_name: ocean
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2007/07/12 20:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  SAXで。\n\t"
+  :code: |
+    import urllib
+    import xml.sax
+    import xml.sax.handler
+
+    class Handler(xml.sax.handler.ContentHandler):
+        def __init__(self):
+            xml.sax.handler.ContentHandler.__init__(self)
+            self._text = ""
+            self._entered = False
+
+        def startElement(self, name, attrs):
+            if name == "lastBuildDate":
+                self._entered = True
+
+        def endElement(self, name):
+            if name == "lastBuildDate":
+                self._entered = False
+
+        def characters(self, content):
+            if self._entered:
+                self._text += content
+
+        def result(self):
+            return self._text
+
+    def main():
+        data = urllib.urlopen("http://ja.doukaku.org/feeds/comments/").read()
+        handler = Handler()
+        xml.sax.parseString(data, handler)
+        print handler.result()
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '693'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/693
+  :user_name: anekos
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/170/
+  :language: Ruby
+  :time: 2007/07/12 21:30 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    require 'open-uri'
+    require 'rexml/document'
+
+    data = open('http://ja.doukaku.org/feeds/comments/').read
+    xml = REXML::Document.new(data)
+    puts xml.elements['//lastBuildDate'].text
+  :tags:
+  - REXML
+  :references:
+    :url: 
+    :title: 
+- :id: '694'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/694
+  :user_name: shiro
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/07/12 21:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  全部パーズしてからsxpathで取り出すので効率は悪いです。\r\n\r\nsxpathは一致するノード全てのリストを返すんで、最初のノードの内容だけmatch節で取り出してますが、お題ではそのへんがちょっと不明確?
+    (lastBuildDataは必ずひとつなのか、とか)\r\n\r\nGaucheの内部エンコーディングがutf-8でない場合は*data*のエンコーディングを変換しといてください。\n\t"
+  :code: |
+    (use sxml.ssax)
+    (use sxml.sxpath)
+    (use rfc.http)
+    (use util.match)
+
+    (define *data* (values-ref (http-get "ja.doukaku.org" "/feeds/comments") 2))
+
+    (define (extract)
+      (match ((sxpath '(// lastBuildDate))
+              (call-with-input-string *data* (cut ssax:xml-&gt;sxml &lt;&gt; '())))
+        [(('lastBuildDate content) . _) content]
+        [else #f]))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '695'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/695
+  :user_name: shiro
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/41/
+  :language: Scheme
+  :time: 2007/07/12 21:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  自己レス。わざわざmatch使う必要無いや。\n\t"
+  :code: |
+    (define (extract)
+      ((sxpath '(// lastBuildDate *text*))
+       (call-with-input-string *data* (cut ssax:xml-&gt;sxml &lt;&gt; '()))))
+  :tags:
+  - gauche
+  :references:
+    :url: 
+    :title: 
+- :id: '696'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/696
+  :user_name: ところてん
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/166/
+  :language: 
+  :time: 2007/07/12 21:53 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  lastBuildDate っていう要素がひとつしかないっていう前提に立つと、\r\n正規表現で抜けちゃうけどいいんでしょうか？\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '700'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/700
+  :user_name: kawauchi
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/14/
+  :language: Ruby
+  :time: 2007/07/12 23:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    require 'open-uri'
+    require 'rss/2.0'
+
+    rss_uri = "http://ja.doukaku.org/feeds/comments/"
+
+    begin
+      rss_source = open(rss_uri).read
+      rss = RSS::Parser.parse(rss_source)
+      puts "更新日時: #{rss.channel.lastBuildDate}"
+    rescue
+      $stderr.puts $!
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '701'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/701
+  :user_name: kawauchi
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/14/
+  :language: Ruby
+  :time: 2007/07/12 23:56 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  すみません。お題を読み間違えていたので、少々修正します。\n\t"
+  :code: |
+    require 'open-uri'
+    require 'rss/2.0'
+
+    rss_uri = "http://ja.doukaku.org/feeds/comments/"
+
+    begin
+      data = open(rss_uri).read
+      rss = RSS::Parser.parse(data)
+      puts "更新日時: #{rss.channel.lastBuildDate}"
+    rescue
+      $stderr.puts $!
+    end
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '702'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/702
+  :user_name: Kiske
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/202/
+  :language: PHP
+  :time: 2007/07/13 00:46 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">simpleXMLでやってみました。</pre>\n\t"
+  :code: |
+    &lt;?php
+    $xml = simplexml_load_string($data);
+    $result = $xml-&gt;xpath('//lastBuildDate');
+    list( , $node) = each($result);
+    echo $node;
+  :tags:
+  - PHP5
+  :references:
+    :url: 
+    :title: 
+- :id: '703'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/703
+  :user_name: sumim
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2007/07/13 00:49 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Squeak Smalltalk で。</pre>\n\t"
+  :code: |
+    data readStream upToAll: '&lt;lastBuildDate&gt;'; upToAll: '&lt;/lastBuildDate&gt;'
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '704'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/704
+  :user_name: yuin
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/82/
+  :language: Scala
+  :time: 2007/07/13 00:54 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Scalaで。</pre>\n\t"
+  :code: |
+    import scala.xml.parsing.ConstructingParser
+    import scala.io._
+    val rss = ConstructingParser.fromSource(Source.fromString(data),true).document.docElem
+    println((rss\"channel"\"lastBuildDate").text)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '707'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/707
+  :user_name: tetsuro6502
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/213/
+  :language: XSLT
+  :time: 2007/07/13 01:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: "&lt;?xml version=\"1.0\" encoding=\"UTF-8\"?&gt;\n&lt;xsl:transform version=\"1.0\"\n\txmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"&gt;\n&lt;xsl:output
+    method=\"xml\" encoding=\"UTF-8\"/&gt;\n\n&lt;xsl:template match=\"channel\"&gt;\n&lt;xsl:copy-of
+    select=\"lastBuildDate\"/&gt;\n&lt;/xsl:template&gt;\n\n&lt;/xsl:transform&gt;\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '708'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/708
+  :user_name: inamorix
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/220/
+  :language: JavaScript
+  :time: 2007/07/13 01:20 GMT
+  :vote_count: '1'
+  :vote_score: '-1'
+  :body: "\n\t  \n\t"
+  :code: "function getLastBuildDate (data) {\n\tvar r = [];\n\tdata.replace(\n\t\t/&lt;lastBuildDate&gt;([^&gt;]+)&lt;\\/lastBuildDate&gt;/g,\n\t\tfunction
+    (str, lbd) { r.push(lbd); }\n\t);\n\treturn r;\n}\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '709'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/709
+  :user_name: tetsuro6502
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/213/
+  :language: XSLT
+  :time: 2007/07/13 01:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  「data変数」でしたか。\r\nならこちらで。\r\n※トップレベル要素のみ抜粋\n\t"
+  :code: |
+    &lt;xsl:param name="data" /&gt;
+
+    &lt;xsl:template match="/"&gt;
+    &lt;xsl:copy-of select="$data//lastBuildDate"/&gt;
+    &lt;/xsl:template&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '712'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/712
+  :user_name: tnk
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/30/
+  :language: Java
+  :time: 2007/07/13 03:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  lastBuildDateは一個しかないと仮定。\n\t"
+  :code: |
+    import java.net.URL;
+    import javax.xml.xpath.XPath;
+    import javax.xml.xpath.XPathConstants;
+    import javax.xml.xpath.XPathFactory;
+    import org.w3c.dom.Node;
+    import org.xml.sax.InputSource;
+
+    public class GetLastBuildDate {
+        public static void main(String[] args) throws Exception {
+            URL url = new URL("http://ja.doukaku.org/feeds/comments/");
+            InputSource in = new InputSource(url.openStream());
+            XPath xpath = XPathFactory.newInstance().newXPath();
+            String path = "//lastBuildDate";
+            Node node = (Node)xpath.evaluate(path, in, XPathConstants.NODE);
+            System.out.println(node.getTextContent());
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '717'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/717
+  :user_name: talo
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/237/
+  :language: Java
+  :time: 2007/07/13 04:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">正規表現で。</pre>\n\t"
+  :code: |
+    import java.io.InputStream;
+    import java.io.InputStreamReader;
+    import java.io.BufferedReader;
+    import java.util.regex.Pattern;
+    import java.util.regex.Matcher;
+
+    public class GetLastBuildDate {
+
+        private static final Pattern p = Pattern.compile("^.*?&lt;lastBuildDate&gt;([^&lt;]+)&lt;/lastBuildDate&gt;.+$");
+        private static final String url = "http://ja.doukaku.org/feeds/comments/";
+
+        public static void main(String[] args) throws Exception {
+            InputStream is = new java.net.URL(url).openConnection().getInputStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String line;
+            while ((line = br.readLine()) != null) {
+                Matcher m = p.matcher(line);
+                if (m.matches()) {
+                    System.out.println(m.group(1));
+                }
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '722'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/722
+  :user_name: にしお
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/1/
+  :language: 
+  :time: 2007/07/13 05:52 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">発展問題として、正規表現だととても大変だけど…\r\nという問題を作ると良さそうですね。</pre>\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '726'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/726
+  :user_name: Yuichirou
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/32/
+  :language: JavaScript
+  :time: 2007/07/13 06:25 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  実はJavaScriptも、多くのブラウザ環境でDOMパーサーを持っていたりするのですよ。\n\t"
+  :code: |
+    function parseXml(xmlText) {
+      if(DOMParser) {
+        var domParser = new DOMParser();
+        return domParser.parseFromString(xmlText, "application/xml");
+      } else if (ActiveXObject) {
+        try {
+          var domDoc = new ActiveXObject('MSXML2.DOMDocument');
+        } catch(e) {
+          try {
+            var domDoc = new ActiveXObject('Microsoft.XMLDOM');
+          } catch(e) {
+            return null;
+          }
+        }
+        domDoc.async = false;
+        domDoc.loadXML(xmlText);
+        return domDoc;
+      } else {
+        return null;
+      }
+    }
+
+    var xml = parseXml(data);
+    document.writeln(xml.getElementsByTagName("lastBuildDate")[0].firstChild.nodeValue);
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '728'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/728
+  :user_name: es
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/147/
+  :language: Python
+  :time: 2007/07/13 07:13 GMT
+  :vote_count: '2'
+  :vote_score: '2'
+  :body: "\n\t  2.5からついてくるElementTreeを使って\n\t"
+  :code: |
+    from xml.etree.ElementTree import XML
+
+    print XML(data).find('.//lastBuildDate').text
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '729'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/729
+  :user_name: es
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/147/
+  :language: Python
+  :time: 2007/07/13 07:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  feedparserの方は標準じゃないけど\n\t"
+  :code: |
+    import feedparser
+
+    f = feedparser.parse(data)
+    print f.feed.lastbuilddate
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '732'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/732
+  :user_name: yusukebe
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/238/
+  :language: Perl
+  :time: 2007/07/13 09:41 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  XML::RSS使って書いてみました。初投稿です。緊張してします。\n\t"
+  :code: |
+    use XML::RSS;
+    use LWP::Simple;
+
+    my $rss = XML::RSS-&gt;new;
+    $rss-&gt;parse(get("http://ja.doukaku.org/feeds/comments/"));
+    print $rss-&gt;channel-&gt;{lastBuildDate};
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '735'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/735
+  :user_name: onjo
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/235/
+  :language: Common
+  :time: 2007/07/13 10:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  S 式に変換して関数で処理 (AllegroCL)\n\t"
+  :code: "(defun fetch-doukaku-feed ()\n  (excl:octets-to-string (net.aserve.client:do-http-request
+    \"http://ja.doukaku.org/feeds/comments/\" :format :binary)\n\t\t\t :external-format
+    'utf8))\n\n(defun get-last-build-date (string)\n  (labels ((process (element)\n\t
+    \    (destructuring-bind (tag . body) element\n\t       (if (or (and (consp tag)
+    (eql (car tag) :|lastBuildDate|))\n\t\t       (eql tag :|lastBuildDate|))\n\t\t
+    \  body\n\t\t   (loop for e in body if (consp e) appending (process e))))))\n
+    \   (caar (mapcar #'process (net.xml.sax:parse-to-lxml string)))))\n\n(get-last-build-date
+    data)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '736'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/736
+  :user_name: onjo
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/235/
+  :language: Common
+  :time: 2007/07/13 10:39 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  SAX で処理 (AllegroCL)\n\t"
+  :code: "(defclass doukaku-parser (net.xml.sax:sax-parser)\n  ((entered :initform
+    nil)\n   (chunk :initform nil)\n   (result :initform nil)))\n(defmethod net.xml.sax:start-element
+    ((parser doukaku-parser) iri localname qname attrs)\n  (declare (ignore iri qname
+    attrs))\n  (when (string= localname \"lastBuildDate\")\n    (setf (slot-value
+    parser 'entered) T)))\n(defmethod net.xml.sax:content ((parser doukaku-parser)
+    content start end ignorable)\n  (declare (ignore ignorable))\n  (when (slot-value
+    parser 'entered)\n    (push (subseq content start end) (slot-value parser 'chunk))))\n(defmethod
+    net.xml.sax:end-element ((parser doukaku-parser) iri localname qname)\n  (declare
+    (ignore iri qname))\n  (when (string= localname \"lastBuildDate\")\n    (setf
+    (slot-value parser 'entered) NIL\n\t  (slot-value parser 'result)  (cons (with-output-to-string
+    (s)\n\t\t\t\t\t       (dolist (e (reverse (slot-value parser 'chunk)))\n\t\t\t\t\t\t
+    (princ e s)))\n\t\t\t\t\t     (slot-value parser 'result))\n\t  (slot-value parser
+    'chunk) nil)))\n(defun get-last-build-date/sax (string)\n  (multiple-value-bind
+    (successp parser)\n      (net.xml.sax:sax-parse-string string :class 'doukaku-parser)\n
+    \   (when successp\n      (first (slot-value parser 'result)))))\n(get-last-build-date/xml
+    data)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '737'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/737
+  :user_name: onjo
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/235/
+  :language: Common
+  :time: 2007/07/13 10:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  うーむ、色がつかないと見にくいなぁ。最後は DOM ベース API (Common Lisp)\n\t"
+  :code: "(defun get-last-build-date/dom (string)\n  (let* ((dom   (net.xml.dom:parse-to-dom
+    string))\n\t (node  (first (net.xml.dom:dom-list-elements-by-tag-name dom \"lastBuildDate\"))))\n
+    \   (when node\n      (net.xml.dom:dom-node-value (first (net.xml.dom:dom-child-node-list
+    node))))))\n(get-last-build-date/dom data)\n"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '751'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/751
+  :user_name: ココサブ
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/24/
+  :language: C
+  :time: 2007/07/13 11:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  data変数という扱いでよくて助かった。\r\n\r\n\r\n&lt;lastBuildDate&gt;に属性、空白が入らないことが前提になります。複数回出現しても表示できるようになっています。\r\n\r\n\r\nあ、ネストされてたら変な表示になりそう。\n\t"
+  :code: |
+    #include &lt;stdio.h&gt;
+    #include &lt;string.h&gt;
+    #include &lt;stdlib.h&gt;
+
+    int main()
+    {
+        char *data = "&lt;?xml version=\"1.0\" encoding=\"utf-8\"?&gt;"
+                     "&lt;rss version=\"2.0\"&gt;&lt;channel&gt;&lt;title&gt;どう書く？org 新着コメン
+    ト&lt;/title&gt;&lt;link&gt;http://ja.doukaku.org/&lt;/link&gt;&lt;description&gt;どう書く？orgに最近投
+    稿されたコード&lt;/description&gt;&lt;language&gt;ja&lt;/language&gt;&lt;lastBuildDate&gt;Fri, 13 Jul 20
+    07 11:17:01 -0000&lt;/lastBuildDate&gt;&lt;item&gt;&lt;title&gt;ココサブ's comment on ウィンドウの
+    表示"
+                     "&lt;/title&gt;&lt;link&gt;http://ja.doukaku.org/comment/744/&lt;/link&gt;&lt;descri
+    ption&gt;"
+                     "&amp;lt;a href=\"http://ja.doukaku.org/7/\"&amp;gt;ウィンドウの表示&amp;lt
+    ;/a&amp;gt;"
+                     "&amp;lt;hr&amp;gt;";
+
+        char *head, *tail;
+        char *result;
+        char *data_p;
+        int  result_len;
+
+        data_p = data;
+        while (1) {
+            head = strstr(data_p, "&lt;lastBuildDate&gt;");
+            if (head == NULL) break;
+            tail = strstr(head, "&lt;/lastBuildDate&gt;");
+            if (tail == NULL) break;
+
+            /* 答えの長さを求める         */
+            result_len = (tail - head) + strlen("&lt;/lastBuildDate&gt;");
+
+            result = malloc((result_len + 1) * sizeof(char));
+            strncpy(result, head, result_len);
+            result[result_len] = '\0';
+            printf("%s\n", result);
+            free(result);
+
+            data_p = tail + strlen("&lt;/lastBuildDate&gt;");
+        }
+
+        return 0;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '760'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/760
+  :user_name: cats
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/172/
+  :language: C
+  :time: 2007/07/13 14:17 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    using System;
+    using System.Xml;
+    using System.Xml.XPath;
+    class Program
+    {
+      static void Main()
+      {
+        string data = "&lt;?xml version='1.0'?&gt;&lt;rss&gt;&lt;lastBuildDate&gt;Thu, 12 Jul 2007 09:42:50 -0000&lt;/lastBuildDate&gt;&lt;/rss&gt;";
+        XmlDocument xd = new XmlDocument();
+        xd.LoadXml(data);
+        XPathNavigator xn = xd.CreateNavigator();
+        XPathExpression pe = xn.Compile("//lastBuildDate");
+        XPathNodeIterator ni = xn.Evaluate(pe) as XPathNodeIterator;
+        string s = ni.Current.Value;
+        Console.WriteLine(s);
+      }
+    }
+  :tags:
+  - <p></p>
+  - あああ
+  :references:
+    :url: 
+    :title: 
+- :id: '785'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/785
+  :user_name: kkobayashi
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/232/
+  :language: R
+  :time: 2007/07/14 01:03 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  複数ある場合は一番上のlastBuildDateを仮定しています\n\t"
+  :code: |
+    data &lt;- scan("http://ja.doukaku.org/feeds/comments/", what=character(0), sep="\n", encoding="UTF-8")
+    sub(".*&lt;lastBuildDate&gt;([^&lt;]+)&lt;/lastBuildDate&gt;.*", "\\1", grep('&lt;lastBuildDate&gt;', data, value=TRUE)[1])
+  :tags:
+  - R
+  :references:
+    :url: 
+    :title: 
+- :id: '796'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/796
+  :user_name: 匿名
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/07/14 03:11 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  ここはやはりSAXを使うべきでしょうということで作ってみました。実はSAXを使うのは初めてなので改善点などご指摘ください。\n\t"
+  :code: |
+    import org.xml.sax.InputSource;
+    import org.xml.sax.helpers.DefaultHandler;
+    import org.xml.sax.Attributes;
+    import javax.xml.parsers.SAXParser;
+    import javax.xml.parsers.SAXParserFactory;
+
+    public class Sample extends DefaultHandler {
+        static final String url = "http://ja.doukaku.org/feeds/comments/";
+        StringBuffer text = new StringBuffer();
+
+        public static void main(String[] args) throws Exception {
+            InputSource is = new InputSource(url);
+            SAXParserFactory saxf = SAXParserFactory.newInstance();
+            SAXParser p = saxf.newSAXParser();
+            p.parse(is, new Sample());
+        }
+
+        public void startElement(String uri, String localName, String qName,
+                                 Attributes attributes) {
+            text.setLength(0);
+        }
+
+        public void characters(char[] ch, int start, int length) {
+            text.append(ch, start, length);
+        }
+
+        public void endElement(String uri, String localName, String qName) {
+            if ("lastBuildDate".equals(qName)) {
+                System.out.println(text);
+                text.setLength(0);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '927'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/927
+  :user_name: 匿名
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/07/15 13:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  題意からはXMLは入手済みとなっていますが、文字コードと相対URLの解決を考えるとパーサで直接読む事が最善の選択だと考えて敢えて無視しています。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '932'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/932
+  :user_name: Hexa
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/163/
+  :language: Ruby
+  :time: 2007/07/15 15:02 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    require 'open-uri'
+    require 'xml/libxml'
+
+    data = XML::Document.file('http://ja.doukaku.org/feeds/comments/')
+    root = data.root
+    lastDate = root.find('//lastBuildDate').first
+    puts lastDate.content
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '968'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/968
+  :user_name: 匿名
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/07/16 06:29 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  与えられた問題 が 「変数 data を情報源にする」とになっているので、それを無視するのは、回答になっていないと思います。\r\n\r\nInputSource
+    に与えるものを、url の代わりに、 StringReader にするだけでよいのではないでしょうか。\n\t"
+  :code: |
+    import java.io.StringReader ;
+
+    String data = "～" ;
+
+    InputSource is = new InputSource (new StringReader (data)) ;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '970'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/970
+  :user_name: 匿名
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/07/16 06:39 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  変数 data がありませんね。与えられた問題では 「XML文字列がすでに入手できてdataという変数に代入されている」というこですので、
+    BufferedReader は、InputStream ではなく、StringReader で初期化すれば良いと思います。\r\n\n\t"
+  :code: |
+    import java.io.StringReader ;
+
+    String data = "～" ;
+
+    BufferedReader br = new BufferedReader (new StringReader (data)) ;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '971'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/971
+  :user_name: 匿名
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/4/
+  :language: Java
+  :time: 2007/07/16 06:42 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  変数 data がありませんね。与えられた問題では 「XML文字列がすでに入手できてdataという変数に代入されている」というこですので、
+    InputSource は、url .openStream () ではなく、new StringReader (data) で初期化すれば良いと思います。\n\t"
+  :code: |
+    import java.io.StringReader ;
+
+    String data = "～" ;
+
+    InputSource in = new InputSource (new StringReader (data));
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '974'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/974
+  :user_name: 匿名
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/07/16 07:06 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  与えられた問題には「XML文字列がすでに入手できてdataという変数に代入されている」とありましたが、変数 data に入っているのは
+    文字列 ではないようですね。文字列 を解析 (parse) するコードが必要と思いました。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '975'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/975
+  :user_name: 匿名
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/07/16 07:13 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  my $data = get ('～') ; $rss-&gt;parse ($data) ; ですね...\r\n\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '984'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/984
+  :user_name: PHO
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/69/
+  :language: Haskell
+  :time: 2007/07/16 08:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">HXT 使用。</pre>\n\t"
+  :code: |
+    import Control.Arrow
+    import Control.Arrow.ArrowTree
+    import Data.Maybe
+    import Network.HTTP
+    import Network.URI
+    import System.IO.Unsafe
+    import Text.XML.HXT.Arrow.ReadDocument
+    import Text.XML.HXT.Arrow.XmlArrow
+    import Text.XML.HXT.Arrow.XmlIOStateArrow
+    import Text.XML.HXT.DOM.XmlKeywords
+
+    uri :: URI
+    uri = fromJust $ parseURI "http://ja.doukaku.org/feeds/comments/"
+
+    _data :: String -- data は予約語なので使えません
+    _data = unsafePerformIO $
+            do Right resp &lt;- simpleHTTP $ Request uri GET [] ""
+               return $ rspBody resp
+
+    main = do results &lt;- runX ( readString [ (a_validate, v_0) ] _data
+                                &gt;&gt;&gt;
+                                deep (isElem &gt;&gt;&gt; hasName "lastBuildDate")
+                                &gt;&gt;&gt;
+                                getChildren
+                                &gt;&gt;&gt;
+                                getText
+                              )
+              print results
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1005'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/1005
+  :user_name: 匿名
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/07/16 11:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  おっしゃる通りです。入手済みという前提なら提示されるものが正しいです。InputSourceで直接読めるものをわざわざReader経由で読む（その結果文字コードの判定が効かなくなる）誤りを多く見るのでつい無視してしまいました。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1078'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/1078
+  :user_name: rubikitch
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/105/
+  :language: Common
+  :time: 2007/07/18 16:09 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  こんなんでいいのかな？エレガントじゃないな…\n\t"
+  :code: |
+    (require :curl)
+    (require :s-xml)
+    (defpackage xmltest
+      (:use common-lisp curl s-xml))
+    (in-package :xmltest)
+
+    (defparameter *data*
+      (with-connection-returning-string ()
+        (set-option :url "http://ja.doukaku.org/feeds/comments/")
+        (perform)))
+    (defun get-lastBuildDate (data)
+      (cadr (assoc :|lastBuildDate| (cdr (assoc :|channel| (parse-xml-string data))))))
+
+    (get-lastBuildDate *data*)              ; =&gt; "Wed, 18 Jul 2007 15:30:21 -0000"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1079'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/1079
+  :user_name: ocean
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/177/
+  :language: C
+  :time: 2007/07/18 17:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Windows専用です。MSXML6SDKをインストールして適切にINCLUDE,LIBのパスを設定してください。（VisualC++6で確認）\n\t"
+  :code: |
+    #include &lt;atlbase.h&gt;
+    #include &lt;msxml6.h&gt;
+    #pragma comment(lib, "msxml6.lib")
+
+    #include &lt;iostream&gt;
+    #include &lt;stdexcept&gt;
+    #include &lt;string&gt;
+
+    struct CoInitializer
+    {
+        CoInitializer()
+        {
+            CoInitialize(NULL);
+        }
+        ~CoInitializer()
+        {
+            CoUninitialize();
+        }
+    };
+
+    void check(HRESULT hr, const std::string&amp; name)
+    {
+        if (FAILED(hr))
+        {
+            throw std::runtime_error("invocation of " + name);
+        }
+    }
+
+    int main()
+    {
+        try
+        {
+            CoInitializer init;
+
+            CComPtr&lt;IXMLDOMDocument&gt; doc;
+
+            check(doc.CoCreateInstance(CLSID_DOMDocument), "CoCreateInstance");
+
+            check(doc-&gt;put_async(VARIANT_FALSE), "put_async");
+
+            VARIANT_BOOL isSuccessful;
+
+            check(doc-&gt;load(CComVariant("http://ja.doukaku.org/feeds/comments/"), &amp;isSuccessful), "load");
+
+            if (isSuccessful == VARIANT_FALSE)
+            {
+                throw std::runtime_error("load failed");
+            }
+
+            CComPtr&lt;IXMLDOMNode&gt; node;
+
+            check(doc-&gt;selectSingleNode(CComBSTR(L"//lastBuildDate"), &amp;node), "selectSingleNode");
+
+            if (! node)
+            {
+                throw std::runtime_error("node 'lastBuildDate' not found");
+            }
+
+            CComBSTR text;
+
+            check(node-&gt;get_text(&amp;text), "get_text");
+
+            USES_CONVERSION; // needed for W2A()
+
+            std::cout &lt;&lt; W2A(text) &lt;&lt; std::endl;
+        }
+        catch (std::exception&amp; e)
+        {
+            std::cerr &lt;&lt; "error: " &lt;&lt; e.what() &lt;&lt; std::endl;
+
+            return -1;
+        }
+
+        return 0;
+    }
+  :tags:
+  - Windows
+  :references:
+    :url: 
+    :title: 
+- :id: '1089'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/1089
+  :user_name: tnk
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/30/
+  :language: Java
+  :time: 2007/07/19 02:17 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">ごもっとも。\r\n\r\nということで再投稿。\r\n\r\nただ，JavaではXMLデータをStringで扱うことは一般的ではない，\r\nというのは譲れないところなのでInputSourceを使ったものを標準とし，\r\nStringでも大丈夫，というコードにしました。\r\n\r\n異なる引数をとる同機能のメソッドが同名で定義され，\r\n他を呼び出す形で実装されているのも「Javaらしい」と\r\nいうことで。</pre>\n\t"
+  :code: |
+    import java.io.BufferedReader;
+    import java.io.InputStreamReader;
+    import java.io.StringReader;
+    import java.net.URL;
+    import javax.xml.xpath.XPath;
+    import javax.xml.xpath.XPathConstants;
+    import javax.xml.xpath.XPathExpressionException;
+    import javax.xml.xpath.XPathFactory;
+    import org.w3c.dom.Node;
+    import org.xml.sax.InputSource;
+
+    public class GetLastBuildDate {
+        public static void main(String[] args) throws Exception {
+             URL url = new URL("http://ja.doukaku.org/feeds/comments/");
+             // 題意に沿ったもの
+             BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
+             StringBuffer buf = new StringBuffer();
+             for (String s = br.readLine(); s != null; s = br.readLine()) {
+                 buf.append(s).append("\n");
+             }
+             String data = buf.toString();  // dataにXMLを文字列として格納
+             System.out.println(getLastBuildDate(data));
+             // より「Javaらしい」方法
+             InputSource in = new InputSource(url.openStream());     // XMLはInputSourceで
+             System.out.println(getLastBuildDate(in));
+        }
+        public static String getLastBuildDate(String data) throws XPathExpressionException {
+            return getLastBuildDate(new InputSource(new StringReader(data)));
+        }
+        public static String getLastBuildDate(InputSource in) throws XPathExpressionException {
+            XPath xpath = XPathFactory.newInstance().newXPath();
+            String path = "//lastBuildDate";
+            Node node = (Node)xpath.evaluate(path, in, XPathConstants.NODE);
+            return node.getTextContent();
+        }
+    }
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '1139'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/1139
+  :user_name: aplo
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/267/
+  :language: PHP
+  :time: 2007/07/19 21:59 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">普通に正規表現でとってくる。</pre>\n\t"
+  :code: |
+    &lt;?php
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "http://ja.doukaku.org/feeds/comments/");
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    $data = curl_exec($ch);
+    curl_close($ch);
+
+    preg_match("'&lt;lastBuildDate&gt;.*?&lt;/lastBuildDate&gt;'", $data, $match);
+    print $match[0] . "\n";
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1322'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/1322
+  :user_name: katsu
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/117/
+  :language: Prolog
+  :time: 2007/07/22 04:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  sgml,html_openパッケージを使用。\n\t"
+  :code: |
+    :-use_module(library('http/http_open')).
+    :-use_module(library('sgml')).
+
+    find_element([],_,_):-fail.
+    find_element([X|_],E,X):-X=element(E,_,_).
+    find_element([X|Xs],E,O):-X=element(Ex,_,X1),(E==Ex-&gt;write('*');true),(find_element(X1,E,O);find_element(Xs,E,O)).
+
+    :-http_open('http://ja.doukaku.org/feeds/comments/',S,[]),load_structure(S,O,[dialect(xml)]),find_element(O,lastBuildDate,Os),writeln(Os).
+  :tags:
+  - SWI-prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '1323'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/1323
+  :user_name: katsu
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/117/
+  :language: Prolog
+  :time: 2007/07/22 04:20 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  sgml,html_openパッケージを使用。\n\t"
+  :code: |
+    :-use_module(library('http/http_open')).
+    :-use_module(library('sgml')).
+
+    find_element([],_,_):-fail.
+    find_element([X|_],E,X):-X=element(E,_,_).
+    find_element([X|Xs],E,O):-X=element(_,_,X1),(find_element(X1,E,O);find_element(Xs,E,O)).
+
+    :-http_open('http://ja.doukaku.org/feeds/comments/',S,[]),load_structure(S,O,[dialect(xml)]),find_element(O,lastBuildDate,Os),writeln(Os).
+  :tags:
+  - SWI-prolog
+  :references:
+    :url: 
+    :title: 
+- :id: '1324'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/1324
+  :user_name: katsu
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/117/
+  :language: 
+  :time: 2007/07/22 04:21 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  すみません、デバッグ用のコードが混ざったままでした。度々すみませんが、消していただけませんか。\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '1713'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/1713
+  :user_name: tomatsu
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/323/
+  :language: Pnuts
+  :time: 2007/08/02 12:31 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    data = readText(getURL(url))
+    nodeAccess(true)
+    println(selectSingleNode(readDocument(stringReader(data)), "//lastBuildDate").textTrim)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '2444'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/2444
+  :user_name: jz5
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/344/
+  :language: VB
+  :time: 2007/08/23 02:21 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    Console.WriteLine(XDocument.Parse(data).&lt;rss&gt;.&lt;channel&gt;.&lt;lastBuildDate&gt;.First.Value)
+  :tags:
+  - VB9.0
+  :references:
+    :url: 
+    :title: 
+- :id: '2681'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/2681
+  :user_name: 130R
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/409/
+  :language: Other
+  :time: 2007/08/30 08:40 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    $xpath = new-object system.xml.xpath.xpathdocument("http://ja.doukaku.org/feeds/comments")
+    $navi = $xpath.createnavigator()
+    $navi.select("//lastBuildDate") | select-object value
+  :tags:
+  - PowerShell
+  :references:
+    :url: 
+    :title: 
+- :id: '2682'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/2682
+  :user_name: 130R
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/409/
+  :language: PowerShell
+  :time: 2007/08/30 08:48 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\">言語付け忘れたので投稿しなおします。\r\n\r\nValue\r\n-----\r\nThu,
+    30 Aug 2007 08:22:30 -0000</pre>\n\t"
+  :code: |
+    $xpath = new-object system.xml.xpath.xpathdocument("http://ja.doukaku.org/feeds/comments")
+    $navi = $xpath.createnavigator()
+    $navi.select("//lastBuildDate") | select-object value
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3294'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/3294
+  :user_name: naranja
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/448/
+  :language: D
+  :time: 2007/10/08 09:00 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Tango を使用。</pre>\n\t"
+  :code: |
+    import tango.io.Stdout;
+    import tango.net.http.HttpGet;
+    import tango.text.Regex;
+
+    void main(){
+        auto page = new HttpGet("http://ja.doukaku.org/feeds/comments/");
+        auto data = cast(char[])page.read;
+        Stdout(search(data, r"&lt;lastBuildDate&gt;(.+?)&lt;/lastBuildDate&gt;").match(1)).newline;
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3576'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/3576
+  :user_name: aileron
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/467/
+  :language: Perl
+  :time: 2007/10/30 01:43 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">perlと言うかシェルスクリプト</pre>\n\t"
+  :code: |
+    wget -q -O - http://ja.doukaku.org/feeds/comments/ | perl -ne "print $+ if /&lt;lastBuildDate&gt;(.*)&lt;\/lastBuildDate&gt;/"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '3716'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/3716
+  :user_name: mtsuyugu
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/481/
+  :language: C
+  :time: 2007/11/05 16:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>libxml++-1.0 を利用しました。HTTP GET の処理は<a href=\"/web/20100617095748/http://ja.doukaku.org/comment/3704/\">#3704</a>
+    をそのまま利用しています。\n</p>\n<p>xpath を利用して日付を取得していますが、XMLにデフォルト名前空間が指定されていると\n    \"//lastBuildData\"
+    で取得できないので念のため、\"//*[name()='lastBuildDate']\" のようにしました。\n</p>\n\n\n\n\t"
+  :code: |
+    #include &lt;curlpp/cURLpp.hpp&gt;
+    #include &lt;curlpp/Easy.hpp&gt;
+    #include &lt;curlpp/Options.hpp&gt;
+    #include &lt;libxml++/document.h&gt;
+    #include &lt;libxml++/parsers/domparser.h&gt;
+    #include &lt;libxml++/nodes/node.h&gt;
+    #include &lt;libxml++/nodes/element.h&gt;
+    #include &lt;libxml++/nodes/textnode.h&gt;
+    #include &lt;string&gt;
+
+    std::string data;
+
+    size_t writeMemoryCallback( char *ptr, size_t size, size_t nmemb  ){
+       size_t realsize = size * nmemb;
+       data.append(  static_cast&lt;const char *&gt;( ptr ), realsize );
+       return realsize;
+    }
+
+    int main( int argc, char *argv[] ){
+
+       try {
+          cURLpp::Cleanup cleaner;
+          cURLpp::Easy request;
+          request.setOpt( new cURLpp::Options::Url( "http://ja.doukaku.org/feeds/comments/" ) );
+          request.setOpt( new cURLpp::Options::WriteFunction(
+                          cURLpp::Types::WriteFunctionFunctor( &amp;writeMemoryCallback )));
+          request.perform();
+       }
+       catch ( cURLpp::LogicError &amp; e ) {
+          std::cerr &lt;&lt; e.what() &lt;&lt; std::endl;
+          return 1;
+       }
+       catch ( cURLpp::RuntimeError &amp; e ) {
+          std::cerr &lt;&lt; e.what() &lt;&lt; std::endl;
+          return 1;
+       }
+
+
+       try {
+          xmlpp::DomParser parser;
+          parser.parse_memory( data );
+          const xmlpp::Element *root = parser.get_document()-&gt;get_root_node();
+          const xmlpp::NodeSet value = root-&gt;find("//*[name()='lastBuildDate']" );
+          if( value.empty() ){
+             std::cerr &lt;&lt; "no &lt;lastBuildDate&gt; Element" &lt;&lt; std::endl;
+             return 1;
+          }
+          const xmlpp::TextNode *tn = dynamic_cast&lt; xmlpp::Element *&gt;(value[0])-&gt;get_child_text();
+          if( !tn ){
+             std::cerr &lt;&lt; "text node empty in &lt;lastBuildDate&gt;" &lt;&lt; std::endl;
+             return 1;
+          }
+          std::string data = tn-&gt;get_content();
+          std::cout &lt;&lt; data &lt;&lt; std::endl;
+
+       }
+       catch ( xmlpp::exception &amp;e ){
+          std::cerr &lt;&lt; e.what() &lt;&lt; std::endl;
+          return 1;
+       }
+       return 0;
+    }
+  :tags: []
+  :references:
+    :url: /web/20100617095748/http://libxmlplusplus.sourceforge.net/
+    :title: libxml++
+- :id: '3874'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/3874
+  :user_name: 匿名
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/4/
+  :language: 
+  :time: 2007/11/11 17:33 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  \n\t"
+  :code: |
+    #data=HTTPデータ取得("http://ja.doukaku.org/feeds/comments/")
+    表示(タグ切り出し(data,"lastBuildDate"))
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '4019'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/4019
+  :user_name: Psychs
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/554/
+  :language: Objective
+  :time: 2007/11/14 13:00 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <pre class=\"compact\"></pre>\n\t"
+  :code: |
+    #import &lt;Foundation/Foundation.h&gt;
+    #import &lt;Appkit/Appkit.h&gt;
+
+    @interface AppController : NSObject
+    {
+      NSURLConnection* connection;
+      NSMutableData* buffer;
+    }
+    @end
+
+    @implementation AppController
+
+    - (void)dealloc
+    {
+      [connection release];
+      [buffer release];
+      [super dealloc];
+    }
+
+    - (void)startRequest
+    {
+      buffer = [NSMutableData data];
+      NSURL* url = [NSURL URLWithString:@"http://ja.doukaku.org/feeds/comments/"];
+      NSMutableURLRequest* req = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
+      [req setHTTPMethod:@"GET"];
+      connection = [[NSURLConnection alloc] initWithRequest:req delegate:self];
+    }
+
+    - (void)connectionDidFinishLoading:(NSURLConnection*)conn
+    {
+      NSXMLDocument* doc = [[[NSXMLDocument alloc] initWithData:buffer options:0 error:NULL] autorelease];
+      if (doc) {
+        NSArray* nodes = [doc nodesForXPath:@"//lastBuildDate" error:NULL];
+        for (id obj in nodes) {
+          NSLog(@"%@", [obj stringValue]);
+        }
+      }
+
+      [NSApp terminate:self];
+    }
+
+    - (void)connection:(NSURLConnection*)conn didFailWithError:(NSError*)err
+    {
+      NSLog(@"error");
+      [NSApp terminate:self];
+    }
+
+    - (void)connection:(NSURLConnection*)conn didReceiveData:(NSData*)data
+    {
+      [buffer appendData:data];
+    }
+
+    @end
+
+    int main(int argc, char** argv)
+    {
+      id pool = [NSAutoreleasePool new];
+      [NSApplication sharedApplication];
+      id controller = [[[AppController alloc] init] autorelease];
+      [controller startRequest];
+      [NSApp run];
+      [pool release];
+      return 0;
+    }
+  :tags:
+  - MacOSX
+  :references:
+    :url: 
+    :title: 
+- :id: '5326'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/5326
+  :user_name: ocean
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2008/01/15 01:34 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>DOMで。</p>\n\n\t"
+  :code: |
+    import urllib
+    import xml.dom.minidom
+
+    def main():
+        data = urllib.urlopen("http://ja.doukaku.org/feeds/comments/").read()
+        doc = xml.dom.minidom.parseString(data)
+        print doc.getElementsByTagName("lastBuildDate").item(0).firstChild.nodeValue
+
+    if __name__ == '__main__':
+        main()
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '5937'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/5937
+  :user_name: howking
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/744/
+  :language: Erlang
+  :time: 2008/03/04 18:50 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>安直に。</p>\n\n\t"
+  :code: |
+    1&gt; Data="&lt;?xml..."
+    2&gt; element(5,hd(element(9,hd(xmerl_xpath:string("//lastBuildDate",element(1,xmerl_scan:string(Data))))))).
+    "Tue, 04 Mar 2008 17:49:25 -0000"
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6420'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/6420
+  :user_name: cappuccino
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/549/
+  :language: C
+  :time: 2008/06/03 15:32 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n\t"
+  :code: |
+    using System;
+    using System.Xml.Linq;
+
+    class Program
+    {
+        static void Main()
+        {
+            XDocument data = XDocument.Load("http://ja.doukaku.org/feeds/comments/");
+
+            foreach (var item in data.Descendants("lastBuildDate"))
+            {
+                Console.WriteLine(item);
+            }
+        }
+    }
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '6477'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/6477
+  :user_name: genzou
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/793/
+  :language: Groovy
+  :time: 2008/06/12 22:08 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>XmlSlurperを使用しました。</p>\n\n\t"
+  :code: |
+    def root = new XmlSlurper().parseText(data)
+    def date = root.channel.lastBuildDate
+    println date
+  :tags:
+  - groovy
+  :references:
+    :url: 
+    :title: 
+- :id: '6722'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/6722
+  :user_name: lufia
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/242/
+  :language: Other
+  :time: 2008/07/12 13:19 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  Limboでもxml処理できるんだね、ということで正規表現は使っていません。\r\n文字列からxmlとして加工するのはめんどくさいため、いちどファイルに落としています。\n\t"
+  :code: |
+    implement Comment;
+
+    include "sys.m";
+        sys: Sys;
+        print, fprint, sprint, create, OWRITE: import sys;
+    include "draw.m";
+    include "bufio.m";
+    include "xml.m";
+        xml: Xml;
+        Parser, Item, Locator, Attributes, Mark: import xml;
+
+    Comment: module
+    {
+        init: fn(ctxt: ref Draw-&gt;Context, argv: list of string);
+    };
+
+    init(nil: ref Draw-&gt;Context, nil: list of string)
+    {
+        sys = load Sys Sys-&gt;PATH;
+        xml = load Xml Xml-&gt;PATH;
+        xml-&gt;init();
+
+        data := "&lt;?xml ..";
+        fout := create("/tmp/comment.xml", OWRITE, 8r600);
+        if(fout == nil)
+            raise "open";
+        fprint(fout, "%s", data);
+        fout = nil;
+        printlastbuilddate("/tmp/comment.xml");
+    }
+
+    printlastbuilddate(f: string)
+    {
+        warningch := chan of (Xml-&gt;Locator, string);
+        spawn warningproc(warningch);
+
+        (x, e) := xml-&gt;open(f, warningch, "");
+        if(x == nil)
+            raise e;
+        for(xi := x.next(); xi != nil; xi = x.next())
+            pick i := xi {
+            Tag =&gt;
+                case i.name {
+                "rss" or "channel" =&gt;
+                    x.down();
+                "lastBuildDate" =&gt;
+                    x.down();
+                    print("%s\n", gettext(x));
+                    warningch &lt;- = (x.loc, nil);        # term
+                    exit;
+                }
+            Error =&gt;
+                raise i.msg;
+            }
+        warningch &lt;- = (x.loc, nil);
+        raise "no item";
+    }
+
+    gettext(x: ref Parser): string
+    {
+        for(xi := x.next(); xi != nil; xi = x.next())
+            pick i := xi {
+            Text =&gt;
+                return i.ch;
+            }
+        raise "error";
+    }
+
+    warningproc(c: chan of (Xml-&gt;Locator, string))
+    {
+        for(;;){
+            (loc, msg) := &lt;- c;
+            if(msg == nil)
+                break;
+            print("%s:%d: %s", loc.systemid, loc.line, msg);
+        }
+    }
+  :tags:
+  - Limbo
+  - credit
+  - monitor
+  :references:
+    :url: 
+    :title: 
+- :id: '7962'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/7962
+  :user_name: emasaka
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/852/
+  :language: Bash
+  :time: 2008/11/06 08:24 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>正規表現で。bash 3.0以降。</p>\n\n\t"
+  :code: |
+    d=$data
+    while [[ "$d" =~ \&lt;lastBuildDate\&gt;([^&lt;]*)\&lt;/lastBuildDate\&gt;(.*) ]]; do
+        echo ${BASH_REMATCH[1]}
+        d=${BASH_REMATCH[2]}
+    done
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9036'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/9036
+  :user_name: egtra
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/759/
+  :language: XAML
+  :time: 2009/06/02 17:52 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  今回はLoose XAMLではありません。外部へのアクセスはLoose XAMLだと権限不足で不可です。「dataという変数に代入されているとします」とありますが、XmlDataProvider要素がそれです。XmlDataProvider型の変数data
+    (x:Key=\"data\"より)と思ってください、WpfApplication1.Window1クラスのフィールド（メンバ変数）のような寿命を持ちます（口から出任せ）。あとはバインディングでXPath指定してlastBuildDateの中身を取り出すだけです。\n\t"
+  :code: |
+    &lt;Window x:Class="WpfApplication1.Window1"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="XMLから情報を取り出す"&gt;
+        &lt;Window.Resources&gt;
+            &lt;XmlDataProvider x:Key="data" Source="http://ja.doukaku.org/feeds/comments/" XPath="/"/&gt;
+        &lt;/Window.Resources&gt;
+        &lt;Label Content="{Binding Source={StaticResource data}, XPath=//lastBuildDate}"/&gt;
+    &lt;/Window&gt;
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9124'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/9124
+  :user_name: yamamoto
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/1064/
+  :language: Scala
+  :time: 2009/06/11 19:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">Deep searchを使うと、題意にそっていて少し短くなりますね。（重箱の隅）\r\n\r\n（XML初心者ですので、ビシバシ指導して下さい。）</pre>\n\t"
+  :code: |2
+        println((rss\\"lastBuildDate").text)
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9125'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/9125
+  :user_name: yamamoto
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/1064/
+  :language: Scala
+  :time: 2009/06/12 01:12 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>#1089をScalaに移植してみました。</p>\n\n\t"
+  :code: "// Java ver.(tnk #1089)をscalaに移植\nimport scala.io._\n\nimport java.io.InputStreamReader\nimport
+    java.io.StringReader\n\nimport java.net.URL\n\nimport javax.xml.xpath.XPath\nimport
+    javax.xml.xpath.XPathConstants\nimport javax.xml.xpath.XPathExpressionException\nimport
+    javax.xml.xpath.XPathFactory\nimport org.w3c.dom.Node\nimport org.xml.sax.InputSource\n\nobject
+    XMLGet1089 {\n  def main(args : Array[String]) : Unit = {\n    val url = new URL(\"http://ja.doukaku.org/feeds/comments/\")\n
+    \   val src = Source.fromURL(\"http://ja.doukaku.org/feeds/comments/\",\"UTF-8\")\n
+    \   \n    // 題意に沿ったもの\n    val data = src.getLines.mkString // dataにXMLを文字列として格納\n
+    \   println( getLastBuildDate(data) )\n    \n    // より「らしい」方法\n    println( getLastBuildDate(
+    new InputSource(url.openStream())) ) // XMLはInputSourceで\n    \n  }\n  \n  def
+    getLastBuildDate(data:String):String = {\n    return getLastBuildDate( new InputSource(new
+    StringReader(data)) )\n  }\n  \n  def getLastBuildDate(in:InputSource):String
+    = {\n    val xpath = XPathFactory.newInstance().newXPath()\n    val path = \"//lastBuildDate\"\n
+    \   val node = xpath.evaluate(path, in, XPathConstants.NODE).asInstanceOf[Node]\n
+    \   //\n    node.getTextContent();\n  }\n}\n"
+  :tags:
+  - 移植
+  :references:
+    :url: 
+    :title: 
+- :id: '9126'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/9126
+  :user_name: yamamoto
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/1064/
+  :language: Scala
+  :time: 2009/06/12 01:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>#796をscalaに移植してみました。</p>\n\n\t"
+  :code: "// Java ver.(匿名  #796)をscalaに移植しました。\nimport org.xml.sax.InputSource\nimport
+    org.xml.sax.helpers.DefaultHandler\nimport org.xml.sax.Attributes\nimport javax.xml.parsers.SAXParser\nimport
+    javax.xml.parsers.SAXParserFactory\n\nobject XMLGet796 extends DefaultHandler{\n
+    \ val url = \"http://ja.doukaku.org/feeds/comments/\"\n  val text = new StringBuffer()\n
+    \ def main(args : Array[String]) : Unit = {\n    val is = new InputSource(url)\n
+    \   val saxf = SAXParserFactory.newInstance()\n    val p = saxf.newSAXParser()\n
+    \   p.parse(is, this)\n  }\n  override def startElement(uri:String,localName:String,qName:String,\n
+    \                  attributes:Attributes):Unit = {\n    text.setLength(0);\n  }\n
+    \ \n  override def characters(ch:Array[Char],start:Int,length:Int):Unit = {\n
+    \   text.append(ch, start, length);\n  }\n  \n  override def endElement(uri:String,localName:String,qName:String):Unit
+    = {\n    if (\"lastBuildDate\" == qName) {\n      System.out.println(text)\n      text.setLength(0)\n
+    \   }\n  }\n}\n"
+  :tags:
+  - 移植
+  :references:
+    :url: 
+    :title: 
+- :id: '10370'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/10370
+  :user_name: todogzm
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/550/
+  :language: Other
+  :time: 2010/03/30 22:26 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Clojure練習です。\nXMLの木構造をシーケンスに変換し、タグがlastBuildDateの要素を取得するという処理をリスト内包表記を用いて行っています。</p>\n<p>※というのがプログラミングClojureの113ページ目に載っています。</p>\n\n\t"
+  :code: |
+    (use '[clojure.xml :only (parse)])
+
+    (defn last-build-date [url]
+      (first
+        (for [x (xml-seq (parse url)) :when (= (:tag x) :lastBuildDate)]
+          (first (:content x)))))
+  :tags:
+  - Clojure
+  :references:
+    :url: 
+    :title: 
+- :id: '10381'
+  :parent_id: '19'
+  :url: http://ja.doukaku.org/comment/10381
+  :user_name: hayashih
+  :user_url: /web/20100617095748/http://ja.doukaku.org/user/339/
+  :language: Other
+  :time: 2010/04/06 17:23 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>F#です。</p>\n\n\t"
+  :code: |
+    open System
+    open System.Xml
+
+    let data = "&lt;root&gt;&lt;text&gt;doukaku.org&lt;/text&gt;&lt;lastBuildDate&gt;Thu, 12 Jul 2007 09:42:50 -0000&lt;/lastBuildDate&gt;&lt;text&gt;written by F#&lt;/text&gt;&lt;/root&gt;"
+
+    let xmldoc = new System.Xml.XmlDocument()
+    xmldoc.LoadXml(data)
+    let node = xmldoc.DocumentElement.SelectSingleNode(".//lastBuildDate")
+    printfn "%s" node.InnerText
+  :tags: []
+  :references:
+    :url: 
+    :title: 

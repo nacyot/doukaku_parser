@@ -1,0 +1,873 @@
+---
+:id: '284'
+:title: 化学反応式の完成
+:comments:
+- :id: '9513'
+  :parent_id: '284'
+  :url: http://ja.doukaku.org/comment/9513
+  :user_name: konn
+  :user_url: /web/20100712040237/http://ja.doukaku.org/user/100/
+  :language: 
+  :time: 2009/08/25 01:52 GMT
+  :vote_count: '3'
+  :vote_score: '1'
+  :body: "\r\n\t  <p>整数の係数を持つ化学反応式を完成してください。反応前の物質と反応後の物質は与えられる物とします。例えば、</p>\n<p>(前)
+    Mg, O <sub>2</sub> (後) Mg O</p>\n<p>(答) 2Mg + O <sub>2</sub> -&gt; 2MgO</p>\n<p>(前)
+    C <sub>2</sub>, H <sub>2</sub>, O <sub>2</sub> (後) CO <sub>2</sub> , H <sub>2</sub>
+    O</p>\n<p>(答) 2C <sub>2</sub> H <sub>2</sub> + 5O <sub>2</sub> -&gt; 4CO <sub>2</sub>
+    + 2H <sub>2</sub> O</p>\n<p>こんな感じです。以前anarchy golf に出題させて貰ったんですが、埋め込み解で解かれてしまったので、今回は埋め込み解はなし、と云うことでおねがいします。</p>\n\r\n\t"
+  :code: ''
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9530'
+  :parent_id: '284'
+  :url: http://ja.doukaku.org/comment/9530
+  :user_name: egtra
+  :user_url: /web/20100712040237/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2009/08/28 22:35 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  \n<p>次のような考え方で解きました。\n</p>\n<ol>\n<li>\n     両辺に現れる各元素eについて以下の手順を行う。<ol>\n<li>\n
+    \    eについて各辺それぞれに出現する個数tl, trを求め、さらにalとarの最小公倍数lcmを求める。\n </li>\n\n <li>\n     lcm
+    / tlを左辺の、lcm / trを右辺の係数rとする。\n </li>\n\n <li>\n     eを持つ分子mについて以下の手順を行う（これをf(e,
+    r)とする）。<ol>\n<li>\n     係数rを掛ける。\n </li>\n\n <li>\n     各mのうち、e以外に計算済みの元素gがある場合、f(g,
+    r / gの個数)を行う。\n </li>\n</ol>\n</li>\n</ol>\n</li>\n\n <li>\n     適当な値を掛けて各項を整数にする。\n
+    </li>\n</ol>\n<p>いやはや、C++のラムダ式の中でラムダ式を使ったときに、外側の外側のローカル変数を束縛できないという制限が意味不明です。f2やbr3などといった一時変数を作れば回避できるのですが、こんな回避策を使わずに済む仕様にしてほしいです。\n</p>\n\n\n\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    #include &lt;vector&gt;
+    #include &lt;map&gt;
+    #include &lt;iterator&gt;
+    #include &lt;functional&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;stdexcept&gt;
+    #include &lt;numeric&gt;
+    #include &lt;boost/math/common_factor.hpp&gt;
+    #include &lt;boost/assign.hpp&gt;
+    #include &lt;boost/rational.hpp&gt;
+    #include &lt;boost/implicit_cast.hpp&gt;
+
+    using boost::implicit_cast;
+
+    typedef std::string element_t;
+    typedef std::map&lt;element_t, unsigned&gt; molecule_t;
+    typedef std::map&lt;molecule_t, boost::rational&lt;unsigned&gt;&gt; result_t;
+
+    typedef std::map&lt;element_t, std::pair&lt;unsigned, unsigned&gt;&gt; molecule_total_t;
+
+    boost::rational&lt;unsigned&gt; getTotalElementNum(result_t const&amp; r, element_t const&amp; e)
+    {
+        return std::accumulate(r.begin(), r.end(), boost::rational&lt;unsigned&gt;(), [&amp;](boost::rational&lt;unsigned&gt; u, result_t::value_type const&amp; t) -&gt; boost::rational&lt;unsigned&gt;
+        {
+            auto it = t.first.find(e);
+            return u + (it == t.first.end()
+                ? 0
+                : t.second * it-&gt;second);
+        });
+    }
+
+    inline void printRational(std::ostream&amp; os, boost::rational&lt;unsigned&gt; x)
+    {
+        if (x.denominator() == 1)
+        {
+            os &lt;&lt; x.numerator();
+        }
+        else
+        {
+            os &lt;&lt; x;
+        }
+    }
+
+    void printResult(std::ostream&amp; os, result_t const&amp; r)
+    {
+        for (auto it = r.begin(), end = r.end(); ; )
+        {
+            if (it-&gt;second &gt; 1)
+            {
+                printRational(os, it-&gt;second);
+            }
+            std::for_each(it-&gt;first.begin(), it-&gt;first.end(), [&amp;os](molecule_t::const_reference m)
+            {
+                os &lt;&lt; m.first;
+                if (m.second &gt; 1)
+                {
+                    printRational(os, m.second);
+                }
+            });
+
+            ++it;
+            if (it == end)
+            {
+                break;
+            }
+            os &lt;&lt; " + ";
+        };
+    }
+
+    void printResult(std::ostream&amp; os, result_t const&amp; x, result_t const&amp; y)
+    {
+        printResult(os, x);
+        os &lt;&lt; " → ";
+        printResult(os, y);
+        os &lt;&lt; std::endl;
+    }
+
+    std::pair&lt;result_t, result_t&gt; calc(std::vector&lt;molecule_t&gt; before, std::vector&lt;molecule_t&gt; after)
+    {
+        std::set&lt;element_t&gt; elementSet;
+        std::for_each(before.begin(), before.end(), [&amp;elementSet](molecule_t const&amp; m)
+        {
+            std::transform(m.begin(), m.end(), std::inserter(elementSet, elementSet.end()), [](molecule_t::const_reference e) -&gt; element_t
+            {
+                return e.first;
+            });
+        });
+        result_t before_result, after_result;
+        std::transform(before.begin(), before.end(), std::inserter(before_result, before_result.end()), [&amp;](molecule_t const&amp; x) -&gt; result_t::value_type
+        {
+            return std::make_pair(x, 1);
+        });
+        std::transform(after.begin(), after.end(), std::inserter(after_result, after_result.end()), [&amp;](molecule_t const&amp; x) -&gt; result_t::value_type
+        {
+            return std::make_pair(x, 1);
+        });
+
+        std::for_each(elementSet.begin(), elementSet.end(), [&amp;](element_t const&amp; e) // 1. 両辺に現れる各元素eについて……
+        {
+            printResult(std::cout, before_result, after_result);
+
+            result_t&amp; br = before_result, ar = after_result;
+            auto tl = getTotalElementNum(before_result, e); // 1.1. tl, trを求める。
+            auto tr = getTotalElementNum(after_result, e);
+            unsigned const lcm = boost::math::lcm(tl.numerator() * tr.denominator(), tr.numerator() * tl.denominator());
+            std::function&lt;void (result_t&amp; result, element_t const&amp; e, boost::rational&lt;unsigned&gt; rate)&gt; f;
+            f = [&amp;f, &amp;br, &amp;ar](result_t&amp; result, element_t const&amp; e, boost::rational&lt;unsigned&gt; rate)
+            {
+                if (rate &gt; 1)
+                {
+                    auto&amp; br2 = br, ar2 = ar;
+                    auto&amp; f2 = f;
+                    std::for_each(result.begin(), result.end(), [&amp;f2, &amp;e, &amp;br2, &amp;ar2, rate](result_t::reference m) // 1.3. eを持つ分子mについて……
+                    {
+                        auto&amp; br3 = br2, ar3 = ar2;
+                        auto&amp; f = f2;
+                        auto const&amp; e2 = e;
+                        auto const rate2 = rate;
+                        auto it = m.first.find(e);
+                        if (it != m.first.end()) // 分子mが元素eを含むなら
+                        {
+                            m.second *= rate; // 1.3.1. 係数rを掛ける。
+                            std::for_each(m.first.begin(), it, [&amp;f, &amp;e2, &amp;br3, &amp;ar3, rate2](molecule_t::value_type const&amp; g)
+                            {
+                                auto t = implicit_cast&lt;boost::rational&lt;unsigned&gt;&gt;(rate2) / g.second;
+                                f(br3, g.first, t); // 1.3.2. 各mのうち、e以外に計算済みの元素gがある場合
+                                f(ar3, g.first, t);
+                            });
+                        }
+                    });
+                }
+            };
+            f(before_result, e, lcm / tl); // 1.2. lcm / tlを左辺の、lcm / trを右辺の係数rとする。
+            f(after_result, e, lcm / tr);
+        });
+        auto g = [](result_t const&amp; r) -&gt; unsigned
+        {
+            return std::accumulate(r.begin(), r.end(), 1u, [](unsigned x, result_t::const_reference e) -&gt; unsigned
+            {
+                return boost::math::lcm(x, e.second.denominator());
+            });
+        };
+        auto lcm = boost::math::lcm(g(before_result), g(after_result));
+        auto f = [lcm](result_t::reference r)
+        {
+            r.second *= lcm;
+        };
+        std::for_each(before_result.begin(), before_result.end(), f); // 2. 各項を整数にする。
+        std::for_each(after_result.begin(), after_result.end(), f);
+        return std::make_pair(before_result, after_result);
+    }
+
+    int main()
+    {
+        using boost::assign::map_list_of;
+        std::vector&lt;molecule_t&gt; m1, m2;
+        //m1.push_back(map_list_of("Mg", 1)); // MG
+        //m1.push_back(map_list_of("O", 2)); // O2
+        //m2.push_back(map_list_of("Mg", 1)("O", 1)); // MgO
+
+        m1.push_back(map_list_of("C", 2)("H", 2)); // C2H2
+        m1.push_back(map_list_of("O", 2)); // O2
+        m2.push_back(map_list_of("C", 1)("O", 2)); // CO2
+        m2.push_back(map_list_of("H", 2)("O", 1)); // H2O
+
+        auto result = calc(m1, m2);
+        printResult(std::cout, result.first, result.second);
+    }
+  :tags:
+  - Boost
+  - C++0x
+  :references:
+    :url: 
+    :title: 
+- :id: '9532'
+  :parent_id: '284'
+  :url: http://ja.doukaku.org/comment/9532
+  :user_name: egtra
+  :user_url: /web/20100712040237/http://ja.doukaku.org/user/759/
+  :language: C
+  :time: 2009/08/29 18:38 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>同じ処理をpairのfirstとsecondの両方に行うことが多数ありました。そこで、Boost.Fusionを使いました。Fusionは、tupleのようなもの（std::pairも含まれる）に対してfor_eachなどのアルゴリズムを提供するライブラリです。このコードではむしろ行数増やしているだけですけどね。</p>\n<p>なお、係数の計算にバグがあり、それの修正の分、少々アルゴリズムにも手を加えてあります。</p>\n\n\t"
+  :code: |
+    #include &lt;iostream&gt;
+    #include &lt;string&gt;
+    #include &lt;vector&gt;
+    #include &lt;map&gt;
+    #include &lt;iterator&gt;
+    #include &lt;functional&gt;
+    #include &lt;algorithm&gt;
+    #include &lt;numeric&gt;
+    #include &lt;boost/math/common_factor.hpp&gt;
+    #include &lt;boost/assign.hpp&gt;
+    #include &lt;boost/rational.hpp&gt;
+    #include &lt;boost/implicit_cast.hpp&gt;
+    #include &lt;boost/fusion/adapted.hpp&gt;
+    #include &lt;boost/fusion/algorithm.hpp&gt;
+    #include &lt;boost/fusion/view.hpp&gt;
+    #include &lt;boost/fusion/container.hpp&gt;
+    #include &lt;boost/fusion/sequence.hpp&gt;
+
+    using boost::implicit_cast;
+
+    namespace fusion = boost::fusion;
+
+    typedef std::string element_t;
+    typedef std::map&lt;element_t, unsigned&gt; molecule_t;
+    typedef std::map&lt;molecule_t, boost::rational&lt;unsigned&gt;&gt; result_t;
+
+    typedef std::map&lt;element_t, std::pair&lt;unsigned, unsigned&gt;&gt; molecule_total_t;
+
+    boost::rational&lt;unsigned&gt; getTotalElementNum(result_t const&amp; r, element_t const&amp; e)
+    {
+        return std::accumulate(r.begin(), r.end(), boost::rational&lt;unsigned&gt;(), [&amp;](boost::rational&lt;unsigned&gt; u, result_t::value_type const&amp; t) -&gt; boost::rational&lt;unsigned&gt;
+        {
+            auto it = t.first.find(e);
+            return u + (it == t.first.end()
+                ? 0
+                : t.second * it-&gt;second);
+        });
+    }
+
+    inline void printRational(std::ostream&amp; os, boost::rational&lt;unsigned&gt; x)
+    {
+        if (x.denominator() == 1)
+        {
+            os &lt;&lt; x.numerator();
+        }
+        else
+        {
+            os &lt;&lt; x;
+        }
+    }
+
+    void printResult(std::ostream&amp; os, result_t const&amp; r)
+    {
+        for (auto it = r.begin(), end = r.end(); ; )
+        {
+            if (it-&gt;second &gt; 1)
+            {
+                printRational(os, it-&gt;second);
+            }
+            std::for_each(it-&gt;first.begin(), it-&gt;first.end(), [&amp;os](molecule_t::const_reference m)
+            {
+                os &lt;&lt; m.first;
+                if (m.second &gt; 1)
+                {
+                    printRational(os, m.second);
+                }
+            });
+
+            ++it;
+            if (it == end)
+            {
+                break;
+            }
+            os &lt;&lt; " + ";
+        };
+    }
+
+    void printResult(std::ostream&amp; os, result_t const&amp; x, result_t const&amp; y)
+    {
+        printResult(os, x);
+        os &lt;&lt; " → ";
+        printResult(os, y);
+        os &lt;&lt; std::endl;
+    }
+
+    template&lt;typename T, typename U&gt;
+    fusion::zip_view&lt;fusion::vector&lt;T&amp;, U&amp;&gt;&gt; make_zip_view(T&amp; t, U&amp; u)
+    {
+        return fusion::zip_view&lt;fusion::vector&lt;T&amp;, U&amp;&gt;&gt;(fusion::vector&lt;T&amp;, U&amp;&gt;(t, u));
+    }
+
+    std::pair&lt;result_t, result_t&gt; calc(std::pair&lt;std::vector&lt;molecule_t&gt;, std::vector&lt;molecule_t&gt;&gt; exp)
+    {
+        std::set&lt;element_t&gt; elementSet;
+        std::for_each(exp.first.begin(), exp.first.end(), [&amp;elementSet](molecule_t const&amp; m)
+        {
+            std::transform(m.begin(), m.end(), std::inserter(elementSet, elementSet.end()), [](molecule_t::const_reference e) -&gt; element_t
+            {
+                return e.first;
+            });
+        });
+        std::pair&lt;result_t, result_t&gt; result;
+        fusion::for_each(make_zip_view(result, exp), [](fusion::vector&lt;result_t&amp;, std::vector&lt;molecule_t&gt;&amp;&gt; t)
+        {
+            using fusion::at_c;
+            std::transform(at_c&lt;1&gt;(t).begin(), at_c&lt;1&gt;(t).end(), std::inserter(at_c&lt;0&gt;(t), at_c&lt;0&gt;(t).end()), [&amp;](molecule_t const&amp; x) -&gt; result_t::value_type
+            {
+                return std::make_pair(x, 1);
+            });
+        });
+        std::for_each(elementSet.begin(), elementSet.end(), [&amp;](element_t const&amp; e) // 1. 両辺に現れる各元素eについて……
+        {
+            using namespace std::placeholders;
+            printResult(std::cout, result.first, result.second);
+
+            auto total = fusion::transform(result, std::bind(getTotalElementNum, _1, e)); // 1.1. tl, trを求める。
+            auto tl = *fusion::begin(total);
+            auto tr = *fusion::next(fusion::begin(total));
+            auto&amp; r1 = result;
+            unsigned const lcm = boost::math::lcm(tl.numerator() * tr.denominator(), tr.numerator() * tl.denominator());
+
+            std::function&lt;void (result_t&amp; result, element_t const&amp; e, boost::rational&lt;unsigned&gt; rate)&gt; f;
+            f = [&amp;f, &amp;r1](result_t&amp; result, element_t const&amp; e, boost::rational&lt;unsigned&gt; rate)
+            {
+                if (rate &gt; 1)
+                {
+                    auto&amp; r2 = r1;
+                    auto&amp; f2 = f;
+                    std::for_each(result.begin(), result.end(), [&amp;f2, &amp;e, &amp;r2, rate](result_t::reference m) // 1.3. eを持つ分子mについて……
+                    {
+                        auto&amp; r3 = r2;
+                        auto&amp; f3 = f2;
+                        auto const rate2 = rate;
+                        auto it = m.first.find(e);
+                        if (it != m.first.end()) // 分子mが元素eを含むなら
+                        {
+                            boost::rational&lt;unsigned&gt; over = 1u;
+                            std::for_each(m.first.begin(), it, [&amp;f3, &amp;r3, rate2, &amp;over](molecule_t::value_type const&amp; g)
+                            {
+                                using namespace std::placeholders;
+                                auto&amp; f4 = f3;
+                                auto t = implicit_cast&lt;boost::rational&lt;unsigned&gt;&gt;(rate2) / g.second;
+                                over *= t;
+                                fusion::for_each(r3, [&amp;f4, &amp;g, &amp;t](result_t&amp; r){f4(r, g.first, t);}); // 1.3.2. 各mのうち、e以外に計算済みの元素gがある場合
+                            });
+                            m.second *= rate / over; // 1.3.1. 係数rを掛ける。
+                        }
+                    });
+                }
+            };
+            fusion::for_each(make_zip_view(result, total), [&amp;f, lcm, &amp;e](fusion::vector&lt;result_t&amp;, boost::rational&lt;unsigned&gt;&gt; t)
+            {
+                f(fusion::at_c&lt;0&gt;(t), e, lcm / fusion::at_c&lt;1&gt;(t));  // 1.2. lcm / tlを左辺の、lcm / trを右辺の係数rとする。
+            });
+        });
+        auto g = [](result_t const&amp; r) -&gt; unsigned
+        {
+            return std::accumulate(r.begin(), r.end(), 1u, [](unsigned x, result_t::const_reference e) -&gt; unsigned
+            {
+                return boost::math::lcm(x, e.second.denominator());
+            });
+        };
+        auto lcm = boost::math::lcm(g(result.first), g(result.second));
+        auto f = [lcm](result_t::reference r)
+        {
+            r.second *= lcm;
+        };
+        fusion::for_each(result, [f](result_t&amp; r)
+        {
+            std::for_each(r.begin(), r.end(), f); // 2. 各項を整数にする。
+        });
+        return result;
+    }
+
+    int main()
+    {
+        using boost::assign::map_list_of;
+        std::vector&lt;molecule_t&gt; m1, m2;
+        m1.push_back(map_list_of("Mg", 1)); // MG
+        m1.push_back(map_list_of("O", 2)); // O2
+        m2.push_back(map_list_of("Mg", 1)("O", 1)); // MgO
+
+        //m1.push_back(map_list_of("C", 2)("H", 2)); // C2H2
+        //m1.push_back(map_list_of("O", 2)); // O2
+        //m2.push_back(map_list_of("C", 1)("O", 2)); // CO2
+        //m2.push_back(map_list_of("H", 2)("O", 1)); // H2O
+
+        auto result = calc(std::make_pair(m1, m2));
+        printResult(std::cout, result.first, result.second);
+    }
+  :tags:
+  - Boost
+  - Boost.Fusion
+  :references:
+    :url: 
+    :title: 
+- :id: '9537'
+  :parent_id: '284'
+  :url: http://ja.doukaku.org/comment/9537
+  :user_name: sumim
+  :user_url: /web/20100712040237/http://ja.doukaku.org/user/88/
+  :language: Smalltalk
+  :time: 2009/08/30 05:47 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>Squeak Smalltalk で。例題のような単純な反応式にしか使えないと思いますが。</p>\n\n\t"
+  :code: |
+    | molecule reactants products atoms ratios rest |
+    molecule := [:pairs |
+        Array streamContents: [:ss | pairs pairsCollect: [:a :b | b timesRepeat: [ss nextPut: a]]]].
+    reactants := {molecule value: #(C 2 H 2). molecule value: #(O 2)}.
+    products := {molecule value: #(C 1 O 2). molecule value: #(H 2 O 1)}.
+    ratios := Array new: reactants size + products size withAll: 0.
+    atoms := reactants concatenation asSet asArray.
+    rest := atoms collect: [:atm |
+        | reacCounts prodCounts |
+        reacCounts := reactants collect: [:reac | reac occurrencesOf: atm].
+        prodCounts := products collect: [:prod | prod occurrencesOf: atm].
+        ((reacCounts occurrencesOf: 0) = (reacCounts size - 1)
+                and: [(prodCounts occurrencesOf: 0) = (prodCounts size - 1)])
+            ifTrue: [
+                | lcm rats |
+                lcm := (reacCounts detect: [:c | c &gt; 0]) lcm: (prodCounts detect: [:c | c &gt; 0]).
+                rats := lcm * (reacCounts, prodCounts collect: [:c |
+                    c isZero ifTrue: [0] ifFalse: [1/c]]).
+                ratios with: rats do: [:a :b |
+                    (b &gt; 0 and: [a &gt; 0]) ifTrue: [
+                        ratios := ratios * ((a lcm: b) / a). rats := rats * ((a lcm: b) / b)]].
+                ratios := ratios with: rats collect: [:a :b | a isZero ifTrue: [b] ifFalse: [a]].
+                nil]
+            ifFalse: [reacCounts, prodCounts]] thenSelect: [:each | each notNil].
+    rest do: [:rats |
+        | sum idx |
+        sum := (ratios * rats allButFirst: reactants size) sum.
+        idx := rats findFirst: [:rat | rat &gt; 0].
+        ratios at: idx put: sum / (rats at: idx)].
+    ratios := ratios * (ratios inject: 1 into: [:lcm :rat |
+        rat isFraction ifTrue: [lcm lcm: rat denominator] ifFalse: [lcm]]).
+    reactants, products with: ratios collect: [:a :b | a -&gt; b]
+
+    "=&gt;{#(#C #C #H #H)-&gt;2 . #(#O #O)-&gt;5 . #(#C #O #O)-&gt;4 . #(#H #H #O)-&gt;2} "
+  :tags:
+  - Squeak_Smalltalk
+  :references:
+    :url: 
+    :title: 
+- :id: '9538'
+  :parent_id: '284'
+  :url: http://ja.doukaku.org/comment/9538
+  :user_name: uehaj
+  :user_url: /web/20100712040237/http://ja.doukaku.org/user/959/
+  :language: Groovy
+  :time: 2009/08/30 07:31 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>可読性重視で解いてみました。約分せずに力任せです。</p>\n\n\t"
+  :code: |
+    O = ["O"]
+    Mg = ["Mg"]
+    C = ["C"]
+    H = ["H"]
+    O2 = O*2
+    H2 = H*2
+    C2 = C*2
+    MgO = Mg + O
+    CO2 = C + O2
+    H2O = H2 + O
+
+    MAX=5
+
+    def expand(list, mult) {
+      def result = []
+      list.eachWithIndex { it, idx -&gt;
+        result += it * mult[idx]
+      }
+      return result.sort()
+    }
+
+    def printAnswer(list, mult) {
+      list.eachWithIndex { it, idx -&gt;
+        print mult[idx]==1?"":mult[idx]
+        print it.join().replaceAll(/(.)¥1/, '$12')
+        if (idx != list.size()-1) {
+          print " + "
+        }
+      }
+    }
+
+    def resolv(pre, post) {
+      preanswers = (([1..MAX]*pre.size()).combinations())
+      postanswers = (([1..MAX]*post.size()).combinations())
+
+      ([preanswers,postanswers].combinations()).grep {
+        expand(pre, it[0]) == expand(post, it[1])
+      }.eachWithIndex { it, idx -&gt;
+        printAnswer(pre, it[0])
+        print " ==&gt; "
+        printAnswer(post, it[1])
+        println();
+      }
+
+    }
+
+    resolv([Mg, O2], [MgO])
+    // 以下が出力される
+    // 2Mg + O2 ==&gt; 2MgO
+    // 4Mg + 2O2 ==&gt; 4MgO
+
+    resolv([C2, H2, O2], [CO2, H2O])
+    // 以下が出力される
+    //C2 + 2H2 + 3O2 ==&gt; 2CO2 + 2H2O
+    //2C2 + 2H2 + 5O2 ==&gt; 4CO2 + 2H2O
+    //C2 + 4H2 + 4O2 ==&gt; 2CO2 + 4H2O
+  :tags: []
+  :references:
+    :url: 
+    :title: 
+- :id: '9552'
+  :parent_id: '284'
+  :url: http://ja.doukaku.org/comment/9552
+  :user_name: ocean
+  :user_url: /web/20100712040237/http://ja.doukaku.org/user/177/
+  :language: Python
+  :time: 2009/09/04 02:07 GMT
+  :vote_count: '1'
+  :vote_score: '1'
+  :body: "\n\t  <p>連立一次方程式で解くようにしました。単純な掃き出し法です。各化合物に係数を振って、答えを出すために最初の係数だけは１に固定しました。</p>\n\n\t"
+  :code: |
+    from fractions import Fraction as F
+    from fractions import gcd
+    import collections
+    import itertools
+    import re
+
+    def lcm(a, b):
+        return a // gcd(a, b) * b
+
+    def solve(prev_list, next_list):
+        # create unique list of elements
+        elements = []
+        for s in itertools.chain(prev_list, next_list):
+            for element in re.findall('[A-Z][a-z]*', s):
+                if element not in elements:
+                    elements.append(element)
+        # count the number of elements in each terms
+        coefs = []
+        for the_list, sign in ((prev_list, +1), (next_list, -1)):
+            for s in the_list:
+                coef = collections.defaultdict(int)
+                for m in re.finditer('([A-Z][a-z]*)(\d*)', s):
+                    coef[m.group(1)] += sign * F(int(m.group(2)) if m.group(2) else 1)
+                coefs.append(coef)
+        # create a system of linar equation
+        matrix = []
+        for element in elements:
+            matrix.append([coef.get(element, F(0)) for coef in coefs] + [F(0)])
+        matrix.append([F(1)] + [F(0)] * (len(coefs) - 1) + [F(1)])
+        # solve a system of linar equation
+        n = len(matrix)
+        assert all(len(a) == n + 1 for a in matrix)
+        for col in xrange(n):
+            for row in xrange(col, n):
+                if matrix[row][col]:
+                    matrix[col], matrix[row] = matrix[row], matrix[col]
+                    break
+            else:
+                raise ValueError("non-zero element cannot be found")
+            value = matrix[col][col]
+            for col2 in xrange(n + 1):
+                matrix[col][col2] /= value
+            for row in xrange(n):
+                if row == col:
+                    continue
+                value = matrix[row][col]
+                for col2 in xrange(n + 1):
+                    matrix[row][col2] -= matrix[col][col2] * value
+        ans = [matrix[row][-1] for row in xrange(n)]
+        # normalize answer (erase denominator)
+        n = 1
+        for f in ans:
+            n = lcm(n, f.denominator)
+        ans = [(f * n).numerator for f in ans]
+        ans = ["" if m == 1 else str(m) for m in ans]
+        # output
+        print \
+            " + ".join(ans[i] + s for (i, s) in enumerate(prev_list)) + \
+            " -&gt; " + \
+            " + ".join(ans[i + len(prev_list)] + s for (i, s) in enumerate(next_list))
+
+    def main():
+        solve(("Mg", "O2"), ("MgO",))
+        solve(("C2H2", "O2"), ("CO2", "H2O"))
+
+    if __name__ == '__main__':
+        main()
+  :tags:
+  - Python2.6
+  :references:
+    :url: 
+    :title: 
+- :id: '9653'
+  :parent_id: '284'
+  :url: http://ja.doukaku.org/comment/9653
+  :user_name: horiuchi
+  :user_url: /web/20100712040237/http://ja.doukaku.org/user/570/
+  :language: Java
+  :time: 2009/10/29 06:28 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <p>長くなってしまいましたが、原子毎の連立方程式で整数解を求めました。</p>\n\n\t"
+  :code: "import java.util.ArrayList;\nimport java.util.HashMap;\nimport java.util.List;\nimport
+    java.util.Map;\nimport java.util.regex.Matcher;\nimport java.util.regex.Pattern;\n\nclass
+    Term {\n    private static final Pattern pattern = Pattern.compile(\"([A-Z][a-z]?)([0-9]+)?\");\n\n
+    \   public static Term create(String str, boolean isLhs) {\n        Term result
+    = new Term();\n        Matcher m = pattern.matcher(str);\n        while (m.find())
+    {\n            int count = (m.group(2) != null)? Integer.parseInt(m.group(2)):
+    1;\n            result.molecules.add(new Molecule(m.group(1), count));\n        }\n
+    \       result.isLhs = isLhs;\n        return result;\n    }\n\n    public final
+    List&lt;Molecule&gt; molecules = new ArrayList&lt;Molecule&gt;();\n    public
+    boolean isLhs = true;\n\n    @Override\n    public String toString() {\n        StringBuilder
+    builder = new StringBuilder();\n        for (Molecule m: molecules) {\n            builder.append(m.toString());\n
+    \       }\n        return builder.toString();\n    }\n}\n\nclass Molecule {\n
+    \   public final String element;\n    public final int count;\n\n    public Molecule(String
+    e, int c) {\n        element = e;\n        count = c;\n    }\n    \n    @Override\n
+    \   public String toString() {\n        return element + toString(count);\n    }\n
+    \   private String toString(int i) {\n        return (i &gt; 1)? String.valueOf(i):
+    \"\";\n    }\n}\n\npublic class Sample284 {\n    public static int gcd(int m,
+    int n) {\n        if (m &lt; 0 || n &lt; 0) return gcd(Math.abs(m), Math.abs(n));\n
+    \       if (n &gt; m) return gcd(n, m);\n        int r = m % n;\n        return
+    (r == 0)? n: gcd(n, r);\n    }\n\n    final List&lt;Term&gt; terms_ = new ArrayList&lt;Term&gt;();\n\n
+    \   public Sample284(String[] lhs, String[] rhs) {\n        for (String s: lhs)
+    {\n            terms_.add(Term.create(s, true));\n        }\n        for (String
+    s: rhs) {\n            terms_.add(Term.create(s, false));\n        }\n    }\n\n\n
+    \   public String solve() {\n        int[][] matrix = createMatrix(terms_);\n
+    \       //System.out.println(createString(matrix));\n        int[] result = solveEquation(matrix);\n
+    \       //System.out.println(createString(matrix));\n        \n        //System.out.println(Arrays.toString(result));\n
+    \       return createResultString(terms_, result);\n    }\n    \n    private int[]
+    solveEquation(int[][] matrix) {\n        for (int col = 0; col &lt; matrix[0].length
+    - 1; col++) {\n            int row = searchNotZero(matrix, col, col);\n            if
+    (row != col) {\n                swapRows(matrix, row, col);\n                row
+    = col;\n            }\n            for (int r = 0; r &lt; matrix.length; r++)
+    {\n                if (r == row) continue;\n                eraceRow(matrix, col,
+    row, r);\n            }\n        }\n        return reduceResult(matrix);\n    }\n
+    \   int searchNotZero(int[][] matrix, int col, int startRow) {\n        for (int
+    row = startRow; row &lt; matrix.length; row++) {\n            if (matrix[row][col]
+    != 0)\n                return row;\n        }\n        throw new IllegalArgumentException(createString(matrix));\n
+    \   }\n    void swapRows(int[][] matrix, int row1, int row2) {\n        int[]
+    work = matrix[row1];\n        matrix[row1] = matrix[row2];\n        matrix[row2]
+    = work;\n    }\n    void eraceRow(int[][] matrix, int baseCol, int baseRow, int
+    row) {\n        int baseVal = matrix[baseRow][baseCol];\n        if (baseVal ==
+    0) throw new IllegalArgumentException(createString(matrix));\n        int eraceVal
+    = matrix[row][baseCol];\n        if (eraceVal == 0) return;\n        \n        int
+    m = gcd(baseVal, eraceVal);\n        for (int col = 0; col &lt; matrix[row].length;
+    col++) {\n            matrix[row][col] = matrix[row][col] * (baseVal / m) - matrix[baseRow][col]
+    * (eraceVal / m);\n        }\n    }\n    \n    private int[] reduceResult(int[][]
+    matrix) {\n        int scale = 1;\n        int col = matrix[0].length - 1;\n        for
+    (int row = 0; row &lt; matrix.length; row++) {\n            int m = gcd(matrix[row][row],
+    matrix[row][col]);\n            scale *= matrix[row][row] / m;\n        }\n        int[]
+    result = new int[matrix.length];\n        for (int row = 0; row &lt; matrix.length;
+    row++) {\n            result[row] = matrix[row][col] * scale / matrix[row][row];\n
+    \       }\n        return result;\n    }\n    \n    private int[][] createMatrix(List&lt;Term&gt;
+    terms) {\n        Map&lt;String, Integer&gt; keyMap = createKeyMap(terms);\n        \n
+    \       int rows = keyMap.size() + 1;\n        int length = terms.size() + 1;\n
+    \       if (rows + 1 != length) {\n            throw new IllegalArgumentException();\n
+    \       }\n        int[][] result = new int[rows][];\n        for (int index =
+    0; index &lt; result.length; index++) {\n            result[index] = new int[length];\n
+    \       }\n        \n        int col = 0;\n        for (Term term: terms) {\n
+    \           for (Molecule m: term.molecules) {\n                result[keyMap.get(m.element)][col]
+    = m.count * (term.isLhs? 1: -1);\n            }\n            col++;\n        }\n\n
+    \       result[keyMap.size()][0] = 1;\n        result[keyMap.size()][length -
+    1] = 1;\n        return result;\n    }\n    private Map&lt;String, Integer&gt;
+    createKeyMap(List&lt;Term&gt; list) {\n        Map&lt;String, Integer&gt; result
+    = new HashMap&lt;String, Integer&gt;();\n        int index = 0;\n        for (Term
+    term: list) {\n            for (Molecule m: term.molecules) {\n                if
+    (!result.containsKey(m.element)) {\n                    result.put(m.element,
+    index++);\n                }\n            }\n        }\n        return result;\n
+    \   }\n\n\n    public String createString(int[][] matrix) {    // for debug\n
+    \       StringBuilder builder = new StringBuilder();\n        for (int[] row:
+    matrix) {\n            for (int col: row) {\n                builder.append(String.format(\"%3d
+    \", col));\n            }\n            builder.append(\"\\n\");\n        }\n        return
+    builder.toString();\n    }\n\n\n    private String createResultString(List&lt;Term&gt;
+    list, int[] factors) {\n        StringBuilder builder = new StringBuilder();\n
+    \       int index = 0;\n        boolean isLhs = true;\n        for (Term term:
+    list) {\n            if (builder.length() &gt; 0) {\n                if (isLhs
+    &amp;&amp; !term.isLhs) {\n                    builder.append(\"=\");\n                    isLhs
+    = false;\n                } else {\n                    builder.append(\"+\");\n
+    \               }\n            }\n            if (factors[index] &gt; 1) builder.append(factors[index]);\n
+    \           builder.append(term.toString());\n            index++;\n        }\n
+    \       return builder.toString();\n    }\n\n\n    public static void main(String[]
+    args) {\n        Sample284 solver = new Sample284(new String[] {\"Mg\", \"O2\"},
+    new String[] {\"MgO\"});\n        System.out.println(solver.solve());    // 2Mg+O2=2MgO\n
+    \       \n        Sample284 solver2 = new Sample284(new String[] {\"C2H2\", \"O2\"},
+    new String[] {\"CO2\", \"H2O\"});\n        System.out.println(solver2.solve());
+    \   // 2C2H2+5O2=4CO2+2H2O\n        \n        Sample284 solver3 = new Sample284(new
+    String[] {\"C2H6O\", \"O2\"}, new String[] {\"CO2\", \"H2O\"});\n        System.out.println(solver3.solve());
+    \   // 2C2+2H2+5O2=4CO2+2H2O\n    }\n}\n"
+  :tags:
+  - Java1.5
+  :references:
+    :url: 
+    :title: 
+- :id: '10532'
+  :parent_id: '284'
+  :url: http://ja.doukaku.org/comment/10532
+  :user_name: 匿名
+  :user_url: /web/20100712040237/http://ja.doukaku.org/user/4/
+  :language: Ruby
+  :time: 2010/06/06 10:51 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#式の両辺で原子数が互いに等しくなるように、係数を少しずつ増やしています。\r\n#少し複雑な式では係数が安定しないので、計算を中断しています。\r\n#中断例：?C2H5OH
+    + ?O2 = ?CO2 + ?H2O\r\n\r\n#環境:ruby 1.8.7 (2010-01-10 patchlevel 249) [i486-linux\r\n\r\n実行結果:\r\n--------------------------------------------\r\nNaOH
+    + HCl = H2O + NaCl\r\n5O2 + 2C2H2 = 2H2O + 4CO2\r\nO2 + 2Mg = 2MgO\r\nC + 2CuO
+    = CO2 + 2Cu\r\n2NaHCO3 = H2O + CO2 + Na2CO3\r\nC2H5OH O2, CO2 H2O は本プログラムでは、収束しません。\r\n--------------------------------------------</pre>\n\t"
+  :code: |
+    # -*- coding: utf-8 -*-
+    def siki(s1,s2)
+      h = Hash.new(0)
+      s1.split.map{|x|h[x] += 1}
+      s2.split.map{|x|h[x] += -1}
+     while (w = find_mismatch(h)) != []
+        a, b = w[-1]
+        (printf("%s, %s は本プログラムでは、収束しません。\n",s1, s2);return) if b &gt; 100
+        b, c = (b &gt; 0 ? [1,'&lt;'] : [-1,'&gt;'])
+        eval("h.map{|k, v|h[k] -= b if((v#{c}0)&amp;&amp;k.index(a))}")
+      end
+      printf("%s = ", make_form(h, '&gt;').join(' + '))
+      printf("%s\n",  make_form(h, '&lt;').join(' + '))
+    end
+
+    def make_form(h, x1)
+      eval("h.
+            map{|k,v|[k,v] if v#{x1}0}.
+            compact.
+            map{|x|xx=x[1].abs;(xx &gt; 1 ? xx : nil).to_s + x[0]}")
+    end
+
+    def find_mismatch(h)
+      hc = Hash.new(0)
+      h.each{|k, v|
+        k = k.split('')
+        ww = ""
+        while w = k.shift
+          if w =~ /[0-9]/
+            hc[ww] += w.to_i * v
+            ww = ""
+          end
+          if w =~ /[A-Z]/
+            hc[ww] += v if ww != ""
+            ww = w
+          end
+          if w =~ /[a-z]/
+            ww += w
+          end
+        end
+        hc[ww] += v if ww != ""
+      }
+      hc.map{|k,v|[k,v] if v!=0}.compact.sort{|a,b|a[1].abs&lt;=&gt;b[1].abs}
+    end
+
+    siki("HCl NaOH", "NaCl H2O")
+    siki("C2H2 O2", "CO2 H2O")
+    siki("Mg O2", "MgO")
+    siki("CuO C", "Cu CO2")
+    siki("NaHCO3", "Na2CO3 CO2 H2O")
+    siki("C2H5OH O2", "CO2 H2O")
+  :tags:
+  - 1.8.7
+  - ruby
+  :references:
+    :url: 
+    :title: 
+- :id: '10534'
+  :parent_id: '284'
+  :url: http://ja.doukaku.org/comment/10534
+  :user_name: 匿名
+  :user_url: /web/20100712040237/http://ja.doukaku.org/user/4/
+  :language: Ruby
+  :time: 2010/06/06 18:37 GMT
+  :vote_count: '0'
+  :vote_score: '0'
+  :body: "\n\t  <pre class=\"compact\">#10532の改造版です。\r\n# 力任せ。 係数をall 1(1,1,...)からall
+    MAX(MAX,MAX,...)まで変化させて、式両辺の原子数が同じになる組合せを探します。\r\n# 環境:ruby 1.8.7 (2010-01-10
+    patchlevel 249) [i486-linux]\r\n#  実行結果\r\n#---------------------------------------------------\r\n#
+    \ time ruby kagakusiki2.rb\r\n#  NaOH + HCl = H2O + NaCl\r\n#  5O2 + 2C2H2 = 2H2O
+    + 4CO2\r\n#  O2 + 2Mg = 2MgO\r\n#  C + 2CuO = CO2 + 2Cu\r\n#  2NaHCO3 = H2O +
+    CO2 + Na2CO3\r\n#  C2H5OH + 3O2 = 3H2O + 2CO2\r\n#  0.18s user 0.02s system 94%
+    cpu 0.208 total\r\n#---------------------------------------------------</pre>\n\t"
+  :code: |
+    MAX=5
+    def siki(s1,s2)
+      h = Hash.new(0)
+      s1.split.map{|x|h[x] += 1}
+      s2.split.map{|x|h[x] += -1}
+      n = h.length
+      0.upto(MAX ** n - 1){|x|
+        x = sprintf("%0#{n}d", x.to_s(MAX).to_i).split('').map{|x|x.to_i + 1}
+        x = h.zip(x).map{|a, b|[a[0], a[1]*b]}.flatten
+        x = Hash[*x]
+        (h = x; break) if find_mismatch(x) == []
+      }
+      printf("%s = ", make_form(h, '&gt;').join(' + '))
+      printf("%s\n",  make_form(h, '&lt;').join(' + '))
+    end
+
+    def make_form(h, x1)
+      eval("h.
+            map{|k,v|[k,v] if v#{x1}0}.
+            compact.
+            map{|x|xx=x[1].abs;(xx &gt; 1 ? xx : nil).to_s + x[0]}")
+    end
+
+    def find_mismatch(h)
+      hc = Hash.new(0)
+      h.each{|k, v|
+        k = k.split('')
+        ww = ""
+        while w = k.shift
+          if w =~ /[0-9]/
+            hc[ww] += w.to_i * v
+            ww = ""
+          end
+          if w =~ /[A-Z]/
+            hc[ww] += v if ww != ""
+            ww = w
+          end
+          if w =~ /[a-z]/
+            ww += w
+          end
+        end
+        hc[ww] += v if ww != ""
+      }
+      hc.map{|k,v|[k,v] if v!=0}.compact.sort{|a,b|a[1].abs&lt;=&gt;b[1].abs}
+    end
+
+    siki("HCl NaOH", "NaCl H2O")
+    siki("C2H2 O2", "CO2 H2O")
+    siki("Mg O2", "MgO")
+    siki("CuO C", "Cu CO2")
+    siki("NaHCO3", "Na2CO3 CO2 H2O")
+    siki("C2H5OH O2", "CO2 H2O")
+  :tags:
+  - 1.8.7
+  - ruby
+  :references:
+    :url: 
+    :title: 
